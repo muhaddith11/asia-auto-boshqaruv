@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow Telegram Webhook, Login page, and Bot UI Web App
-  if (pathname === '/login' || pathname.startsWith('/api/bot') || pathname.startsWith('/api/bot-test') || pathname.startsWith('/api/debug-env') || pathname.startsWith('/bot-ui')) {
+  if (pathname === '/login' || pathname.startsWith('/api/bot') || pathname.startsWith('/api/bot-test') || pathname.startsWith('/api/debug-env') || pathname.startsWith('/api/debug-tg') || pathname.startsWith('/bot-ui')) {
     return NextResponse.next();
   }
 
