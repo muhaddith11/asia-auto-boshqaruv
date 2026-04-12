@@ -84,7 +84,7 @@ Ushbu ma'lumotlarni bazaga saqlaymizmi?
 
 const stage = new Scenes.Stage([orderWizard] as any);
 bot.use(session());
-bot.use(stage.middleware());
+bot.use(stage.middleware() as any);
 
 // --- Handlers ---
 
