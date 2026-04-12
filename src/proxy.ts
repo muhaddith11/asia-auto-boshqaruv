@@ -4,8 +4,18 @@ import type { NextRequest } from 'next/server';
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Normalize path (remove double slashes)
+  const normalizedPath = pathname.replace(/\/+/g, '/');
+
   // Allow Telegram Webhook, Login page, and Bot UI Web App
-  if (pathname === '/login' || pathname.startsWith('/api/bot') || pathname.startsWith('/api/bot-test') || pathname.startsWith('/api/debug-env') || pathname.startsWith('/api/debug-tg') || pathname.startsWith('/bot-ui')) {
+  if (
+    normalizedPath === '/login' || 
+    normalizedPath.startsWith('/api/bot') || 
+    normalizedPath.startsWith('/api/bot-test') || 
+    normalizedPath.startsWith('/api/debug-env') || 
+    normalizedPath.startsWith('/api/debug-tg') || 
+    normalizedPath.startsWith('/bot-ui')
+  ) {
     return NextResponse.next();
   }
 
