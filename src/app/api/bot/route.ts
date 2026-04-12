@@ -22,76 +22,71 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
-    // Background execution to prevent Telegram timeout
+    // Immediate response to Telegram to prevent timeouts
+    const response = NextResponse.json({ ok: true });
+
+    // Background execution
     (async () => {
       try {
-        if (body.message) {
-          const chatId = body.message.chat.id;
-          const text = body.message.text;
-          
-          // Detect host for dynamic URLs
-          const host = req.headers.get('host') || 'asiaautoservice.com';
-          const protocol = host.includes('localhost') ? 'http' : 'https';
-          const baseUrl = `${protocol}://${host}`;
+        if (!body.message) return;
 
-          if (text === '/start') {
+        const chatId = body.message.chat.id;
+        const text = body.message.text;
+        
+        // Detect host for dynamic URLs
+        const host = req.headers.get('host') || 'asiaautoservice.com';
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const baseUrl = `${protocol}://${host}`;
+
+        if (text === '/start') {
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz.",
+            reply_markup: {
+              keyboard: [[{ text: "📱 Ro'yxatdan o'tish (Tel raqamni yuborish)", request_contact: true }]],
+              resize_keyboard: true,
+              one_time_keyboard: true
+            }
+          });
+        } 
+        else if (body.message.contact) {
+          const phone = body.message.contact.phone_number.replace('+', '');
+          const { data: worker, error: dbError } = await supabase
+            .from('workers')
+            .select('*')
+            .or(`tel.eq.${phone},tel.eq.+${phone}`)
+            .single();
+
+          if (dbError) console.error('DB Error:', dbError);
+
+          if (!worker) {
             await sendTg('sendMessage', {
               chat_id: chatId,
-              text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz.",
+              text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling."
+            });
+          } else {
+            const webAppUrl = `${baseUrl}/bot-ui?phone=${phone}`;
+            await sendTg('sendMessage', {
+              chat_id: chatId,
+              text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosib yangi buyurtma kiritishingiz mumkin.`,
               reply_markup: {
-                keyboard: [[{ text: "📱 Ro'yxatdan o'tish (Tel raqamni yuborish)", request_contact: true }]],
-                resize_keyboard: true,
-                one_time_keyboard: true
+                inline_keyboard: [[{ 
+                  text: "🆕 Buyurtma To'ldirish", 
+                  web_app: { url: webAppUrl } 
+                }]]
               }
             });
-          } 
-          else if (body.message.contact) {
-            const phone = body.message.contact.phone_number.replace('+', '');
-            const { data: worker, error: dbError } = await supabase
-              .from('workers')
-              .select('*')
-              .or(`tel.eq.${phone},tel.eq.+${phone}`)
-              .single();
-
-            if (dbError) {
-              console.error('Database error in bot:', dbError);
-            }
-
-            if (!worker) {
-              await sendTg('sendMessage', {
-                chat_id: chatId,
-                text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling."
-              });
-            } else {
-              const webAppUrl = `${baseUrl}/bot-ui?phone=${phone}`;
-              await sendTg('sendMessage', {
-                chat_id: chatId,
-                text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosib yangi buyurtma kiritishingiz mumkin.`,
-                reply_markup: {
-                  inline_keyboard: [[{ 
-                    text: "🆕 Buyurtma To'ldirish", 
-                    web_app: { url: webAppUrl } 
-                  }]]
-                }
-              });
-            }
-          } 
-          else if (text === '🆕 Yangi buyurtma') {
-            await sendTg('sendMessage', {
-              chat_id: chatId,
-              text: "Buning uchun 'Buyurtma To'ldirish' (Web App) tugmasidan foydalaning."
-            });
           }
-        }
+        } 
       } catch (innerError) {
-        console.error('Processing error details:', innerError);
+        console.error('BG Error:', innerError);
       }
     })();
     
-    return NextResponse.json({ ok: true });
+    return response;
   } catch (err) {
-    console.error('Bot Error:', err);
-    return NextResponse.json({ ok: true }); // Still return 200 to Telegram to stop retries
+    console.error('Bot POST Error:', err);
+    return NextResponse.json({ ok: true });
   }
 }
 
