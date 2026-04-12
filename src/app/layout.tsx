@@ -14,16 +14,17 @@ export const metadata: Metadata = {
   title: "AutoServis Pro — Boshqaruv Tizimi",
   description: "Professional avtoservis boshqaruv tizimi",
   manifest: "/manifest.json",
-  themeColor: "#6366f1",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
   icons: {
     icon: "/icons/icon-192x192.png",
     apple: "/icons/icon-192x192.png",
   },
+};
+
+export const viewport = {
+  themeColor: "#6366f1",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
