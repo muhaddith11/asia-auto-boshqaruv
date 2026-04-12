@@ -50,7 +50,7 @@ export default function BotUIPage() {
       const urlParams = new URLSearchParams(window.location.search);
       let workerPhone = urlParams.get('phone') || '';
       
-      const mechanicChatId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || WebApp?.initDataUnsafe?.user?.id;
+      const mechanicChatId = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id || WebApp?.initDataUnsafe?.user?.id;
       
       const payload = {
         brand: store.brand,
