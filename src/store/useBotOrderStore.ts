@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export const useOrderStore = create((set, get) => ({
+export const useBotOrderStore = create((set, get) => ({
   brand: '',
   model: '',
   probeg: '',
