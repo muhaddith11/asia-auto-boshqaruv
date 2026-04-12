@@ -5,13 +5,13 @@ interface BotOrderState {
   model: string;
   probeg: string;
   plateNumber: string;
-  services: { name: string; price: number | string }[];
-  parts: { name: string; quantity: number | string; price: number | string }[];
+  services: { name: string; price: number | string; isCustom?: boolean }[];
+  parts: { name: string; quantity: number | string; price: number | string; isCustom?: boolean }[];
   
   setCarInfo: (info: Partial<BotOrderState>) => void;
-  addService: (service: { name: string; price: number | string }) => void;
+  addService: (service: { name: string; price: number | string; isCustom?: boolean }) => void;
   removeService: (idx: number) => void;
-  addPart: (part: { name: string; quantity: number | string; price: number | string }) => void;
+  addPart: (part: { name: string; quantity: number | string; price: number | string; isCustom?: boolean }) => void;
   removePart: (idx: number) => void;
   getTotalAmount: () => number;
   reset: () => void;
@@ -27,20 +27,20 @@ export const useBotOrderStore = create<BotOrderState>((set, get) => ({
   
   setCarInfo: (info) => set((state) => ({ ...state, ...info })),
   
-  addService: (service) => set((state: any) => ({ 
+  addService: (service) => set((state) => ({ 
     services: [...state.services, service] 
   })),
   
-  removeService: (idx) => set((state: any) => ({
-    services: state.services.filter((_: any, i: number) => i !== idx)
+  removeService: (idx) => set((state) => ({
+    services: state.services.filter((_, i) => i !== idx)
   })),
   
-  addPart: (part) => set((state: any) => ({
+  addPart: (part) => set((state) => ({
     parts: [...state.parts, part]
   })),
   
-  removePart: (idx) => set((state: any) => ({
-    parts: state.parts.filter((_: any, i: number) => i !== idx)
+  removePart: (idx) => set((state) => ({
+    parts: state.parts.filter((_, i) => i !== idx)
   })),
 
   getTotalAmount: () => {
