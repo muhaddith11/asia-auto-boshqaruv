@@ -11,6 +11,7 @@ export function proxy(request: NextRequest) {
   if (
     normalizedPath === '/login' || 
     normalizedPath.startsWith('/api/bot') || 
+    normalizedPath.startsWith('/api/telegram-webhook') || 
     normalizedPath.startsWith('/api/bot-test') || 
     normalizedPath.startsWith('/api/debug-env') || 
     normalizedPath.startsWith('/api/debug-tg') || 
