@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import { X, Save, User, Phone, Percent, Plus } from 'lucide-react';
+import PhoneInput from '@/components/PhoneInput';
 
 export default function AddClientPage() {
   const router = useRouter();
@@ -70,15 +71,15 @@ export default function AddClientPage() {
  
           <div className="space-y-1">
             <label className="block text-[13px] font-bold text-slate-500 mb-1 pl-1">Telefon raqami *</label>
-            <div className="relative group">
-              <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
-              <input 
-                type="text" required value={formData.tel}
-                onChange={e => setFormData({...formData, tel: e.target.value})}
-                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-12 pr-4 py-4 outline-none focus:border-emerald-500/50 text-emerald-400 text-[15px] font-bold transition-all"
-                placeholder="+998"
-              />
-            </div>
+                <div className="relative group">
+                  <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                  <PhoneInput
+                    value={formData.tel}
+                    onChange={(v) => setFormData({...formData, tel: v})}
+                    className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-12 pr-4 py-4 outline-none focus:border-indigo-500/50 text-white text-[15px] font-medium transition-all"
+                    placeholder="+998"
+                  />
+                </div>
           </div>
  
           <div className="space-y-1">

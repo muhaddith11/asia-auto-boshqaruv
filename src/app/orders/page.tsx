@@ -1,13 +1,19 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import {
   Search, Eye, Trash2, ClipboardList, Plus,
-  Filter, RotateCcw, MoreVertical, Clock, Printer, Send
+  Filter, RotateCcw, MoreVertical, Clock, Printer, Send,
+  Edit3, History, CreditCard
 } from 'lucide-react';
 import InvoiceModal from '@/components/InvoiceModal';
+import PaymentModal from '@/components/PaymentModal';
+import SMSModal from '@/components/SMSModal';
+import HistoryModal from '@/components/HistoryModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { Buyurtma } from '@/types';
 import { sendSMS, getStatusMessage } from '@/services/smsService';
 
@@ -49,7 +55,11 @@ export default function OrdersPage() {
   const { buyurtmalar, deleteBuyurtma } = useStore();
   const [mounted, setMounted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Buyurtma | null>(null);
+  const [paymentOrder, setPaymentOrder] = useState<Buyurtma | null>(null);
+  const [smsOrder, setSmsOrder] = useState<Buyurtma | null>(null);
+  const [historyOrder, setHistoryOrder] = useState<Buyurtma | null>(null);
   const [isSendingSms, setIsSendingSms] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
 
   // Filter state
   const [f, setF] = useState({
@@ -403,32 +413,81 @@ export default function OrdersPage() {
                         </td>
 
                         <td style={{ padding: '12px 14px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                          <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(3, 1fr)', 
+                            gap: '4px',
+                            width: 'fit-content',
+                            margin: '0 auto'
+                          }}>
+                            {/* NEW ACTIONS */}
+                            <button
+                              title="Tahrirlash"
+                              onClick={(e) => { e.stopPropagation(); router.push(`/orders/edit/${b.id}`); }}
+                              style={{ padding: 7, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 7, cursor: 'pointer', color: '#6366f1', display: 'flex' }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = '#6366f1')}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.15)')}
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                            <button
+                              title="Tarix"
+                              onClick={(e) => { e.stopPropagation(); setHistoryOrder(b); }}
+                              style={{ padding: 7, background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 7, cursor: 'pointer', color: '#94a3b8', display: 'flex' }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = '#94a3b8')}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(148,163,184,0.15)')}
+                            >
+                              <History size={14} />
+                            </button>
+                            <button
+                              title="To'lov qilish"
+                              disabled={b.holat !== 'yaratildi'}
+                              onClick={(e) => { e.stopPropagation(); setPaymentOrder(b); }}
+                              style={{ 
+                                padding: 7, 
+                                background: b.holat === 'yaratildi' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)', 
+                                border: b.holat === 'yaratildi' ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.05)', 
+                                borderRadius: 7, 
+                                cursor: b.holat === 'yaratildi' ? 'pointer' : 'not-allowed', 
+                                color: b.holat === 'yaratildi' ? '#10b981' : '#475569', 
+                                display: 'flex',
+                                opacity: b.holat === 'yaratildi' ? 1 : 0.4
+                              }}
+                              onMouseEnter={e => b.holat === 'yaratildi' && (e.currentTarget.style.borderColor = '#10b981')}
+                              onMouseLeave={e => b.holat === 'yaratildi' && (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.15)')}
+                            >
+                              <CreditCard size={14} />
+                            </button>
+
+                            {/* EXISTING ACTIONS */}
                             <button
                               title="SMS yuborish"
-                              onClick={(e) => { e.stopPropagation(); handleSendSMS(b); }}
+                              onClick={(e) => { e.stopPropagation(); setSmsOrder(b); }}
                               disabled={isSendingSms === b.id.toString()}
-                              style={{ padding: 6, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', color: isSendingSms === b.id.toString() ? 'var(--text4)' : '#10b981', display: 'flex' }}
-                              onMouseEnter={e => !isSendingSms && (e.currentTarget.style.color = '#059669')}
-                              onMouseLeave={e => !isSendingSms && (e.currentTarget.style.color = '#10b981')}
+                              style={{ padding: 7, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 7, cursor: 'pointer', color: '#10b981', display: 'flex' }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = '#10b981')}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.15)')}
                             >
                               <Send size={14} className={isSendingSms === b.id.toString() ? 'animate-pulse' : ''} />
                             </button>
                             <button
                               title="Check chiqarish"
                               onClick={(e) => { e.stopPropagation(); setSelectedOrder(b); }}
-                              style={{ padding: 6, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', color: 'var(--text3)', display: 'flex' }}
-                              onMouseEnter={e => (e.currentTarget.style.color = '#3b82f6')}
-                              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text3)')}
+                              style={{ padding: 7, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 7, cursor: 'pointer', color: '#3b82f6', display: 'flex' }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = '#3b82f6')}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.15)')}
                             >
                               <Printer size={14} />
                             </button>
                             <button
                               title="O'chirish"
-                              onClick={(e) => { e.stopPropagation(); if (confirm("O'chirishni tasdiqlaysizmi?")) deleteBuyurtma(b.id); }}
-                              style={{ padding: 6, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', color: 'var(--text4)', display: 'flex' }}
-                              onMouseEnter={e => (e.currentTarget.style.color = 'var(--red)')}
-                              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text4)')}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setDeleteConfirm({ isOpen: true, id: b.id });
+                              }}
+                              style={{ padding: 7, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 7, cursor: 'pointer', color: '#f43f5e', display: 'flex' }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = '#f43f5e')}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(244,63,94,0.15)')}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -450,6 +509,37 @@ export default function OrdersPage() {
           onClose={() => setSelectedOrder(null)} 
         />
       )}
+
+      {paymentOrder && (
+        <PaymentModal 
+          order={paymentOrder}
+          onClose={() => setPaymentOrder(null)}
+        />
+      )}
+
+      {smsOrder && (
+        <SMSModal 
+          order={smsOrder}
+          onClose={() => setSmsOrder(null)}
+        />
+      )}
+
+      {historyOrder && (
+        <HistoryModal 
+          order={historyOrder}
+          onClose={() => setHistoryOrder(null)}
+        />
+      )}
+
+      <ConfirmModal 
+        isOpen={deleteConfirm.isOpen}
+        title="Buyurtmani o'chirish"
+        message="Haqiqatdan ham ushbu buyurtmani o'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi."
+        onConfirm={() => {
+          if (deleteConfirm.id) deleteBuyurtma(deleteConfirm.id);
+        }}
+        onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
+      />
     </div>
   );
 }

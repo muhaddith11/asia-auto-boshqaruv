@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Save
 } from 'lucide-react';
+import PhoneInput from '@/components/PhoneInput';
+import { normalizePhone } from '@/lib/phone';
 
 const STATUS_TABS = [
   { key: 'yaratildi',             label: 'Yaratildi',             color: '#64748b' },
@@ -107,14 +109,18 @@ export default function NewOrderPage() {
 
   useEffect(() => { setMounted(true); }, []);
 
+  const [isAddingMashina, setIsAddingMashina] = useState(false);
+  const [newMashinaName, setNewMashinaName] = useState('');
+
   const handleAddMashina = () => {
-    const name = window.prompt("Yangi mashina markasini kiriting (masalan: CHEVROLET CAPTIVA):");
-    if (name && name.trim()) {
-      const upperName = name.trim().toUpperCase();
+    if (newMashinaName && newMashinaName.trim()) {
+      const upperName = newMashinaName.trim().toUpperCase();
       if (!mashinalar.includes(upperName)) {
         addMashina(upperName);
       }
       setForm(prev => ({ ...prev, mashina: upperName }));
+      setNewMashinaName('');
+      setIsAddingMashina(false);
     }
   };
 
@@ -235,18 +241,40 @@ export default function NewOrderPage() {
                   Asosiy ma'lumotlar
                 </span>
               </div>
-              <button
-                onClick={handleAddMashina}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)',
-                  border: '1px solid rgba(99, 102, 241, 0.25)', borderRadius: 8,
-                  padding: '6px 12px', fontSize: 11, fontWeight: 800, cursor: 'pointer',
-                  textTransform: 'uppercase', letterSpacing: '0.05em'
-                }}
-              >
-                <Plus size={13} /> Mashina qo'shish
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {isAddingMashina ? (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input 
+                      style={{ ...S.input, width: 180, padding: '6px 10px' }}
+                      placeholder="MARKANI KIRITING..."
+                      value={newMashinaName}
+                      onChange={e => setNewMashinaName(e.target.value.toUpperCase())}
+                      autoFocus
+                    />
+                    <button 
+                      onClick={handleAddMashina}
+                      style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
+                    >OK</button>
+                    <button 
+                      onClick={() => setIsAddingMashina(false)}
+                      style={{ background: 'var(--surface2)', color: 'var(--text3)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
+                    >X</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsAddingMashina(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)',
+                      border: '1px solid rgba(99, 102, 241, 0.25)', borderRadius: 8,
+                      padding: '6px 12px', fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                      textTransform: 'uppercase', letterSpacing: '0.05em'
+                    }}
+                  >
+                    <Plus size={13} /> Mashina qo'shish
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ ...S.cardBody, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
@@ -254,15 +282,21 @@ export default function NewOrderPage() {
                 <select
                   style={S.select}
                   onChange={e => {
-                    const id = parseInt(e.target.value);
-                    setSelectedClientId(id || null);
-                    const m = mijozlar.find(x => x.id === id);
-                    if (m) setForm({ ...form, ism: m.ism, tel: m.tel || '' });
-                    else setForm({ ...form, ism: 'Kunlik Mijoz', tel: '' });
+                    const val = e.target.value;
+                    if (val === 'retail') {
+                      setSelectedClientId(null);
+                      setForm({ ...form, ism: 'Kunlik Mijoz', tel: '' });
+                    } else {
+                      const id = parseInt(val);
+                      setSelectedClientId(id || null);
+                      const m = mijozlar.find(x => x.id === id);
+                      if (m) setForm({ ...form, ism: m.ism, tel: normalizePhone(m.tel || '') });
+                    }
                   }}
                 >
                   <option value="">— Mijozni tanlang —</option>
-                  {mijozlar.map(m => <option key={m.id} value={m.id}>{m.ism} ({m.tel})</option>)}
+                  <option value="retail">🛍️ KUNLIK MIJOZ</option>
+                  {mijozlar.map(m => <option key={m.id} value={m.id}>{m.ism}</option>)}
                 </select>
               </div>
 
@@ -271,7 +305,18 @@ export default function NewOrderPage() {
                 <select
                   style={S.select}
                   value={form.mashina}
-                  onChange={e => setForm({ ...form, mashina: e.target.value })}
+                  onChange={e => {
+                    const newMashina = e.target.value;
+                    setForm({ ...form, mashina: newMashina });
+                    // Reset service IDs if they don't belong to the new car
+                    setAssignments(prev => prev.map(a => {
+                      const s = xizmatlar.find(x => x.id === Number(a.serviceId));
+                      if (s && s.mashina !== 'Umumiy' && s.mashina !== newMashina) {
+                        return { ...a, serviceId: '', customNarx: '' };
+                      }
+                      return a;
+                    }));
+                  }}
                 >
                   <option value="">— Mashinani tanlang —</option>
                   {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
@@ -288,9 +333,11 @@ export default function NewOrderPage() {
 
               <div>
                 <label style={S.label}>Telefon raqami</label>
-                <input
-                  style={S.input} type="text" value={form.tel} placeholder="+998 00 000 00 00"
-                  onChange={e => setForm({ ...form, tel: e.target.value })}
+                <PhoneInput
+                  style={S.input}
+                  value={form.tel}
+                  onChange={(v) => setForm({ ...form, tel: v })}
+                  placeholder="+998"
                 />
               </div>
 

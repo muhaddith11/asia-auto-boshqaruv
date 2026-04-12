@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter, useSearchParams } from 'next/navigation';
+import PageLayout from '@/components/layout/PageLayout';
+import ConfirmModal from '@/components/ConfirmModal';
 import { 
   Plus, 
   Wrench, 
@@ -60,6 +62,7 @@ export default function ServicesPage() {
     mashina: 'Umumiy',
     stavka: 0
   });
+  const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
 
   useEffect(() => {
     setMounted(true);
@@ -121,14 +124,10 @@ export default function ServicesPage() {
     });
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-screen">
-      
-      {/* ── PAGE HEADER ── */}
-      <div className="px-7 pt-6 pb-2 flex items-start justify-between">
-        <div>
-          <h1 className="text-[20px] font-bold text-white tracking-tight">Xizmatlarni boshqarish</h1>
-          <p className="text-[12px] text-slate-400 font-medium mt-1">Avtoservis uchun barcha xizmat turlarini yaratish, tahrirlash va o'chirish.</p>
-        </div>
+    <PageLayout
+      title="Xizmatlarni boshqarish"
+      subtitle="Avtoservis uchun barcha xizmat turlarini yaratish, tahrirlash va o'chirish."
+      headerActions={
         <button 
           onClick={() => {
             setEditingService(null);
@@ -139,11 +138,9 @@ export default function ServicesPage() {
         >
           <Plus size={16} /> Yangi xizmat qo'shish
         </button>
-      </div>
-
-      {/* ── FILTERS PANEL (Matching Image 1) ── */}
-      <div className="mx-7 mt-6 p-6 bg-surface border border-border rounded-xl shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      }
+      filterPanel={
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Column 1: Search */}
           <div className="space-y-2">
             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Xizmat nomi bo'yicha qidirish</label>
@@ -153,7 +150,7 @@ export default function ServicesPage() {
                 placeholder="Xizmat nomini kiriting..." 
                 value={filters.search}
                 onChange={(e) => setFilters({...filters, search: e.target.value})}
-                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-4 pr-10 py-3.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px]"
+                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px]"
               />
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
             </div>
@@ -166,7 +163,7 @@ export default function ServicesPage() {
               <select 
                 value={filters.sort}
                 onChange={(e) => setFilters({...filters, sort: e.target.value})}
-                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl px-4 py-3.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px] appearance-none cursor-pointer"
+                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px] appearance-none cursor-pointer"
               >
                 <option value="nom-asc">Nomi bo'yicha (A-Z)</option>
                 <option value="nom-desc">Nomi bo'yicha (Z-A)</option>
@@ -184,7 +181,7 @@ export default function ServicesPage() {
               <select 
                 value={filters.mashina}
                 onChange={(e) => setFilters({...filters, mashina: e.target.value})}
-                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl px-4 py-3.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px] appearance-none cursor-pointer"
+                className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px] appearance-none cursor-pointer"
               >
                 <option value="">Barcha markalar</option>
                 <option value="Umumiy">Umumiy (Barchasi)</option>
@@ -193,26 +190,25 @@ export default function ServicesPage() {
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-focus-within:text-indigo-500 transition-colors" size={18} />
             </div>
           </div>
+          
+          <div className="col-span-full flex justify-end gap-3 mt-2">
+            <button 
+              onClick={applyFilters}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-2.5 rounded-xl text-[12px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-900/40 active:scale-95 flex items-center gap-2"
+            >
+              Filtrlarni qo'llash
+            </button>
+            <button 
+              onClick={resetFilters}
+              className="bg-[#232631] hover:bg-[#2a2d3d] text-slate-400 font-bold px-8 py-2.5 rounded-xl text-[12px] uppercase tracking-widest transition-all active:scale-95"
+            >
+              Tozalash
+            </button>
+          </div>
         </div>
-
-        <div className="flex justify-end gap-3 mt-6">
-           <button 
-             onClick={applyFilters}
-             className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3 rounded-xl text-[12px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-900/40 active:scale-95 flex items-center gap-2"
-           >
-             Filtrlarni qo'llash
-           </button>
-           <button 
-             onClick={resetFilters}
-             className="bg-[#232631] hover:bg-[#2a2d3d] text-slate-400 font-bold px-8 py-3 rounded-xl text-[12px] uppercase tracking-widest transition-all active:scale-95"
-           >
-             Tozalash
-           </button>
-        </div>
-      </div>
-
-      {/* ── SERVICES LIST (Updated to match Image 1 Table) ── */}
-      <div className="mx-7 mt-8 mb-10 overflow-hidden bg-surface border border-border rounded-2xl shadow-sm">
+      }
+    >
+      <div className="flex-1">
         {filteredServices.length === 0 ? (
           <div className="py-24 flex flex-col items-center justify-center">
             <div className="w-20 h-20 bg-slate-900/50 rounded-full flex items-center justify-center mb-4 border border-slate-800">
@@ -258,18 +254,27 @@ export default function ServicesPage() {
                       {service.stavka || 0}%
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
                         <button 
-                          onClick={() => openModal(service)}
-                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm border border-indigo-500/20"
+                          onClick={(e) => { e.stopPropagation(); openModal(service); }}
+                          style={{ padding: 7, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer', color: 'var(--text3)', display: 'flex' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--text)')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                          title="Tahrirlash"
                         >
-                          <Edit3 size={15} />
+                           <Edit3 size={14} />
                         </button>
                         <button 
-                          onClick={() => { if(confirm('Ochirishni tasdiqlaysizmi?')) deleteXizmat(service.id); }}
-                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-500/20"
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setDeleteConfirm({ isOpen: true, id: service.id });
+                          }}
+                          style={{ padding: 7, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 7, cursor: 'pointer', color: '#f43f5e', display: 'flex' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = '#f43f5e')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(244,63,94,0.15)')}
+                          title="O'chirish"
                         >
-                           <Trash2 size={15} />
+                           <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
@@ -381,6 +386,16 @@ export default function ServicesPage() {
            </div>
         </div>
       )}
-    </div>
+
+      <ConfirmModal 
+        isOpen={deleteConfirm.isOpen}
+        title="Xizmatni o'chirish"
+        message="Haqiqatdan ham ushbu xizmat turini o'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi."
+        onConfirm={() => {
+          if (deleteConfirm.id) deleteXizmat(deleteConfirm.id);
+        }}
+        onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
+      />
+    </PageLayout>
   );
 }

@@ -1,27 +1,18 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter, useSearchParams } from 'next/navigation';
+import PageLayout from '@/components/layout/PageLayout';
+import PhoneInput from '@/components/PhoneInput';
+import { normalizePhone, formatPhone } from '@/lib/phone';
+import ConfirmModal from '@/components/ConfirmModal';
+// ... items from lucide-react ...
 import { 
-  Plus, 
-  Search, 
-  User, 
-  Phone, 
-  Car, 
-  Trash2, 
-  Edit3, 
-  ChevronRight, 
-  Users,
-  Filter,
-  RotateCcw,
-  X,
-  Save,
-  Percent,
-  Coins,
-  ChevronDown
+  Plus, Search, User, Phone, Car, Trash2, Edit3, ChevronRight, Users, Filter, RotateCcw, X, Save, Percent, Coins, ChevronDown
 } from 'lucide-react';
 
 const S = {
+  // ... styles ...
   input: {
     width: '100%',
     background: 'var(--surface2)',
@@ -42,7 +33,7 @@ const S = {
   } as React.CSSProperties,
 };
 
-export default function ClientsPage() {
+function ClientsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { mijozlar, addMijoz, updateMijoz, deleteMijoz } = useStore();
@@ -56,6 +47,7 @@ export default function ClientsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
 
   const [formData, setFormData] = useState({
     ism: '',
@@ -120,8 +112,8 @@ export default function ClientsPage() {
       setEditingClient(client);
       setFormData({
         ism: (client as any).ism,
-        tel: (client as any).tel || '',
-        tel2: (client as any).tel2 || '',
+        tel: normalizePhone((client as any).tel || ''),
+        tel2: normalizePhone((client as any).tel2 || ''),
         skidka: (client as any).skidka || 0,
         mashina: (client as any).mashina || '',
         raqam: (client as any).raqam || '',
@@ -148,24 +140,18 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-screen">
-      
-      {/* ── PAGE HEADER ── */}
-      <div className="px-7 pt-6 pb-2 flex items-start justify-between">
-        <div>
-          <h1 className="text-[20px] font-bold text-white tracking-tight">Mijozlarni boshqarish</h1>
-          <p className="text-[12px] text-slate-400 font-medium mt-1">Mijozlar bazasini boshqarish, ularning qarzdorligi va xizmatlar tarixini kuzatish.</p>
-        </div>
+    <PageLayout
+      title="Mijozlarni boshqarish"
+      subtitle="Mijozlar bazasini boshqarish, ularning qarzdorligi va xizmatlar tarixini kuzatish."
+      headerActions={
         <button 
           onClick={() => openModal()}
           className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-indigo-900/10 active:scale-95"
         >
           <Plus size={16} /> Yangi mijoz qo'shish
         </button>
-      </div>
-
-      {/* ── FILTERS PANEL ── */}
-      <div className="mx-7 mt-4 p-5 bg-surface border border-border rounded-xl shadow-sm">
+      }
+      filterPanel={
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-1">
             <label style={S.label}>Qidiruv (Ism yoki Telefon)</label>
@@ -215,10 +201,9 @@ export default function ClientsPage() {
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-5">
-           <button 
+          
+          <div className="col-span-full flex justify-end gap-2 mt-4">
+            <button 
               onClick={applyFilters}
               className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-lg text-[12px] transition-all active:scale-95 shadow-lg shadow-indigo-500/10"
             >
@@ -230,11 +215,11 @@ export default function ClientsPage() {
             >
               Tashlash
             </button>
+          </div>
         </div>
-      </div>
-
-      {/* ── CLIENTS TABLE ── */}
-      <div className="flex-1 px-7 py-5 overflow-auto">
+      }
+    >
+      <div className="flex-1">
         {filteredClients.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-slate-500 bg-surface/30 border border-dashed border-border rounded-xl">
             <Users size={48} className="mb-4 opacity-20" />
@@ -265,7 +250,7 @@ export default function ClientsPage() {
                          <span className="font-bold text-white uppercase">{m.ism}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-400 font-medium">{m.tel || '—'}</td>
+                    <td className="px-6 py-4 text-slate-400 font-medium">{m.tel ? formatPhone(m.tel) : '—'}</td>
                     <td className="px-6 py-4 text-slate-300 font-bold uppercase">{m.mashina || '—'}</td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 text-[10px] font-black tracking-widest border border-slate-500/20">
@@ -288,18 +273,27 @@ export default function ClientsPage() {
                        </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
                         <button 
-                          onClick={() => openModal(m as any)}
-                          className="p-1.5 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white border border-indigo-500/20 rounded-md transition-all shadow-sm"
+                          onClick={(e) => { e.stopPropagation(); openModal(m as any); }}
+                          style={{ padding: 7, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer', color: 'var(--text3)', display: 'flex' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--text)')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                          title="Tahrirlash"
                         >
-                           <Edit3 size={12} />
+                           <Edit3 size={14} />
                         </button>
                         <button 
-                          onClick={() => { if(confirm('Ochirishni tasdiqlaysizmi?')) deleteMijoz(m.id); }}
-                          className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 rounded-md transition-all shadow-sm"
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setDeleteConfirm({ isOpen: true, id: m.id });
+                          }}
+                          style={{ padding: 7, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 7, cursor: 'pointer', color: '#f43f5e', display: 'flex' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = '#f43f5e')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(244,63,94,0.15)')}
+                          title="O'chirish"
                         >
-                           <Trash2 size={12} />
+                           <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
@@ -350,9 +344,9 @@ export default function ClientsPage() {
                   <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Telefon</label>
                   <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all group">
                      <Phone size={20} className="text-slate-600 group-focus-within:text-emerald-400 transition-colors mr-3" />
-                     <input 
-                      type="text" value={formData.tel} 
-                      onChange={(e) => setFormData({...formData, tel: e.target.value})} 
+                     <PhoneInput
+                      value={formData.tel}
+                      onChange={(v) => setFormData({...formData, tel: v})}
                       className="bg-transparent border-none outline-none flex-1 text-emerald-400 text-[15px] font-black"
                       placeholder="+998"
                     />
@@ -390,6 +384,24 @@ export default function ClientsPage() {
           </div>
         </div>
       )}
-    </div>
+
+      <ConfirmModal 
+        isOpen={deleteConfirm.isOpen}
+        title="Mijozni o'chirish"
+        message="Haqiqatdan ham ushbu mijozni o'chirib tashlamoqchimisiz? Uning ballar ma'lumotlari tizimdan yo'qoladi."
+        onConfirm={() => {
+          if (deleteConfirm.id) deleteMijoz(deleteConfirm.id);
+        }}
+        onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
+      />
+    </PageLayout>
+  );
+}
+
+export default function ClientsPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 bg-[#14161f] min-h-screen" />}>
+      <ClientsPageContent />
+    </Suspense>
   );
 }

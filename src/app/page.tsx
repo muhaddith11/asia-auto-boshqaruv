@@ -12,6 +12,7 @@ import {
   Target,
   Clock
 } from 'lucide-react';
+import AiForecast from '@/components/AiForecast';
 import { useStore } from '@/store/useStore';
 
 // ── STATUS CONFIG ──────────────────────────────────────────────
@@ -58,10 +59,10 @@ export default function Dashboard() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* ── CONTENT ────────────────────────────────────────────── */}
-      <div style={{ flex: 1, padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8">
 
         {/* ── STAT CARDS ──────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
             {
               label: "Bugungi buyurtmalar",
@@ -100,7 +101,7 @@ export default function Dashboard() {
               glow: 'rgba(245,158,11,0.18)',
             },
           ].map((stat, i) => (
-            <div key={i} className="stat-card" style={{ padding: 22 }}>
+            <div key={i} className="stat-card p-8">
               {/* Top accent line */}
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: stat.color, borderRadius: '14px 14px 0 0' }} />
               
@@ -131,15 +132,11 @@ export default function Dashboard() {
         </div>
 
         {/* ── MAIN ROW ─────────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, flex: 1 }}>
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8 flex-1">
 
           {/* Recent Orders */}
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{
-              padding: '16px 20px', borderBottom: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: 'rgba(255,255,255,0.02)',
-            }}>
+          <div className="glass-card flex flex-col overflow-hidden">
+             <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-white/2">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <ClipboardList size={16} color="var(--accent)" />
                 <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>So'nggi buyurtmalar</span>
@@ -153,7 +150,7 @@ export default function Dashboard() {
             </div>
 
             {recentOrders.length === 0 ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 48 }}>
+              <div className="flex-1 flex flex-col items-center justify-center gap-4 p-16">
                 <ClipboardList size={48} color="var(--surface3)" />
                 <span style={{ color: 'var(--text4)', fontSize: 14 }}>Buyurtmalar yo'q</span>
               </div>
@@ -200,70 +197,65 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Workers Leaderboard */}
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{
-              padding: '16px 20px', borderBottom: '1px solid var(--border)',
-              background: 'rgba(255,255,255,0.02)',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              <Zap size={16} color="var(--amber)" />
-              <span style={{ fontWeight: 700, fontSize: 14 }}>Eng faol xodimlar</span>
-            </div>
+          {/* Right column: workers leaderboard + AI forecast */}
+          <div className="flex flex-col gap-8">
+            <div className="glass-card flex flex-col overflow-hidden">
+              <div className="px-8 py-6 border-b border-border flex items-center gap-3 bg-white/2">
+                <Zap size={16} color="var(--amber)" />
+                <span className="font-bold text-[14px]">Eng faol xodimlar</span>
+              </div>
 
-            <div style={{ flex: 1, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-              {workerStats.length === 0 ? (
-                <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text4)' }}>
-                  Xodimlar yo'q
-                </div>
-              ) : (
-                workerStats.map((w, i) => {
-                  const pct = Math.round((w.turnover / maxTurnover) * 100);
-                  const colors = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e'];
-                  const c = colors[i % colors.length];
-                  return (
-                    <div key={w.id}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{
-                            width: 30, height: 30, borderRadius: '50%',
-                            background: `${c}20`, border: `1.5px solid ${c}50`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 11, fontWeight: 800, color: c,
-                          }}>
-                            {i + 1}
+              <div className="flex-1 p-8 flex flex-col gap-6">
+                {workerStats.length === 0 ? (
+                  <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text4)' }}>
+                    Xodimlar yo'q
+                  </div>
+                ) : (
+                  workerStats.map((w, i) => {
+                    const pct = Math.round((w.turnover / maxTurnover) * 100);
+                    const colors = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e'];
+                    const c = colors[i % colors.length];
+                    return (
+                      <div key={w.id}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{
+                              width: 30, height: 30, borderRadius: '50%',
+                              background: `${c}20`, border: `1.5px solid ${c}50`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 11, fontWeight: 800, color: c,
+                            }}>
+                              {i + 1}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{w.ism}</div>
+                              <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{w.mutax || 'Usta'}</div>
+                            </div>
                           </div>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{w.ism}</div>
-                            <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{w.mutax || 'Usta'}</div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: c }}>{w.earned.toLocaleString()}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text4)' }}>ulush</div>
                           </div>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: c }}>{w.earned.toLocaleString()}</div>
-                          <div style={{ fontSize: 10, color: 'var(--text4)' }}>ulush</div>
+                        <div style={{ height: 4, background: 'var(--surface3)', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${c}, ${c}99)`, borderRadius: 4, transition: 'width 0.6s ease' }} />
                         </div>
                       </div>
-                      <div style={{ height: 4, background: 'var(--surface3)', borderRadius: 4, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${c}, ${c}99)`, borderRadius: 4, transition: 'width 0.6s ease' }} />
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="px-8 py-5 border-top border-border">
+                <Link href="/workers" className="no-underline">
+                  <button className="w-full bg-surface2 border border-border rounded-lg py-3 text-[11px] font-bold text-slate-400 cursor-pointer tracking-widest uppercase transition-all hover:text-white hover:border-slate-500">
+                    Barcha xodimlar →
+                  </button>
+                </Link>
+              </div>
             </div>
 
-            <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)' }}>
-              <Link href="/workers" style={{ textDecoration: 'none' }}>
-                <button style={{
-                  width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)',
-                  borderRadius: 8, padding: '8px 0', fontSize: 11, fontWeight: 700,
-                  color: 'var(--text3)', cursor: 'pointer', letterSpacing: '0.07em',
-                  textTransform: 'uppercase', transition: 'all 0.2s',
-                }}>
-                  Barcha xodimlar →
-                </button>
-              </Link>
-            </div>
+            <AiForecast />
           </div>
         </div>
       </div>

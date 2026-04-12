@@ -1,7 +1,11 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import SalaryModal from '@/components/SalaryModal';
+import WorkerHistoryModal from '@/components/WorkerHistoryModal';
+import PageLayout from '@/components/layout/PageLayout';
+import ConfirmModal from '@/components/ConfirmModal';
 import { 
   UserCog, 
   Trash2, 
@@ -42,7 +46,7 @@ const S = {
 };
 
 export default function WorkersPage() {
-  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar } = useStore();
+  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({ search: '' });
   const [appliedFilters, setAppliedFilters] = useState({ search: '' });
@@ -50,13 +54,18 @@ export default function WorkersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWorker, setEditingWorker] = useState<any>(null);
   const [salaryWorker, setSalaryWorker] = useState<any>(null);
+  const [historyWorker, setHistoryWorker] = useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
 
   const [formData, setFormData] = useState({
     ism: '',
     tel: '',
     mutax: '',
     foiz: 40,
-    izoh: ''
+    izoh: '',
+    role: 'xodim' as 'xodim' | 'sherik',
+    shareType: 'total' as 'total' | 'sub',
+    parentId: undefined as number | undefined
   });
 
   useEffect(() => {
@@ -73,11 +82,17 @@ export default function WorkersPage() {
         tel: worker.tel || '',
         mutax: worker.mutax || '',
         foiz: worker.foiz || 40,
-        izoh: worker.izoh || ''
+        izoh: worker.izoh || '',
+        role: worker.role || 'xodim',
+        shareType: worker.shareType || 'total',
+        parentId: worker.parentId
       });
     } else {
       setEditingWorker(null);
-      setFormData({ ism: '', tel: '', mutax: '', foiz: 40, izoh: '' });
+      setFormData({ 
+        ism: '', tel: '', mutax: '', foiz: 40, izoh: '', 
+        role: 'xodim', shareType: 'total', parentId: undefined 
+      });
     }
     setIsModalOpen(true);
   };
@@ -109,24 +124,18 @@ export default function WorkersPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-screen">
-      
-      {/* ── PAGE HEADER ── */}
-      <div className="px-7 pt-6 pb-2 flex items-start justify-between">
-        <div>
-          <h1 className="text-[20px] font-bold text-white tracking-tight">Xodimlar boshqaruvi</h1>
-          <p className="text-[12px] text-slate-400 font-medium mt-1">Ustalar va xodimlarni boshqarish, ularning stavkalari va maoshlarini hisoblash.</p>
-        </div>
+    <PageLayout
+      title="Xodimlar boshqaruvi"
+      subtitle="Ustalar va xodimlarni boshqarish, ularning stavkalari va maoshlarini hisoblash."
+      headerActions={
         <button 
           onClick={() => openModal()}
           className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
         >
           <Plus size={16} /> Yangi xodim qo'shish
         </button>
-      </div>
-
-      {/* ── FILTERS PANEL ── */}
-      <div className="mx-7 mt-4 p-5 bg-surface border border-border rounded-xl shadow-sm">
+      }
+      filterPanel={
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
             <label style={S.label}>Qidiruv (Ism yoki Mutaxassislik)</label>
@@ -156,82 +165,94 @@ export default function WorkersPage() {
               </button>
           </div>
         </div>
-      </div>
-
-      {/* ── WORKERS TABLE ── */}
-      <div className="flex-1 px-7 py-5 overflow-auto">
+      }
+    >
+      <div className="flex-1">
         {filteredWorkers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-slate-500 bg-surface/30 border border-dashed border-border rounded-xl">
             <UserCog size={48} className="mb-4 opacity-20" />
             <p className="text-[14px] font-bold">Xodimlar topilmadi</p>
           </div>
         ) : (
-          <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
-            <table className="w-full text-left text-[12px] whitespace-nowrap">
-              <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
-                <tr>
-                  <th className="px-6 py-4">XODIM</th>
-                  <th className="px-6 py-4">MUTAXASSISLIK</th>
-                  <th className="px-6 py-4">TELEFON</th>
-                  <th className="px-6 py-4 text-center">STAVKA</th>
-                  <th className="px-6 py-4 text-right">AYLANMA</th>
-                  <th className="px-6 py-4 text-right">MAOSH (HISOB)</th>
-                  <th className="px-6 py-4 text-center">AMALLAR</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredWorkers.map((x, idx) => {
-                  const workerOrders = buyurtmalar.filter(b => b.services.some(s => s.workerId === x.id));
-                  const workerTurnover = workerOrders.reduce((sum, b) => 
-                    sum + b.services.filter(s => s.workerId === x.id).reduce((sSum, s) => sSum + (s.narx || 0), 0), 0
-                  );
-                  const workerEarned = Math.round(workerTurnover * x.foiz / 100);
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredWorkers.map((x) => {
+              const workerServices = buyurtmalar.flatMap(b => (
+                b.services
+                  .filter(s => s.workerId === x.id)
+                  .map(s => ({ ...s, orderId: b.id, orderDate: b.sana }))
+              ));
+              const totalDue = workerServices.reduce((sum, s) => sum + (s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100)), 0);
+              const totalPaid = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id)).reduce((s, m) => s + (m.summa || 0), 0);
+              const unpaid = Math.max(0, totalDue - totalPaid);
 
-                  return (
-                    <tr key={x.id} className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]'} hover:bg-white/[0.02] transition-colors group`}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-black">
-                             {x.ism.charAt(0).toUpperCase()}
-                           </div>
-                           <span className="font-bold text-white uppercase">{x.ism}</span>
+              const fmtDate = (iso?: string) => {
+                if (!iso) return '—';
+                try { return new Date(iso).toLocaleDateString('ru-RU'); } catch { return iso; }
+              };
+
+              const isPartner = x.role === 'sherik';
+              const parentPartner = x.parentId ? xodimlar.find(xp => xp.id === x.parentId) : null;
+
+              return (
+                <div key={x.id} className={`${isPartner ? 'bg-[#151225] border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.05)]' : 'bg-[#0b1220] border-[#16202b]'} border rounded-2xl p-4 flex flex-col justify-between transition-all hover:translate-y-[-2px]`}>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg ${isPartner ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'} border flex items-center justify-center font-black`}>{x.ism.charAt(0).toUpperCase()}</div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                             <div className="text-white font-bold uppercase">{x.ism}</div>
+                             {isPartner && (
+                               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 tracking-widest">Sherik</span>
+                             )}
+                          </div>
+                          <div className="text-[12px] text-slate-400">
+                             {x.mutax || (isPartner ? 'Sarmoyador' : 'Usta')} • 
+                             <span className={isPartner ? 'text-indigo-400 ml-1 font-bold' : 'ml-1'}>
+                               {x.shareType === 'sub' && parentPartner 
+                                ? `${x.foiz}% (${parentPartner.ism} ulushidan)` 
+                                : `${x.foiz}% ${isPartner ? 'Foydadan' : ''}`
+                               }
+                             </span>
+                          </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-slate-400 font-medium uppercase tracking-tight">{x.mutax || 'Usta'}</td>
-                      <td className="px-6 py-4 text-slate-300 font-bold">{x.tel || '—'}</td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-black border border-blue-500/20">{x.foiz}%</span>
-                      </td>
-                      <td className="px-6 py-4 text-right text-slate-400 font-bold">{workerTurnover.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-right font-black text-emerald-500">{workerEarned.toLocaleString()} <span className="text-[9px] text-slate-500">UZS</span></td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button 
-                            onClick={() => setSalaryWorker(x)}
-                            className="p-1.5 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-600/20 rounded-md transition-all shadow-sm flex items-center gap-1.5 px-3"
-                            title="Maosh hisoblash"
-                          >
-                             <Banknote size={12} /> <span className="text-[10px] font-black uppercase">Maosh</span>
-                          </button>
-                          <button 
-                            onClick={() => openModal(x)}
-                            className="p-1.5 bg-white/5 text-slate-400 hover:text-white border border-border rounded-md transition-all"
-                          >
-                             <Edit3 size={12} />
-                          </button>
-                          <button 
-                            onClick={() => { if(confirm('Ochirishni tasdiqlaysizmi?')) deleteXodim(x.id); }}
-                            className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 rounded-md transition-all"
-                          >
-                             <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+                      <div className="text-slate-400 text-sm">{x.tel || '—'}</div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                      <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
+                        <div className="text-[11px] text-slate-400">Qo'shilgan</div>
+                        <div className="text-white font-bold text-[13px]">{fmtDate(x.createdAt)}</div>
+                      </div>
+                      <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
+                        <div className="text-[11px] text-slate-400">To'langan</div>
+                        <div className="text-emerald-400 font-black">{totalPaid.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
+                        <div className="text-[11px] text-slate-400">Qoldiq</div>
+                        <div className="text-yellow-400 font-black">{unpaid.toLocaleString()}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="flex gap-2">
+                      <button onClick={() => setSalaryWorker(x)} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold flex items-center gap-2">
+                        <Banknote size={14} /> Maosh
+                      </button>
+                      <button onClick={() => setHistoryWorker(x)} className="px-3 py-2 bg-surface2 hover:bg-surface3 text-slate-300 rounded-lg font-bold">
+                        Tarix
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => openModal(x)} className="px-3 py-2 bg-[#10121a] border border-border text-slate-300 rounded-lg">Tahrirlash</button>
+                      <button onClick={() => setDeleteConfirm({ isOpen: true, id: x.id })} className="px-3 py-2 bg-[#2b0f14] border border-[#3b0f14] text-red-400 rounded-lg">O'chirish</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -289,17 +310,66 @@ export default function WorkersPage() {
                     </div>
                  </div>
 
-                 <div className="space-y-1.5">
-                    <label style={S.label}>Komissiya stavkasi (%) *</label>
-                    <div className="relative group">
-                      <Percent size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
-                      <input 
-                        type="number" required value={formData.foiz} 
-                        onChange={(e) => setFormData({...formData, foiz: parseInt(e.target.value) || 0})} 
-                        style={{ ...S.input, paddingLeft: '34px' }}
-                      />
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-1.5">
+                        <label style={S.label}>Rol *</label>
+                        <select 
+                          value={formData.role} 
+                          onChange={(e) => setFormData({...formData, role: e.target.value as any})}
+                          style={S.input}
+                        >
+                          <option value="xodim">Xodim (Usta)</option>
+                          <option value="sherik">Sherik (Boshliq)</option>
+                        </select>
+                     </div>
+                     <div className="space-y-1.5">
+                        <label style={S.label}>{formData.role === 'sherik' ? 'Ulush (%) *' : 'Komissiya (%) *'}</label>
+                        <div className="relative group">
+                          <Percent size={16} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${formData.role === 'sherik' ? 'text-indigo-500' : 'text-emerald-500'}`} />
+                          <input 
+                            type="number" required value={formData.foiz} 
+                            onChange={(e) => setFormData({...formData, foiz: parseInt(e.target.value) || 0})} 
+                            style={{ ...S.input, paddingLeft: '34px' }}
+                          />
+                        </div>
+                     </div>
+                  </div>
+
+                  {formData.role === 'sherik' && (
+                    <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                       <div className="space-y-1.5">
+                          <label style={S.label}>Ulush turi</label>
+                          <select 
+                            value={formData.shareType} 
+                            onChange={(e) => setFormData({...formData, shareType: e.target.value as any})}
+                            style={S.input}
+                          >
+                            <option value="total">Jami foydadan</option>
+                            <option value="sub">Sherik ulushidan</option>
+                          </select>
+                       </div>
+                       
+                       {formData.shareType === 'sub' && (
+                         <div className="space-y-1.5">
+                            <label style={S.label}>Kimdan olishi</label>
+                            <select 
+                              value={formData.parentId || ''} 
+                              onChange={(e) => setFormData({...formData, parentId: parseInt(e.target.value) || undefined})}
+                              style={S.input}
+                              required
+                            >
+                              <option value="">Tanlang...</option>
+                              {xodimlar
+                                .filter(p => p.role === 'sherik' && p.shareType === 'total' && p.id !== editingWorker?.id)
+                                .map(p => (
+                                  <option key={p.id} value={p.id}>{p.ism}</option>
+                                ))
+                              }
+                            </select>
+                         </div>
+                       )}
                     </div>
-                 </div>
+                  )}
 
                  <div className="pt-4 flex gap-3">
                     <button type="button" onClick={closeModal} className="flex-1 bg-[#232631] hover:bg-[#2a2d3d] text-slate-400 font-bold py-3.5 rounded-xl text-[13px] border border-[#303342] transition-all">Bekor qilish</button>
@@ -318,6 +388,20 @@ export default function WorkersPage() {
           onClose={() => setSalaryWorker(null)} 
         />
       )}
-    </div>
+
+      {historyWorker && (
+        <WorkerHistoryModal worker={historyWorker} onClose={() => setHistoryWorker(null)} />
+      )}
+
+      <ConfirmModal 
+        isOpen={deleteConfirm.isOpen}
+        title="Xodimni o'chirish"
+        message="Haqiqatdan ham ushbu xodimni o'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi."
+        onConfirm={() => {
+          if (deleteConfirm.id) deleteXodim(deleteConfirm.id);
+        }}
+        onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
+      />
+    </PageLayout>
   );
 }

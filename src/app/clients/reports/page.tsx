@@ -13,6 +13,7 @@ import {
   RotateCcw,
   ChevronDown
 } from 'lucide-react';
+import PageLayout from '@/components/layout/PageLayout';
 
 const S = {
   input: {
@@ -80,18 +81,12 @@ export default function ClientReportsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-screen">
-      
-      {/* ── PAGE HEADER ── */}
-      <div className="px-7 pt-6 pb-2 flex items-start justify-between">
-        <div>
-          <h1 className="text-[20px] font-bold text-white tracking-tight">Mijozlar hisoboti</h1>
-          <p className="text-[12px] text-slate-400 font-medium mt-1">Mijozlarning faolligi, foyda ulushi va debitorlik qarzlari tahlili.</p>
-        </div>
-      </div>
-
+    <PageLayout 
+      title="Mijozlar hisoboti" 
+      subtitle="Mijozlarning faolligi, foyda ulushi va debitorlik qarzlari tahlili."
+    >
       {/* ── FILTERS PANEL ── */}
-      <div className="mx-7 mt-4 p-5 bg-surface border border-border rounded-xl shadow-sm">
+      <div className="p-6 bg-surface border border-border rounded-2xl shadow-sm mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-1">
             <label style={S.label}>Mijoz ismi</label>
@@ -153,14 +148,14 @@ export default function ClientReportsPage() {
       </div>
 
       {/* ── REPORT TABLE ── */}
-      <div className="flex-1 px-7 py-5 overflow-auto">
+      <div>
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-slate-500 bg-surface/30 border border-dashed border-border rounded-xl">
+          <div className="flex flex-col items-center justify-center py-24 text-slate-500 bg-surface/30 border border-dashed border-border rounded-2xl">
             <Users size={48} className="mb-4 opacity-20" />
             <p className="text-[14px] font-bold">Hisobot uchun ma'lumotlar topilmadi</p>
           </div>
         ) : (
-          <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
             <table className="w-full text-left text-[12px] whitespace-nowrap">
               <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
                 <tr>
@@ -203,6 +198,6 @@ export default function ClientReportsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }

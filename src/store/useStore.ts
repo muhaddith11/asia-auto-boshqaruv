@@ -4,6 +4,12 @@ import {
   Mijoz, Xodim, Xizmat, Zapchast, Buyurtma, 
   MaoshTarixi, TashqariOperatsiya, Kassa, Counters, ZapPurchase 
 } from '@/types';
+import { getClients, getOrders, getWorkers, getParts,
+  createClient, updateClient, deleteClient,
+  createWorker, updateWorker, deleteWorker,
+  createOrder, updateOrder, deleteOrder,
+  createPart, updatePart, deletePart
+} from '@/lib/api';
 
 interface AutoServisStore {
   mijozlar: Mijoz[];
@@ -14,6 +20,7 @@ interface AutoServisStore {
   purchases: ZapPurchase[]; // New
   maoshTarixi: MaoshTarixi[];
   tashqariOperatsiyalar: TashqariOperatsiya[];
+  ishxonaOperatsiyalar: TashqariOperatsiya[];
   mashinalar: string[];
   kassa: Kassa;
   counters: Counters;
@@ -44,10 +51,14 @@ interface AutoServisStore {
   updateKassa: (method: keyof Kassa, amount: number, operation: 'add' | 'sub') => void;
   transferKassa: (from: keyof Kassa, to: keyof Kassa, amount: number) => void; // New
   addTashqariOperatsiya: (op: Omit<TashqariOperatsiya, 'id'>) => void;
+  addIshxonaOperatsiya: (op: Omit<TashqariOperatsiya, 'id'>) => void;
+  deleteIshxonaOperatsiya: (id: number) => void;
   deleteTashqariOperatsiya: (id: number) => void;
   
   addPurchase: (p: Omit<ZapPurchase, 'id'>) => void; 
   addMashina: (m: string) => void;
+  resetKassa: () => void;
+  loadInitialData: () => Promise<void>;
 }
 
 const defaultMashinalar = [
@@ -78,31 +89,63 @@ export const useStore = create<AutoServisStore>()(
       purchases: [],
       maoshTarixi: [],
       tashqariOperatsiyalar: [],
+      ishxonaOperatsiyalar: [],
       mashinalar: defaultMashinalar,
       kassa: { naqd: 0, karta: 0 },
       counters: { mijoz: 1, xodim: 1, xizmat: 10, zap: 10, buyurtma: 1, cash: 1, maosh: 1, purchase: 1 },
 
-      addMijoz: (m) => set((state) => ({
-        mijozlar: [...state.mijozlar, { ...m, id: state.counters.mijoz, tashriflar: 0, jami: 0, qarzdorlik: 0 }],
-        counters: { ...state.counters, mijoz: state.counters.mijoz + 1 }
-      })),
-      updateMijoz: (id, data) => set((state) => ({
-        mijozlar: state.mijozlar.map((m) => m.id === id ? { ...m, ...data } : m)
-      })),
-      deleteMijoz: (id) => set((state) => ({
-        mijozlar: state.mijozlar.filter((m) => m.id !== id)
-      })),
+      addMijoz: (m) => {
+        const tempId = -Date.now();
+        set((state) => ({
+          mijozlar: [...state.mijozlar, { ...m, id: tempId, tashriflar: 0, jami: 0, qarzdorlik: 0 }],
+          counters: { ...state.counters, mijoz: state.counters.mijoz + 1 }
+        }));
+        createClient(m as any).then((created) => {
+          if (!created) return;
+          set((state) => ({
+            mijozlar: state.mijozlar.map((mm) => mm.id === tempId ? created : mm)
+          }));
+        }).catch(() => {
+          // keep local item if server fails
+        });
+      },
+      updateMijoz: (id, data) => {
+        set((state) => ({
+          mijozlar: state.mijozlar.map((m) => m.id === id ? { ...m, ...data } : m)
+        }));
+        updateClient(id, data as any).catch(() => {
+          // optionally reload or revert on failure
+        });
+      },
+      deleteMijoz: (id) => {
+        set((state) => ({ mijozlar: state.mijozlar.filter((m) => Number(m.id) != Number(id)) }));
+        deleteClient(id).catch(() => {
+          console.warn("API o'chirishda xatolik (Mijoz), lekin lokal o'chirish saqlab qolindi.");
+        });
+      },
 
-      addXodim: (x) => set((state) => ({
-        xodimlar: [...state.xodimlar, { ...x, id: state.counters.xodim, status: 'aktiv' }],
-        counters: { ...state.counters, xodim: state.counters.xodim + 1 }
-      })),
-      updateXodim: (id, data) => set((state) => ({
-        xodimlar: state.xodimlar.map((x) => x.id === id ? { ...x, ...data } : x)
-      })),
-      deleteXodim: (id) => set((state) => ({
-        xodimlar: state.xodimlar.filter((x) => x.id !== id)
-      })),
+      addXodim: (x) => {
+        const tempId = -Date.now();
+        const now = new Date().toISOString();
+        set((state) => ({
+          xodimlar: [...state.xodimlar, { ...x, id: tempId, status: 'aktiv', createdAt: now }],
+          counters: { ...state.counters, xodim: state.counters.xodim + 1 }
+        }));
+        createWorker(x as any).then((created) => {
+          if (!created) return;
+          set((state) => ({ xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? { ...created, createdAt: created.createdAt || now } : xx) }));
+        }).catch(() => {});
+      },
+      updateXodim: (id, data) => {
+        set((state) => ({ xodimlar: state.xodimlar.map((x) => x.id === id ? { ...x, ...data } : x) }));
+        updateWorker(id, data as any).catch(() => {});
+      },
+      deleteXodim: (id) => {
+        set((state) => ({ xodimlar: state.xodimlar.filter((x) => Number(x.id) != Number(id)) }));
+        deleteWorker(id).catch(() => {
+          console.warn("API o'chirishda xatolik (Xodim), lekin lokal o'chirish saqlab qolindi.");
+        });
+      },
 
       addMaosh: (m) => set((state) => ({
         maoshTarixi: [...state.maoshTarixi, { ...m, id: state.counters.maosh }],
@@ -118,33 +161,55 @@ export const useStore = create<AutoServisStore>()(
         counters: { ...state.counters, xizmat: state.counters.xizmat + 1 }
       })),
       updateXizmat: (id, data) => set((state) => ({
-        xizmatlar: state.xizmatlar.map((x) => x.id === id ? { ...x, ...data } : x)
+        xizmatlar: state.xizmatlar.map((x) => Number(x.id) === Number(id) ? { ...x, ...data } : x)
       })),
       deleteXizmat: (id) => set((state) => ({
-        xizmatlar: state.xizmatlar.filter((x) => x.id !== id)
+        xizmatlar: state.xizmatlar.filter((x) => Number(x.id) != Number(id))
       })),
 
-      addZapchast: (z) => set((state) => ({
-        zapchastlar: [...state.zapchastlar, { ...z, id: state.counters.zap, balance: 0 }],
-        counters: { ...state.counters, zap: state.counters.zap + 1 }
-      })),
-      updateZapchast: (id, data) => set((state) => ({
-        zapchastlar: state.zapchastlar.map((z) => z.id === id ? { ...z, ...data } : z)
-      })),
-      deleteZapchast: (id) => set((state) => ({
-        zapchastlar: state.zapchastlar.filter((z) => z.id !== id)
-      })),
+      addZapchast: (z) => {
+        const tempId = -Date.now();
+        set((state) => ({
+          zapchastlar: [...state.zapchastlar, { ...z, id: tempId, balance: 0 }],
+          counters: { ...state.counters, zap: state.counters.zap + 1 }
+        }));
+        createPart(z as any).then((created) => {
+          if (!created) return;
+          set((state) => ({ zapchastlar: state.zapchastlar.map((zz) => zz.id === tempId ? created : zz) }));
+        }).catch(() => {});
+      },
+      updateZapchast: (id, data) => {
+        set((state) => ({ zapchastlar: state.zapchastlar.map((z) => z.id === id ? { ...z, ...data } : z) }));
+        updatePart(id, data as any).catch(() => {});
+      },
+      deleteZapchast: (id) => {
+        set((state) => ({ zapchastlar: state.zapchastlar.filter((z) => Number(z.id) != Number(id)) }));
+        deletePart(id).catch(() => {
+          console.warn("API o'chirishda xatolik (Zapchast), lekin lokal o'chirish saqlab qolindi.");
+        });
+      },
 
-      addBuyurtma: (b) => set((state) => ({
-        buyurtmalar: [...state.buyurtmalar, { ...b, id: state.counters.buyurtma }],
-        counters: { ...state.counters, buyurtma: state.counters.buyurtma + 1 }
-      })),
-      updateBuyurtma: (id, data) => set((state) => ({
-        buyurtmalar: state.buyurtmalar.map((b) => b.id === id ? { ...b, ...data } : b)
-      })),
-      deleteBuyurtma: (id) => set((state) => ({
-        buyurtmalar: state.buyurtmalar.filter((b) => b.id !== id)
-      })),
+      addBuyurtma: (b) => {
+        const tempId = -Date.now();
+        set((state) => ({
+          buyurtmalar: [...state.buyurtmalar, { ...b, id: tempId }],
+          counters: { ...state.counters, buyurtma: state.counters.buyurtma + 1 }
+        }));
+        createOrder(b as any).then((created) => {
+          if (!created) return;
+          set((state) => ({ buyurtmalar: state.buyurtmalar.map((bb) => bb.id === tempId ? created : bb) }));
+        }).catch(() => {});
+      },
+      updateBuyurtma: (id, data) => {
+        set((state) => ({ buyurtmalar: state.buyurtmalar.map((b) => b.id === id ? { ...b, ...data } : b) }));
+        updateOrder(id, data as any).catch(() => {});
+      },
+      deleteBuyurtma: (id) => {
+        set((state) => ({ buyurtmalar: state.buyurtmalar.filter((b) => Number(b.id) != Number(id)) }));
+        deleteOrder(id).catch(() => {
+          console.warn("API o'chirishda xatolik, lekin lokal o'chirish saqlab qolindi.");
+        });
+      },
 
       updateKassa: (method, amount, operation) => set((state) => ({
         kassa: {
@@ -174,8 +239,15 @@ export const useStore = create<AutoServisStore>()(
         tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: state.counters.cash }],
         counters: { ...state.counters, cash: state.counters.cash + 1 }
       })),
+      addIshxonaOperatsiya: (op) => set((state) => ({
+        ishxonaOperatsiyalar: [...state.ishxonaOperatsiyalar, { ...op, id: state.counters.cash }],
+        counters: { ...state.counters, cash: state.counters.cash + 1 }
+      })),
+      deleteIshxonaOperatsiya: (id) => set((state) => ({
+        ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.filter((op) => Number(op.id) != Number(id))
+      })),
       deleteTashqariOperatsiya: (id) => set((state) => ({
-        tashqariOperatsiyalar: state.tashqariOperatsiyalar.filter((op) => op.id !== id)
+        tashqariOperatsiyalar: state.tashqariOperatsiyalar.filter((op) => Number(op.id) != Number(id))
       })),
       addPurchase: (p) => set((state) => ({
         purchases: [...state.purchases, { ...p, id: state.counters.purchase }],
@@ -183,7 +255,31 @@ export const useStore = create<AutoServisStore>()(
       })),
       addMashina: (m) => set((state) => ({
         mashinalar: [...state.mashinalar, m.toUpperCase()].sort()
-      }))
+      })),
+      resetKassa: () => set({ 
+        kassa: { naqd: 0, karta: 0 }, 
+        tashqariOperatsiyalar: [],
+        ishxonaOperatsiyalar: [],
+        maoshTarixi: []
+      }),
+      loadInitialData: async () => {
+        try {
+          const [clients, orders, workers, parts] = await Promise.all([
+            getClients().catch(() => []),
+            getOrders().catch(() => []),
+            getWorkers().catch(() => []),
+            getParts().catch(() => [])
+          ]);
+          set(() => ({
+            mijozlar: clients || [],
+            buyurtmalar: orders || [],
+            xodimlar: workers || [],
+            zapchastlar: parts || []
+          }));
+        } catch (err) {
+          // keep existing local data on failure
+        }
+      }
     }),
     {
       name: 'avtoservis-pro-storage',

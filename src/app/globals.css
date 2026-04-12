@@ -60,7 +60,6 @@
   --color-accent2:      #4f46e5;
   --color-red-custom:   #f43f5e;
   --color-green-custom: #10b981;
-  --color-blue-custom:  #06b6d4;
   --color-amber-custom: #f59e0b;
   --color-text-dim:     #64748b;
   --color-border-custom: rgba(255,255,255,0.07);
@@ -80,7 +79,9 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 /* ── BASE DARK RESET ─────────────────────────────────────────── */
@@ -154,6 +155,7 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  padding: 32px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .glass-card:hover {
@@ -168,6 +170,7 @@ html, body {
   border-radius: var(--radius);
   position: relative;
   overflow: hidden;
+  padding: 32px;
   transition: all 0.3s;
 }
 .stat-card::before {
@@ -187,18 +190,18 @@ html, body {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 .data-table thead tr {
   background: var(--surface2);
   border-bottom: 1px solid var(--border);
 }
 .data-table thead th {
-  padding: 12px 20px;
+  padding: 18px 32px;
   text-align: left;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text3);
   white-space: nowrap;
@@ -210,9 +213,13 @@ html, body {
 .data-table tbody tr:last-child { border-bottom: none; }
 .data-table tbody tr:hover { background: rgba(255,255,255,0.025); }
 .data-table tbody td {
-  padding: 14px 20px;
+  padding: 22px 32px;
   color: var(--text);
   vertical-align: middle;
+}
+
+.data-table tbody tr { /* ensure comfortable row height */
+  min-height: 56px;
 }
 
 /* ── BADGE / STATUS ──────────────────────────────────────────── */
@@ -238,11 +245,11 @@ html, body {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 10px 14px;
+  padding: 16px 22px;
   outline: none;
   transition: all 0.2s;
   color: var(--text);
-  font-size: 13px;
+  font-size: 15px;
   width: 100%;
 }
 .premium-input::placeholder { color: var(--text4); }
@@ -257,13 +264,13 @@ html, body {
   background: var(--accent);
   color: white;
   font-weight: 700;
-  font-size: 13px;
-  padding: 9px 20px;
+  font-size: 15px;
+  padding: 14px 32px;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   border: none;
   cursor: pointer;
   letter-spacing: -0.01em;
@@ -280,8 +287,8 @@ html, body {
   color: var(--text2);
   border: 1px solid var(--border);
   font-weight: 600;
-  font-size: 13px;
-  padding: 9px 20px;
+  font-size: 14px;
+  padding: 12px 28px;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
   cursor: pointer;
@@ -310,7 +317,8 @@ html, body {
   border-radius: var(--radius-lg);
   box-shadow: 0 24px 80px rgba(0,0,0,0.7);
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
+  padding: 12px;
   overflow: hidden;
 }
 
@@ -343,15 +351,15 @@ html, body {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
+  gap: 12px;
+  padding: 12px 18px;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text3);
   cursor: pointer;
   transition: all 0.2s;
-  margin: 1px 8px;
+  margin: 4px 8px;
   user-select: none;
 }
 .nav-item:hover {
@@ -367,13 +375,13 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 16px 7px 38px;
-  font-size: 12.5px;
+  padding: 10px 18px 10px 42px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text3);
   cursor: pointer;
   transition: all 0.15s;
-  margin: 1px 8px;
+  margin: 3px 8px;
   border-radius: var(--radius-sm);
 }
 .nav-sub-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
@@ -386,3 +394,8 @@ html, body {
 .status-tolov      { background: rgba(16,185,129,0.1); color: #10b981; }
 .status-tayyor     { background: rgba(16,185,129,0.15); color: #34d399; }
 .status-bekor      { background: rgba(244,63,94,0.1);  color: #f43f5e; }
+
+/* === FINAL SPACING FIX (MOVED TO END FOR SPECIFICITY) === */
+.grid { display: grid !important; }
+.flex { display: flex !important; }
+.p-0 { padding: 0 !important; } .p-0\.5 { padding: 0.125rem !important; } .p-1 { padding: 0.25rem !important; } .p-1\.5 { padding: 0.375rem !important; } .p-2 { padding: 0.5rem !important; } .p-2\.5 { padding: 0.625rem !important; } .p-3 { padding: 0.75rem !important; } .p-3\.5 { padding: 0.875rem !important; } .p-4 { padding: 1rem !important; } .p-5 { padding: 1.25rem !important; } .p-6 { padding: 1.5rem !important; } .p-7 { padding: 1.75rem !important; } .p-8 { padding: 2rem !important; } .p-9 { padding: 2.25rem !important; } .p-10 { padding: 2.5rem !important; } .p-12 { padding: 3rem !important; } .p-14 { padding: 3.5rem !important; } .p-16 { padding: 4rem !important; } .px-0 { padding-left: 0 !important; padding-right: 0 !important; } .px-1 { padding-left: 0.25rem !important; padding-right: 0.25rem !important; } .px-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; } .px-3 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; } .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; } .px-5 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; } .px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; } .px-7 { padding-left: 1.75rem !important; padding-right: 1.75rem !important; } .px-8 { padding-left: 2rem !important; padding-right: 2rem !important; } .px-9 { padding-left: 2.25rem !important; padding-right: 2.25rem !important; } .px-10 { padding-left: 2.5rem !important; padding-right: 2.5rem !important; } .py-0 { padding-top: 0 !important; padding-bottom: 0 !important; } .py-1 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; } .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; } .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; } .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; } .py-5 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; } .py-6 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; } .py-7 { padding-top: 1.75rem !important; padding-bottom: 1.75rem !important; } .py-8 { padding-top: 2rem !important; padding-bottom: 2rem !important; } .py-9 { padding-top: 2.25rem !important; padding-bottom: 2.25rem !important; } .py-10 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; } .pt-8 { padding-top: 2rem !important; } .pt-10 { padding-top: 2.5rem !important; } .pb-8 { padding-bottom: 2rem !important; } .gap-2 { gap: 0.5rem !important; } .gap-4 { gap: 1rem !important; } .gap-6 { gap: 1.5rem !important; } .gap-8 { gap: 2rem !important; } .gap-10 { gap: 2.5rem !important; } .gap-12 { gap: 3rem !important; } .mx-1 { margin-left: 0.25rem !important; margin-right: 0.25rem !important; } .mx-2 { margin-left: 0.5rem !important; margin-right: 0.5rem !important; } .mx-4 { margin-left: 1rem !important; margin-right: 1rem !important; } .mx-6 { margin-left: 1.5rem !important; margin-right: 1.5rem !important; } .mx-8 { margin-left: 2rem !important; margin-right: 2rem !important; } .mx-10 { margin-left: 2.5rem !important; margin-right: 2.5rem !important; } .mx-auto { margin-left: auto !important; margin-right: auto !important; } .mt-4 { margin-top: 1rem !important; } .mt-6 { margin-top: 1.5rem !important; } .mt-8 { margin-top: 2rem !important; } .mt-10 { margin-top: 2.5rem !important; } .mb-4 { margin-bottom: 1rem !important; } .mb-8 { margin-bottom: 2rem !important; } .flex-col { flex-direction: column !important; } .justify-between { justify-content: space-between !important; } .items-center { align-items: center !important; }

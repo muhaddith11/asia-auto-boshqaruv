@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import PhoneInput from '@/components/PhoneInput';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import { Plus, UserCog, CheckCircle2, Percent, Phone, Briefcase } from 'lucide-react';
@@ -73,10 +74,9 @@ export default function AddWorkerPage() {
                 <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Telefon</label>
                 <div className="relative">
                   <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input 
-                    type="text" 
+                  <PhoneInput
                     value={formData.tel}
-                    onChange={(e) => setFormData({...formData, tel: e.target.value})}
+                    onChange={(v) => setFormData({...formData, tel: v})}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-3 outline-none focus:border-blue-500 text-slate-900 text-[14px] font-bold transition-all"
                     placeholder="+998"
                   />

@@ -21,12 +21,16 @@ export interface Xodim {
   familiya?: string;
   tel?: string;
   mutax?: string;
-  foiz: number; // Commission percentage
+  foiz: number; // Commission percentage or share percentage
+  role?: 'xodim' | 'sherik';
+  shareType?: 'total' | 'sub'; // total profit vs sub-share
+  parentId?: number; // for sub-share partners
   izoh?: string;
   login?: string;
   parol?: string;
   telegram?: string;
   status: 'aktiv' | 'noaktiv';
+  createdAt?: string;
 }
 
 export interface Xizmat {
@@ -96,6 +100,7 @@ export interface MaoshTarixi {
   davr: string; // YYYY-MM
   sana: string;
   method: 'naqd' | 'karta';
+  izoh?: string;
 }
 
 export interface ZapPurchase {

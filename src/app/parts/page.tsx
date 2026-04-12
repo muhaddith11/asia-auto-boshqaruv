@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -18,6 +19,7 @@ import {
   ChevronDown,
   Box
 } from 'lucide-react';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const S = {
   input: {
@@ -40,7 +42,7 @@ const S = {
   } as React.CSSProperties,
 };
 
-export default function PartsPage() {
+function PartsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { zapchastlar, addZapchast, updateZapchast, deleteZapchast, mashinalar } = useStore();
@@ -62,6 +64,7 @@ export default function PartsPage() {
     bir: 'dona',
     kat: 'Boshqa'
   });
+  const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
 
   useEffect(() => {
     setMounted(true);
@@ -120,13 +123,13 @@ export default function PartsPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-screen">
+    <div className="flex-1 flex flex-col bg-transparent min-h-screen p-10">
       
       {/* ── PAGE HEADER ── */}
-      <div className="px-7 pt-6 pb-2 flex items-start justify-between">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-[20px] font-bold text-white tracking-tight">Ehtiyot qismlar (Sklad)</h1>
-          <p className="text-[12px] text-slate-400 font-medium mt-1">Ombordagi mavjud zapchastlarni boshqarish, narxlarni belgilash va qoldiqni kuzatish.</p>
+          <h1 className="text-[24px] font-black text-white tracking-tight leading-none">Ehtiyot qismlar</h1>
+          <p className="text-[13px] text-slate-500 font-medium mt-2">Ombordagi mavjud zapchastlarni boshqarish va narxlarni kuzatish.</p>
         </div>
         <button 
           onClick={() => {
@@ -134,73 +137,76 @@ export default function PartsPage() {
             setFormData({ nom: '', mashina: 'Umumiy', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa' });
             setIsModalOpen(true);
           }}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-emerald-900/10 active:scale-95"
+          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-emerald-900/20 active:scale-95 uppercase tracking-widest"
         >
-          <Plus size={16} /> Yangi zapchast qo'shish
+          <Plus size={16} /> Qo'shish
         </button>
       </div>
 
       {/* ── FILTERS PANEL ── */}
-      <div className="mx-7 mt-4 p-5 bg-surface border border-border rounded-xl shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-1">
-            <label style={S.label}>Nomi bo'yicha qidirish</label>
-            <div className="relative">
-              <input 
-                type="text" placeholder="Zapchast nomini kiriting..." 
-                value={filters.search}
-                onChange={(e) => setFilters({...filters, search: e.target.value})}
-                style={S.input} className="pr-10"
-              />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl mb-8 backdrop-blur-xl">
+        <div className="flex items-center gap-6">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label style={S.label}>Qidiruv</label>
+              <div className="relative">
+                <input 
+                  type="text" placeholder="Zapchast nomi..." 
+                  value={filters.search}
+                  onChange={(e) => setFilters({...filters, search: e.target.value})}
+                  style={S.input} className="pr-10"
+                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600" size={14} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label style={S.label}>Mashina</label>
+              <div className="relative">
+                <select 
+                  value={filters.mashina}
+                  onChange={(e) => setFilters({...filters, mashina: e.target.value})}
+                  style={S.input} className="appearance-none"
+                >
+                  <option value="">Barchasi</option>
+                  <option value="Umumiy">Umumiy</option>
+                  {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" size={14} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label style={S.label}>Kategoriya</label>
+              <div className="relative">
+                <select 
+                  value={filters.kat}
+                  onChange={(e) => setFilters({...filters, kat: e.target.value})}
+                  style={S.input} className="appearance-none"
+                >
+                  <option value="">Barchasi</option>
+                  {['Motor', 'Xodovoy', 'Elektr', 'Kuzov', 'Boshqa'].map(k => <option key={k} value={k}>{k}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" size={14} />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label style={S.label}>Mashina markasi</label>
-            <div className="relative">
-              <select 
-                value={filters.mashina}
-                onChange={(e) => setFilters({...filters, mashina: e.target.value})}
-                style={S.input} className="appearance-none"
+          <div className="flex gap-2 self-end pb-0.5">
+             <button 
+                onClick={applyFilters}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl text-[12px] transition-all active:scale-95 shadow-lg shadow-emerald-500/10 uppercase tracking-widest"
               >
-                <option value="">Barcha markalar</option>
-                <option value="Umumiy">Umumiy</option>
-                {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label style={S.label}>Kategoriya</label>
-            <div className="relative">
-              <select 
-                value={filters.kat}
-                onChange={(e) => setFilters({...filters, kat: e.target.value})}
-                style={S.input} className="appearance-none"
+                Filtr
+              </button>
+              <button 
+                onClick={resetFilters}
+                className="p-2.5 border border-white/10 bg-white/5 hover:bg-white/10 text-slate-400 rounded-xl transition-all active:scale-95"
+                title="Tozalash"
               >
-                <option value="">Barcha kategoriyalar</option>
-                {['Motor', 'Xodovoy', 'Elektr', 'Kuzov', 'Boshqa'].map(k => <option key={k} value={k}>{k}</option>)}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-            </div>
+                <RotateCcw size={16} />
+              </button>
           </div>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-5">
-           <button 
-              onClick={applyFilters}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-lg text-[12px] transition-all active:scale-95 shadow-lg shadow-emerald-500/10"
-            >
-              Filtrlarni qo'llash
-            </button>
-            <button 
-              onClick={resetFilters}
-              className="px-6 border border-border bg-surface2 hover:bg-surface3 text-slate-400 py-2.5 rounded-lg text-[12px] transition-all active:scale-95"
-            >
-              Tashlash
-            </button>
         </div>
       </div>
 
@@ -229,47 +235,66 @@ export default function PartsPage() {
               <tbody className="divide-y divide-border">
                 {filteredParts.map((p, idx) => (
                   <tr key={p.id} className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]'} hover:bg-white/[0.02] transition-colors group`}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                         <div className="w-9 h-9 rounded-xl bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 group-hover:border-emerald-500/30 transition-all">
+                            <Box size={16} className="text-emerald-500 opacity-60" />
+                         </div>
                          <div>
-                            <div className="font-bold text-white">{p.nom}</div>
-                            <div className="text-[9px] text-slate-500 font-bold uppercase">{p.bir}</div>
+                            <div className="font-bold text-white text-[13px] tracking-tight">{p.nom}</div>
+                            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-0.5">{p.bir}</div>
                          </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[9px] font-bold uppercase tracking-tighter border border-emerald-500/20">
+                    <td className="px-6 py-5">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/5 bg-white/5 ${
+                        p.kat === 'Motor' ? 'text-blue-400' :
+                        p.kat === 'Xodovoy' ? 'text-amber-400' :
+                        p.kat === 'Elektr' ? 'text-indigo-400' :
+                        p.kat === 'Kuzov' ? 'text-rose-400' :
+                        'text-slate-400'
+                      }`}>
                         {p.kat || 'Boshqa'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-slate-400 font-medium">{p.mashina}</span>
+                    <td className="px-6 py-5">
+                      <span className="text-slate-400 font-bold tracking-tight">{p.mashina}</span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="font-bold text-slate-500 line-through decoration-slate-700">{(p.sebestoimost || 0).toLocaleString()}</span>
+                    <td className="px-6 py-5 text-right font-black text-slate-600 line-through">
+                      {(p.sebestoimost || 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="font-bold text-emerald-400">{p.narx.toLocaleString()} <span className="text-[10px] text-slate-500 ml-0.5">sum</span></span>
+                    <td className="px-6 py-5 text-right">
+                      <span className="font-black text-emerald-400 text-[14px]">{(p.narx || 0).toLocaleString()} <span className="text-[10px] text-slate-600 font-bold ml-0.5 uppercase tracking-tighter">uzs</span></span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                       <span className={`font-black ${p.balance <= 5 ? 'text-red-500' : 'text-slate-300'}`}>
-                          {p.balance} <span className="text-[9px] text-slate-500 uppercase">{p.bir}</span>
+                    <td className="px-6 py-5 text-center">
+                       <span className={`px-3 py-1 rounded-lg font-black text-[11px] ${
+                         p.balance <= 5 ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-white/5 text-slate-300'
+                       }`}>
+                          {p.balance} <span className="text-[9px] opacity-60 uppercase">{p.bir}</span>
                        </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
                         <button 
-                          onClick={() => openModal(p)}
-                          className="p-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 rounded-md transition-all shadow-sm"
+                          onClick={(e) => { e.stopPropagation(); openModal(p); }}
+                          style={{ padding: 7, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer', color: 'var(--text3)', display: 'flex' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--text)')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                          title="Tahrirlash"
                         >
-                           <Edit3 size={12} />
+                           <Edit3 size={14} />
                         </button>
                         <button 
-                          onClick={() => { if(confirm('Ochirishni tasdiqlaysizmi?')) deleteZapchast(p.id); }}
-                          className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 rounded-md transition-all shadow-sm"
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setDeleteConfirm({ isOpen: true, id: p.id });
+                          }}
+                          style={{ padding: 7, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 7, cursor: 'pointer', color: '#f43f5e', display: 'flex' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = '#f43f5e')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(244,63,94,0.15)')}
+                          title="O'chirish"
                         >
-                           <Trash2 size={12} />
+                           <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
@@ -405,6 +430,24 @@ export default function PartsPage() {
            </div>
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={deleteConfirm.isOpen}
+        title="Zapchastni o'chirish"
+        message="Haqiqatdan ham ushbu ehtiyot qismini o'chirib tashlamoqchimisiz? Sklad ma'lumotlari yangilanadi."
+        onConfirm={() => {
+          if (deleteConfirm.id) deleteZapchast(deleteConfirm.id);
+        }}
+        onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
+      />
     </div>
+  );
+}
+
+export default function PartsPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 bg-[#14161f] min-h-screen" />}>
+      <PartsPageContent />
+    </Suspense>
   );
 }

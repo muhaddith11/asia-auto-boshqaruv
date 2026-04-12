@@ -193,20 +193,21 @@ const Sidebar = () => {
                     padding: '8px 16px',
                     margin: '1px 8px',
                     width: 'calc(100% - 16px)',
-                    background: hasActive && !isOpen ? 'rgba(99,102,241,0.06)' : 'transparent',
+                    background: isOpen ? 'rgba(99,102,241,0.1)' : hasActive ? 'rgba(99,102,241,0.06)' : 'transparent',
                     border: 'none',
-                    borderRadius: 8,
+                    borderLeft: (isOpen || hasActive) ? `3px solid ${group.color}` : '3px solid transparent',
+                    borderRadius: '0 8px 8px 0',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    color: hasActive ? '#a5b4fc' : '#64748b',
+                    color: (isOpen || hasActive) ? '#f1f5f9' : '#64748b',
                   }}
                   onMouseEnter={e => {
-                    if (!hasActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
-                    (e.currentTarget as HTMLElement).style.color = '#94a3b8';
+                    if (!hasActive && !isOpen) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
+                    (e.currentTarget as HTMLElement).style.color = '#f1f5f9';
                   }}
                   onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.background = hasActive && !isOpen ? 'rgba(99,102,241,0.06)' : 'transparent';
-                    (e.currentTarget as HTMLElement).style.color = hasActive ? '#a5b4fc' : '#64748b';
+                    (e.currentTarget as HTMLElement).style.background = isOpen ? 'rgba(99,102,241,0.1)' : hasActive ? 'rgba(99,102,241,0.06)' : 'transparent';
+                    (e.currentTarget as HTMLElement).style.color = (isOpen || hasActive) ? '#f1f5f9' : '#64748b';
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 500 }}>
@@ -235,12 +236,13 @@ const Sidebar = () => {
                           <div className={`nav-sub-item ${isActive ? 'active' : ''}`}
                             style={isActive ? { color: group.color } : {}}>
                             <div style={{
-                              width: 5,
-                              height: 5,
+                              width: isActive ? 6 : 4,
+                              height: isActive ? 6 : 4,
                               borderRadius: '50%',
                               background: isActive ? group.color : 'rgba(255,255,255,0.15)',
                               flexShrink: 0,
                               transition: 'all 0.2s',
+                              boxShadow: isActive ? `0 0 8px ${group.color}` : 'none',
                             }} />
                             {item.title}
                           </div>
