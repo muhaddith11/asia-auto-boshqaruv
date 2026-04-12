@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { formatPhone, normalizePhone, isCompletePhone } from '@/lib/phone';
 
-interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
+interface Props extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   value?: string;
   onChange?: (normalized: string) => void;
 }
