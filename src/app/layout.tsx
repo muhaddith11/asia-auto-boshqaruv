@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import GlobalNavbar from "@/components/GlobalNavbar";
+import PWAAux from "@/components/PWAAux";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({
             {children}
           </main>
         </div>
+        <PWAAux />
       </body>
     </html>
   );
