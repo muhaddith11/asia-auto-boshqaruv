@@ -1,9 +1,15 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowRight, ArrowLeft, Plus, Check, PlusCircle, Trash2 } from 'lucide-react';
 
-export default function StepServices({ catalog, onNext, onPrev }) {
+interface StepServicesProps {
+  catalog: any;
+  onNext: () => void;
+  onPrev: () => void;
+}
+
+export default function StepServices({ catalog, onNext, onPrev }: StepServicesProps) {
   const store = useBotOrderStore();
   const [customName, setCustomName] = useState('');
   const [customPrice, setCustomPrice] = useState('');

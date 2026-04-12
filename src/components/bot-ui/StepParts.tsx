@@ -1,9 +1,14 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowRight, ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
 
-export default function StepParts({ onNext, onPrev }) {
+interface StepPartsProps {
+  onNext: () => void;
+  onPrev: () => void;
+}
+
+export default function StepParts({ onNext, onPrev }: StepPartsProps) {
   const store = useBotOrderStore();
   const [partName, setPartName] = useState('');
   const [partQty, setPartQty] = useState(1);

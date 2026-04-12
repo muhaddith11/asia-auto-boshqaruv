@@ -1,8 +1,13 @@
-﻿'use client';
+'use client';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowRight, CarFront, Hash, Gauge } from 'lucide-react';
 
-export default function StepCarInfo({ catalog, onNext }) {
+interface StepCarInfoProps {
+  catalog: any;
+  onNext: () => void;
+}
+
+export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
   const store = useBotOrderStore();
   
   const brands = catalog?.brands || [];

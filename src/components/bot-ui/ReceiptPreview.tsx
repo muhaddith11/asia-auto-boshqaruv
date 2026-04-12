@@ -1,8 +1,14 @@
-﻿'use client';
+'use client';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowLeft, CheckCircle2, FileText, Check } from 'lucide-react';
 
-export default function ReceiptPreview({ onPrev, onSubmit, isSubmitting }) {
+interface ReceiptPreviewProps {
+  onPrev: () => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
+}
+
+export default function ReceiptPreview({ onPrev, onSubmit, isSubmitting }: ReceiptPreviewProps) {
   const store = useBotOrderStore();
   
   const totalServices = store.services.reduce((sum, s) => sum + Number(s.price), 0);
