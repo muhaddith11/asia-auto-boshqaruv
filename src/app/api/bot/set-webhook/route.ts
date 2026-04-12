@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const host = req.headers.get('host');
   const protocol = host?.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
-  const webhookUrl = `${baseUrl}/api/telegram-webhook`;
+  const webhookUrl = `${baseUrl}/tg-webhook`;
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`);

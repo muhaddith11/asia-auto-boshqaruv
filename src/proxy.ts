@@ -10,6 +10,8 @@ export function proxy(request: NextRequest) {
   // Allow Telegram Webhook, Login page, and Bot UI Web App
   if (
     normalizedPath === '/login' || 
+    normalizedPath === '/tg-webhook' || 
+    normalizedPath.startsWith('/tg-webhook/') || 
     normalizedPath.startsWith('/api/bot') || 
     normalizedPath.startsWith('/api/telegram-webhook') || 
     normalizedPath.startsWith('/api/bot-test') || 
