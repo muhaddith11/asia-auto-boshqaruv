@@ -43,7 +43,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
       {/* Standard Services */}
       <div className="space-y-3 max-h-64 overflow-y-auto pr-2 pb-2">
         {availableServices.length === 0 && <p className="text-gray-400">Standart xizmat topilmadi</p>}
-        {availableServices.map(svc => {
+        {availableServices.map((svc: any) => {
           const isSelected = store.services.some(s => s.name === svc.name);
           return (
             <div 
@@ -57,7 +57,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
                 </div>
                 <div>
                   <h3 className="text-gray-200 text-sm font-medium">{svc.name}</h3>
-                  <p className="text-blue-400 text-xs mt-1">{svc.price.toLocaleString()} UZS</p>
+                  <p className="text-blue-400 text-xs mt-1">{Number(svc.price).toLocaleString()} UZS</p>
                 </div>
               </div>
             </div>
@@ -74,7 +74,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
               <div key={i} className="flex justify-between items-center bg-gray-800 p-3 rounded-xl border border-gray-700">
                 <div>
                   <p className="text-sm">{svc.name}</p>
-                  <p className="text-xs text-blue-400">{svc.price.toLocaleString()} UZS</p>
+                  <p className="text-xs text-blue-400">{Number(svc.price).toLocaleString()} UZS</p>
                 </div>
                 <button 
                   onClick={() => store.removeService(i)}
@@ -99,7 +99,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
             placeholder="Xizmat nomi" 
             className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             value={customName}
-            onChange={e => setCustomName(e.target.value)}
+            onChange={(e: any) => setCustomName(e.target.value)}
           />
           <div className="flex gap-2">
             <input 

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import WebApp from '@twa-dev/sdk';
+import { useState, useEffect, useRef } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import StepCarInfo from '@/components/bot-ui/StepCarInfo';
 import StepServices from '@/components/bot-ui/StepServices';
@@ -15,30 +14,33 @@ export default function BotUIPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const store = useBotOrderStore();
-
+  const webAppRef = useRef<any>(null);
   useEffect(() => {
-    try {
-      if (WebApp && typeof WebApp.ready === 'function') {
-        WebApp.ready();
-        WebApp.expand();
-        WebApp.setHeaderColor('secondary_bg_color');
+    (async () => {
+      try {
+        const mod = await import('@twa-dev/sdk');
+        const WebApp = mod?.default || mod;
+        webAppRef.current = WebApp;
+        if (WebApp && typeof WebApp.ready === 'function') {
+          WebApp.ready();
+          WebApp.expand();
+          WebApp.setHeaderColor('secondary_bg_color');
+        }
+      } catch(err) {
+        console.warn("Telegram WebApp API is not available locally.");
       }
-    } catch(err) {
-      console.warn("Telegram WebApp API is not available locally.");
-    }
 
-    // Fetch catalog
-    fetch('/api/bot-ui/catalog')
-      .then(res => res.json())
-      .then(data => {
+      try {
+        const res = await fetch('/api/bot-ui/catalog');
+        const data = await res.json();
         setCatalogData(data);
         setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error("Catalog fetch error:", err);
         setLoading(false);
         setCatalogData({ brands: ['Chevrolet', 'Kia', 'Hyundai', 'BYD', 'Lada'], catalog: { } });
-      });
+      }
+    })();
   }, []);
 
   const handleNext = () => setStep(s => s + 1);
@@ -47,10 +49,13 @@ export default function BotUIPage() {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      const urlParams = new URLSearchParams(window.location.search);
-      let workerPhone = urlParams.get('phone') || '';
-      
-      const mechanicChatId = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id || WebApp?.initDataUnsafe?.user?.id;
+      let workerPhone = '';
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        workerPhone = urlParams.get('phone') || '';
+      }
+
+      const mechanicChatId = (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id : undefined) || webAppRef.current?.initDataUnsafe?.user?.id;
       
       const payload = {
         brand: store.brand,
@@ -71,13 +76,13 @@ export default function BotUIPage() {
       
       if (!res.ok) throw new Error("Server xatosi");
 
-      if (WebApp && typeof WebApp.showPopup === 'function') {
-        WebApp.showPopup({
+      if (webAppRef.current && typeof webAppRef.current.showPopup === 'function') {
+        webAppRef.current.showPopup({
           title: 'Muvaffaqiyatli',
           message: 'Chek bot orqali yuborildi va bazaga saqlandi!',
           buttons: [{ type: 'ok' }]
         }, () => {
-          WebApp.close();
+          webAppRef.current?.close();
         });
       } else {
         alert("Chek yuborildi!");
@@ -85,8 +90,8 @@ export default function BotUIPage() {
 
     } catch (error) {
       console.error(error);
-      if (WebApp && typeof WebApp.showAlert === 'function') {
-        WebApp.showAlert('Xatolik yuz berdi. Qaytadan urinib ko\'ring.');
+      if (webAppRef.current && typeof webAppRef.current.showAlert === 'function') {
+        webAppRef.current.showAlert('Xatolik yuz berdi. Qaytadan urinib ko\'ring.');
       } else {
         alert('Xatolik yuz berdi.');
       }

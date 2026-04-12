@@ -30,10 +30,10 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
             <select 
               className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
               value={store.brand}
-              onChange={(e) => store.setCarInfo({ brand: e.target.value, model: '' })}
+              onChange={(e: any) => store.setCarInfo({ brand: e.target.value, model: '' })}
             >
               <option value="">Tanlang...</option>
-              {brands.map(b => (
+              {brands.map((b: string) => (
                 <option key={b} value={b}>{b}</option>
               ))}
             </select>
@@ -48,7 +48,7 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
               disabled={!store.brand}
               className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 appearance-none"
               value={store.model}
-              onChange={(e) => store.setCarInfo({ model: e.target.value })}
+              onChange={(e: any) => store.setCarInfo({ model: e.target.value })}
             >
               <option value="">Tanlang...</option>
               {models.map(m => (
@@ -68,7 +68,7 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
               placeholder="01 A 123 AA"
               className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
               value={store.plateNumber}
-              onChange={(e) => store.setCarInfo({ plateNumber: e.target.value })}
+              onChange={(e: any) => store.setCarInfo({ plateNumber: e.target.value })}
             />
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
               placeholder="150000"
               className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={store.probeg}
-              onChange={(e) => store.setCarInfo({ probeg: e.target.value })}
+              onChange={(e: any) => store.setCarInfo({ probeg: e.target.value })}
             />
           </div>
         </div>

@@ -45,10 +45,10 @@ export default function StepParts({ onNext, onPrev }: StepPartsProps) {
                 <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
                   <span>{part.quantity} dona</span>
                   <span>Г—</span>
-                  <span>{part.price.toLocaleString()} UZS</span>
+                  <span>{Number(part.price).toLocaleString()} UZS</span>
                 </div>
                 <p className="text-blue-400 font-medium text-sm mt-1">
-                  Jami: {(part.quantity * part.price).toLocaleString()} UZS
+                  Jami: {(Number(part.quantity) * Number(part.price)).toLocaleString()} UZS
                 </p>
               </div>
               <button 
@@ -96,7 +96,7 @@ export default function StepParts({ onNext, onPrev }: StepPartsProps) {
               placeholder="Masalan: Moy filtri" 
               className="w-full bg-gray-900 border border-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
               value={partName}
-              onChange={e => setPartName(e.target.value)}
+              onChange={(e: any) => setPartName(e.target.value)}
             />
           </div>
           
@@ -108,7 +108,7 @@ export default function StepParts({ onNext, onPrev }: StepPartsProps) {
                 min="1"
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
                 value={partQty}
-                onChange={e => setPartQty(e.target.value)}
+                onChange={(e: any) => setPartQty(Number(e.target.value))}
               />
             </div>
             <div className="flex-[2]">
@@ -118,7 +118,7 @@ export default function StepParts({ onNext, onPrev }: StepPartsProps) {
                 placeholder="UZS" 
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
                 value={partPrice}
-                onChange={e => setPartPrice(e.target.value)}
+                onChange={(e: any) => setPartPrice(e.target.value)}
               />
             </div>
           </div>
