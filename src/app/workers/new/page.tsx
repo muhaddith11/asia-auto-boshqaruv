@@ -26,7 +26,7 @@ export default function AddWorkerPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.ism || !formData.foiz) {
+    if (!formData.ism || formData.foiz === undefined || formData.foiz === null) {
       alert('Ism va ulush foizini kiriting!');
       return;
     }
