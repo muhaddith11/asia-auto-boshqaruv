@@ -51,7 +51,9 @@ bot.hears("🆕 Yangi buyurtma", async (ctx: any) => {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    await bot.handleUpdate(body);
+    // Do not await handleUpdate so we return 200 OK immediately.
+    // This prevents Telegram throwing 'Connection timed out'.
+    bot.handleUpdate(body).catch(err => console.error('Bot processing error:', err));
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Bot Error:', err);
