@@ -22,60 +22,67 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
-    if (body.message) {
-      const chatId = body.message.chat.id;
-      const text = body.message.text;
-      
-      if (text === '/start') {
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz.",
-          reply_markup: {
-            keyboard: [[{ text: "📱 Ro'yxatdan o'tish (Tel raqamni yuborish)", request_contact: true }]],
-            resize_keyboard: true,
-            one_time_keyboard: true
-          }
-        });
-      } 
-      else if (body.message.contact) {
-        const phone = body.message.contact.phone_number.replace('+', '');
-        const { data: worker } = await supabase
-          .from('workers')
-          .select('*')
-          .or(`tel.eq.${phone},tel.eq.+${phone}`)
-          .single();
+    // Background execution to prevent Telegram timeout
+    (async () => {
+      try {
+        if (body.message) {
+          const chatId = body.message.chat.id;
+          const text = body.message.text;
+          
+          if (text === '/start') {
+            sendTg('sendMessage', {
+              chat_id: chatId,
+              text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz.",
+              reply_markup: {
+                keyboard: [[{ text: "📱 Ro'yxatdan o'tish (Tel raqamni yuborish)", request_contact: true }]],
+                resize_keyboard: true,
+                one_time_keyboard: true
+              }
+            });
+          } 
+          else if (body.message.contact) {
+            const phone = body.message.contact.phone_number.replace('+', '');
+            const { data: worker } = await supabase
+              .from('workers')
+              .select('*')
+              .or(`tel.eq.${phone},tel.eq.+${phone}`)
+              .single();
 
-        if (!worker) {
-          await sendTg('sendMessage', {
-            chat_id: chatId,
-            text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling."
-          });
-        } else {
-          const webAppUrl = `https://asiaautoservice.com/bot-ui?phone=${phone}`;
-          await sendTg('sendMessage', {
-            chat_id: chatId,
-            text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosib yangi buyurtma kiritishingiz mumkin.`,
-            reply_markup: {
-              inline_keyboard: [[{ 
-                text: "🆕 Buyurtma To'ldirish", 
-                web_app: { url: webAppUrl } 
-              }]]
+            if (!worker) {
+              sendTg('sendMessage', {
+                chat_id: chatId,
+                text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling."
+              });
+            } else {
+              const webAppUrl = `https://asiaautoservice.com/bot-ui?phone=${phone}`;
+              sendTg('sendMessage', {
+                chat_id: chatId,
+                text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosib yangi buyurtma kiritishingiz mumkin.`,
+                reply_markup: {
+                  inline_keyboard: [[{ 
+                    text: "🆕 Buyurtma To'ldirish", 
+                    web_app: { url: webAppUrl } 
+                  }]]
+                }
+              });
             }
-          });
+          } 
+          else if (text === '🆕 Yangi buyurtma') {
+            sendTg('sendMessage', {
+              chat_id: chatId,
+              text: "Buning uchun 'Buyurtma To'ldirish' (Web App) tugmasidan foydalaning."
+            });
+          }
         }
-      } 
-      else if (text === '🆕 Yangi buyurtma') {
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: "Buning uchun 'Buyurtma To'ldirish' (Web App) tugmasidan foydalaning."
-        });
+      } catch (innerError) {
+        console.error('Processing error:', innerError);
       }
-    }
+    })();
     
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Bot Error:', err);
-    return NextResponse.json({ ok: false }, { status: 500 });
+    return NextResponse.json({ ok: true }); // Still return 200 to Telegram to stop retries
   }
 }
 
