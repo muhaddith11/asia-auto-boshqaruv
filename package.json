@@ -6,9 +6,9 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "concurrently \"next dev\" \"tsx watch src/bot-poller.ts\"",
+    "dev": "next dev",
     "build": "next build",
-    "start": "concurrently \"next start\" \"tsx src/bot-poller.ts\"",
+    "start": "next start",
     "lint": "eslint",
     "bot:poll": "tsx src/bot-poller.ts"
   },

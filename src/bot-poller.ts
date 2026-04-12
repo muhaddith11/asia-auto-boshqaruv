@@ -73,19 +73,28 @@ async function handleUpdate(update: any) {
 
 let lastUpdateId = 0;
 
-async function poll() {
-  console.log('Bot Poller started...');
+let isPollingStarted = false;
+
+export async function startBotPolling() {
+  if (isPollingStarted) return;
+  isPollingStarted = true;
+
+  console.log('Bot Poller starting from Instrumentation...');
   
-  // Delete webhook first to enable polling
-  await sendTg('deleteWebhook', { drop_pending_updates: true });
-  console.log('Webhook deleted, polling enabled.');
+  try {
+    // Delete webhook first to enable polling
+    await sendTg('deleteWebhook', { drop_pending_updates: true });
+    console.log('Webhook deleted, polling enabled.');
+  } catch (e) {
+    console.error('Failed to delete webhook:', e);
+  }
 
   while (true) {
     try {
       const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`);
       const data: any = await res.json();
 
-      if (data.ok && data.result.length > 0) {
+      if (data.ok && data.result && data.result.length > 0) {
         for (const update of data.result) {
           await handleUpdate(update);
           lastUpdateId = update.update_id;
@@ -98,4 +107,8 @@ async function poll() {
   }
 }
 
-poll();
+// Only auto-start if not being imported as a module in a way that handles it differently
+if (process.env.NODE_ENV === 'production' && !process.env.NEXT_RUNTIME) {
+  // This is a fallback but instrumentation.ts is preferred
+   startBotPolling();
+}
