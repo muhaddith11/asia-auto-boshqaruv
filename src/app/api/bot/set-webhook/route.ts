@@ -9,27 +9,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'TELEGRAM_BOT_TOKEN missing in ENV' }, { status: 500 });
   }
 
-  // Detect the current host from headers
-  const host = req.headers.get('host');
-  const protocol = host?.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
-  const webhookUrl = `${baseUrl}/tg-webhook`;
-
   try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`);
+    const response = await fetch(`https://api.telegram.org/bot${token}/deleteWebhook?drop_pending_updates=true`);
     const data = await response.json();
 
     return NextResponse.json({
       ok: data.ok,
-      message: data.description || 'Webhook configuration attempted',
-      configuredUrl: webhookUrl,
+      message: 'Webhook deleted to enable Polling Mode',
       raw: data
     });
   } catch (err) {
     return NextResponse.json({
       ok: false,
-      error: String(err),
-      attemptedUrl: webhookUrl
+      error: String(err)
     }, { status: 500 });
   }
 }
