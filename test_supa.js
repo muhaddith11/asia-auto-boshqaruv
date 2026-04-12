@@ -1,0 +1,1 @@
+﻿const { createClient } = require('@supabase/supabase-js'); console.log(Date.now()); const supabase = createClient('https://bnkhstinger.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJua2hzdGluZ2VyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQ3MTUwMjgsImV4cCI6MjAyMDMwMDYyOH0.A_gJ_j--D... (I will use real key from .env)');

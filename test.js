@@ -1,0 +1,1 @@
+﻿const { Telegraf } = require('telegraf'); console.log(Date.now()); const bot = new Telegraf('8529574888:AAHKzCwb-JvEesdUusSX2_Hx0Xm74fbGfTQ'); bot.telegram.getMe().then(me => console.log('Done', Date.now(), me)).catch(console.error);

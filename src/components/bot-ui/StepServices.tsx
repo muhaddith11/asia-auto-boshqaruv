@@ -16,7 +16,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
   
   const availableServices = catalog?.catalog[store.brand]?.[store.model] || [];
   
-  const handleToggleStandard = (svc) => {
+  const handleToggleStandard = (svc: any) => {
     const exists = store.services.findIndex(s => s.name === svc.name);
     if (exists >= 0) {
       store.removeService(exists);
