@@ -29,8 +29,13 @@ export async function POST(req: NextRequest) {
           const chatId = body.message.chat.id;
           const text = body.message.text;
           
+          // Detect host for dynamic URLs
+          const host = req.headers.get('host') || 'asiaautoservice.com';
+          const protocol = host.includes('localhost') ? 'http' : 'https';
+          const baseUrl = `${protocol}://${host}`;
+
           if (text === '/start') {
-            sendTg('sendMessage', {
+            await sendTg('sendMessage', {
               chat_id: chatId,
               text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz.",
               reply_markup: {
@@ -42,20 +47,24 @@ export async function POST(req: NextRequest) {
           } 
           else if (body.message.contact) {
             const phone = body.message.contact.phone_number.replace('+', '');
-            const { data: worker } = await supabase
+            const { data: worker, error: dbError } = await supabase
               .from('workers')
               .select('*')
               .or(`tel.eq.${phone},tel.eq.+${phone}`)
               .single();
 
+            if (dbError) {
+              console.error('Database error in bot:', dbError);
+            }
+
             if (!worker) {
-              sendTg('sendMessage', {
+              await sendTg('sendMessage', {
                 chat_id: chatId,
                 text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling."
               });
             } else {
-              const webAppUrl = `https://asiaautoservice.com/bot-ui?phone=${phone}`;
-              sendTg('sendMessage', {
+              const webAppUrl = `${baseUrl}/bot-ui?phone=${phone}`;
+              await sendTg('sendMessage', {
                 chat_id: chatId,
                 text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosib yangi buyurtma kiritishingiz mumkin.`,
                 reply_markup: {
@@ -68,14 +77,14 @@ export async function POST(req: NextRequest) {
             }
           } 
           else if (text === '🆕 Yangi buyurtma') {
-            sendTg('sendMessage', {
+            await sendTg('sendMessage', {
               chat_id: chatId,
               text: "Buning uchun 'Buyurtma To'ldirish' (Web App) tugmasidan foydalaning."
             });
           }
         }
       } catch (innerError) {
-        console.error('Processing error:', innerError);
+        console.error('Processing error details:', innerError);
       }
     })();
     
