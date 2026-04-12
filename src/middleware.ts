@@ -4,8 +4,8 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow Telegram Webhook and Login page
-  if (pathname === '/login' || pathname.startsWith('/api/bot')) {
+  // Allow Telegram Webhook, Login page, and Bot UI Web App
+  if (pathname === '/login' || pathname.startsWith('/api/bot') || pathname.startsWith('/bot-ui')) {
     return NextResponse.next();
   }
 
