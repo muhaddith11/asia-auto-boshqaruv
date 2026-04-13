@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${(Number(p.price) * p.quantity).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${totalZap.toLocaleString()} UZS\n`
       : "";
 
-    const receiptMsg = `📣 YANGI CHEK (Nusxa)
+    const baseReceipt = `📣 YANGI CHEK (Nusxa)
 
 🧾 ELEKTRON CHEK
 
@@ -92,16 +92,29 @@ ${zapList}
 
 (Ushbu chek id: #${insertedData?.[0]?.id || 'yangi'})`;
 
+    const adminMsg = baseReceipt;
+    const mechanicMsg = baseReceipt + `\n\n(Ushbu chek 24 soatdan so'ng avtomatik tozalanadi)`;
+
     // Send to Admin
     if (adminId) {
-      try { await bot.telegram.sendMessage(adminId, receiptMsg); } 
+      try { await bot.telegram.sendMessage(adminId, adminMsg); } 
       catch (e) { console.warn("Admin tg xabar ketmadi:", e); }
     }
     
-    // Send to Mechanic
+    // Send to Mechanic with auto-delete setTimeout
     if (mechanicChatId && mechanicChatId.toString() !== adminId) {
-      try { await bot.telegram.sendMessage(mechanicChatId, receiptMsg); } 
-      catch (e) { console.warn("Mexanik tg xabar ketmadi:", e); }
+      try { 
+        const sentMsg = await bot.telegram.sendMessage(mechanicChatId, mechanicMsg); 
+        // 24 hours timer to delete the message for the mechanic
+        setTimeout(async () => {
+          try {
+            await bot.telegram.deleteMessage(mechanicChatId, sentMsg.message_id);
+          } catch (delErr) {
+            console.warn("Mexanikdagi xabarni o'chirishda xatolik:", delErr);
+          }
+        }, 24 * 60 * 60 * 1000);
+
+      } catch (e) { console.warn("Mexanik tg xabar ketmadi:", e); }
     }
 
     return NextResponse.json({ ok: true, id: insertedData[0].id });
