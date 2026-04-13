@@ -134,25 +134,28 @@ export const useStore = create<AutoServisStore>()(
           counters: { ...state.counters, xodim: state.counters.xodim + 1 }
         }));
 
-        // Send ONLY essential fields to API to avoid schema mismatch
+        // ALL mandatory fields for Supabase
         const apiData = {
           ism: x.ism,
-          tel: x.tel,
-          mutax: x.mutax,
-          foiz: x.foiz,
-          izoh: x.izoh
+          tel: x.tel || '',
+          mutax: x.mutax || '',
+          foiz: Number(x.foiz) || 0,
+          izoh: x.izoh || '',
+          role: x.role || 'xodim',
+          shareType: x.shareType || 'total',
+          status: 'aktiv',
+          parentId: x.parentId || null
         };
 
         createWorker(apiData as any).then((created) => {
-          if (!created) {
-             throw new Error("Server xodimni qabul qilmadi");
-          }
+          if (!created) throw new Error("Server xodimni qabul qilmadi");
+          
           set((state) => ({ 
-            xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? { ...created, createdAt: created.createdAt || now } : xx) 
+            xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? created : xx) 
           }));
         }).catch((err) => {
           console.error("Xodim qo'shishda xatolik:", err);
-          alert("Xodimni bazaga saqlab bo'lmadi! Iltimos, qaytadan urinib ko'ring.");
+          alert("Xodimni bazaga saqlab bo'lmadi! Sabab: " + (err.message || "Noma'lum xato"));
           // Rollback local state
           set((state) => ({
             xodimlar: state.xodimlar.filter(xx => xx.id !== tempId)
