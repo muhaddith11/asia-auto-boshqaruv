@@ -3,7 +3,10 @@ import { Mijoz, Buyurtma, Xodim, Zapchast } from '@/types';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 async function handleJson(res: Response) {
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || `API error: ${res.status}`);
+  }
   return res.json();
 }
 
