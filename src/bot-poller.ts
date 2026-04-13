@@ -47,17 +47,9 @@ async function handleUpdate(update: any) {
       // Normalize: remove all non-digits
       const normalizedPhone = rawPhone.replace(/\D/g, '');
       
-      console.log(`Checking worker for phone: ${normalizedPhone} (raw: ${rawPhone})`);
-      
-      // DEBUG: CHECK TOTAL WORKERS COUNT
-      const { count: totalWorkers } = await supabase.from('workers').select('*', { count: 'exact', head: true });
-
-      const { data: worker, error: dbError } = await supabase
+      const { data: allWorkers, error: dbError } = await supabase
         .from('workers')
-        .select('*')
-        .or(`tel.eq.${normalizedPhone},tel.eq.+${normalizedPhone},tel.ilike.%${normalizedPhone.slice(-9)}`)
-        .limit(1)
-        .maybeSingle();
+        .select('*');
 
       if (dbError) {
         console.error('Database query error:', dbError);
@@ -68,10 +60,18 @@ async function handleUpdate(update: any) {
         return;
       }
 
+      // Find worker in JS to bypass any DB syntax issues (like '+' misinterpreted)
+      const searchTarget = normalizedPhone.slice(-9); // last 9 digits
+      const worker = allWorkers?.find(w => {
+        if (!w.tel) return false;
+        const dbNormalized = String(w.tel).replace(/\D/g, '');
+        return dbNormalized.endsWith(searchTarget) || dbNormalized === normalizedPhone;
+      });
+
       if (!worker) {
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `🕵️‍♂️ Diagnostika:\n• Raqam aniqlandi: ${normalizedPhone}\n• Bazadagi jami xodimlar soni: ${totalWorkers || 0}\n\nKechirasiz, bu raqam xodimlar ro'yxatida topilmadi. Agar bazada xodimlar bo'lsa-yu, bu yerda 0 chiqsa - Supabase RLS sozlamalarini tekshiring.`
+          text: `🕵️‍♂️ Diagnostika:\n• Raqam aniqlandi: ${normalizedPhone}\n• Bazadagi jami xodimlar soni: ${allWorkers?.length || 0}\n\nKechirasiz, bu raqam xodimlar ro'yxatida topilmadi. Agar bazada xodimlar bo'lsa-yu, bu yerda 0 chiqsa - Supabase RLS sozlamalarini tekshiring.`
         });
       } else {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
