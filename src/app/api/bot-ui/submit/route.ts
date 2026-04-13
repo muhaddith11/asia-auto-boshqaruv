@@ -61,26 +61,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: JSON.stringify(error) }, { status: 500 });
     }
 
-    // Notify Admin via Telegram
-    if (adminId && insertedData) {
-      const adminMsg = `
-🔔 **YANGI BUYURTMA (WEB APP)**
+    // Formatted Receipt Message
+    const sanasi = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' });
+    const srvList = services?.length > 0 
+      ? services.map((s: any, i: number) => `${i + 1}. ${s.name} - ${Number(s.price).toLocaleString()} UZS`).join('\n')
+      : "Xizmat kiritilmagan";
+      
+    const zapList = parts?.length > 0 
+      ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${(Number(p.price) * p.quantity).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${totalZap.toLocaleString()} UZS\n`
+      : "";
 
-📍 **ID:** #${insertedData[0].id}
-👤 **Usta:** ${workerName}
-🚗 **Mashina:** ${brand} ${model}
-🔢 **Raqam:** ${plateNumber}
-📏 **Probeg:** ${probeg}
-💸 **Umumiy Summa:** ${totalSrv + totalZap} so'm
-🛠 **Xizmatlar:** ${servicesStr}
-⚙️ **Zapchastlar:** ${partsStr}
+    const receiptMsg = `📣 YANGI CHEK (Nusxa)
 
-Saytdagi panelda tekshiring!`;
-      try {
-        await bot.telegram.sendMessage(adminId, adminMsg, { parse_mode: 'Markdown' });
-      } catch (tgError) {
-         console.warn("Telegram ga xabar ketmadi:", tgError);
-      }
+🧾 ELEKTRON CHEK
+
+👤 Usta: ${workerName}
+📞 Tel: ${workerPhone || '-'}
+
+🚗 Avto: ${brand} ${model}
+🔢 Davlat raqami: ${plateNumber || '-'}
+🛣 Probeg: ${probeg ? probeg + ' km' : '-'}
+🕒 Sana: ${sanasi}
+
+🛠 XIZMATLAR:
+${srvList}
+🔹 Xizmatlar jami: ${totalSrv.toLocaleString()} UZS
+${zapList}
+---------------------------
+💰 UMUMIY SUMMA: ${(totalSrv + totalZap).toLocaleString()} UZS
+
+(Ushbu chek id: #${insertedData?.[0]?.id || 'yangi'})`;
+
+    // Send to Admin
+    if (adminId) {
+      try { await bot.telegram.sendMessage(adminId, receiptMsg); } 
+      catch (e) { console.warn("Admin tg xabar ketmadi:", e); }
+    }
+    
+    // Send to Mechanic
+    if (mechanicChatId && mechanicChatId.toString() !== adminId) {
+      try { await bot.telegram.sendMessage(mechanicChatId, receiptMsg); } 
+      catch (e) { console.warn("Mexanik tg xabar ketmadi:", e); }
     }
 
     return NextResponse.json({ ok: true, id: insertedData[0].id });
