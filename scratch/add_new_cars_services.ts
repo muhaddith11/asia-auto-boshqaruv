@@ -74,7 +74,7 @@ async function addCarsAndServices() {
         .select()
         .single();
       
-      if (carInsertError) {
+      if (carInsertError || !newCar) {
         console.error(`Error inserting car ${modelName}:`, carInsertError);
         continue;
       }
