@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    // 1. Try to find the worker by Telegram ID (chatId)
+    // 1. Check if the worker is ALREADY recognized
     const { data: workerById, error: idError } = await supabase
       .from('workers')
       .select('*')
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     if (idError) console.error('Supabase ID Search Error:', idError);
 
-    // Function to get the persistent keyboard
+    // Helper functions
     const getPersistentKeyboard = (worker: any) => {
       const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
       return {
@@ -64,42 +64,53 @@ export async function POST(req: NextRequest) {
       };
     };
 
-    // 2. Logic if the worker is ALREADY recognized
-    if (workerById) {
-      const webAppUrl = `${baseUrl}/bot-ui?phone=${workerById.tel?.replace('+', '')}`;
-      await setMenuButton(chatId, webAppUrl); // Ensure menu button is set
+    const resetButtons = async () => {
+      await sendTg('setChatMenuButton', {
+        chat_id: chatId,
+        menu_button: { type: 'default' }
+      });
+    };
 
+    const enableButtons = async (worker: any) => {
+      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
+      await setChatMenuButton(chatId, webAppUrl);
+    };
+
+    async function setChatMenuButton(cid: string, url: string) {
+      await sendTg('setChatMenuButton', {
+        chat_id: cid,
+        menu_button: {
+          type: 'web_app',
+          text: '🆕 Buyurtma',
+          web_app: { url }
+        }
+      });
+    }
+
+    // --- CASE A: Already recognized worker ---
+    if (workerById) {
+      // NEVER ask for number, just show the goods
+      await enableButtons(workerById);
+      
       if (text === '/start') {
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Xush kelibsiz, ${workerById.ism}! Siz tizimda tanildingiz. Pastdagi tugma orqali buyurtma kiritishingiz mumkin.`,
+          text: `Xush kelibsiz, ${workerById.ism}! Siz tizimda tanilgansiz. Pastdagi yoki Menyu tugmasini bosib ishni boshlashingiz mumkin.`,
           reply_markup: getPersistentKeyboard(workerById)
         });
       } else {
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: "Yangi buyurtma kiritish uchun pastdagi tugmani yoki 'Menu' tugmasini bosing.",
+          text: "Buyurtma kiritish uchun pastdagi tugmani bosing. Qayta raqam kiritish shart emas.",
           reply_markup: getPersistentKeyboard(workerById)
         });
       }
       return NextResponse.json({ ok: true });
     }
 
-    // 3. Logic for UNKNOWN user
-    if (text === '/start') {
-      await sendTg('sendMessage', {
-        chat_id: chatId,
-        text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz. Iltimos, boshlash uchun raqamingizni yuboring.",
-        reply_markup: {
-          keyboard: [[{ text: "📱 Ro'yxatdan o'tish (Tel raqamni yuborish)", request_contact: true }]],
-          resize_keyboard: true,
-          one_time_keyboard: true
-        }
-      });
-    } 
-    else if (body.message.contact) {
+    // --- CASE B: Registration flow (Contact shared) ---
+    if (body.message.contact) {
       const phone = body.message.contact.phone_number.replace('+', '');
-      // Find worker by phone
       const { data: worker, error: dbError } = await supabase
         .from('workers')
         .select('*')
@@ -109,12 +120,15 @@ export async function POST(req: NextRequest) {
       if (dbError) console.error('DB Error:', dbError);
 
       if (!worker) {
+        // RAD ETISH (Begona)
+        await resetButtons(); // Ensure no buttons for strangers
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling."
+          text: "Brat, uzr, sizi raqamingiz tizimda topilmadi. ❌\n\nIltimos, rahbaringizga ayting, sizni saytda 'Xodimlar' bo'limiga qo'shib qo'ysin. Shundan so'ng botni ishlatishingiz mumkin.",
+          reply_markup: { remove_keyboard: true }
         });
       } else {
-        // SAVE the Telegram ID to this worker's profile
+        // TIB VA TASDIQLASH (O'zimizniki)
         const { error: updateError } = await supabase
           .from('workers')
           .update({ telegram: chatId })
@@ -122,17 +136,36 @@ export async function POST(req: NextRequest) {
 
         if (updateError) console.error('Update worker telegram ID error:', updateError);
 
-        const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
-        await setMenuButton(chatId, webAppUrl); // Set the Menu button too!
-
+        await enableButtons(worker);
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Rahmat, ${worker.ism}! Endi sizni tanib oldim. Pastdagi tugma va ko'k 'Menu' tugmasi doimiy turadi.`,
+          text: `Rahmat, ${worker.ism}! ✅ Endi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
           reply_markup: getPersistentKeyboard(worker)
         });
       }
-    } 
-    
+      return NextResponse.json({ ok: true });
+    }
+
+    // --- CASE C: New user or /start ---
+    if (text === '/start') {
+      await resetButtons(); // Ensure fresh start
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: "Salom! Asia Auto Service xodimlar botiga xush kelibsiz. ✨\n\nIltimos, ishni boshlash uchun telefon raqamingizni yuboring:",
+        reply_markup: {
+          keyboard: [[{ text: "📱 Raqamni tasdiqlash", request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      });
+    } else {
+      // Prompt unauthorized user to start
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: "Iltimos, avval raqamingizni yuboring yoki /start buyrug'ini bosing.",
+      });
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Bot POST Error:', err);
