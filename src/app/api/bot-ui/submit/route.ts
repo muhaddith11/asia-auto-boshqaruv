@@ -16,17 +16,26 @@ export async function POST(req: NextRequest) {
     let worker_id = null;
     let workerName = "Noma'lum Usta";
 
-    if (workerPhone) {
-        const { data: worker } = await supabase
-            .from('workers')
-            .select('*')
-            .or(`tel.eq.${workerPhone},tel.eq.+${workerPhone}`)
-            .single();
-        if (worker) {
-            worker_id = worker.id;
-            workerName = worker.ism;
-        }
+    if (!workerPhone) {
+        return NextResponse.json({ ok: false, error: 'Telefon raqami yuborilmadi' }, { status: 400 });
     }
+
+    const { data: worker } = await supabase
+        .from('workers')
+        .select('*')
+        .or(`tel.eq.${workerPhone},tel.eq.+${workerPhone}`)
+        .single();
+
+    if (!worker) {
+        console.warn(`Tizimda yo'q xodim urinishi: ${workerPhone}`);
+        return NextResponse.json({ 
+            ok: false, 
+            error: 'Siz tizimda ro\'yxatdan o\'tmagansiz. Iltimos, adminga murojaat qiling.' 
+        }, { status: 403 });
+    }
+
+    worker_id = worker.id;
+    workerName = worker.ism;
 
     const servicesStr = services?.map((s: any) => `${s.name} - ${s.price}`).join(', ') || 'Xizmatlar yo\'q';
     const partsStr = parts?.map((p: any) => `${p.name} (${p.quantity}x) - ${p.price}`).join(', ') || 'Zapchastlar yo\'q';
