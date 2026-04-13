@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       muammo: `Xizmatlar: ${servicesStr}\nZapchastlar: ${partsStr}`,
       sana: now.toISOString().split('T')[0],
       holat: 'tulanmagan',
-      createdAt: now.toISOString(),
+      created_at: now.toISOString(),
       services: services || [],
       zaps: parts || [],
       srv: totalSrv,
@@ -54,6 +54,8 @@ export async function POST(req: NextRequest) {
       worker_id: worker_id
     };
 
+    // Before inserting, double check to remove any JS-only camelCase props if needed.
+    // The previous error was strictly about 'createdAt'
     const { data: insertedData, error } = await supabase.from('orders').insert([orderData]).select();
 
     if (error) {
