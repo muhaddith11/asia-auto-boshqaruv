@@ -73,8 +73,10 @@ export default function BotUIPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
-      if (!res.ok) throw new Error("Server xatosi");
+      const resJson = await res.json().catch(()=>({}));
+      if (!res.ok) {
+        throw new Error(resJson.error || "Server xatosi");
+      }
 
       if (webAppRef.current && typeof webAppRef.current.showPopup === 'function') {
         webAppRef.current.showPopup({
@@ -88,12 +90,13 @@ export default function BotUIPage() {
         alert("Chek yuborildi!");
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      const errMsg = error.message || 'Xatolik yuz berdi. Qaytadan urinib ko\'ring.';
       if (webAppRef.current && typeof webAppRef.current.showAlert === 'function') {
-        webAppRef.current.showAlert('Xatolik yuz berdi. Qaytadan urinib ko\'ring.');
+        webAppRef.current.showAlert(errMsg);
       } else {
-        alert('Xatolik yuz berdi.');
+        alert(errMsg);
       }
     } finally {
       setIsSubmitting(false);

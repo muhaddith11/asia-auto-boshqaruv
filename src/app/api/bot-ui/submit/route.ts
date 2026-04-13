@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("Supabase Save Error:", error);
-      return NextResponse.json({ ok: false, error: 'Database xatosi' }, { status: 500 });
+      return NextResponse.json({ ok: false, error: JSON.stringify(error) }, { status: 500 });
     }
 
     // Notify Admin via Telegram
