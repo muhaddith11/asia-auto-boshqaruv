@@ -62,7 +62,7 @@ async function handleUpdate(update: any) {
 
       // Find worker in JS to bypass any DB syntax issues (like '+' misinterpreted)
       const searchTarget = normalizedPhone.slice(-9); // last 9 digits
-      const worker = allWorkers?.find(w => {
+      const worker = allWorkers?.find((w: any) => {
         if (!w.tel) return false;
         const dbNormalized = String(w.tel).replace(/\D/g, '');
         return dbNormalized.endsWith(searchTarget) || dbNormalized === normalizedPhone;
