@@ -3,9 +3,11 @@ import supabase from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
+const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, shareType, parentId, created_at';
+
 export async function GET() {
   try {
-    const { data, error } = await supabase.from('workers').select('*');
+    const { data, error } = await supabase.from('workers').select(WORKER_COLUMNS);
     if (error) {
       console.error("Supabase GET Workers Error:", error);
       return NextResponse.json({ error: error.message, detail: error.details }, { status: 500 });
@@ -22,7 +24,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log("Adding worker, body:", body);
     
-    const { data, error } = await supabase.from('workers').insert([body]).select();
+    // Explicitly insert only allowed columns to be double safe
+    const { data, error } = await supabase.from('workers').insert([body]).select(WORKER_COLUMNS);
     
     if (error) {
       console.error("Supabase POST Worker Error:", error);
