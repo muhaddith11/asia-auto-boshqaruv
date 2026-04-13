@@ -14,8 +14,7 @@ export default function AddWorkerPage() {
     ism: '',
     tel: '',
     mutax: '',
-    foiz: 40,
-    izoh: ''
+    foiz: 40
   });
 
   useEffect(() => {
@@ -35,8 +34,7 @@ export default function AddWorkerPage() {
       ism: formData.ism,
       tel: formData.tel,
       mutax: formData.mutax,
-      foiz: formData.foiz,
-      izoh: formData.izoh
+      foiz: formData.foiz
     });
 
     router.push('/workers');
@@ -109,16 +107,6 @@ export default function AddWorkerPage() {
                   placeholder="Masalan: Elektrik"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Izoh</label>
-              <textarea 
-                value={formData.izoh}
-                onChange={(e) => setFormData({...formData, izoh: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-slate-900 text-[14px] min-h-[80px] resize-none"
-                placeholder="Qo'shimcha ma'lumotlar..."
-              />
             </div>
 
             <div className="pt-4 flex gap-3">

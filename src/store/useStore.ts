@@ -163,7 +163,10 @@ export const useStore = create<AutoServisStore>()(
       },
       updateXodim: (id, data) => {
         set((state) => ({ xodimlar: state.xodimlar.map((x) => x.id === id ? { ...x, ...data } : x) }));
-        updateWorker(id, data as any).catch(() => {});
+        
+        // Remove 'izoh' if it exists in data before sending to Supabase
+        const { izoh, ...apiData } = data as any;
+        updateWorker(id, apiData).catch(() => {});
       },
       deleteXodim: (id) => {
         set((state) => ({ xodimlar: state.xodimlar.filter((x) => Number(x.id) != Number(id)) }));

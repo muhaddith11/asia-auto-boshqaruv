@@ -62,7 +62,6 @@ export default function WorkersPage() {
     tel: '',
     mutax: '',
     foiz: 40,
-    izoh: '',
     role: 'xodim' as 'xodim' | 'sherik',
     shareType: 'total' as 'total' | 'sub',
     parentId: undefined as number | undefined
@@ -82,7 +81,6 @@ export default function WorkersPage() {
         tel: worker.tel || '',
         mutax: worker.mutax || '',
         foiz: worker.foiz || 40,
-        izoh: worker.izoh || '',
         role: worker.role || 'xodim',
         shareType: worker.shareType || 'total',
         parentId: worker.parentId
@@ -90,7 +88,7 @@ export default function WorkersPage() {
     } else {
       setEditingWorker(null);
       setFormData({ 
-        ism: '', tel: '', mutax: '', foiz: 40, izoh: '', 
+        ism: '', tel: '', mutax: '', foiz: 40, 
         role: 'xodim', shareType: 'total', parentId: undefined 
       });
     }
