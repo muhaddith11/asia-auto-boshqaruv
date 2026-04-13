@@ -156,6 +156,24 @@ export default function GlobalNavbar() {
             >
               <Plus size={13} /> Kirim
             </button>
+            {/* Sync */}
+            <button
+              onClick={async () => {
+                const store = useStore.getState();
+                await store.loadInitialData();
+                alert('Baza muvaffaqiyatli sinxronizatsiya qilindi!');
+              }}
+              style={{
+                background: 'rgba(234,179,8,0.12)', color: '#eab308',
+                border: '1px solid rgba(234,179,8,0.3)', borderRadius: 9,
+                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(234,179,8,0.2)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(234,179,8,0.12)')}
+            >
+              <RefreshCw size={13} /> Yangilash
+            </button>
           </div>
         </div>
       </header>
