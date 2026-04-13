@@ -352,7 +352,16 @@ export default function OrdersPage() {
 
                         {/* Mashina */}
                         <td style={{ padding: '8px 10px' }}>
-                          <div style={{ color: 'var(--text2)', fontWeight: 500, whiteSpace: 'nowrap', fontSize: 11 }}>{b.mashina}</div>
+                          {(() => {
+                            const [brand, ...rest] = (b.mashina || '').split(' ');
+                            const model = rest.join(' ');
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text)' }}>{brand}</span>
+                                {model && <span style={{ fontSize: 10, color: 'var(--text3)' }}>{model}</span>}
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* Raqam */}
