@@ -90,10 +90,15 @@ export default function OrdersPage() {
   const fmtDate = (iso?: string) => {
     if (!iso) return '—';
     try {
-      return new Date(iso).toLocaleDateString('ru-RU', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit',
-      });
+      const d = new Date(iso);
+      const dateStr = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+          <span style={{ fontWeight: 600, fontSize: 10 }}>{dateStr}</span>
+          <span style={{ fontSize: 9, color: 'var(--text4)' }}>{timeStr}</span>
+        </div>
+      );
     } catch { return iso; }
   };
 
@@ -340,21 +345,21 @@ export default function OrdersPage() {
                         </td>
 
                         {/* Mijoz */}
-                        <td style={{ padding: '12px 14px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 12, whiteSpace: 'nowrap' }}>{b.ism}</div>
-                          {b.tel && <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>{b.tel}</div>}
+                        <td style={{ padding: '8px 10px' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 11, whiteSpace: 'nowrap' }}>{b.ism}</div>
+                          {b.tel && <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>{b.tel}</div>}
                         </td>
 
                         {/* Mashina */}
-                        <td style={{ padding: '12px 14px' }}>
-                          <div style={{ color: 'var(--text2)', fontWeight: 500, whiteSpace: 'nowrap' }}>{b.mashina}</div>
+                        <td style={{ padding: '8px 10px' }}>
+                          <div style={{ color: 'var(--text2)', fontWeight: 500, whiteSpace: 'nowrap', fontSize: 11 }}>{b.mashina}</div>
                         </td>
 
                         {/* Raqam */}
-                        <td style={{ padding: '12px 14px' }}>
+                        <td style={{ padding: '8px 10px' }}>
                           <span style={{
                             background: 'var(--surface2)', border: '1px solid var(--border)',
-                            padding: '2px 8px', borderRadius: 5, fontSize: 11,
+                            padding: '1px 6px', borderRadius: 4, fontSize: 10,
                             fontWeight: 700, color: 'var(--text)', letterSpacing: '0.05em',
                           }}>
                             {b.raqam}
@@ -362,20 +367,20 @@ export default function OrdersPage() {
                         </td>
 
                         {/* Yaratilgan */}
-                        <td style={{ padding: '12px 14px', color: 'var(--text3)', whiteSpace: 'nowrap', fontSize: 11 }}>
+                        <td style={{ padding: '8px 10px', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
                           {fmtDate(b.createdAt || b.sana)}
                         </td>
 
                         {/* O'zgartirilgan */}
-                        <td style={{ padding: '12px 14px', color: 'var(--text3)', whiteSpace: 'nowrap', fontSize: 11 }}>
+                        <td style={{ padding: '8px 10px', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
                           {fmtDate(b.createdAt || b.sana)}
                         </td>
 
                         {/* Status */}
-                        <td style={{ padding: '12px 14px' }}>
+                        <td style={{ padding: '8px 10px' }}>
                           <span style={{
                             background: sc.bg, color: sc.color,
-                            padding: '3px 10px', borderRadius: 20, fontSize: 11,
+                            padding: '2px 8px', borderRadius: 20, fontSize: 10,
                             fontWeight: 700, whiteSpace: 'nowrap',
                           }}>
                             {sc.label}
@@ -383,27 +388,27 @@ export default function OrdersPage() {
                         </td>
 
                         {/* Xizmatlar */}
-                        <td style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--text2)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', color: 'var(--text2)', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 11 }}>
                           {srv.toLocaleString()} so'm
                         </td>
 
                         {/* Zapchast */}
-                        <td style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--text2)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', color: 'var(--text2)', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 11 }}>
                           {(b.zap || 0).toLocaleString()} so'm
                         </td>
 
                         {/* To'lov */}
-                        <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', fontSize: 11 }}>
                           {(b.final || 0).toLocaleString()} so'm
                         </td>
 
                         {/* Maosh */}
-                        <td style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--red)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', color: 'var(--red)', fontWeight: 700, whiteSpace: 'nowrap', fontSize: 11 }}>
                           {(b.zarplata || 0).toLocaleString()} so'm
                         </td>
 
                         {/* Foyda */}
-                        <td style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', whiteSpace: 'nowrap', fontSize: 11 }}>
                           <span style={{
                             fontWeight: 800,
                             color: profit > 0 ? 'var(--green)' : profit < 0 ? 'var(--red)' : 'var(--text4)',

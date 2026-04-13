@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     
     const now = new Date();
     const orderData = {
-      ism: 'Web App Mijoz',
+      ism: 'Kunlik Mijoz',
       mashina: `${brand} ${model}`,
       raqam: plateNumber || '',
       km: probeg || '',
