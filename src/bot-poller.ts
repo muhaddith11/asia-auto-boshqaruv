@@ -42,24 +42,40 @@ async function handleUpdate(update: any) {
       });
     } 
     else if (contact) {
-      const phone = contact.phone_number.replace('+', '');
-      const { data: worker } = await supabase
+      const rawPhone = contact.phone_number;
+      // Normalize: remove all non-digits
+      const normalizedPhone = rawPhone.replace(/\D/g, '');
+      
+      console.log(`Checking worker for phone: ${normalizedPhone} (raw: ${rawPhone})`);
+      
+      const { data: worker, error: dbError } = await supabase
         .from('workers')
         .select('*')
-        .or(`tel.eq.${phone},tel.eq.+${phone}`)
-        .single();
+        .or(`tel.eq.${normalizedPhone},tel.eq.+${normalizedPhone},tel.ilike.%${normalizedPhone.slice(-9)}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (dbError) {
+        console.error('Database query error:', dbError);
+        await sendTg('sendMessage', {
+          chat_id: chatId,
+          text: "Texnik xatolik: Ma'lumotlar bazasiga ulanib bo'lmadi."
+        });
+        return;
+      }
 
       if (!worker) {
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: "Kechirasiz, sizning telefon raqamingiz xodimlar ro'yxatida topilmadi."
+          text: `Kechirasiz, sizning telefon raqamingiz (${rawPhone}) xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling.`
         });
       } else {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
-        const webAppUrl = `${baseUrl}/bot-ui?phone=${phone}`;
+        // Use normalized phone for the WebApp URL
+        const webAppUrl = `${baseUrl}/bot-ui?phone=${normalizedPhone}`;
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Xush kelibsiz, ${worker.ism}!`,
+          text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosing:`,
           reply_markup: {
             inline_keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]]
           }
