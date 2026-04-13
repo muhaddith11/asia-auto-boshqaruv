@@ -110,38 +110,47 @@ export async function POST(req: NextRequest) {
 
     // --- CASE B: Registration flow (Contact shared) ---
     if (body.message.contact) {
-      const phone = body.message.contact.phone_number.replace('+', '');
+      const rawPhone = body.message.contact.phone_number;
+      const phone = rawPhone.replace(/\D/g, ''); // Faqat raqamlarni qoldirish (99890...)
+      
       const { data: worker, error: dbError } = await supabase
         .from('workers')
         .select('*')
-        .or(`tel.eq.${phone},tel.eq.+${phone}`)
+        .or(`tel.eq.${phone},tel.eq.+${phone},tel.eq.${rawPhone}`)
         .maybeSingle();
 
-      if (dbError) console.error('DB Error:', dbError);
+      if (dbError) console.error('DB Error search worker:', dbError);
 
       if (!worker) {
         // RAD ETISH (Begona)
-        await resetButtons(); // Ensure no buttons for strangers
+        await resetButtons();
         await sendTg('sendMessage', {
           chat_id: chatId,
           text: "Brat, uzr, sizi raqamingiz tizimda topilmadi. ❌\n\nIltimos, rahbaringizga ayting, sizni saytda 'Xodimlar' bo'limiga qo'shib qo'ysin. Shundan so'ng botni ishlatishingiz mumkin.",
           reply_markup: { remove_keyboard: true }
         });
       } else {
-        // TIB VA TASDIQLASH (O'zimizniki)
+        // TANISH VA TASDIQLASH
         const { error: updateError } = await supabase
           .from('workers')
           .update({ telegram: chatId })
           .eq('id', worker.id);
 
-        if (updateError) console.error('Update worker telegram ID error:', updateError);
-
-        await enableButtons(worker);
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: `Rahmat, ${worker.ism}! ✅ Endi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
-          reply_markup: getPersistentKeyboard(worker)
-        });
+        if (updateError) {
+          console.error('Update worker telegram ID error:', updateError);
+          // Agar baza yangilanmagan bo'lsa, xodimga tushunarli xabar beramiz
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: "Xatolik: Tizim sizni doimiy eslab qola olmayapti. ⚙️\nIltimos, rahbaringizga SQL buyrug'ini bajarishni ayting (telegram ustuni yo'q)."
+          });
+        } else {
+          await enableButtons(worker);
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: `Rahmat, ${worker.ism}! ✅ Endi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
+            reply_markup: getPersistentKeyboard(worker)
+          });
+        }
       }
       return NextResponse.json({ ok: true });
     }
