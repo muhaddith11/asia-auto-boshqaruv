@@ -1,6 +1,6 @@
 'use client';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import { ArrowRight, CarFront, Hash, Gauge } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface StepCarInfoProps {
   catalog: any;
@@ -26,9 +26,8 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
         <div>
           <label className="block text-sm text-gray-400 mb-1">Brend</label>
           <div className="relative">
-            <CarFront className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 pointer-events-none" />
             <select 
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-14 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
               value={store.brand}
               onChange={(e: any) => store.setCarInfo({ brand: e.target.value, model: '' })}
             >
@@ -62,11 +61,10 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
         <div>
           <label className="block text-sm text-gray-400 mb-1">Davlat Raqami</label>
           <div className="relative">
-            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 pointer-events-none" />
             <input 
               type="text"
               placeholder="01 A 123 AA"
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-14 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
               value={store.plateNumber}
               onChange={(e: any) => store.setCarInfo({ plateNumber: e.target.value })}
             />
@@ -77,11 +75,10 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
         <div>
           <label className="block text-sm text-gray-400 mb-1">Probeg (km)</label>
           <div className="relative">
-            <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 pointer-events-none" />
             <input 
               type="number"
               placeholder="150000"
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-14 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={store.probeg}
               onChange={(e: any) => store.setCarInfo({ probeg: e.target.value })}
             />
