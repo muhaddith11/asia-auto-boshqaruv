@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import GlobalNavbar from "@/components/GlobalNavbar";
 import PWAAux from "@/components/PWAAux";
 
 const inter = Inter({
@@ -35,16 +33,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" className={`${inter.variable} h-full`}>
-      <body style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', display: 'flex' }}>
-        <Sidebar />
-        <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          {/* Global navbar — always visible on every page */}
-          <GlobalNavbar />
-          {/* Page content */}
-          <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {children}
-          </main>
-        </div>
+      <body style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
+        {children}
         <PWAAux />
       </body>
     </html>
