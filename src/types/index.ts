@@ -25,7 +25,6 @@ export interface Xodim {
   role?: 'xodim' | 'sherik';
   shareType?: 'total' | 'sub'; // total profit vs sub-share
   parentId?: number; // for sub-share partners
-  izoh?: string;
   login?: string;
   parol?: string;
   telegram?: string;
