@@ -18,6 +18,17 @@ async function sendTg(method: string, payload: any) {
   }
 }
 
+async function setMenuButton(chatId: string, url: string) {
+  await sendTg('setChatMenuButton', {
+    chat_id: chatId,
+    menu_button: {
+      type: 'web_app',
+      text: '🆕 Buyurtma',
+      web_app: { url }
+    }
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -45,7 +56,7 @@ export async function POST(req: NextRequest) {
       const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
       return {
         keyboard: [[{ 
-          text: "📋 Ma'lumot kiritish", 
+          text: "🆕 Buyurtma To'ldirish", 
           web_app: { url: webAppUrl } 
         }]],
         resize_keyboard: true,
@@ -55,17 +66,19 @@ export async function POST(req: NextRequest) {
 
     // 2. Logic if the worker is ALREADY recognized
     if (workerById) {
+      const webAppUrl = `${baseUrl}/bot-ui?phone=${workerById.tel?.replace('+', '')}`;
+      await setMenuButton(chatId, webAppUrl); // Ensure menu button is set
+
       if (text === '/start') {
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Xush kelibsiz, ${workerById.ism}! Siz tizimda tanildingiz. Pastdagi tugma orqali ma'lumot kiritishingiz mumkin.`,
+          text: `Xush kelibsiz, ${workerById.ism}! Siz tizimda tanildingiz. Pastdagi tugma orqali buyurtma kiritishingiz mumkin.`,
           reply_markup: getPersistentKeyboard(workerById)
         });
       } else {
-        // Just remind them or keep the keyboard active
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: "Yangi buyurtma kiritish uchun pastdagi tugmani bosing.",
+          text: "Yangi buyurtma kiritish uchun pastdagi tugmani yoki 'Menu' tugmasini bosing.",
           reply_markup: getPersistentKeyboard(workerById)
         });
       }
@@ -109,9 +122,12 @@ export async function POST(req: NextRequest) {
 
         if (updateError) console.error('Update worker telegram ID error:', updateError);
 
+        const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
+        await setMenuButton(chatId, webAppUrl); // Set the Menu button too!
+
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Rahmat, ${worker.ism}! Endi sizni tanib oldim. Pastdagi tugma doimiy turadi, uni bosib xohlagan paytingizda ma'lumot kiritishingiz mumkin.`,
+          text: `Rahmat, ${worker.ism}! Endi sizni tanib oldim. Pastdagi tugma va ko'k 'Menu' tugmasi doimiy turadi.`,
           reply_markup: getPersistentKeyboard(worker)
         });
       }
