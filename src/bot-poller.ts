@@ -7,6 +7,24 @@ if (!token) {
   // Don't exit process here because it runs inside instrumentation hook
 }
 
+async function sendTg(method: string, payload: any) {
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (!result.ok) {
+      console.error(`Telegram API error (${method}):`, result);
+    }
+    return result;
+  } catch (e) {
+    console.error(`Telegram fetch error (${method}):`, e);
+    return { ok: false, error: String(e) };
+  }
+}
+
 async function setChatMenuButton(chatId: string, url: string) {
   await sendTg('setChatMenuButton', {
     chat_id: chatId,
