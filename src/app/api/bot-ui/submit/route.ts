@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
     const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
 
     // Fetch all workers and find match manually to handle formatting differences in DB
-    const { data: allWorkers } = await supabase.from('workers').select('*');
+    const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
+    const { data: allWorkers } = await supabase.from('workers').select(WORKER_COLUMNS);
     
     const worker = allWorkers?.find((w: any) => {
         if (!w.tel) return false;
