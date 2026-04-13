@@ -1,15 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import supabase from '@/lib/supabaseClient';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
 
 if (!token) {
   console.error('TELEGRAM_BOT_TOKEN is missing!');
-  process.exit(1);
+  // Don't exit process here because it runs inside instrumentation hook
 }
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function sendTg(method: string, payload: any) {
   try {
@@ -18,9 +14,14 @@ async function sendTg(method: string, payload: any) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    return await res.json();
+    const result = await res.json();
+    if (!result.ok) {
+      console.error(`Telegram API error (${method}):`, result);
+    }
+    return result;
   } catch (e) {
-    console.error('Telegram API error:', e);
+    console.error(`Telegram fetch error (${method}):`, e);
+    return { ok: false, error: String(e) };
   }
 }
 
@@ -59,7 +60,7 @@ async function handleUpdate(update: any) {
         console.error('Database query error:', dbError);
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: "Texnik xatolik: Ma'lumotlar bazasiga ulanib bo'lmadi."
+          text: `Texnik xatolik: Ma'lumotlar bazasiga ulanib bo'lmadi.\nXato: ${dbError.message}`
         });
         return;
       }
