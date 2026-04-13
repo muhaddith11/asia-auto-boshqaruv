@@ -96,7 +96,7 @@ export default function OrdersPage() {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
           <span style={{ fontWeight: 600, fontSize: 10 }}>{dateStr}</span>
-          <span style={{ fontSize: 9, color: 'var(--text4)' }}>{timeStr}</span>
+          <span style={{ fontSize: 10, color: 'var(--text3)' }}>{timeStr}</span>
         </div>
       );
     } catch { return iso; }
