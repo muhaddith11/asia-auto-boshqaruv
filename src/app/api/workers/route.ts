@@ -3,7 +3,7 @@ import supabase from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
-const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
+const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, telegram, "shareType", "parentId", created_at';
 
 export async function GET() {
   try {
