@@ -134,13 +134,12 @@ export const useStore = create<AutoServisStore>()(
           counters: { ...state.counters, xodim: state.counters.xodim + 1 }
         }));
 
-        // ALL mandatory fields for Supabase
+        // ALL mandatory fields for Supabase (EXCLUDING 'izoh' as it doesn't exist in DB)
         const apiData = {
           ism: x.ism,
           tel: x.tel || '',
           mutax: x.mutax || '',
           foiz: Number(x.foiz) || 0,
-          izoh: x.izoh || '',
           role: x.role || 'xodim',
           shareType: x.shareType || 'total',
           status: 'aktiv',
