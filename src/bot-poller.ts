@@ -75,8 +75,8 @@ async function handleUpdate(update: any) {
         });
       } else {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
-        // Use normalized phone for the WebApp URL
-        const webAppUrl = `${baseUrl}/bot-ui?phone=${normalizedPhone}`;
+        // Use normalized phone for the WebApp URL + cache busting
+        const webAppUrl = `${baseUrl}/bot-ui?phone=${normalizedPhone}&v=${Date.now()}`;
         await sendTg('sendMessage', {
           chat_id: chatId,
           text: `✅ Xush kelibsiz, ${worker.ism}!\nAsia Auto Service tizimiga kirdingiz.`,
