@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
       muammo: `Xizmatlar: ${servicesStr}\nZapchastlar: ${partsStr}`,
       sana: now.toISOString().split('T')[0],
       holat: 'tulanmagan',
-      created_at: now.toISOString(),
       services: services || [],
       zaps: parts || [],
       srv: totalSrv,
