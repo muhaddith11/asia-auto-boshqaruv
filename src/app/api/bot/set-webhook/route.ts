@@ -9,13 +9,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'TELEGRAM_BOT_TOKEN missing in ENV' }, { status: 500 });
   }
 
+  // Detect host for dynamic URLs (e.g., asiaautoservice.com)
+  const host = req.headers.get('host') || 'asiaautoservice.com';
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const webhookUrl = `${protocol}://${host}/api/telegram-webhook`;
+
   try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/deleteWebhook?drop_pending_updates=true`);
+    // Set the webhook to our site's API route
+    const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}&drop_pending_updates=true`);
     const data = await response.json();
 
     return NextResponse.json({
       ok: data.ok,
-      message: 'Webhook deleted to enable Polling Mode',
+      message: `Bot Webhook rejimiga o'tkazildi! URL: ${webhookUrl}`,
       raw: data
     });
   } catch (err) {
