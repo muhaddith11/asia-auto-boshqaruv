@@ -75,6 +75,11 @@ export async function getParts(): Promise<Zapchast[]> {
   return handleJson(res);
 }
 
+export async function getCars(): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/cars`);
+  return handleJson(res);
+}
+
 export async function createPart(data: Partial<Zapchast>) {
   const res = await fetch(`${API_BASE}/parts`, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
   return handleJson(res);
@@ -92,5 +97,26 @@ export async function deletePart(id: number | string) {
 
 export async function getReports() {
   const res = await fetch(`${API_BASE}/reports`);
+  return handleJson(res);
+}
+
+export async function getServices(carModel?: string): Promise<any[]> {
+  const url = carModel ? `${API_BASE}/services?car_model=${encodeURIComponent(carModel)}` : `${API_BASE}/services`;
+  const res = await fetch(url);
+  return handleJson(res);
+}
+
+export async function createService(data: any) {
+  const res = await fetch(`${API_BASE}/services`, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+  return handleJson(res);
+}
+
+export async function updateService(id: string | number, data: any) {
+  const res = await fetch(`${API_BASE}/services/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  return handleJson(res);
+}
+
+export async function deleteService(id: string | number) {
+  const res = await fetch(`${API_BASE}/services/${id}`, { method: 'DELETE' });
   return handleJson(res);
 }

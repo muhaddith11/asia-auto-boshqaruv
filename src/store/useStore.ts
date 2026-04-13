@@ -8,7 +8,9 @@ import { getClients, getOrders, getWorkers, getParts,
   createClient, updateClient, deleteClient,
   createWorker, updateWorker, deleteWorker,
   createOrder, updateOrder, deleteOrder,
-  createPart, updatePart, deletePart
+  createPart, updatePart, deletePart,
+  getCars,
+  getServices, createService, updateService, deleteService
 } from '@/lib/api';
 
 interface AutoServisStore {
@@ -61,20 +63,7 @@ interface AutoServisStore {
   loadInitialData: () => Promise<void>;
 }
 
-const defaultMashinalar = [
-  'CHEVROLET MATIZ', 'CHEVROLET TICO', 'CHEVROLET DAMAS', 'CHEVROLET NEXIA 1', 'CHEVROLET NEXIA 2', 'CHEVROLET NEXIA 3', 'CHEVROLET LASSETI', 'CHEVROLET SPARK', 'CHEVROLET CAPTIVA 1, 2, 3', 'CHEVROLET CAPTIVA 4', 'CHEVROLET CAPTIVA 5', 'CHEVROLET GENTRA', 'CHEVROLET CRUZE', 'CHEVROLET COBALT', 'CHEVROLET EPICA', 'CHEVROLET ONIX', 'CHEVROLET MALIBU 1', 'CHEVROLET MALIBU 2', 'CHEVROLET MALIBU 2.4', 'CHEVROLET TRACKER 1', 'CHEVROLET TRACKER 2', 'CHEVROLET EQUINOX 1', 'CHEVROLET EQUINOX 2', 'CHEVROLET ORLANDO 1, 2', 'CHEVROLET MONZA 1.3, 1.5', 'CHEVROLET TRAVERSE 1', 'CHEVROLET TRAVERSE 2', 'CHEVROLET TAHOE 1', 'CHEVROLET TAHOE 2', 'CHEVROLET TRAILBLAZER',
-  'BYD SONG PLUS', 'BYD SONG PLUS GIBRID', 'BYD CHEMPION GIBRID', 'BYD CHAZOR', 'BYD SEAL', 'BYD XAN GIBRID', 'BYD SONG PRO', 'BYD SEAGULL', 'BYD TANG', 'BYD YUAN', 'BYD YUAN UP', 'BYD YUAN UP GIBRID',
-  'KIA CARNIVAL', 'KIA BONGO', 'KIA BONGO EV', 'KIA EV 3', 'KIA EV 5', 'KIA EV 6', 'KIA EV 9', 'KIA K 3', 'KIA K 5', 'KIA K 8', 'KIA K 8 RESTAYLIN', 'KIA K 9', 'KIA MORNING', 'KIA SELTOS', 'KIA SORENTO', 'KIA SPORTAGE',
-  'HYUNDAI ELANTRA', 'HYUNDAI CRETA', 'HYUNDAI IONIQ5', 'HYUNDAI IONIQ6', 'HYUNDAI IONIQ9', 'HYUNDAI PALISADE', 'HYUNDAI PORTER', 'HYUNDAI SANTA FE', 'HYUNDAI SONATA', 'HYUNDAI SONATA 2008', 'HYUNDAI STARIA', 'HYUNDAI STAREX', 'HYUNDAI TRANJET',
-  'CHERY ARIZO 6 PRO', 'CHERY ARIZO 7 PRO', 'CHERY TIGGO 2', 'CHERY TIGGO 6 PRO', 'CHERY TIGGO 7 PRO', 'CHERY TIGGO 8 PRO',
-  'HAVAL M6', 'HAVAL H6', 'HAVAL JOLION', 'HAVAL DARGO',
-  'JETOUR X 70', 'JETOUR X90', 'JETOUR X95', 'JETOUR DASHING',
-  'BESTUNE T 33', 'BESTUNE T 55', 'BESTUNE T 77', 'BESTUNE T 99', 'BESTUNE B 70',
-  'LEAPMOTORS C 01', 'LEAPMOTORS C 10', 'LEAPMOTORS C 11', 'LEAPMOTORS C 16',
-  'LADA VESTA', 'LADA X RAY', 'LADA GAZEL', 'LADA GRANTA',
-  'VOLKSWAGEN ID 3', 'VOLKSWAGEN ID 4', 'VOLKSWAGEN ID 6', 'VOLKSWAGEN CADDY',
-  'LI AUTO LI 6', 'LI AUTO LI 7', 'LI AUTO LI 8', 'LI AUTO LI 9', 'LI AUTO LI 9 RESTALING'
-].sort();
+const defaultMashinalar: string[] = [];
 
 export const useStore = create<AutoServisStore>()(
   persist(
@@ -182,16 +171,62 @@ export const useStore = create<AutoServisStore>()(
         }
       })),
 
-      addXizmat: (x) => set((state) => ({
-        xizmatlar: [...state.xizmatlar, { ...x, id: state.counters.xizmat }],
-        counters: { ...state.counters, xizmat: state.counters.xizmat + 1 }
-      })),
-      updateXizmat: (id, data) => set((state) => ({
-        xizmatlar: state.xizmatlar.map((x) => Number(x.id) === Number(id) ? { ...x, ...data } : x)
-      })),
-      deleteXizmat: (id) => set((state) => ({
-        xizmatlar: state.xizmatlar.filter((x) => Number(x.id) != Number(id))
-      })),
+      addXizmat: (x) => {
+        const tempId = -Date.now();
+        set((state) => ({
+          xizmatlar: [...state.xizmatlar, { ...x, id: tempId }],
+          counters: { ...state.counters, xizmat: state.counters.xizmat + 1 }
+        }));
+        
+        // Map to DB schema (best guess for brand/model from 'mashina' string)
+        const parts = x.mashina.split(' ');
+        const brand = parts[0] || 'Umumiy';
+        const model = parts.slice(1).join(' ') || '';
+
+        const apiData = {
+          name: x.nom,
+          price: x.narx,
+          brand: brand,
+          car_model: model || brand, // fallback
+          stavka: x.stavka || 0
+        };
+
+        createService(apiData).then((created) => {
+          if (!created) return;
+          const mapped = {
+            id: created.id,
+            nom: created.name,
+            narx: created.price,
+            mashina: created.brand === 'Umumiy' ? 'Umumiy' : `${created.brand} ${created.car_model}`.toUpperCase(),
+            stavka: created.stavka
+          };
+          set((state) => ({
+            xizmatlar: state.xizmatlar.map((s) => s.id === tempId ? mapped : s)
+          }));
+        }).catch(() => {});
+      },
+      updateXizmat: (id, data) => {
+        set((state) => ({
+          xizmatlar: state.xizmatlar.map((x) => String(x.id) === String(id) ? { ...x, ...data } : x)
+        }));
+        
+        // Map to DB schema if those fields were updated
+        const apiData: any = {};
+        if (data.nom) apiData.name = data.nom;
+        if (data.narx) apiData.price = data.narx;
+        if (data.mashina) apiData.car_model = data.mashina;
+        if (data.stavka !== undefined) apiData.stavka = data.stavka;
+
+        if (Object.keys(apiData).length > 0) {
+          updateService(id, apiData).catch(() => {});
+        }
+      },
+      deleteXizmat: (id) => {
+        set((state) => ({
+          xizmatlar: state.xizmatlar.filter((x) => String(x.id) !== String(id))
+        }));
+        deleteService(id).catch(() => {});
+      },
 
       addZapchast: (z) => {
         const tempId = -Date.now();
@@ -290,20 +325,45 @@ export const useStore = create<AutoServisStore>()(
       }),
       loadInitialData: async () => {
         try {
-          const [clients, orders, workers, parts] = await Promise.all([
+          console.log('📡 API: Ma\'lumotlarni so\'rash boshlandi...');
+          const [clients, orders, workers, parts, cars, services] = await Promise.all([
             getClients().catch(() => []),
             getOrders().catch(() => []),
             getWorkers().catch(() => []),
-            getParts().catch(() => [])
+            getParts().catch(() => []),
+            getCars().catch(() => []),
+            getServices().catch(() => [])
           ]);
+
+          console.log(`📦 API: Yuklandi: ${clients.length} mijoz, ${orders.length} buyurtma, ${workers.length} xodim, ${parts.length} zapchast, ${cars.length} mashina, ${services.length} xizmat.`);
+
+          // Fallback if cars are empty but we expect them (optional safety)
+          const mashinalarList = cars && cars.length > 0 
+            ? cars.map((c: any) => `${c.brand} ${c.name}`.toUpperCase()).sort() 
+            : [];
+
+          if (mashinalarList.length > 0) {
+             console.log('🚗 CAR_DATA_LOADED: Mashinalar ro\'yxati tayyor.');
+          } else {
+             console.warn('⚠️ CAR_DATA_EMPTY: Mashinalar ro\'yxati bo\'sh qaytdi.');
+          }
+
           set(() => ({
             mijozlar: clients || [],
             buyurtmalar: orders || [],
             xodimlar: workers || [],
-            zapchastlar: parts || []
+            zapchastlar: parts || [],
+            mashinalar: mashinalarList,
+            xizmatlar: services ? services.map((s: any) => ({
+              id: s.id,
+              nom: s.name,
+              narx: s.price,
+              mashina: s.brand === 'Umumiy' ? 'Umumiy' : `${s.brand} ${s.car_model}`.toUpperCase(),
+              stavka: s.stavka
+            })) : []
           }));
         } catch (err) {
-          // keep existing local data on failure
+          console.error('❌ Store: loadInitialData xatosi:', err);
         }
       }
     }),

@@ -26,6 +26,8 @@ export const viewport = {
   maximumScale: 1,
 };
 
+import DataLoader from "@/components/DataLoader";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="uz" className={`${inter.variable} h-full`}>
       <body style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
+        <DataLoader />
         {children}
         <PWAAux />
       </body>
