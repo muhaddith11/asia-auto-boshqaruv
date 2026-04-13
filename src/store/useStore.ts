@@ -127,14 +127,37 @@ export const useStore = create<AutoServisStore>()(
       addXodim: (x) => {
         const tempId = -Date.now();
         const now = new Date().toISOString();
+        
+        // Optimistic update
         set((state) => ({
           xodimlar: [...state.xodimlar, { ...x, id: tempId, status: 'aktiv', createdAt: now }],
           counters: { ...state.counters, xodim: state.counters.xodim + 1 }
         }));
-        createWorker(x as any).then((created) => {
-          if (!created) return;
-          set((state) => ({ xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? { ...created, createdAt: created.createdAt || now } : xx) }));
-        }).catch(() => {});
+
+        // Send ONLY essential fields to API to avoid schema mismatch
+        const apiData = {
+          ism: x.ism,
+          tel: x.tel,
+          mutax: x.mutax,
+          foiz: x.foiz,
+          izoh: x.izoh
+        };
+
+        createWorker(apiData as any).then((created) => {
+          if (!created) {
+             throw new Error("Server xodimni qabul qilmadi");
+          }
+          set((state) => ({ 
+            xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? { ...created, createdAt: created.createdAt || now } : xx) 
+          }));
+        }).catch((err) => {
+          console.error("Xodim qo'shishda xatolik:", err);
+          alert("Xodimni bazaga saqlab bo'lmadi! Iltimos, qaytadan urinib ko'ring.");
+          // Rollback local state
+          set((state) => ({
+            xodimlar: state.xodimlar.filter(xx => xx.id !== tempId)
+          }));
+        });
       },
       updateXodim: (id, data) => {
         set((state) => ({ xodimlar: state.xodimlar.map((x) => x.id === id ? { ...x, ...data } : x) }));
