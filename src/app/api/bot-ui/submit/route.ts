@@ -49,8 +49,7 @@ export async function POST(req: NextRequest) {
       total: totalSrv + totalZap,
       final: totalSrv + totalZap,
       zarplata: 0,
-      pribil: 0,
-      worker_id: worker_id
+      pribil: 0
     };
 
     // Before inserting, double check to remove any JS-only camelCase props if needed.
