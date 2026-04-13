@@ -29,20 +29,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -53,19 +41,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -77,14 +53,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -93,20 +61,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -119,27 +75,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -151,20 +91,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -175,20 +103,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -199,28 +115,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -233,27 +133,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -265,20 +149,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -289,20 +161,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -313,28 +173,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -347,27 +191,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -379,20 +207,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -403,20 +219,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -427,28 +231,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -461,27 +249,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -493,20 +265,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -517,20 +277,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -541,28 +289,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -575,27 +307,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -607,20 +323,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -631,20 +335,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -655,28 +347,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -689,27 +365,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -721,20 +381,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -745,20 +393,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -769,28 +405,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -803,20 +423,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -827,19 +435,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -851,14 +447,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -867,20 +455,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -893,27 +469,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -925,20 +485,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -949,20 +497,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -973,28 +509,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -1007,20 +527,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1031,19 +539,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1055,14 +551,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1071,20 +559,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1097,20 +573,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1121,19 +585,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1145,14 +597,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1161,20 +605,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1187,14 +619,6 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 1000000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 1000000
         },
@@ -1203,19 +627,7 @@ export async function GET() {
           "price": 200000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 200000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 100000
         },
         {
@@ -1227,20 +639,8 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 800000
         },
         {
           "name": "💻 Programma yozish",
@@ -1251,20 +651,8 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 100000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 500000
         },
         {
           "name": "⛽ Benzin nasos ko'rish",
@@ -1275,19 +663,7 @@ export async function GET() {
           "price": 200000
         },
         {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
           "price": 1200000
         },
         {
@@ -1303,27 +679,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -1335,20 +695,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -1359,20 +707,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -1383,20 +719,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -1409,27 +733,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -1441,20 +749,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -1465,20 +761,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -1489,28 +773,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -1523,20 +791,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1547,19 +803,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1571,14 +815,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1587,20 +823,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1613,20 +837,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1637,19 +849,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1661,14 +861,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1677,20 +869,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1703,20 +883,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1727,19 +895,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1751,14 +907,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1767,20 +915,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1793,20 +929,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1817,19 +941,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1841,14 +953,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1857,20 +961,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1883,20 +975,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -1907,19 +987,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -1931,14 +999,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -1947,20 +1007,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -1973,27 +1021,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2005,20 +1037,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2029,20 +1049,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2053,28 +1061,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2087,27 +1079,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2119,20 +1095,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2143,20 +1107,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2167,28 +1119,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2201,27 +1137,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2233,20 +1153,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2257,20 +1165,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2281,28 +1177,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2315,27 +1195,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2347,20 +1211,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2371,20 +1223,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2395,28 +1235,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2429,27 +1253,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2461,20 +1269,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2485,20 +1281,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2509,28 +1293,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2543,27 +1311,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 400000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 400000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2575,20 +1327,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2599,20 +1339,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2623,28 +1351,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2657,27 +1369,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2689,20 +1385,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2713,20 +1397,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2737,28 +1409,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2771,27 +1427,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 600000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 600000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2803,20 +1443,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2827,20 +1455,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2851,28 +1467,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -2885,27 +1485,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 600000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 600000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -2917,20 +1501,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -2941,20 +1513,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -2965,28 +1525,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3001,27 +1545,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 600000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 600000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -3033,20 +1561,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -3057,20 +1573,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -3081,20 +1585,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3107,27 +1599,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -3139,20 +1615,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -3163,20 +1627,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -3187,20 +1639,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3213,20 +1653,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -3237,19 +1665,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -3261,14 +1677,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -3277,20 +1685,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -3303,20 +1699,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -3327,19 +1711,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -3351,14 +1723,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -3367,20 +1731,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -3393,20 +1745,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -3417,19 +1757,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -3441,14 +1769,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -3457,20 +1777,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -3483,27 +1791,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -3515,20 +1807,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -3539,20 +1819,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -3563,20 +1831,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3589,27 +1845,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -3621,20 +1861,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -3645,20 +1873,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -3669,20 +1885,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3695,27 +1899,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -3727,20 +1915,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -3751,20 +1927,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -3775,20 +1939,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3801,27 +1953,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -3833,20 +1969,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -3857,20 +1981,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -3881,20 +1993,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -3907,14 +2007,6 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 150000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 150000
         },
@@ -3923,19 +2015,7 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 50000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 50000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 50000
         },
         {
@@ -3947,20 +2027,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 100000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 200000
         },
         {
           "name": "💻 Programma yozish",
@@ -3971,14 +2039,6 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 100000
         },
@@ -3987,20 +2047,8 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 50000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4013,27 +2061,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4045,20 +2077,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4069,20 +2089,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4093,20 +2101,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4119,27 +2115,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4151,20 +2131,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4175,20 +2143,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4199,20 +2155,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4225,27 +2169,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 400000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 400000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4257,20 +2185,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4281,20 +2197,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4305,20 +2209,8 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4333,27 +2225,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4365,20 +2241,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4389,20 +2253,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4413,28 +2265,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4447,27 +2283,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4479,20 +2299,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4503,20 +2311,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4527,28 +2323,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4561,27 +2341,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4593,20 +2357,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4617,20 +2369,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4641,28 +2381,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4675,27 +2399,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4707,20 +2415,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4731,20 +2427,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4755,28 +2439,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4789,27 +2457,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4821,20 +2473,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4845,20 +2485,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4869,28 +2497,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -4903,27 +2515,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -4935,20 +2531,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -4959,20 +2543,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -4983,28 +2555,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5019,27 +2575,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5051,20 +2591,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5075,20 +2603,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5099,28 +2615,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5133,27 +2633,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5165,20 +2649,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5189,20 +2661,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5213,28 +2673,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5247,27 +2691,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5279,20 +2707,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5303,20 +2719,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5327,28 +2731,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5361,27 +2749,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5393,20 +2765,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5417,20 +2777,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5441,28 +2789,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5477,27 +2809,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5509,20 +2825,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5533,20 +2837,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5557,28 +2849,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5591,27 +2867,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5623,20 +2883,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5647,20 +2895,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5671,28 +2907,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5705,27 +2925,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5737,20 +2941,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5761,20 +2953,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5785,28 +2965,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5819,27 +2983,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5851,20 +2999,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5875,20 +3011,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -5899,28 +3023,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -5935,27 +3043,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -5967,20 +3059,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -5991,20 +3071,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -6015,28 +3083,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -6049,27 +3101,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 600000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 600000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -6081,20 +3117,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -6105,20 +3129,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -6129,28 +3141,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -6163,27 +3159,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 500000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 500000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -6195,20 +3175,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -6219,20 +3187,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -6243,28 +3199,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -6277,27 +3217,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -6309,20 +3233,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -6333,20 +3245,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -6357,28 +3257,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -6391,27 +3275,11 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -6423,20 +3291,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 400000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -6447,20 +3303,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -6471,28 +3315,12 @@ export async function GET() {
           "price": 300000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 300000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -6507,20 +3335,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -6531,20 +3347,8 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
           "price": 200000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 200000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -6555,14 +3359,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -6571,20 +3367,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -6597,28 +3381,12 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
           "price": 500000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
@@ -6637,20 +3405,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
           "name": "🛞 Batareya yechish",
           "price": 12000000
-        },
-        {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
         },
         {
           "name": "🔌 Zaryadlash portini remonti",
@@ -6661,20 +3417,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -6687,28 +3431,12 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
           "price": 500000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
@@ -6727,20 +3455,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
           "name": "🛞 Batareya yechish",
           "price": 12000000
-        },
-        {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
         },
         {
           "name": "🔌 Zaryadlash portini remonti",
@@ -6751,20 +3467,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -6777,28 +3481,12 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
           "price": 500000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
@@ -6817,20 +3505,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
           "name": "🛞 Batareya yechish",
           "price": 12000000
-        },
-        {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
         },
         {
           "name": "🔌 Zaryadlash portini remonti",
@@ -6841,20 +3517,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -6869,14 +3533,6 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 300000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 300000
         },
@@ -6885,19 +3541,7 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 50000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 100000
         },
         {
@@ -6909,20 +3553,8 @@ export async function GET() {
           "price": 400000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 500000
         },
         {
           "name": "💻 Programma yozish",
@@ -6933,27 +3565,11 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 50000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 50000
         },
         {
           "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
           "price": 100000
         },
         {
@@ -6967,14 +3583,6 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 300000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 300000
         },
@@ -6983,19 +3591,7 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 50000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 100000
         },
         {
@@ -7007,20 +3603,8 @@ export async function GET() {
           "price": 400000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 500000
         },
         {
           "name": "💻 Programma yozish",
@@ -7031,27 +3615,11 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 50000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 50000
         },
         {
           "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
           "price": 100000
         },
         {
@@ -7065,14 +3633,6 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 300000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 300000
         },
@@ -7081,19 +3641,7 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 50000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 100000
         },
         {
@@ -7105,20 +3653,8 @@ export async function GET() {
           "price": 400000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 500000
         },
         {
           "name": "💻 Programma yozish",
@@ -7129,27 +3665,11 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 50000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 50000
         },
         {
           "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
           "price": 100000
         },
         {
@@ -7163,14 +3683,6 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 300000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 300000
         },
@@ -7179,19 +3691,7 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 50000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 100000
         },
         {
@@ -7203,20 +3703,8 @@ export async function GET() {
           "price": 400000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 500000
         },
         {
           "name": "💻 Programma yozish",
@@ -7227,27 +3715,11 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 50000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 50000
         },
         {
           "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
           "price": 100000
         },
         {
@@ -7263,20 +3735,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -7287,19 +3747,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -7311,14 +3759,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -7327,20 +3767,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -7353,20 +3781,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -7377,19 +3793,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -7401,14 +3805,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -7417,20 +3813,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -7443,20 +3827,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
           "name": "🔋 Batareya holatini tekshirish",
           "price": 200000
-        },
-        {
-          "name": "🔋 Batareya holatini tekshirish",
-          "price": 200000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
-          "price": 500000
         },
         {
           "name": "🧵 Simlarni to'g'irlash (Izolatsiya)",
@@ -7467,19 +3839,7 @@ export async function GET() {
           "price": 1200000
         },
         {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
           "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "📱 Ilovalar (App) o'rnatish",
-          "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
           "price": 100000
         },
         {
@@ -7491,14 +3851,6 @@ export async function GET() {
           "price": 12000000
         },
         {
-          "name": "🛞 Batareya yechish",
-          "price": 12000000
-        },
-        {
-          "name": "🔌 Zaryadlash portini remonti",
-          "price": 600000
-        },
-        {
           "name": "🔌 Zaryadlash portini remonti",
           "price": 600000
         },
@@ -7507,20 +3859,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
           "name": "🌀 Konditsioner remont",
           "price": 600000
-        },
-        {
-          "name": "🌀 Konditsioner remont",
-          "price": 600000
-        },
-        {
-          "name": "⚡ Invertor holatini tekshirish",
-          "price": 100000
         },
         {
           "name": "⚡ Invertor holatini tekshirish",
@@ -7533,14 +3873,6 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 50000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 300000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 300000
         },
@@ -7549,19 +3881,7 @@ export async function GET() {
           "price": 50000
         },
         {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 50000
-        },
-        {
           "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
-          "price": 100000
-        },
-        {
-          "name": "🌀 Drosil tozalash",
           "price": 100000
         },
         {
@@ -7573,20 +3893,8 @@ export async function GET() {
           "price": 400000
         },
         {
-          "name": "💉 Injector tozalash",
-          "price": 400000
-        },
-        {
           "name": "🛣️ Probeg tekshirish",
           "price": 100000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
-        },
-        {
-          "name": "💻 Programma yozish",
-          "price": 400000
         },
         {
           "name": "💻 Programma yozish",
@@ -7597,27 +3905,11 @@ export async function GET() {
           "price": 600000
         },
         {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 50000
-        },
-        {
           "name": "⛽ Gaz regulirovka",
           "price": 50000
         },
         {
           "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 100000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
           "price": 100000
         },
         {
@@ -7633,27 +3925,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -7665,20 +3941,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -7689,20 +3953,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -7713,28 +3965,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -7747,27 +3983,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -7779,20 +3999,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -7803,20 +4011,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -7827,28 +4023,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -7861,27 +4041,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -7893,20 +4057,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -7917,20 +4069,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -7941,28 +4081,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -7975,27 +4099,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -8007,20 +4115,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -8031,20 +4127,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -8055,28 +4139,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -8089,27 +4157,11 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🔍 Diagnostika",
-          "price": 100000
-        },
-        {
-          "name": "⛽ Benzin sistemasini ko'rish",
-          "price": 700000
-        },
-        {
           "name": "⛽ Benzin sistemasini ko'rish",
           "price": 700000
         },
         {
           "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🚫 Tabloda datchik o'chirish",
-          "price": 100000
-        },
-        {
-          "name": "🕯️ Svechalarni almashtirish",
           "price": 100000
         },
         {
@@ -8121,20 +4173,8 @@ export async function GET() {
           "price": 100000
         },
         {
-          "name": "🌀 Drosil tozalash",
-          "price": 100000
-        },
-        {
           "name": "💉 Injector tozalash",
           "price": 600000
-        },
-        {
-          "name": "💉 Injector tozalash",
-          "price": 600000
-        },
-        {
-          "name": "🛣️ Probeg tekshirish",
-          "price": 100000
         },
         {
           "name": "🛣️ Probeg tekshirish",
@@ -8145,20 +4185,8 @@ export async function GET() {
           "price": 800000
         },
         {
-          "name": "💻 Programma yozish",
-          "price": 800000
-        },
-        {
           "name": "🚀 Stage urish",
           "price": 600000
-        },
-        {
-          "name": "🚀 Stage urish",
-          "price": 600000
-        },
-        {
-          "name": "⛽ Gaz regulirovka",
-          "price": 100000
         },
         {
           "name": "⛽ Gaz regulirovka",
@@ -8169,28 +4197,12 @@ export async function GET() {
           "price": 150000
         },
         {
-          "name": "⛽ Benzin nasos ko'rish",
-          "price": 150000
-        },
-        {
-          "name": "🧵 Simlarni to'g'irlash",
-          "price": 200000
-        },
-        {
           "name": "🧵 Simlarni to'g'irlash",
           "price": 200000
         },
         {
           "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
           "price": 1200000
-        },
-        {
-          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
-          "price": 1200000
-        },
-        {
-          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
-          "price": 300000
         },
         {
           "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
@@ -8198,7 +4210,1270 @@ export async function GET() {
         }
       ]
     },
-    "Chevrolet": {}
+    "Chevrolet": {
+      "matiz": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 120000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 40000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 50000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 70000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 50000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "tico": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 120000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 40000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 50000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 70000
+        }
+      ],
+      "damas": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 120000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 40000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 50000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 70000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 50000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "nexia 1, 2 (soh-doh)": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 120000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 40000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 50000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 70000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 500000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 80000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "nexia 3": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 150000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 70000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 100000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 200000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "spark": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 150000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 70000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 100000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 200000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "cobalt": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 150000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 70000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 100000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 200000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "gentra": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 150000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 70000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 100000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 200000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 200000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "lacetti 1.8": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 150000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 70000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 100000
+        }
+      ],
+      "tracker 1": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 400000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 250000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "tracker 2": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 400000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 250000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "malibu 1": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 400000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 300000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "malibu 2 (2.4 atmosphera)": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 400000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 300000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "malibu 2 (1.5 turbo)": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "malibu 2 (2.0 turbo)": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "captiva 1, 2, 3": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 400000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 300000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "captiva 4": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 700000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 400000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 300000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        }
+      ],
+      "equinox": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 600000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 600000
+        }
+      ],
+      "orlando 1, 2": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 70000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 100000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 50000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 400000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 300000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 100000
+        }
+      ],
+      "monza 1.3 , 1.5": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 50000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 80000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 800000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 500000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 250000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 400000
+        }
+      ],
+      "traverse 1": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 800000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 200000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 600000
+        }
+      ],
+      "traverse 2": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 800000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 200000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 600000
+        }
+      ],
+      "tahoe 1": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 800000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 200000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 600000
+        }
+      ],
+      "tahoe 2": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 800000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 500000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 200000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 600000
+        }
+      ],
+      "trailblazer": [
+        {
+          "name": "🔍 Diagnostika",
+          "price": 100000
+        },
+        {
+          "name": "⛽ Benzin sistemasini ko'rish",
+          "price": 1000000
+        },
+        {
+          "name": "🚫 Tabloda datchik o'chirish",
+          "price": 50000
+        },
+        {
+          "name": "🕯️ Svechalarni almashtirish",
+          "price": 100000
+        },
+        {
+          "name": "🌀 Drosil tozalash",
+          "price": 100000
+        },
+        {
+          "name": "💉 Injector tozalash",
+          "price": 600000
+        },
+        {
+          "name": "🛣️ Probeg tekshirish",
+          "price": 100000
+        },
+        {
+          "name": "💻 Programma yozish",
+          "price": 600000
+        },
+        {
+          "name": "🚀 Stage urish",
+          "price": 600000
+        },
+        {
+          "name": "⛽ Gaz regulirovka",
+          "price": 50000
+        },
+        {
+          "name": "⛽ Benzin nasos ko'rish",
+          "price": 400000
+        },
+        {
+          "name": "🧵 Simlarni to'g'irlash",
+          "price": 100000
+        },
+        {
+          "name": "🇷🇺 Russifikatsiya (Rus tilida qilish)",
+          "price": 150000
+        },
+        {
+          "name": "📱 Prilojeniye (Ilovalar) o'rnatish",
+          "price": 600000
+        }
+      ]
+    }
   }
 };
   return NextResponse.json(data);
