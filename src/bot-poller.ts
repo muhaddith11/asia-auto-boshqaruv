@@ -49,6 +49,9 @@ async function handleUpdate(update: any) {
       
       console.log(`Checking worker for phone: ${normalizedPhone} (raw: ${rawPhone})`);
       
+      // DEBUG: CHECK TOTAL WORKERS COUNT
+      const { count: totalWorkers } = await supabase.from('workers').select('*', { count: 'exact', head: true });
+
       const { data: worker, error: dbError } = await supabase
         .from('workers')
         .select('*')
@@ -68,7 +71,7 @@ async function handleUpdate(update: any) {
       if (!worker) {
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Kechirasiz, sizning telefon raqamingiz (${rawPhone}) xodimlar ro'yxatida topilmadi. Iltimos, rahbaringizga murojaat qiling.`
+          text: `🕵️‍♂️ Diagnostika:\n• Raqam aniqlandi: ${normalizedPhone}\n• Bazadagi jami xodimlar soni: ${totalWorkers || 0}\n\nKechirasiz, bu raqam xodimlar ro'yxatida topilmadi. Agar bazada xodimlar bo'lsa-yu, bu yerda 0 chiqsa - Supabase RLS sozlamalarini tekshiring.`
         });
       } else {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
@@ -76,7 +79,7 @@ async function handleUpdate(update: any) {
         const webAppUrl = `${baseUrl}/bot-ui?phone=${normalizedPhone}`;
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `Xush kelibsiz, ${worker.ism}! Pastdagi tugmani bosing:`,
+          text: `✅ Xush kelibsiz, ${worker.ism}!\nAsia Auto Service tizimiga kirdingiz.`,
           reply_markup: {
             inline_keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]]
           }

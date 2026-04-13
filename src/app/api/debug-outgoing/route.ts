@@ -43,9 +43,26 @@ export async function GET() {
     }
   }
 
+  // Database Row Test
+  try {
+    const { default: supabase } = await import('@/lib/supabaseClient');
+    const { count, error: countError } = await supabase.from('workers').select('*', { count: 'exact', head: true });
+    const { data: firstRow, error: rowError } = await supabase.from('workers').select('*').limit(1).maybeSingle();
+    
+    results.push({
+      name: 'Supabase Data Test',
+      ok: !countError && !rowError,
+      workerCount: count,
+      firstWorkerFound: !!firstRow,
+      error: (countError?.message || rowError?.message) || null
+    });
+  } catch (err: any) {
+    results.push({ name: 'Supabase Data Test', ok: false, error: err.message });
+  }
+
   return NextResponse.json({
     timestamp: new Date().toISOString(),
     results: results,
-    explanation: "If Telegram API fails with timeout but Google works, then Hostinger blocks Telegram specifically."
+    explanation: "If DNS is OK but fetch fails, firewall exists. If fetch is OK but Data Test has 0 count or error, check RLS policies in Supabase."
   });
 }
