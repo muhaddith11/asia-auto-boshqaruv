@@ -11,6 +11,16 @@ export async function GET() {
 
   const results = [];
 
+  // DNS Test
+  try {
+    const dns = await import('dns');
+    const hostname = new URL(process.env.SUPABASE_URL || '').hostname;
+    const { address } = await dns.promises.lookup(hostname);
+    results.push({ name: 'DNS Lookup (Supabase)', ok: true, address: address });
+  } catch (err: any) {
+    results.push({ name: 'DNS Lookup (Supabase)', ok: false, error: err.message });
+  }
+
   for (const test of tests) {
     try {
       const start = Date.now();

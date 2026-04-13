@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
+const supabaseUrl = (process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+const supabaseKey = (process.env.SUPABASE_ANON_KEY || '').trim();
 
 // Create a safe, non-crashing mock if credentials are missing
 const createMockSupabase = () => {
