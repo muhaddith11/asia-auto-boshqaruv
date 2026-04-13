@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const data = {
-    brands: ['Chevrolet', 'BYD', 'Kia', 'Hyundai', 'Chery', 'HAVAL', 'Jetour', 'Bestune', 'Leapmotors', 'Lada', 'Volkswagen', 'Daewoo', 'Toyota', 'Mersedes', 'BMW', 'Boshqa'],
+    brands: ['Chevrolet', 'BYD', 'Kia', 'Hyundai', 'Chery', 'HAVAL', 'Jetour', 'Bestune', 'Leapmotors', 'Lada', 'Volkswagen', 'Li auto', 'Daewoo', 'Toyota', 'Mersedes', 'BMW', 'Boshqa'],
     catalog: {
       'Chevrolet': {
         'matiz': [
