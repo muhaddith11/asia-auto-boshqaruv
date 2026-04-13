@@ -7,44 +7,79 @@ if (!token) {
   // Don't exit process here because it runs inside instrumentation hook
 }
 
-async function sendTg(method: string, payload: any) {
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const result = await res.json();
-    if (!result.ok) {
-      console.error(`Telegram API error (${method}):`, result);
+async function setChatMenuButton(chatId: string, url: string) {
+  await sendTg('setChatMenuButton', {
+    chat_id: chatId,
+    menu_button: {
+      type: 'web_app',
+      text: '🆕 Buyurtma',
+      web_app: { url }
     }
-    return result;
-  } catch (e) {
-    console.error(`Telegram fetch error (${method}):`, e);
-    return { ok: false, error: String(e) };
-  }
+  });
+}
+
+async function resetMenuButton(chatId: string) {
+  await sendTg('setChatMenuButton', {
+    chat_id: chatId,
+    menu_button: { type: 'default' }
+  });
 }
 
 async function handleUpdate(update: any) {
   try {
     if (!update.message) return;
     const { chat, text, contact } = update.message;
-    const chatId = chat.id;
+    const chatId = chat.id.toString();
 
-    if (text === '/start') {
-      await sendTg('sendMessage', {
-        chat_id: chatId,
-        text: "Salom! Asia Auto Service xodimlar botiga (Polling Mode) xush kelibsiz.",
-        reply_markup: {
-          keyboard: [[{ text: "📱 Ro'yxatdan o'tish (Tel raqamni yuborish)", request_contact: true }]],
-          resize_keyboard: true,
-          one_time_keyboard: true
-        }
-      });
-    } 
-    else if (contact) {
+    // 1. Check if the worker is ALREADY recognized by Telegram ID
+    const { data: workerById, error: idError } = await supabase
+      .from('workers')
+      .select('*')
+      .eq('telegram', chatId)
+      .maybeSingle();
+
+    if (idError) console.error('Supabase ID Search Error:', idError);
+
+    // Helper: Build persistent keyboard
+    const getPersistentKeyboard = (worker: any) => {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
+      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
+      return {
+        keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]],
+        resize_keyboard: true,
+        persistent: true
+      };
+    };
+
+    const enableButtons = async (worker: any) => {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
+      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
+      await setChatMenuButton(chatId, webAppUrl);
+    };
+
+    // --- CASE A: Already recognized worker ---
+    if (workerById) {
+      await enableButtons(workerById);
+      
+      if (text === '/start') {
+        await sendTg('sendMessage', {
+          chat_id: chatId,
+          text: `✅ Xush kelibsiz, ${workerById.ism}!\nSiz tizimda tanilgansiz. Pastdagi yoki ko'k 'Menu' tugmasidan foydalanishingiz mumkin.`,
+          reply_markup: getPersistentKeyboard(workerById)
+        });
+      } else {
+        await sendTg('sendMessage', {
+          chat_id: chatId,
+          text: "🆕 Yangi buyurtma kiritish uchun pastdagi tugmani bosing.",
+          reply_markup: getPersistentKeyboard(workerById)
+        });
+      }
+      return;
+    }
+
+    // --- CASE B: Registration flow (Contact shared) ---
+    if (contact) {
       const rawPhone = contact.phone_number;
-      // Normalize: remove all non-digits
       const normalizedPhone = rawPhone.replace(/\D/g, '');
       
       const { data: allWorkers, error: dbError } = await supabase
@@ -53,15 +88,10 @@ async function handleUpdate(update: any) {
 
       if (dbError) {
         console.error('Database query error:', dbError);
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: `Texnik xatolik: Ma'lumotlar bazasiga ulanib bo'lmadi.\nXato: ${dbError.message}`
-        });
         return;
       }
 
-      // Find worker in JS to bypass any DB syntax issues (like '+' misinterpreted)
-      const searchTarget = normalizedPhone.slice(-9); // last 9 digits
+      const searchTarget = normalizedPhone.slice(-9);
       const worker = allWorkers?.find((w: any) => {
         if (!w.tel) return false;
         const dbNormalized = String(w.tel).replace(/\D/g, '');
@@ -69,23 +99,43 @@ async function handleUpdate(update: any) {
       });
 
       if (!worker) {
+        await resetMenuButton(chatId);
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `🕵️‍♂️ Diagnostika:\n• Raqam aniqlandi: ${normalizedPhone}\n• Bazadagi jami xodimlar soni: ${allWorkers?.length || 0}\n\nKechirasiz, bu raqam xodimlar ro'yxatida topilmadi. Agar bazada xodimlar bo'lsa-yu, bu yerda 0 chiqsa - Supabase RLS sozlamalarini tekshiring.`
+          text: `Brat, uzr, sizi raqamingiz tizimda topilmadi. ❌\n\nIltimos, rahbaringizga ayting, sizni saytda 'Xodimlar' bo'limiga qo'shib qo'ysin. Shundan so'ng botni ishlatishingiz mumkin.`,
+          reply_markup: { remove_keyboard: true }
         });
       } else {
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
-        // Use normalized phone for the WebApp URL + cache busting
-        const webAppUrl = `${baseUrl}/bot-ui?phone=${normalizedPhone}&v=${Date.now()}`;
+        // SAVE Telegram ID
+        await supabase
+          .from('workers')
+          .update({ telegram: chatId })
+          .eq('id', worker.id);
+
+        await enableButtons(worker);
         await sendTg('sendMessage', {
           chat_id: chatId,
-          text: `✅ Xush kelibsiz, ${worker.ism}!\nAsia Auto Service tizimiga kirdingiz.`,
-          reply_markup: {
-            inline_keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]]
-          }
+          text: `✅ Rahmat, ${worker.ism}!\nEndi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
+          reply_markup: getPersistentKeyboard(worker)
         });
       }
+      return;
     }
+
+    // --- CASE C: Stranger or /start ---
+    if (text === '/start') {
+      await resetMenuButton(chatId);
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: "Salom! Asia Auto Service xodimlar botiga (Polling Mode) xush kelibsiz. ✨\n\nIltimos, ishni boshlash uchun raqamingizni tasdiqlang:",
+        reply_markup: {
+          keyboard: [[{ text: "📱 Raqamni tasdiqlash", request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      });
+    }
+
   } catch (err) {
     console.error('Error handling update:', err);
   }
