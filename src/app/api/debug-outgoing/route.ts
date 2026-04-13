@@ -6,6 +6,7 @@ export async function GET() {
   const tests = [
     { name: 'Google', url: 'https://www.google.com' },
     { name: 'Telegram Bot API', url: `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getMe` },
+    { name: 'Supabase API', url: `${process.env.SUPABASE_URL}/rest/v1/` },
   ];
 
   const results = [];
