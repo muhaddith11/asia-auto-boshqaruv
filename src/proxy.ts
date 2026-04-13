@@ -18,6 +18,7 @@ export function proxy(request: NextRequest) {
     normalizedPath.startsWith('/api/bot-test') || 
     normalizedPath.startsWith('/api/debug-env') || 
     normalizedPath.startsWith('/api/debug-tg') || 
+    normalizedPath.startsWith('/api/debug-db') || 
     normalizedPath.startsWith('/bot-ui')
   ) {
     return NextResponse.next();
