@@ -20,14 +20,21 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, error: 'Telefon raqami yuborilmadi' }, { status: 400 });
     }
 
-    const { data: worker } = await supabase
-        .from('workers')
-        .select('*')
-        .or(`tel.eq.${workerPhone},tel.eq.+${workerPhone}`)
-        .single();
+    // Normalize input phone: remove all non-digits
+    const cleanInputPhone = workerPhone.replace(/\D/g, '');
+    const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
+
+    // Fetch all workers and find match manually to handle formatting differences in DB
+    const { data: allWorkers } = await supabase.from('workers').select('*');
+    
+    const worker = allWorkers?.find((w: any) => {
+        if (!w.tel) return false;
+        const dbNormalized = String(w.tel).replace(/\D/g, '');
+        return dbNormalized.endsWith(searchTarget) || dbNormalized === cleanInputPhone;
+    });
 
     if (!worker) {
-        console.warn(`Tizimda yo'q xodim urinishi: ${workerPhone}`);
+        console.warn(`Tizimda yo'q xodim urinishi: ${workerPhone} (Clean: ${cleanInputPhone})`);
         return NextResponse.json({ 
             ok: false, 
             error: 'Siz tizimda ro\'yxatdan o\'tmagansiz. Iltimos, adminga murojaat qiling.' 
