@@ -358,7 +358,7 @@ export default function OrdersPage() {
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
                                 <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text)' }}>{brand}</span>
-                                {model && <span style={{ fontSize: 10, color: 'var(--text3)' }}>{model}</span>}
+                                {model && <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text)' }}>{model}</span>}
                               </div>
                             );
                           })()}
