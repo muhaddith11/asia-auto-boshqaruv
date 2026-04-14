@@ -70,6 +70,7 @@ export interface OrderService extends Xizmat {
 
 export interface OrderZap extends Zapchast {
   qty: number;
+  quantity?: number; // Legacy/Bot support
 }
 
 export interface Buyurtma {
