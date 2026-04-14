@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       : "Xizmat kiritilmagan";
       
     const zapList = parts?.length > 0 
-      ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${(Number(p.price) * p.quantity).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${totalZap.toLocaleString()} UZS\n`
+      ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${(Number(p.price) * p.quantity).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${partsTotal.toLocaleString()} UZS\n`
       : "";
 
     const baseReceipt = `📣 YANGI CHEK (Nusxa)
@@ -122,10 +122,10 @@ export async function POST(req: NextRequest) {
 
 🛠 XIZMATLAR:
 ${srvList}
-🔹 Xizmatlar jami: ${totalSrv.toLocaleString()} UZS
+🔹 Xizmatlar jami: ${servicesTotal.toLocaleString()} UZS
 ${zapList}
 ---------------------------
-💰 UMUMIY SUMMA: ${(totalSrv + totalZap).toLocaleString()} UZS
+💰 UMUMIY SUMMA: ${(servicesTotal + partsTotal).toLocaleString()} UZS
 
 (Ushbu chek id: #${insertedData?.[0]?.id || 'yangi'})`;
 
