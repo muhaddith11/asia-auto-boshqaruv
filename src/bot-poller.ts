@@ -165,16 +165,27 @@ let isPollingStarted = false;
 
 export async function startBotPolling() {
   if (isPollingStarted) return;
-  isPollingStarted = true;
-
-  console.log('Bot Poller starting from Instrumentation...');
   
+  if (!token) {
+    console.error('❌ BOT_ERROR: TELEGRAM_BOT_TOKEN topilmadi! .env.local yoki Dokploy sozlamalarini tekshiring.');
+    return;
+  }
+
+  isPollingStarted = true;
+  console.log('🤖 Bot Poller ishga tushmoqda (Polling Mode)...');
+  
+  if (!supabase) {
+    console.warn('⚠️ BOT_WARNING: Supabase bog\'lanishi yo\'q. Bot xodimlarni taniy olmaydi.');
+  }
+
   try {
     // Delete webhook first to enable polling
-    await sendTg('deleteWebhook', { drop_pending_updates: true });
-    console.log('Webhook deleted, polling enabled.');
+    const delRes = await sendTg('deleteWebhook', { drop_pending_updates: true });
+    if (delRes.ok) {
+      console.log('✅ Webhook o\'chirildi, Polling rejimiga o\'childi.');
+    }
   } catch (e) {
-    console.error('Failed to delete webhook:', e);
+    console.error('❌ Failed to delete webhook:', e);
   }
 
   while (true) {
