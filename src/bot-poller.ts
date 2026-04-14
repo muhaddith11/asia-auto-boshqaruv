@@ -163,6 +163,13 @@ let lastUpdateId = 0;
 
 let isPollingStarted = false;
 
+export function getPollingStatus() {
+  return {
+    isStarted: isPollingStarted,
+    lastUpdateId
+  };
+}
+
 export async function startBotPolling() {
   if (isPollingStarted) return;
   
@@ -190,17 +197,30 @@ export async function startBotPolling() {
 
   while (true) {
     try {
+      if (lastUpdateId === 0) console.log('🔍 Checking for initial updates...');
+      
       const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`);
+      
+      if (!res.ok) {
+        console.error('❌ Telegram fetch failed:', res.status, res.statusText);
+        await new Promise(r => setTimeout(r, 5000));
+        continue;
+      }
+
       const data: any = await res.json();
 
       if (data.ok && data.result && data.result.length > 0) {
+        console.log(`📥 Received ${data.result.length} updates`);
         for (const update of data.result) {
           await handleUpdate(update);
           lastUpdateId = update.update_id;
         }
+      } else if (!data.ok) {
+        console.error('❌ Telegram API error in loop:', data);
+        await new Promise(r => setTimeout(r, 5000));
       }
     } catch (err) {
-      console.error('Polling error:', err);
+      console.error('❌ Polling loop error:', err);
       await new Promise(r => setTimeout(r, 5000));
     }
   }
