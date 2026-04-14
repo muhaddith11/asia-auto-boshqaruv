@@ -4,7 +4,7 @@ import ClientsContent from '@/components/ClientsContent';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Mijozlar - AutoServis Pro',
+  title: 'Mijozlar - AsiaAutoService',
   description: 'Mijozlar bazasini boshqarish',
 };
 

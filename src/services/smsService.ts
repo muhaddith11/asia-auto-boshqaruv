@@ -22,10 +22,10 @@ export const sendSMS = async (phone: string, message: string) => {
 
 export const getStatusMessage = (status: string, orderId: string, mashina: string) => {
   const templates: Record<string, string> = {
-    'yaratildi': `Assalomu alaykum! Sizing #${orderId} raqamli buyurtmangiz qabul qilindi. Mashina: ${mashina}. AutoServis Pro.`,
-    'tamirlanmoqda': `Hurmatli mijoz! Sizning #${orderId} buyurtmangiz bo'yicha ishlar boshlandi. Mashina: ${mashina}. AutoServis Pro.`,
-    'tulangan': `Xushxabar! Sizning #${orderId} buyurtmangiz bo'yicha barcha ishlar yakunlandi. Mashina: ${mashina}. Uni olib ketishingiz mumkin. AutoServis Pro.`,
-    'bekor qilingan': `Afsuski, sizing #${orderId} buyurtmangiz bekor qilindi. Batafsil ma'lumot uchun aloqaga chiqing. AutoServis Pro.`
+    'yaratildi': `Assalomu alaykum! Sizing #${orderId} raqamli buyurtmangiz qabul qilindi. Mashina: ${mashina}. AsiaAutoService.`,
+    'tamirlanmoqda': `Hurmatli mijoz! Sizning #${orderId} buyurtmangiz bo'yicha ishlar boshlandi. Mashina: ${mashina}. AsiaAutoService.`,
+    'tulangan': `Xushxabar! Sizning #${orderId} buyurtmangiz bo'yicha barcha ishlar yakunlandi. Mashina: ${mashina}. Uni olib ketishingiz mumkin. AsiaAutoService.`,
+    'bekor qilingan': `Afsuski, sizing #${orderId} buyurtmangiz bekor qilindi. Batafsil ma'lumot uchun aloqaga chiqing. AsiaAutoService.`
   };
   
   return templates[status] || templates['yaratildi'];

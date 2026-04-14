@@ -4,7 +4,7 @@ import ServicesContent from '@/components/ServicesContent';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Xizmatlar - AutoServis Pro',
+  title: 'Xizmatlar - AsiaAutoService',
   description: 'Avtoservis xizmatlarini boshqarish',
 };
 

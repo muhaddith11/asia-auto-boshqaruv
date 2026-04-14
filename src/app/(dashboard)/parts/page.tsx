@@ -4,7 +4,7 @@ import PartsContent from '@/components/PartsContent';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Ehtiyot qismlar - AutoServis Pro',
+  title: 'Ehtiyot qismlar - AsiaAutoService',
   description: 'Ombordagi ehtiyot qismlarni boshqarish',
 };
 
