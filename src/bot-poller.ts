@@ -60,7 +60,7 @@ async function handleUpdate(update: any) {
 
     // Helper: Build persistent keyboard
     const getPersistentKeyboard = (worker: any) => {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
       const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
       return {
         keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]],
@@ -70,7 +70,7 @@ async function handleUpdate(update: any) {
     };
 
     const enableButtons = async (worker: any) => {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://asiaautoservice.com';
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
       const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
       await setChatMenuButton(chatId, webAppUrl);
     };
