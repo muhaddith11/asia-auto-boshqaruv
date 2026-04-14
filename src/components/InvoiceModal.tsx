@@ -86,7 +86,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             >
                 {/* Print Content Starts Here */}
                 <div className="header text-center pb-8 border-b-2 border-dashed border-slate-100">
-                   <div className="text-[28px] font-black tracking-tighter text-black uppercase">AutoServis Pro</div>
+                   <div className="text-[28px] font-black tracking-tighter text-black uppercase">AsiaAutoService</div>
                    <div className="text-[11px] font-bold text-slate-400 tracking-[0.2em] mt-1 mb-4 uppercase">Professional xizmat markazi</div>
                    <div className="text-[13px] font-bold text-slate-800">Sana: {order.sana}</div>
                 </div>
@@ -166,7 +166,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                       <div className="text-[10px] text-slate-400 font-bold leading-relaxed uppercase tracking-widest">
                          Manzil: Toshkent sh., Chilonzor tumani<br />
                          Tel: +998 90 123 45 67<br />
-                         Telegram: @AutoServisPro
+                         Telegram: @AsiaAutoService
                       </div>
                    </div>
                 </div>

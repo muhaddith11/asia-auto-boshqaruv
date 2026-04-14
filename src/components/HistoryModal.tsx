@@ -12,7 +12,7 @@ interface HistoryModalProps {
 export default function HistoryModal({ order, onClose }: HistoryModalProps) {
   const { xodimlar } = useStore();
 
-  const getWorker = (id: number) => xodimlar.find(w => w.id === id);
+  const getWorker = (id: any) => xodimlar.find(w => Number(w.id) === Number(id));
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
