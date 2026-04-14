@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AutoServis Pro — Boshqaruv Tizimi",
+  title: "AsiaAutoService — Boshqaruv Tizimi",
   description: "Professional avtoservis boshqaruv tizimi",
   manifest: "/manifest.json",
   icons: {

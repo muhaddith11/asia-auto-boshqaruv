@@ -25,8 +25,8 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
               <Clock size={22} className="text-indigo-400" />
             </div>
             <div>
-              <h3 className="font-black text-white text-[16px] uppercase tracking-tight">Buyurtma Tarixi #{order.id}</h3>
-              <p className="text-[12px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{order.ism} | {order.mashina}</p>
+              <h3 className="font-black text-white text-[16px] uppercase tracking-tight">Buyurtma Tarixi #{order?.id || '???'}</h3>
+              <p className="text-[12px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{order?.ism || "Noma'lum"} | {order?.mashina || "Noma'lum mashina"}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-white transition-all hover:bg-white/5 rounded-xl border border-transparent hover:border-white/10">
@@ -43,13 +43,13 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 font-black uppercase tracking-widest opacity-70">
                    <Calendar size={13} /> Ochilgan sana
                 </div>
-                <div className="text-[15px] text-white font-black">{order.sana}</div>
+                <div className="text-[15px] text-white font-black">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
              </div>
              <div className="bg-black/20 border border-white/5 p-5 rounded-2xl space-y-2 shadow-inner">
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 font-black uppercase tracking-widest opacity-70">
                    <Hash size={13} /> Buyurtma holati
                 </div>
-                <div className="text-[13px] text-indigo-400 font-black uppercase tracking-tight bg-indigo-500/5 px-3 py-1 rounded-lg border border-indigo-500/10 w-fit">{order.holat}</div>
+                <div className="text-[13px] text-indigo-400 font-black uppercase tracking-tight bg-indigo-500/5 px-3 py-1 rounded-lg border border-indigo-500/10 w-fit">{order?.holat || 'yaratildi'}</div>
              </div>
           </div>
 
@@ -61,6 +61,10 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
             <div className="space-y-4">
               {order.services?.map((s, i) => {
                 const worker = getWorker(s.workerId);
+                const serviceName = s.nom || s.name || "Noma'lum xizmat";
+                const servicePrice = Number(s.narx || s.price || 0);
+                const serviceSalary = Number(s.zarplata || 0);
+
                 return (
                   <div key={i} className="bg-[#1e212b] border border-[#2a2d3d] p-5 rounded-2xl flex items-center justify-between group hover:border-indigo-500/40 hover:bg-[#232735] transition-all shadow-sm">
                     <div className="flex items-start gap-5">
@@ -68,16 +72,18 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
                           {worker?.ism?.[0] || '?'}
                        </div>
                        <div>
-                          <p className="text-[15px] text-white font-bold mb-1">{s.nom}</p>
+                          <p className="text-[15px] text-white font-bold mb-1">{serviceName}</p>
                           <div className="flex items-center gap-2 text-[12px] text-slate-500">
                              <User size={12} />
-                             <span>Usta: <span className="text-slate-200 font-bold">{worker?.ism} {worker?.familiya || ''}</span></span>
+                             <span>Usta: <span className="text-slate-200 font-bold">{worker?.ism || "Noma'lum"} {worker?.familiya || ''}</span></span>
                           </div>
                        </div>
                     </div>
                     <div className="text-right">
-                       <p className="text-[15px] text-white font-black">{s.narx.toLocaleString()} <span className="text-[10px] text-slate-500 uppercase">so'm</span></p>
-                       <p className="text-[11px] text-emerald-500 font-bold mt-1 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 inline-block">Maosh: {s.zarplata?.toLocaleString() || 0}</p>
+                       <p className="text-[15px] text-white font-black">{servicePrice.toLocaleString()} <span className="text-[10px] text-slate-500 uppercase">so'm</span></p>
+                       {serviceSalary > 0 && (
+                         <p className="text-[11px] text-emerald-500 font-bold mt-1 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 inline-block">Maosh: {serviceSalary.toLocaleString()}</p>
+                       )}
                     </div>
                   </div>
                 )
@@ -132,7 +138,7 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
         <div className="px-10 py-8 border-t border-[#2a2d3d] bg-[#1f222d] flex items-center justify-between shrink-0 shadow-2xl">
            <div className="flex flex-col gap-1">
               <span className="text-[12px] text-slate-500 font-black uppercase tracking-widest opacity-60">Jami buyurtma summasi</span>
-              <span className="text-[24px] text-indigo-400 font-black tracking-tight">{order.final.toLocaleString()} <span className="text-[12px] text-slate-600 uppercase">so'm</span></span>
+              <span className="text-[24px] text-indigo-400 font-black tracking-tight">{(order?.final || 0).toLocaleString()} <span className="text-[12px] text-slate-600 uppercase">so'm</span></span>
            </div>
            <button 
             onClick={onClose}

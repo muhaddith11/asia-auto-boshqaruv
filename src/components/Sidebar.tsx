@@ -136,31 +136,45 @@ const Sidebar = () => {
     }}>
       {/* ── LOGO ── */}
       <div style={{
-        padding: '20px 20px 16px',
+        padding: '24px 20px 20px',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         display: 'flex',
         alignItems: 'center',
-        gap: 12,
+        gap: 14,
       }}>
         <div style={{
-          width: 36,
-          height: 36,
-          background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-          borderRadius: 10,
+          width: 40,
+          height: 40,
+          background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
+          borderRadius: 12,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(99,102,241,0.35)',
+          boxShadow: '0 8px 16px -4px rgba(79,70,229,0.5)',
           flexShrink: 0,
         }}>
-          <Zap size={18} color="white" fill="white" />
+          <Wrench size={22} color="white" />
         </div>
-        <div>
-          <div style={{ color: '#f1f5f9', fontWeight: 800, fontSize: 15, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            AutoServis
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div style={{ 
+            color: '#ffffff', 
+            fontWeight: 900, 
+            fontSize: 16, 
+            letterSpacing: '-0.04em', 
+            lineHeight: 1,
+            textTransform: 'uppercase'
+          }}>
+            AsiaAuto
           </div>
-          <div style={{ color: '#475569', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 1 }}>
-            Pro ERP
+          <div style={{ 
+            color: '#6366f1', 
+            fontSize: 11, 
+            fontWeight: 800, 
+            letterSpacing: '0.1em', 
+            textTransform: 'uppercase', 
+            opacity: 0.9
+          }}>
+            Service
           </div>
         </div>
       </div>

@@ -453,25 +453,28 @@ export default function OrdersPage() {
                             >
                               <History size={14} />
                             </button>
-                            <button
-                              title="To'lov qilish"
-                              disabled={b.holat !== 'yaratildi'}
-                              onClick={(e) => { e.stopPropagation(); setPaymentOrder(b); }}
-                              style={{ 
-                                padding: 7, 
-                                background: b.holat === 'yaratildi' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)', 
-                                border: b.holat === 'yaratildi' ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.05)', 
-                                borderRadius: 7, 
-                                cursor: b.holat === 'yaratildi' ? 'pointer' : 'not-allowed', 
-                                color: b.holat === 'yaratildi' ? '#10b981' : '#475569', 
-                                display: 'flex',
-                                opacity: b.holat === 'yaratildi' ? 1 : 0.4
-                              }}
-                              onMouseEnter={e => b.holat === 'yaratildi' && (e.currentTarget.style.borderColor = '#10b981')}
-                              onMouseLeave={e => b.holat === 'yaratildi' && (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.15)')}
-                            >
-                              <CreditCard size={14} />
-                            </button>
+                             <button
+                               title="To'lov qilish"
+                               disabled={b.holat === 'tulangan' || b.holat === 'bekor qilingan'}
+                               onClick={(e) => { 
+                                 e.stopPropagation(); 
+                                 if (b.holat !== 'tulangan') setPaymentOrder(b); 
+                               }}
+                               style={{ 
+                                 padding: 7, 
+                                 background: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)', 
+                                 border: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.05)', 
+                                 borderRadius: 7, 
+                                 cursor: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? 'pointer' : 'not-allowed', 
+                                 color: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? '#10b981' : '#475569', 
+                                 display: 'flex',
+                                 opacity: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? 1 : 0.4
+                               }}
+                               onMouseEnter={e => (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') && (e.currentTarget.style.borderColor = '#10b981')}
+                               onMouseLeave={e => (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') && (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.15)')}
+                             >
+                               <CreditCard size={14} />
+                             </button>
 
                             {/* EXISTING ACTIONS */}
                             <button

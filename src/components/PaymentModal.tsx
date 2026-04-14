@@ -27,7 +27,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
   const [discount, setDiscount] = useState(0);
   const [comment, setComment] = useState('');
 
-  const currentFinal = Math.max(0, order.final - discount);
+  const currentFinal = Math.max(0, (order?.final || 0) - discount);
 
   const handleConfirmPayment = () => {
     // 1. Update order status and discount
@@ -72,7 +72,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
                  <DollarSign size={20} className="text-blue-500" />
               </div>
               <div>
-                <h3 className="font-black text-[16px] text-white uppercase tracking-tight">To'lovni qabul qilish #{order.id}</h3>
+                <h3 className="font-black text-[16px] text-white uppercase tracking-tight">To'lovni qabul qilish #{order?.id || '???'}</h3>
                 <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-1">Moliya va hisob-kitob</p>
               </div>
            </div>
@@ -118,16 +118,16 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
               <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-5 space-y-4">
                 <div className="flex justify-between items-center text-[12px] text-slate-400">
                   <span>Xizmatlar</span>
-                  <span className="font-bold text-white">{order.srv.toLocaleString()} so'm</span>
+                  <span className="font-bold text-white">{(order?.srv || 0).toLocaleString()} so'm</span>
                 </div>
                 <div className="flex justify-between items-center text-[12px] text-slate-400">
                   <span>Zapchastlar</span>
-                  <span className="font-bold text-white">{order.zap.toLocaleString()} so'm</span>
+                  <span className="font-bold text-white">{(order?.zap || 0).toLocaleString()} so'm</span>
                 </div>
-                {(order.chegirma > 0 || discount > 0) && (
+                {((order?.chegirma || 0) > 0 || discount > 0) && (
                   <div className="flex justify-between items-center text-[12px] text-red-400">
                     <span>Chegirma (Jami)</span>
-                    <span className="font-black">-{ (order.chegirma + discount).toLocaleString() } so'm</span>
+                    <span className="font-black">-{ ((order?.chegirma || 0) + discount).toLocaleString() } so'm</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center pt-2 border-t border-white/10 mt-2">

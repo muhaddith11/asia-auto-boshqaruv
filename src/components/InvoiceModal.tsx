@@ -92,6 +92,18 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 </div>
 
                 <div className="mt-8 space-y-6">
+           
+           {/* Invoice Header */}
+           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8">
+              <div className="space-y-1">
+                 <h2 className="text-[32px] font-black text-slate-900 tracking-tighter uppercase">Kvitansiya</h2>
+                 <p className="text-[12px] text-slate-500 font-bold uppercase tracking-widest">Buyurtma #{order?.id || '???'}</p>
+              </div>
+              <div className="text-right space-y-1">
+                 <div className="text-[18px] font-black text-slate-900 uppercase">Asia Auto Service</div>
+                 <div className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
+              </div>
+           </div>
                    <div className="flex justify-between">
                       <div>
                          <div className="text-[10px] uppercase font-black text-slate-400 tracking-widest mb-1">Mijoz</div>
@@ -113,22 +125,22 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                          </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
-                         {order.services.map((s, i) => (
+                         {order.services?.map((s, i) => (
                            <tr key={i}>
                               <td className="py-4">
-                                 <div className="text-[14px] font-bold text-slate-800 uppercase">{s.nom}</div>
+                                 <div className="text-[14px] font-bold text-slate-800 uppercase">{s.nom || s.name}</div>
                                  <div className="text-[10px] text-slate-400 font-bold uppercase">Usta xizmati</div>
                               </td>
-                              <td className="py-4 text-right font-black text-slate-900">{s.narx.toLocaleString()}</td>
+                              <td className="py-4 text-right font-black text-slate-900">{Number(s.narx || s.price || 0).toLocaleString()}</td>
                            </tr>
                          ))}
-                         {order.zaps && order.zaps.map((p, i) => (
+                         {order.zaps?.map((p, i) => (
                            <tr key={`p-${i}`}>
                               <td className="py-4">
-                                 <div className="text-[14px] font-bold text-slate-800 uppercase">{p.nom} x{p.qty || 1}</div>
+                                 <div className="text-[14px] font-bold text-slate-800 uppercase">{(p.nom || p.name)} x{(p.qty || p.quantity || 1)}</div>
                                  <div className="text-[10px] text-slate-400 font-bold uppercase">Ehtiyot qism</div>
                               </td>
-                              <td className="py-4 text-right font-black text-slate-900">{(p.narx * (p.qty || 1)).toLocaleString()}</td>
+                              <td className="py-4 text-right font-black text-slate-900">{(Number(p.narx || p.price || 0) * (p.qty || p.quantity || 1)).toLocaleString()}</td>
                            </tr>
                          ))}
                       </tbody>
@@ -137,16 +149,16 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                    <div className="pt-6 border-t-2 border-slate-900 space-y-3">
                       <div className="flex justify-between items-center text-slate-400">
                          <span className="text-[12px] font-bold uppercase tracking-widest">Umumiy xizmatlar</span>
-                         <span className="font-bold">{(order.final - order.zap).toLocaleString()} UZS</span>
+                         <span className="font-bold">{( (order.final || 0) - (order.zap || 0)).toLocaleString()} UZS</span>
                       </div>
                       <div className="flex justify-between items-center text-slate-400">
                          <span className="text-[12px] font-bold uppercase tracking-widest">Zapchastlar</span>
-                         <span className="font-bold">{order.zap.toLocaleString()} UZS</span>
+                         <span className="font-bold">{(order.zap || 0).toLocaleString()} UZS</span>
                       </div>
-                      <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                         <span className="text-[16px] font-black text-slate-900 uppercase tracking-tighter">Jami To'lov</span>
-                         <span className="text-[24px] font-black text-slate-900">{order.final.toLocaleString()} <span className="text-[12px] ml-0.5">UZS</span></span>
-                      </div>
+                       <tr className="border-t-2 border-slate-900">
+                          <td className="py-8 pt-10 text-[14px] font-black text-slate-400 uppercase tracking-widest">Jami To'lov</td>
+                          <td className="py-8 pt-10 text-right text-[32px] font-black text-slate-900 tracking-tighter">{(order?.final || 0).toLocaleString()} <span className="text-[14px] text-slate-500 uppercase ml-1">Sum</span></td>
+                       </tr>
                    </div>
 
                    <div className="footer text-center pt-10 border-t border-dashed border-slate-100 mt-8">

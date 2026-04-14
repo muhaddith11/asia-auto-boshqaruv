@@ -45,10 +45,29 @@ export async function POST(req: NextRequest) {
     worker_id = worker.id;
     workerName = worker.ism;
 
+    const servicesTotal = services?.reduce((sum: number, s: any) => sum + Number(s.price), 0) || 0;
+    const partsTotal = parts?.reduce((sum: number, p: any) => sum + (Number(p.price) * p.quantity), 0) || 0;
+    
+    // Convert Bot UI format to Dashboard format (nom, narx, qty)
+    const orderServices = (services || []).map((s: any) => ({
+      ...s,
+      nom: s.name,
+      narx: Number(s.price),
+      workerId: worker.id,
+      zarplata: Number(s.price) * (worker.foiz || 0) / 100
+    }));
+
+    const orderParts = (parts || []).map((p: any) => ({
+      ...p,
+      nom: p.name,
+      narx: Number(p.price),
+      qty: Number(p.quantity || 1)
+    }));
+
     const servicesStr = services?.map((s: any) => `${s.name} - ${s.price}`).join(', ') || 'Xizmatlar yo\'q';
     const partsStr = parts?.map((p: any) => `${p.name} (${p.quantity}x) - ${p.price}`).join(', ') || 'Zapchastlar yo\'q';
-    const totalSrv = services?.reduce((sum: number, s: any) => sum + Number(s.price), 0) || 0;
-    const totalZap = parts?.reduce((sum: number, p: any) => sum + (Number(p.price) * p.quantity), 0) || 0;
+
+    const zarplataTotal = orderServices.reduce((sum: number, s: any) => sum + (s.zarplata || 0), 0);
     
     const now = new Date();
     const orderData = {
@@ -58,15 +77,16 @@ export async function POST(req: NextRequest) {
       km: probeg || '',
       muammo: `Xizmatlar: ${servicesStr}\nZapchastlar: ${partsStr}`,
       sana: now.toISOString().split('T')[0],
+      createdAt: now.toISOString(),
       holat: 'tulanmagan',
-      services: services || [],
-      zaps: parts || [],
-      srv: totalSrv,
-      zap: totalZap,
-      total: totalSrv + totalZap,
-      final: totalSrv + totalZap,
-      zarplata: 0,
-      pribil: 0
+      services: orderServices,
+      zaps: orderParts,
+      srv: servicesTotal,
+      zap: partsTotal,
+      total: servicesTotal + partsTotal,
+      final: servicesTotal + partsTotal,
+      zarplata: zarplataTotal,
+      pribil: (servicesTotal + partsTotal) - zarplataTotal // simplified pribil for bot submissions
     };
 
     // Before inserting, double check to remove any JS-only camelCase props if needed.

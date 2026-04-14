@@ -66,19 +66,28 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       });
       
       // Load assignments from services
-      setAssignments(order.services.map((s, idx) => ({
-        id: idx,
-        workerId: s.workerId?.toString(),
-        serviceId: s.id?.toString(),
-        customNarx: s.narx?.toString()
-      })));
+      setAssignments(order.services.map((s, idx) => {
+        // Try to find the service in the catalog by ID or Name
+        const catalogService = xizmatlar.find(x => x.id === s.id || x.nom === (s.nom || s.name));
+        return {
+          id: idx,
+          workerId: s.workerId?.toString() || '',
+          serviceId: catalogService?.id?.toString() || '', // If not in catalog, leave ID empty but we'll see the name below
+          customNom: catalogService ? '' : (s.nom || s.name), // Cache custom name if not in catalog
+          customNarx: s.narx?.toString() || s.price?.toString() || ''
+        };
+      }));
 
       // Load parts
-      setPartRows(order.zaps.map((z, idx) => ({
-        id: idx,
-        partId: z.id?.toString(),
-        qty: z.qty
-      })));
+      setPartRows(order.zaps.map((z, idx) => {
+        const catalogPart = zapchastlar.find(x => x.id === z.id || x.nom === (z.nom || z.name));
+        return {
+          id: idx,
+          partId: catalogPart?.id?.toString() || '',
+          customNom: catalogPart ? '' : (z.nom || z.name),
+          qty: Number(z.qty || z.quantity || 1)
+        };
+      }));
     }
   }, [orderId, buyurtmalar]);
 
@@ -228,14 +237,18 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                     <div>
                        <label style={S.label}>Usta</label>
                        <select style={S.select} value={a.workerId} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? {...x, workerId: e.target.value} : x))}>
-                          <option value="">—</option>
+                          <option value="">— Tanlang —</option>
                           {xodimlar.map(x => <option key={x.id} value={x.id}>{x.ism}</option>)}
                        </select>
                     </div>
                     <div>
                        <label style={S.label}>Xizmat</label>
-                       <select style={S.select} value={a.serviceId} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? {...x, serviceId: e.target.value, customNarx: ''} : x))}>
-                          <option value="">—</option>
+                       <select style={S.select} value={a.serviceId} onChange={e => {
+                          const sId = e.target.value;
+                          const s = xizmatlar.find(x => x.id === Number(sId));
+                          setAssignments(assignments.map(x => x.id === a.id ? {...x, serviceId: sId, customNom: '', customNarx: s?.narx?.toString() || ''} : x));
+                       }}>
+                          <option value="">{a.customNom ? `[Maxsus] ${a.customNom}` : '— Tanlang —'}</option>
                           {xizmatlar.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
                        </select>
                     </div>
@@ -266,9 +279,9 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                {partRows.map((r, idx) => (
                   <div key={idx} className="grid grid-cols-[1fr_120px_100px_40px] gap-4 mb-4 items-end">
                      <div>
-                        <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? {...x, partId: e.target.value} : x))}>
-                           <option value="">—</option>
-                           {zapchastlar.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
+                        <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? {...x, partId: e.target.value, customNom: ''} : x))}>
+                           <option value="">{r.customNom ? `[Maxsus] ${r.customNom}` : '— Tanlang —'}</option>
+                           {zapchastlar.map(p => <option key={p.id} value={p.id}>{p.nom} ({p.balance})</option>)}
                         </select>
                      </div>
                      <div className="text-[13px] font-bold text-emerald-400 py-2.5 px-4 bg-white/5 rounded-xl text-right">
