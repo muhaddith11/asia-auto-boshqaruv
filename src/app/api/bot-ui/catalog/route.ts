@@ -28,9 +28,9 @@ export async function GET() {
 
     // 3. Build brands list
     const brandsSet = new Set<string>();
-    cars?.forEach(c => brandsSet.add(c.brand));
+    cars?.forEach((c: any) => brandsSet.add(c.brand));
     // Also include brands from services that might not be in the cars_list
-    services?.forEach(s => { if(s.brand) brandsSet.add(s.brand); });
+    services?.forEach((s: any) => { if(s.brand) brandsSet.add(s.brand); });
     
     // Default/Must-have brands if list is small
     ['Chevrolet', 'BYD', 'Kia', 'Hyundai', 'Daewoo', 'Lada'].forEach(b => brandsSet.add(b));
@@ -41,13 +41,13 @@ export async function GET() {
     const catalog: any = {};
 
     // First, initialize models for each brand from cars_list
-    cars?.forEach(c => {
+    cars?.forEach((c: any) => {
       if (!catalog[c.brand]) catalog[c.brand] = {};
       if (!catalog[c.brand][c.name]) catalog[c.brand][c.name] = [];
     });
 
     // Then, populate services
-    services?.forEach(s => {
+    services?.forEach((s: any) => {
       const b = s.brand || 'Boshqa';
       const m = s.car_model || 'Umumiy';
 
