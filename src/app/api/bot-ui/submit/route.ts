@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       km: probeg || '',
       muammo: `Xizmatlar: ${servicesStr}\nZapchastlar: ${partsStr}`,
       sana: now.toISOString().split('T')[0],
-      createdAt: now.toISOString(),
+      created_at: now.toISOString(),
       holat: 'tulanmagan',
       services: orderServices,
       zaps: orderParts,
