@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 export default function BotUIPage() {
   const [step, setStep] = useState(1);
   const [catalogData, setCatalogData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const store = useBotOrderStore();
@@ -33,12 +34,15 @@ export default function BotUIPage() {
       try {
         const res = await fetch('/api/bot-ui/catalog');
         const data = await res.json();
+        if (data.error) setError(data.error);
+        if (data.isFallback) console.warn("Using fallback catalog data due to error.");
         setCatalogData(data);
-        setLoading(false);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Catalog fetch error:", err);
-        setLoading(false);
+        setError(err.message);
         setCatalogData({ brands: ['Chevrolet', 'Kia', 'Hyundai', 'BYD', 'Lada'], catalog: { } });
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -117,6 +121,11 @@ export default function BotUIPage() {
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           Asia Auto Service
         </h1>
+        {error && (
+          <div className="mt-2 p-2 bg-red-900/30 border border-red-500/50 rounded-lg text-xs text-red-200">
+            ⚠️ Diqqat: {error}. Iltimos, qayta yangilang.
+          </div>
+        )}
         <div className="flex gap-2 mt-4">
           {[1, 2, 3, 4].map((i) => (
             <div 
