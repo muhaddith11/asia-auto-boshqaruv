@@ -79,7 +79,7 @@ async function handleUpdate(update: any) {
     if (workerById) {
       await enableButtons(workerById);
       
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3005';
     const webAppUrl = `${baseUrl}/bot-ui?phone=${workerById.tel?.replace(/\D/g, '')}`;
 
     if (text === '/start') {
@@ -150,7 +150,7 @@ async function handleUpdate(update: any) {
           .update({ telegram: chatId })
           .eq('id', worker.id);
 
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3005';
         const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
 
         if (webAppUrl.startsWith('https')) {
