@@ -80,17 +80,34 @@ async function handleUpdate(update: any) {
       await enableButtons(workerById);
       
       if (text === '/start') {
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: `✅ Xush kelibsiz, ${workerById.ism}!\nSiz tizimda tanilgansiz. Pastdagi yoki ko'k 'Menu' tugmasidan foydalanishingiz mumkin.`,
-          reply_markup: getPersistentKeyboard(workerById)
-        });
+        const messageText = `✅ Xush kelibsiz, ${workerById.ism}!\nSiz tizimda tanilgansiz.`;
+        
+        // If HTTPS, use button, otherwise send link
+        if (webAppUrl.startsWith('https')) {
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: `${messageText}\nPastdagi ko'k 'Menu' tugmasidan foydalanishingiz mumkin.`,
+            reply_markup: getPersistentKeyboard(workerById)
+          });
+        } else {
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: `${messageText}\n\n⚠️ Sizda hozircha HTTP (IP) ishlatilmoqda. Buyurtma berish uchun quyidagi havolani bosing:\n${webAppUrl}`
+          });
+        }
       } else {
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: "🆕 Yangi buyurtma kiritish uchun pastdagi tugmani bosing.",
-          reply_markup: getPersistentKeyboard(workerById)
-        });
+        if (webAppUrl.startsWith('https')) {
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: "🆕 Yangi buyurtma kiritish uchun pastdagi tugmani bosing.",
+            reply_markup: getPersistentKeyboard(workerById)
+          });
+        } else {
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: `🆕 Yangi buyurtma kiritish uchun havolani bosing:\n${webAppUrl}`
+          });
+        }
       }
       return;
     }
@@ -130,12 +147,22 @@ async function handleUpdate(update: any) {
           .update({ telegram: chatId })
           .eq('id', worker.id);
 
-        await enableButtons(worker);
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: `✅ Rahmat, ${worker.ism}!\nEndi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
-          reply_markup: getPersistentKeyboard(worker)
-        });
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
+        const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
+
+        if (webAppUrl.startsWith('https')) {
+          await enableButtons(worker);
+          await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: `✅ Rahmat, ${worker.ism}!\nEndi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
+            reply_markup: getPersistentKeyboard(worker)
+          });
+        } else {
+           await sendTg('sendMessage', {
+            chat_id: chatId,
+            text: `✅ Rahmat, ${worker.ism}!\n\nBuyurtma berish uchun quyidagi havolani bosing:\n${webAppUrl}`
+          });
+        }
       }
       return;
     }
