@@ -38,6 +38,9 @@ export interface Xizmat {
   narx: number;
   mashina: string; // 'Umumiy' or specific model
   stavka?: number;
+  // Legacy/Bot support
+  name?: string;
+  price?: number;
 }
 
 export interface Zapchast {
@@ -50,6 +53,9 @@ export interface Zapchast {
   kat: string;
   supplier?: string;
   balance: number;
+  // Legacy/Bot support
+  name?: string;
+  price?: number;
 }
 
 export interface OrderAssignment {
