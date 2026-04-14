@@ -79,7 +79,10 @@ async function handleUpdate(update: any) {
     if (workerById) {
       await enableButtons(workerById);
       
-      if (text === '/start') {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
+    const webAppUrl = `${baseUrl}/bot-ui?phone=${workerById.tel?.replace(/\D/g, '')}`;
+
+    if (text === '/start') {
         const messageText = `✅ Xush kelibsiz, ${workerById.ism}!\nSiz tizimda tanilgansiz.`;
         
         // If HTTPS, use button, otherwise send link
