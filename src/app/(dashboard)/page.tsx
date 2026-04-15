@@ -28,10 +28,10 @@ export default function Dashboard() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* ── CONTENT ────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex flex-col gap-6 lg:gap-8">
+      <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8">
         
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
           {stats.map((stat, i) => (
             <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -39,31 +39,25 @@ export default function Dashboard() {
                   <stat.icon size={20} color={stat.color} />
                 </div>
               </div>
-              <div className="text-[11px] lg:text-[13px] font-bold text-[var(--text3)] mb-1 uppercase tracking-[0.04em]">
-                {stat.title}
-              </div>
-              <div className="text-[16px] lg:text-[22px] font-extrabold text-white tracking-[-0.02em]">
-                {stat.value}
-              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{stat.title}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>{stat.value}</div>
             </Link>
           ))}
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 32 }}>
           {/* Recent Orders */}
-          <div className="lg:col-span-2 glass-card flex flex-col overflow-hidden">
+          <div className="glass-card flex flex-col overflow-hidden">
             <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Clock size={16} color="var(--accent)" /> Oxirgi buyurtmalar
               </h3>
               <Link href="/orders" style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', textDecoration: 'none', background: 'rgba(99,102,241,0.1)', padding: '5px 12px', borderRadius: 8 }}>
-                Barchasi
+                Hammasini ko'rish
               </Link>
             </div>
-            <div className="overflow-x-auto">
-              <table className="data-table min-w-[600px] lg:min-w-full">
+            <div style={{ padding: '8px 0' }}>
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>MAREKA / NOMI</th>
@@ -90,8 +84,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* AI Insights Sidebar */}
-          <div className="flex flex-col gap-6 lg:gap-8">
+          {/* AI Insights Sidebar Area */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <AiForecast />
           </div>
         </div>
