@@ -32,7 +32,7 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {stats.map((stat, i) => (
-            <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none', padding: '24px lg:32px' }}>
+            <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <stat.icon size={18} color={stat.color} />
@@ -44,17 +44,19 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Sections */}
+        {/* Sections Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          
           <div className="lg:col-span-2 glass-card flex flex-col overflow-hidden p-0!">
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: 14, lg: 15, fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="flex justify-between items-center px-6 py-5 border-b border-white/5">
+              <h3 className="m-0 text-[14px] lg:text-[15px] font-extrabold text-white flex items-center gap-2">
                 <Clock size={16} color="var(--accent)" /> Oxirgi buyurtmalar
               </h3>
-              <Link href="/orders" className="text-[11px] font-bold text-accent bg-accent/10 px-3 py-1.5 rounded-lg no-underline">
+              <Link href="/orders" className="text-[11px] font-bold text-accent bg-accent/10 px-3 py-1.5 rounded-lg no-underline transition-colors hover:bg-accent/20">
                 Hammasi
               </Link>
             </div>
+            
             <div className="overflow-x-auto">
               <table className="data-table min-w-[500px] lg:min-w-full">
                 <thead>
