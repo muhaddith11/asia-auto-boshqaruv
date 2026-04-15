@@ -36,7 +36,7 @@ interface AutoServisStore {
   updateXodim: (id: number, data: Partial<Xodim>) => void;
   deleteXodim: (id: number) => void;
 
-  addMaosh: (m: Omit<MaoshTarixi, 'id'>) => void;
+  addMaosh: (m: Omit<MaoshTarixi, 'id' | 'createdAt'>) => void;
 
   addXizmat: (x: Omit<Xizmat, 'id'>) => void;
   updateXizmat: (id: number, data: Partial<Xizmat>) => void;
@@ -52,8 +52,8 @@ interface AutoServisStore {
 
   updateKassa: (method: keyof Kassa, amount: number, operation: 'add' | 'sub') => void;
   transferKassa: (from: keyof Kassa, to: keyof Kassa, amount: number) => void; // New
-  addTashqariOperatsiya: (op: Omit<TashqariOperatsiya, 'id'>) => void;
-  addIshxonaOperatsiya: (op: Omit<TashqariOperatsiya, 'id'>) => void;
+  addTashqariOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => void;
+  addIshxonaOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => void;
   deleteIshxonaOperatsiya: (id: number) => void;
   deleteTashqariOperatsiya: (id: number) => void;
   
@@ -163,7 +163,7 @@ export const useStore = create<AutoServisStore>()(
       },
 
       addMaosh: (m) => set((state) => ({
-        maoshTarixi: [...state.maoshTarixi, { ...m, id: state.counters.maosh }],
+        maoshTarixi: [...state.maoshTarixi, { ...m, id: state.counters.maosh, createdAt: new Date().toISOString() }],
         counters: { ...state.counters, maosh: state.counters.maosh + 1 },
         kassa: {
           ...state.kassa,
@@ -297,11 +297,11 @@ export const useStore = create<AutoServisStore>()(
         counters: { ...state.counters, cash: state.counters.cash + 1 }
       })),
       addTashqariOperatsiya: (op) => set((state) => ({
-        tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: state.counters.cash }],
+        tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: state.counters.cash, createdAt: new Date().toISOString() }],
         counters: { ...state.counters, cash: state.counters.cash + 1 }
       })),
       addIshxonaOperatsiya: (op) => set((state) => ({
-        ishxonaOperatsiyalar: [...state.ishxonaOperatsiyalar, { ...op, id: state.counters.cash }],
+        ishxonaOperatsiyalar: [...state.ishxonaOperatsiyalar, { ...op, id: state.counters.cash, createdAt: new Date().toISOString() }],
         counters: { ...state.counters, cash: state.counters.cash + 1 }
       })),
       deleteIshxonaOperatsiya: (id) => set((state) => ({

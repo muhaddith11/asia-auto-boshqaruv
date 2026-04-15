@@ -155,7 +155,12 @@ export default function ExternalOperationsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
-                  {filteredOps.sort((a,b) => b.date.localeCompare(a.date)).map((op) => (
+                  {filteredOps.sort((a, b) => {
+                    const timeA = new Date(a.createdAt || a.date).getTime();
+                    const timeB = new Date(b.createdAt || b.date).getTime();
+                    if (timeB !== timeA) return timeB - timeA;
+                    return b.id - a.id;
+                  }).map((op) => (
                     <tr key={op.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-8 py-4">
                         <div className="text-slate-400 font-bold text-[13px]">{op.date}</div>

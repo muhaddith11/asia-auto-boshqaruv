@@ -50,14 +50,16 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Login</label>
-              <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+              <div className="relative flex items-center group">
+                <div className="absolute left-4 flex items-center justify-center pointer-events-none">
+                  <User className="text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                </div>
                 <input
                   type="text"
                   required
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
-                  className="w-full bg-[#1c212a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium"
+                  className="w-full bg-[#1c212a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium placeholder:text-slate-600"
                   placeholder="Loginni kiriting"
                 />
               </div>
@@ -65,14 +67,16 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Parol</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+              <div className="relative flex items-center group">
+                <div className="absolute left-4 flex items-center justify-center pointer-events-none">
+                  <Lock className="text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                </div>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#1c212a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium"
+                  className="w-full bg-[#1c212a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium placeholder:text-slate-600"
                   placeholder="Parolni kiriting"
                 />
               </div>

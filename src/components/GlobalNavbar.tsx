@@ -22,159 +22,113 @@ export default function GlobalNavbar() {
 
   return (
     <>
-      <header style={{
-        height: 73,
-        background: '#0d1220',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 28px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {!isHome && (
-            <button
-              onClick={() => router.back()}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 700,
-                color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-            >
-              ← Orqaga
-            </button>
-          )}
-          {pathname === '/orders/new' && (
-            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'white', margin: 0, letterSpacing: '-0.02em' }}>
-              Buyurtma yaratish
-            </h2>
-          )}
+    <>
+      <header className="h-[73px] bg-[#0d1220] border-b border-white/5 flex items-center justify-between px-4 lg:px-7 sticky top-0 z-[100] shrink-0">
+        <div className="flex items-center gap-3 lg:gap-4">
+          <div className="hidden lg:flex items-center gap-4">
+            {!isHome && (
+              <button
+                onClick={() => router.back()}
+                className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[13px] font-bold text-slate-400 hover:bg-white/10 transition-all cursor-pointer"
+              >
+                ← Orqaga
+              </button>
+            )}
+            {pathname === '/orders/new' && (
+              <h2 className="text-[16px] font-black text-white m-0 tracking-tight uppercase">
+                Buyurtma yaratish
+              </h2>
+            )}
+          </div>
+          
+          {/* Mobile Logo/Title */}
+          <div className="flex lg:hidden items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+              <Plus size={18} color="white" />
+            </div>
+            <span className="text-[14px] font-black text-white uppercase tracking-tighter">AsiaAuto</span>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Desktop Widgets */}
+        <div className="hidden lg:flex items-center gap-5">
+          <div className="flex items-center gap-3">
             {/* Naqd */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 9, padding: '5px 12px',
-            }}>
-              <Banknote size={13} color="var(--green)" />
+            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2">
+              <Banknote size={14} color="#10b981" />
               <div>
-                <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}>Naqd</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                <div className="text-[8px] color-slate-500 font-black uppercase tracking-widest leading-none mb-1">Naqd</div>
+                <div className="text-[13px] font-black text-white leading-none">
                   {mounted ? kassa.naqd.toLocaleString() : '—'}
                 </div>
               </div>
             </div>
 
             {/* Karta */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 9, padding: '5px 12px',
-            }}>
-              <CreditCard size={13} color="var(--cyan)" />
+            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2">
+              <CreditCard size={14} color="#06b6d4" />
               <div>
-                <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}>Karta</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                <div className="text-[8px] color-slate-500 font-black uppercase tracking-widest leading-none mb-1">Karta</div>
+                <div className="text-[13px] font-black text-white leading-none">
                   {mounted ? kassa.karta.toLocaleString() : '—'}
                 </div>
               </div>
             </div>
 
             {/* Jami */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))',
-              border: '1px solid rgba(99,102,241,0.25)',
-              borderRadius: 9, padding: '5px 12px',
-            }}>
-              <Wallet size={13} color="var(--accent)" />
+            <div className="flex items-center gap-3 bg-blue-600/10 border border-blue-500/20 rounded-xl px-4 py-2">
+              <Wallet size={14} className="text-blue-400" />
               <div>
-                <div style={{ fontSize: 9, color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}>Jami</div>
-                <div style={{ fontSize: 12, fontWeight: 800, color: '#a5b4fc', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                <div className="text-[8px] text-blue-400 font-black uppercase tracking-widest leading-none mb-1">Jami</div>
+                <div className="text-[14px] font-black text-blue-400 leading-none">
                   {mounted ? totalBalance.toLocaleString() : '—'}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Divider */}
-          <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 2px' }} />
+          <div className="w-px h-8 bg-white/5 mx-1" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Xarajat */}
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setCashModal({ open: true, type: 'expense' })}
-              style={{
-                background: 'rgba(244,63,94,0.12)', color: 'var(--red)',
-                border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
-                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(244,63,94,0.2)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(244,63,94,0.12)')}
+               onClick={() => setCashModal({ open: true, type: 'expense' })}
+               className="bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center gap-2"
             >
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }} />
-              Xarajat
+              Chiqim
             </button>
-
-            {/* O'tkazma */}
             <button
-              onClick={() => setTransferOpen(true)}
-              style={{
-                background: 'rgba(99,102,241,0.12)', color: 'var(--accent)',
-                border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9,
-                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(99,102,241,0.2)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(99,102,241,0.12)')}
+               onClick={() => setCashModal({ open: true, type: 'income' })}
+               className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all flex items-center gap-2"
             >
-              <RefreshCw size={12} /> O'tkazma
+              Kirim
             </button>
-
-            {/* Kirim */}
-            <button
-              onClick={() => setCashModal({ open: true, type: 'income' })}
-              style={{
-                background: 'rgba(16,185,129,0.12)', color: 'var(--green)',
-                border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9,
-                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.2)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.12)')}
-            >
-              <Plus size={13} /> Kirim
-            </button>
-            {/* Sync */}
             <button
               onClick={async () => {
                 const store = useStore.getState();
                 await store.loadInitialData();
-                alert('Baza muvaffaqiyatli sinxronizatsiya qilindi!');
               }}
-              style={{
-                background: 'rgba(234,179,8,0.12)', color: '#eab308',
-                border: '1px solid rgba(234,179,8,0.3)', borderRadius: 9,
-                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(234,179,8,0.2)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(234,179,8,0.12)')}
+              className="bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl p-2.5 hover:bg-amber-500/20 transition-all"
             >
-              <RefreshCw size={13} /> Yangilash
+              <RefreshCw size={16} />
             </button>
           </div>
+        </div>
+
+        {/* Mobile View Summary */}
+        <div className="flex lg:hidden items-center gap-3">
+           <div className="bg-blue-600/10 border border-blue-500/20 rounded-lg px-3 py-1.5 flex flex-col items-end">
+              <div className="text-[9px] font-black text-blue-400 uppercase tracking-tighter leading-none mb-1">Kassa jami</div>
+              <div className="text-[13px] font-black text-white leading-none">{mounted ? totalBalance.toLocaleString() : '—'}</div>
+           </div>
+           <button
+              onClick={async () => {
+                const store = useStore.getState();
+                await store.loadInitialData();
+              }}
+              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400"
+            >
+              <RefreshCw size={18} />
+            </button>
         </div>
       </header>
 

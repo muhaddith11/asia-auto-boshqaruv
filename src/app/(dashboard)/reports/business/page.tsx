@@ -23,7 +23,7 @@ import {
 
 
 export default function BusinessReportPage() {
-  const { buyurtmalar, ishxonaOperatsiyalar, kassa } = useStore();
+  const { buyurtmalar, ishxonaOperatsiyalar, kassa, maoshTarixi, xodimlar } = useStore();
   const [mounted, setMounted] = useState(false);
   const [period, setPeriod] = useState('oy'); // kun, hafta, oy, yil
 
@@ -36,15 +36,19 @@ export default function BusinessReportPage() {
   // Simple statistics calculation for the current month
   const now = new Date();
   const currentMonth = now.toISOString().substring(0, 7);
-  const monthOrders = buyurtmalar.filter(b => b.sana && b.sana.startsWith(currentMonth));
+  const monthOrders = buyurtmalar.filter(b => b.sana && b.sana.startsWith(currentMonth) && b.holat === 'tulangan');
   const orderIncome = monthOrders.reduce((sum, b) => sum + (b.final || 0), 0);
 
   const localOps = ishxonaOperatsiyalar.filter(op => op.date && op.date.startsWith(currentMonth));
-  const localIncome = localOps.filter(op => op.type === 'income').reduce((sum, op) => sum + op.amount, 0);
-  const localExpense = localOps.filter(op => op.type === 'expense').reduce((sum, op) => sum + op.amount, 0);
+  // Filter out operations that come from orders to avoid double counting
+  const manualIncome = localOps.filter(op => op.type === 'income' && op.source !== 'buyurtma').reduce((sum, op) => sum + op.amount, 0);
+  const manualExpense = localOps.filter(op => op.type === 'expense').reduce((sum, op) => sum + op.amount, 0);
 
-  const totalIncome = orderIncome + localIncome;
-  const totalExpense = localExpense;
+  const monthMaosh = maoshTarixi.filter(m => m.sana && m.sana.startsWith(currentMonth));
+  const totalMaosh = monthMaosh.reduce((sum, m) => sum + m.summa, 0);
+
+  const totalIncome = orderIncome + manualIncome;
+  const totalExpense = manualExpense + totalMaosh;
   const netProfit = totalIncome - totalExpense;
 
   const stats = [
@@ -125,18 +129,35 @@ export default function BusinessReportPage() {
                     </tr>
                   </thead>
                   <tbody style={{ borderStyle: "solid" }}>
-                     {[...buyurtmalar, ...ishxonaOperatsiyalar]
+                     {[...buyurtmalar, ...ishxonaOperatsiyalar.filter(op => op.source !== 'buyurtma'), ...maoshTarixi]
                       .sort((a, b) => {
-                        const dateA = (a as any).date || (a as any).sana || (a as any).createdAt;
-                        const dateB = (b as any).date || (b as any).sana || (b as any).createdAt;
-                        return new Date(dateB).getTime() - new Date(dateA).getTime();
+                        const dateA = (a as any).createdAt || (a as any).sana || (a as any).date;
+                        const dateB = (b as any).createdAt || (b as any).sana || (b as any).date;
+                        
+                        const timeA = new Date(dateA).getTime();
+                        const timeB = new Date(dateB).getTime();
+                        
+                        if (timeB !== timeA) return timeB - timeA;
+                        return (b as any).id - (a as any).id;
                       })
-                      .slice(0, 10).map((op, i) => {
+                      .slice(0, 25).map((op, i) => {
                        const isOrder = 'final' in op;
-                       const opDate = isOrder ? (op as any).sana : (op as any).date;
-                       const opAmount = isOrder ? (op as any).final : (op as any).amount;
-                       const opType = isOrder ? 'BUYURTMA' : (op as any).type;
-                       const opComment = isOrder ? (op as any).ism : ((op as any).comment || (op as any).category);
+                       const isMaosh = 'xodimId' in op;
+                       
+                       const opDate = isOrder ? (op as any).sana : (op as any).date || (op as any).sana;
+                       const opAmount = isOrder ? (op as any).final : (isMaosh ? (op as any).summa : (op as any).amount);
+                       const opType = isOrder ? 'BUYURTMA' : (isMaosh ? 'MAOSH' : (op as any).type);
+                       
+                       let opComment = '';
+                       if (isOrder) {
+                         opComment = (op as any).ism;
+                       } else if (isMaosh) {
+                         const worker = xodimlar.find(w => w.id === (op as any).xodimId);
+                         opComment = `Ish xaqi: ${worker?.ism || 'Xodim'}`;
+                       } else {
+                         opComment = (op as any).comment || (op as any).category;
+                       }
+
                        const opMethod = isOrder ? 'NAQD' : (op as any).method;
 
                        return (
@@ -148,7 +169,7 @@ export default function BusinessReportPage() {
                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                                : 'bg-red-500/10 text-red-500 border-red-500/20'
                              }`}>
-                               {opType === 'income' ? 'Kirim' : opType === 'expense' ? 'Chiqim' : 'Order'}
+                               {opType === 'income' ? 'Kirim' : opType === 'expense' ? 'Chiqim' : opType === 'MAOSH' ? 'Ish xaqi' : 'Order'}
                              </span>
                            </td>
                            <td style={{ padding: "18px 24px" }}>
@@ -157,7 +178,7 @@ export default function BusinessReportPage() {
                            <td style={{ padding: "18px 24px", textAlign: "right" }}>
                              <span className={`font-black text-[14px] ${
                                opAmount === 0 ? 'text-slate-600' :
-                               isOrder || (op as any).type === 'income' ? 'text-emerald-400' : 'text-red-400'
+                               (isOrder || (op as any).type === 'income' ? 'text-emerald-400' : 'text-red-400')
                              }`}>
                                {opAmount?.toLocaleString?.() ?? opAmount}
                              </span>

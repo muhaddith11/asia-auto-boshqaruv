@@ -107,6 +107,7 @@ export interface MaoshTarixi {
   sana: string;
   method: 'naqd' | 'karta';
   izoh?: string;
+  createdAt: string;
 }
 
 export interface ZapPurchase {
@@ -131,6 +132,7 @@ export interface TashqariOperatsiya {
   orderId?: string | number;
   profit?: number;
   toMethod?: 'naqd' | 'karta'; // For transfers
+  createdAt: string;
 }
 
 export interface Kassa {

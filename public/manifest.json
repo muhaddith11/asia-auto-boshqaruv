@@ -1,11 +1,11 @@
 {
-  "name": "AutoServis Pro — Boshqaruv Tizimi",
-  "short_name": "AsPro",
-  "description": "Professional avtoservis boshqaruv tizimi",
+  "name": "Asia Auto Service",
+  "short_name": "AsiaAuto",
+  "description": "Asia Auto Service Boshqaruv Tizimi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1220",
-  "theme_color": "#6366f1",
+  "background_color": "#0b0d11",
+  "theme_color": "#2563eb",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",

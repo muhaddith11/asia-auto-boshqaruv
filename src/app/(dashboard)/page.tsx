@@ -57,12 +57,12 @@ export default function Dashboard() {
   const maxTurnover = workerStats[0]?.turnover || 1;
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+    <div className="flex-1 flex flex-col bg-[#0b0d11]">
       {/* ── CONTENT ────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6 md:gap-8">
 
         {/* ── STAT CARDS ──────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {[
             {
               label: "Bugungi buyurtmalar",
@@ -101,16 +101,16 @@ export default function Dashboard() {
               glow: 'rgba(245,158,11,0.18)',
             },
           ].map((stat, i) => (
-            <div key={i} className="stat-card p-8">
+            <div key={i} className="stat-card p-6 md:p-8 relative">
               {/* Top accent line */}
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: stat.color, borderRadius: '14px 14px 0 0' }} />
               
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div className="flex items-start justify-between mb-4">
+                <span className="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none">
                   {stat.label}
                 </span>
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10,
+                  width: 32, height: 32, borderRadius: 8,
                   background: stat.glow,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: stat.color,
@@ -119,12 +119,12 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+              <div className="text-[22px] md:text-[26px] font-black text-white tracking-tight leading-none mb-2">
                 {stat.value}
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text3)', marginLeft: 4 }}>{stat.suffix}</span>
+                <span className="text-[12px] font-medium text-slate-500 ml-1.5">{stat.suffix}</span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <ArrowUpRight size={12} color={stat.color} />
+              <div className="text-[10px] text-slate-500 flex items-center gap-1.5 mt-2">
+                <ArrowUpRight size={10} color={stat.color} />
                 {stat.sub}
               </div>
             </div>
@@ -132,82 +132,81 @@ export default function Dashboard() {
         </div>
 
         {/* ── MAIN ROW ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8 flex-1">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6 md:gap-8 flex-1">
 
           {/* Recent Orders */}
           <div className="glass-card flex flex-col overflow-hidden">
-             <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-white/2">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ClipboardList size={16} color="var(--accent)" />
-                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>So'nggi buyurtmalar</span>
+             <div className="px-6 md:px-8 py-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+              <div className="flex items-center gap-2.5">
+                <ClipboardList size={16} className="text-blue-500" />
+                <span className="font-bold text-[13px] md:text-[14px] text-white uppercase tracking-tight">So'nggi buyurtmalar</span>
               </div>
-              <Link href="/orders" style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                fontSize: 12, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none',
-              }}>
+              <Link href="/orders" className="flex items-center gap-1.5 text-[11px] font-black text-blue-500 hover:text-blue-400 no-underline uppercase tracking-widest">
                 Barchasi <ChevronRight size={13} />
               </Link>
             </div>
 
-            {recentOrders.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 p-16">
-                <ClipboardList size={48} color="var(--surface3)" />
-                <span style={{ color: 'var(--text4)', fontSize: 14 }}>Buyurtmalar yo'q</span>
-              </div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Mijoz</th>
-                    <th>Mashina</th>
-                    <th>Sana</th>
-                    <th style={{ textAlign: 'right' }}>Summa</th>
-                    <th style={{ textAlign: 'center' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((b) => {
-                    const sc = statusConfig[b.holat] || { label: b.holat, cls: '' };
-                    return (
-                      <tr key={b.id}>
-                        <td style={{ color: 'var(--text3)', fontWeight: 600 }}>#{b.id}</td>
-                        <td>
-                          <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 13 }}>{b.ism}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text3)' }}>{b.tel || '—'}</div>
-                        </td>
-                        <td style={{ color: 'var(--text2)', fontSize: 12, fontWeight: 500 }}>{b.mashina}</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text3)', fontSize: 11 }}>
-                            <Clock size={11} />
-                            {b.sana}
-                          </div>
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--text)' }}>
-                          {b.final.toLocaleString()}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <span className={`badge ${sc.cls}`}>{sc.label}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
+            <div className="flex-1 overflow-x-auto">
+              {recentOrders.length === 0 ? (
+                <div className="h-full min-h-[300px] flex flex-col items-center justify-center gap-4 p-12">
+                  <ClipboardList size={40} className="text-slate-800" />
+                  <span className="text-slate-600 text-[13px] font-medium italic">Buyurtmalar yo'q</span>
+                </div>
+              ) : (
+                <table className="w-full text-left text-[13px] whitespace-nowrap min-w-[700px]">
+                  <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-white/5">
+                    <tr>
+                      <th className="px-6 py-4">#</th>
+                      <th className="px-6 py-4">Mijoz</th>
+                      <th className="px-6 py-4">Mashina</th>
+                      <th className="px-6 py-4">Sana</th>
+                      <th className="px-6 py-4 text-right">Summa</th>
+                      <th className="px-6 py-4 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {recentOrders.map((b) => {
+                      const sc = statusConfig[b.holat] || { label: b.holat, cls: '' };
+                      return (
+                        <tr key={b.id} className="hover:bg-white/[0.02] transition-all">
+                          <td className="px-6 py-4 text-slate-500 font-bold">#{b.id}</td>
+                          <td className="px-6 py-4">
+                            <div className="font-bold text-white mb-0.5">{b.ism}</div>
+                            <div className="text-[11px] text-slate-500">{b.tel || '—'}</div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-300 font-medium">{b.mashina}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
+                              <Clock size={11} />
+                              {b.sana}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right font-black text-white">
+                            {b.final.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`badge ${sc.cls}`}>{sc.label}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
 
           {/* Right column: workers leaderboard + AI forecast */}
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6 md:gap-8">
             <div className="glass-card flex flex-col overflow-hidden">
-              <div className="px-8 py-6 border-b border-border flex items-center gap-3 bg-white/2">
-                <Zap size={16} color="var(--amber)" />
-                <span className="font-bold text-[14px]">Eng faol xodimlar</span>
+              <div className="px-6 md:px-8 py-5 border-b border-white/5 flex items-center gap-2.5 bg-white/[0.02]">
+                <Zap size={16} className="text-amber-500" />
+                <span className="font-bold text-[13px] md:text-[14px] text-white uppercase tracking-tight">Eng faol xodimlar</span>
               </div>
 
-              <div className="flex-1 p-8 flex flex-col gap-6">
+              <div className="flex-1 p-6 md:p-8 flex flex-col gap-6">
                 {workerStats.length === 0 ? (
-                  <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text4)' }}>
+                  <div className="h-full flex items-center justify-center text-slate-600 text-[13px] italic p-8">
                     Xodimlar yo'q
                   </div>
                 ) : (
@@ -217,28 +216,28 @@ export default function Dashboard() {
                     const c = colors[i % colors.length];
                     return (
                       <div key={w.id}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div className="flex items-center justify-between mb-2.5">
+                          <div className="flex items-center gap-3">
                             <div style={{
-                              width: 30, height: 30, borderRadius: '50%',
-                              background: `${c}20`, border: `1.5px solid ${c}50`,
+                              width: 32, height: 32, borderRadius: '50%',
+                              background: `${c}10`, border: `1.5px solid ${c}30`,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: 11, fontWeight: 800, color: c,
+                              fontSize: 12, fontWeight: 900, color: c,
                             }}>
                               {i + 1}
                             </div>
                             <div>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{w.ism}</div>
-                              <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{w.mutax || 'Usta'}</div>
+                              <div className="text-[13px] font-black text-white leading-none mb-1">{w.ism}</div>
+                              <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{w.mutax || 'Usta'}</div>
                             </div>
                           </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: c }}>{w.earned.toLocaleString()}</div>
-                            <div style={{ fontSize: 10, color: 'var(--text4)' }}>ulush</div>
+                          <div className="text-right">
+                            <div style={{ fontSize: 13, fontWeight: 900, color: c }}>{w.earned.toLocaleString()}</div>
+                            <div className="text-[9px] text-slate-600 font-bold uppercase">ulush</div>
                           </div>
                         </div>
-                        <div style={{ height: 4, background: 'var(--surface3)', borderRadius: 4, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${c}, ${c}99)`, borderRadius: 4, transition: 'width 0.6s ease' }} />
+                        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div style={{ height: '100%', width: `${pct}%`, background: c, boxShadow: `0 0 10px ${c}40` }} className="transition-all duration-1000" />
                         </div>
                       </div>
                     );
@@ -246,10 +245,10 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="px-8 py-5 border-top border-border">
+              <div className="px-6 md:px-8 py-4 border-t border-white/5 bg-white/[0.01]">
                 <Link href="/workers" className="no-underline">
-                  <button className="w-full bg-surface2 border border-border rounded-lg py-3 text-[11px] font-bold text-slate-400 cursor-pointer tracking-widest uppercase transition-all hover:text-white hover:border-slate-500">
-                    Barcha xodimlar →
+                  <button className="w-full bg-white/5 border border-white/5 rounded-xl py-3 text-[10px] font-black text-slate-400 cursor-pointer tracking-widest uppercase transition-all hover:text-white hover:bg-white/10 active:scale-[0.98]">
+                    Barcha xodimlar ro'yxati →
                   </button>
                 </Link>
               </div>
