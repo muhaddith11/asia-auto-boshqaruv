@@ -43,25 +43,23 @@ export default function GlobalNavbar() {
                 display: 'flex', alignItems: 'center', gap: 6,
                 background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 700,
-                color: '#94a3b8', cursor: 'pointer',
+                color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
               }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
             >
-              ← <span className="desktop-only">Orqaga</span>
+              ← Orqaga
             </button>
           )}
-          
-          <div className="mobile-only items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-xs">AS</div>
-            <span className="text-white font-black uppercase text-xs tracking-tighter">AsiaAuto</span>
-          </div>
-
-          <h2 className="desktop-only" style={{ fontSize: 16, fontWeight: 800, color: 'white', margin: 0, letterSpacing: '-0.02em' }}>
-            {pathname === '/orders/new' ? 'Buyurtma yaratish' : ''}
-          </h2>
+          {pathname === '/orders/new' && (
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'white', margin: 0, letterSpacing: '-0.02em' }}>
+              Buyurtma yaratish
+            </h2>
+          )}
         </div>
 
-        {/* Desktop Balances: Faqat kompyuterda ko'rinadi (.desktop-only) */}
-        <div className="desktop-only items-center gap-4">
+        {/* Desktop Balances: Hamma narsa bir qatorda chiroyli bo'ladi */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* Naqd */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9, padding: '5px 12px' }}>
@@ -71,6 +69,7 @@ export default function GlobalNavbar() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>{mounted ? kassa.naqd.toLocaleString() : '—'}</div>
               </div>
             </div>
+
             {/* Karta */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9, padding: '5px 12px' }}>
               <CreditCard size={13} color="var(--cyan)" />
@@ -79,6 +78,7 @@ export default function GlobalNavbar() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>{mounted ? kassa.karta.toLocaleString() : '—'}</div>
               </div>
             </div>
+
             {/* Jami */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9, padding: '5px 12px' }}>
               <Wallet size={13} color="var(--accent)" />
@@ -88,29 +88,54 @@ export default function GlobalNavbar() {
               </div>
             </div>
           </div>
-          <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 10px' }} />
-        </div>
 
-        {/* Right Section */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Mobil Balans: Faqat telefonda ko'rinadi (.mobile-only) */}
-          <div className="mobile-only items-center gap-2 bg-blue-600/10 border border-blue-600/20 px-3 py-1.5 rounded-xl">
-             <Wallet size={14} className="text-blue-500" />
-             <span className="text-blue-500 font-extrabold text-xs">{mounted ? totalBalance.toLocaleString() : '—'}</span>
-          </div>
+          <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 2px' }} />
 
-          <div className="desktop-only items-center gap-2">
-            <button onClick={() => setCashModal({ open: true, type: 'expense' })} style={{ background: 'rgba(244,63,94,0.12)', color: 'var(--red)', border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9, padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Xarajat */}
+            <button
+              onClick={() => setCashModal({ open: true, type: 'expense' })}
+              style={{
+                background: 'rgba(244,63,94,0.12)', color: 'var(--red)',
+                border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
+                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }} />
               Xarajat
             </button>
-            <button onClick={() => setCashModal({ open: true, type: 'income' })} style={{ background: 'rgba(16,185,129,0.12)', color: 'var(--green)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9, padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-              Kirim
+
+            {/* Kirim */}
+            <button
+              onClick={() => setCashModal({ open: true, type: 'income' })}
+              style={{
+                background: 'rgba(16,185,129,0.12)', color: 'var(--green)',
+                border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9,
+                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
+              }}
+            >
+              <Plus size={13} /> Kirim
+            </button>
+
+            {/* Refresh */}
+            <button
+              onClick={async () => {
+                const store = useStore.getState();
+                await store.loadInitialData();
+                alert('Yangilandi!');
+              }}
+              style={{
+                background: 'rgba(234,179,8,0.12)', color: '#eab308',
+                border: '1px solid rgba(234,179,8,0.3)', borderRadius: 9,
+                padding: '7px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyCenter: 'center', transition: 'all 0.2s',
+              }}
+            >
+              <RefreshCw size={14} />
             </button>
           </div>
-
-          <button onClick={() => router.refresh()} className="p-2 bg-slate-800/50 rounded-xl text-slate-400">
-            <RefreshCw size={18} />
-          </button>
         </div>
       </header>
 

@@ -1,7 +1,6 @@
 'use client';
 import Sidebar from "@/components/Sidebar";
 import GlobalNavbar from "@/components/GlobalNavbar";
-import BottomNav from "@/components/BottomNav";
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import PWAAux from "@/components/PWAAux";
@@ -25,24 +24,14 @@ export default function DashboardLayout({
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', width: '100%', background: 'var(--bg)' }}>
-      {/* Sidebar: Faqat desktopda va login bo'lmagan sahifada */}
-      <div className="desktop-only">
-        <Sidebar />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen main-content-layout" style={{ marginLeft: 240 }}>
+      <Sidebar />
+      <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <GlobalNavbar />
-        <main className="flex-1 flex flex-col">
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
       </div>
-
-      {/* Bottom Nav: Faqat mobil qurilmada va login bo'lmagan sahifada */}
-      <div className="mobile-only">
-        <BottomNav />
-      </div>
-
+      {/* Mobil menyular hozircha butunlay o'chirildi */}
       <PWAAux />
     </div>
   );
