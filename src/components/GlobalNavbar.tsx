@@ -130,7 +130,7 @@ export default function GlobalNavbar() {
                 background: 'rgba(234,179,8,0.12)', color: '#eab308',
                 border: '1px solid rgba(234,179,8,0.3)', borderRadius: 9,
                 padding: '7px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyCenter: 'center', transition: 'all 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
               }}
             >
               <RefreshCw size={14} />
