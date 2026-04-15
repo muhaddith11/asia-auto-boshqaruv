@@ -20,7 +20,7 @@ export default function TransferModal({ onClose }: TransferModalProps) {
     e.preventDefault();
     const amount = parseInt(formData.amount);
     if (isNaN(amount) || amount <= 0 || amount > kassa[formData.from]) {
-      alert('Недостаточно средств или неверная сумма!');
+      alert('Mablag\' yetarli emas yoki noto\'g\'ri summa!');
       return;
     }
 
@@ -44,46 +44,46 @@ export default function TransferModal({ onClose }: TransferModalProps) {
         <form onSubmit={handleSubmit} className="p-7 space-y-5">
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <label className="block text-[11px] font-black text-slate-400 uppercase mb-2">Откуда</label>
+              <label className="block text-[11px] font-black text-slate-400 uppercase mb-2">Qayerdan</label>
               <button 
                 type="button"
                 onClick={() => setFormData({...formData, from: 'naqd', to: 'karta'})}
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border text-[13px] font-bold transition-all ${
-                  formData.from === 'naqd' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-500'
+                  formData.from === 'naqd' ? 'bg-blue-600/10 border-blue-500 text-blue-500' : 'bg-slate-800/20 border-white/5 text-slate-500'
                 }`}
               >
-                <Banknote size={16} /> Нал.
+                <Banknote size={16} /> Naqd
               </button>
             </div>
-            <div className="mt-6 text-slate-300">
+            <div className="mt-6 text-slate-600">
               <ArrowRightLeft size={20} />
             </div>
             <div className="flex-1">
-              <label className="block text-[11px] font-black text-slate-400 uppercase mb-2">Куда</label>
+              <label className="block text-[11px] font-black text-slate-400 uppercase mb-2">Qayerga</label>
               <button 
                 type="button"
                 onClick={() => setFormData({...formData, from: 'karta', to: 'naqd'})}
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border text-[13px] font-bold transition-all ${
-                  formData.from === 'karta' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-500'
+                  formData.from === 'karta' ? 'bg-blue-600/10 border-blue-500 text-blue-500' : 'bg-slate-800/20 border-white/5 text-slate-500'
                 }`}
               >
-                <CreditCard size={16} /> Карта
+                <CreditCard size={16} /> Karta
               </button>
             </div>
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-slate-500 mb-2">Сумма перевода *</label>
+            <label className="block text-[13px] font-bold text-slate-400 mb-2">O'tkazma summasi *</label>
             <input 
               type="number" 
               required
               value={formData.amount}
               onChange={(e) => setFormData({...formData, amount: e.target.value})}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-slate-900 text-lg font-black transition-all"
+              className="w-full bg-[#1c212a] border border-white/5 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-white text-lg font-black transition-all"
               placeholder="0"
             />
-            <div className="mt-1 text-[11px] text-slate-400 font-medium">
-              Доступно: <span className="text-slate-700">{kassa[formData.from].toLocaleString()} сум</span>
+            <div className="mt-1 text-[11px] text-slate-500 font-medium tracking-wide capitalized">
+              Mavjud: <span className="text-white font-bold">{kassa[formData.from].toLocaleString()} so'm</span>
             </div>
           </div>
 
@@ -91,15 +91,15 @@ export default function TransferModal({ onClose }: TransferModalProps) {
             <button 
               type="button" 
               onClick={onClose}
-              className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-500 font-bold py-3 rounded-lg text-[14px] transition-all"
+              className="flex-1 bg-slate-800/40 hover:bg-slate-800/60 text-slate-400 font-bold py-3 rounded-lg text-[14px] transition-all"
             >
-              Отмена
+              Bekor qilish
             </button>
             <button 
               type="submit"
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-[14px] transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             >
-              Перевести
+              O'tkazish
             </button>
           </div>
         </form>
