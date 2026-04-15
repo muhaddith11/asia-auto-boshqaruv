@@ -12,23 +12,17 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Login attempt:", login);
     setLoading(true);
     setError('');
 
-    try {
-      // In a real production app, this would be a server action or API call
-      // For this specific simple request, we handle it with a client-side cookie + middleware
-      if (login === 'asiaauto' && password === 'salom123') {
-        // Set a cookie that expires in 7 days
-        document.cookie = `auth_session=active; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-        router.push('/');
-        router.refresh();
-      } else {
-        setError('Login yoki parol noto\'g\'ri!');
-      }
-    } catch (err) {
-      setError('Tizimga kirishda xatolik yuz berdi.');
-    } finally {
+    // Login logic
+    if (login === 'asiaauto' && password === 'salom123') {
+      document.cookie = `auth_session=active; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      console.log("Login success");
+      window.location.href = '/'; // Kuchliroq o'tish usuli
+    } else {
+      setError('Login yoki parol noto\'g\'ri!');
       setLoading(false);
     }
   };
@@ -51,7 +45,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Login</label>
               <div className="relative flex items-center group">
-                <div className="absolute left-4 flex items-center justify-center pointer-events-none z-10">
+                <div className="absolute left-4 z-10 pointer-events-none">
                   <User className="text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
                 </div>
                 <input
@@ -59,7 +53,8 @@ export default function LoginPage() {
                   required
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
-                  className="w-full bg-[#1c212a] border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium placeholder:text-slate-600 shadow-inner"
+                  style={{ paddingLeft: '60px' }}
+                  className="w-full bg-[#1c212a] border border-white/5 rounded-2xl py-5 pr-4 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium placeholder:text-slate-600"
                   placeholder="Loginni kiriting"
                 />
               </div>
@@ -68,7 +63,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Parol</label>
               <div className="relative flex items-center group">
-                <div className="absolute left-4 flex items-center justify-center pointer-events-none z-10">
+                <div className="absolute left-4 z-10 pointer-events-none">
                   <Lock className="text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
                 </div>
                 <input
@@ -76,14 +71,15 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#1c212a] border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium placeholder:text-slate-600 shadow-inner"
+                  style={{ paddingLeft: '60px' }}
+                  className="w-full bg-[#1c212a] border border-white/5 rounded-2xl py-5 pr-4 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium placeholder:text-slate-600"
                   placeholder="Parolni kiriting"
                 />
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm font-bold text-center animate-in fade-in zoom-in duration-200">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm font-bold text-center">
                 {error}
               </div>
             )}
@@ -91,22 +87,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-600/20 flex items-center justify-center gap-3 transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <>
-                  Tizimga kirish <LogIn size={20} />
-                </>
+                <>Tizimga kirish <LogIn size={20} /></>
               )}
             </button>
           </form>
         </div>
-
-        <p className="mt-8 text-center text-slate-600 text-xs font-medium">
-          © 2026 Asia Auto Service. Barcha huquqlar himoyalangan.
-        </p>
       </div>
     </div>
   );
