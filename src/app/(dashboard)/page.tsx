@@ -30,7 +30,7 @@ export default function Dashboard() {
       {/* ── CONTENT ────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex flex-col gap-6 lg:gap-8">
         
-        {/* Stats Grid: Mobil ekranlarda 2 ta, kompyuterda 4 ta ustun */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {stats.map((stat, i) => (
             <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none' }}>
@@ -39,16 +39,20 @@ export default function Dashboard() {
                   <stat.icon size={20} color={stat.color} />
                 </div>
               </div>
-              <div style={{ fontSize: 11, lg: 13, fontWeight: 700, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{stat.title}</div>
-              <div style={{ fontSize: 16, lg: 22, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>{stat.value}</div>
+              <div className="text-[11px] lg:text-[13px] font-bold text-[var(--text3)] mb-1 uppercase tracking-[0.04em]">
+                {stat.title}
+              </div>
+              <div className="text-[16px] lg:text-[22px] font-extrabold text-white tracking-[-0.02em]">
+                {stat.value}
+              </div>
             </Link>
           ))}
         </div>
 
-        {/* Main Grid: Telefonda ustma-ust (grid-cols-1), kompyuterda (grid-cols-3) */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           
-          {/* Recent Orders: Kompyuterda 2 ta ustunli kenglikni oladi */}
+          {/* Recent Orders */}
           <div className="lg:col-span-2 glass-card flex flex-col overflow-hidden">
             <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -58,7 +62,6 @@ export default function Dashboard() {
                 Barchasi
               </Link>
             </div>
-            {/* Jadval sig'maganda yon tomonga suriladi (overflow-x-auto) */}
             <div className="overflow-x-auto">
               <table className="data-table min-w-[600px] lg:min-w-full">
                 <thead>
@@ -87,7 +90,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* AI Insights Sidebar: Telefonda jadvalning tagidan chiqadi */}
+          {/* AI Insights Sidebar */}
           <div className="flex flex-col gap-6 lg:gap-8">
             <AiForecast />
           </div>
