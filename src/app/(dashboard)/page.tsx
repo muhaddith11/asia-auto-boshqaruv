@@ -15,7 +15,8 @@ export default function Dashboard() {
 
   if (!mounted) return null;
 
-  const activeOrders = buyurtmalar.filter(o => o.status !== 'Yopilgan');
+  // Filtr: 'tulangan' va 'bekor qilingan' bo'lmaganlari aktiv hisoblanadi
+  const activeOrders = buyurtmalar.filter(o => o.holat !== 'tulangan' && o.holat !== 'bekor qilingan');
   const recentOrders = [...buyurtmalar].reverse().slice(0, 6);
 
   const stats = [
@@ -35,7 +36,7 @@ export default function Dashboard() {
           {stats.map((stat, i) => (
             <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyCenter: 'center' }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <stat.icon size={20} color={stat.color} />
                 </div>
               </div>
@@ -62,7 +63,7 @@ export default function Dashboard() {
                   <tr>
                     <th>MAREKA / NOMI</th>
                     <th>RAQAMI</th>
-                    <th>STATUS</th>
+                    <th>HOLAT</th>
                     <th>XIZMATLAR</th>
                     <th>SUMMA</th>
                   </tr>
@@ -70,15 +71,15 @@ export default function Dashboard() {
                 <tbody>
                   {recentOrders.map((order) => (
                     <tr key={order.id}>
-                      <td style={{ fontWeight: 700 }}>{order.mashinaMarkasi}</td>
-                      <td><span className="badge-outline">{order.mashinaRaqami}</span></td>
+                      <td style={{ fontWeight: 700 }}>{order.mashina}</td>
+                      <td><span className="badge-outline">{order.raqam}</span></td>
                       <td>
-                        <span className={`status-badge ${order.status === 'Tugatilgan' ? 'status-done' : order.status === 'Jarayonda' ? 'status-process' : 'status-pending'}`}>
-                          {order.status}
+                        <span className={`status-badge ${order.holat === 'tulangan' ? 'status-done' : order.holat === 'tamirlanmoqda' ? 'status-process' : 'status-pending'}`}>
+                          {order.holat}
                         </span>
                       </td>
-                      <td>{order.servislar.length} ta xizmat</td>
-                      <td style={{ color: 'var(--green)', fontWeight: 800 }}>{order.jamiSumma.toLocaleString()}</td>
+                      <td>{(order.services || []).length} ta xizmat</td>
+                      <td style={{ color: 'var(--green)', fontWeight: 800 }}>{order.final.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -86,7 +87,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* AI Insights Sidebar Area */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <AiForecast />
           </div>
