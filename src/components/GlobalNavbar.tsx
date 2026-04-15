@@ -22,7 +22,6 @@ export default function GlobalNavbar() {
 
   return (
     <>
-    <>
       <header className="h-[73px] bg-[#0d1220] border-b border-white/5 flex items-center justify-between px-4 lg:px-7 sticky top-0 z-[100] shrink-0">
         <div className="flex items-center gap-3 lg:gap-4">
           <div className="hidden lg:flex items-center gap-4">
