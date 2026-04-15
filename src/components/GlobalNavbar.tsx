@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Banknote, CreditCard, Wallet, Plus, RefreshCw } from 'lucide-react';
+import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import CashModal from '@/components/CashModal';
 import TransferModal from '@/components/TransferModal';
@@ -34,7 +34,7 @@ export default function GlobalNavbar() {
         zIndex: 100,
         flexShrink: 0,
       }}>
-        {/* Logo/Back Section */}
+        {/* Section 1: Back/Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {!isHome && (
             <button
@@ -45,8 +45,6 @@ export default function GlobalNavbar() {
                 borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 700,
                 color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
             >
               ← Orqaga
             </button>
@@ -58,84 +56,94 @@ export default function GlobalNavbar() {
           )}
         </div>
 
-        {/* Desktop Balances: Hamma narsa bir qatorda chiroyli bo'ladi */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Naqd */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9, padding: '5px 12px' }}>
-              <Banknote size={13} color="var(--green)" />
-              <div>
-                <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}>Naqd</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>{mounted ? kassa.naqd.toLocaleString() : '—'}</div>
-              </div>
-            </div>
-
-            {/* Karta */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9, padding: '5px 12px' }}>
-              <CreditCard size={13} color="var(--cyan)" />
-              <div>
-                <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}>Karta</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>{mounted ? kassa.karta.toLocaleString() : '—'}</div>
-              </div>
-            </div>
-
-            {/* Jami */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9, padding: '5px 12px' }}>
-              <Wallet size={13} color="var(--accent)" />
-              <div>
-                <div style={{ fontSize: 9, color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}>Jami</div>
-                <div style={{ fontSize: 12, fontWeight: 800, color: '#a5b4fc', letterSpacing: '-0.02em', lineHeight: 1.3 }}>{mounted ? totalBalance.toLocaleString() : '—'}</div>
-              </div>
+        {/* Section 2: Balances */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Naqd */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9, padding: '5px 12px' }}>
+            <Banknote size={13} color="var(--green)" />
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>Naqd</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3 }}>{mounted ? kassa.naqd.toLocaleString() : '—'}</div>
             </div>
           </div>
-
-          <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 2px' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Xarajat */}
-            <button
-              onClick={() => setCashModal({ open: true, type: 'expense' })}
-              style={{
-                background: 'rgba(244,63,94,0.12)', color: 'var(--red)',
-                border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
-                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-              }}
-            >
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }} />
-              Xarajat
-            </button>
-
-            {/* Kirim */}
-            <button
-              onClick={() => setCashModal({ open: true, type: 'income' })}
-              style={{
-                background: 'rgba(16,185,129,0.12)', color: 'var(--green)',
-                border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9,
-                padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-              }}
-            >
-              <Plus size={13} /> Kirim
-            </button>
-
-            {/* Refresh */}
-            <button
-              onClick={async () => {
-                const store = useStore.getState();
-                await store.loadInitialData();
-                alert('Yangilandi!');
-              }}
-              style={{
-                background: 'rgba(234,179,8,0.12)', color: '#eab308',
-                border: '1px solid rgba(234,179,8,0.3)', borderRadius: 9,
-                padding: '7px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
-              }}
-            >
-              <RefreshCw size={14} />
-            </button>
+          {/* Karta */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9, padding: '5px 12px' }}>
+            <CreditCard size={13} color="var(--cyan)" />
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>Karta</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3 }}>{mounted ? kassa.karta.toLocaleString() : '—'}</div>
+            </div>
           </div>
+          {/* Jami */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9, padding: '5px 12px' }}>
+            <Wallet size={13} color="var(--accent)" />
+            <div>
+              <div style={{ fontSize: 9, color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>Jami</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#a5b4fc', lineHeight: 1.3 }}>{mounted ? totalBalance.toLocaleString() : '—'}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Xarajat */}
+          <button
+            onClick={() => setCashModal({ open: true, type: 'expense' })}
+            style={{
+              background: 'rgba(244,63,94,0.12)', color: 'var(--red)',
+              border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
+              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6
+            }}
+          >
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }} />
+            Xarajat
+          </button>
+
+          {/* O'tkazma (Transfer) */}
+          <button
+            onClick={() => setTransferOpen(true)}
+            style={{
+              background: 'rgba(99,102,241,0.12)', color: 'var(--accent)',
+              border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9,
+              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6
+            }}
+          >
+            <RefreshCw size={12} /> Perevod
+          </button>
+
+          {/* Kirim */}
+          <button
+            onClick={() => setCashModal({ open: true, type: 'income' })}
+            style={{
+              background: 'rgba(16,185,129,0.12)', color: 'var(--green)',
+              border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9,
+              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6
+            }}
+          >
+            <Plus size={13} /> Kirim
+          </button>
+
+          <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.1)', margin: '0 2px' }} />
+
+          {/* Yangilash */}
+          <button
+            onClick={async () => {
+              const store = useStore.getState();
+              await store.loadInitialData();
+              alert('Ma\'lumotlar yangilandi!');
+            }}
+            style={{
+              background: 'rgba(234,179,8,0.12)', color: '#eab308',
+              border: '1px solid rgba(234,179,8,0.3)', borderRadius: 9,
+              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 7
+            }}
+          >
+            <RefreshCcw size={13} /> Yangilash
+          </button>
         </div>
       </header>
 
