@@ -27,56 +27,55 @@ export default function Dashboard() {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      {/* ── CONTENT ────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8">
+      <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex flex-col gap-6 lg:gap-8">
         
         {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {stats.map((stat, i) => (
-            <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <stat.icon size={20} color={stat.color} />
+            <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none', padding: '24px lg:32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <stat.icon size={18} color={stat.color} />
                 </div>
               </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{stat.title}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>{stat.value}</div>
+              <div className="text-[10px] lg:text-[13px] font-bold text-[var(--text3)] mb-1 uppercase tracking-wider">{stat.title}</div>
+              <div className="text-[15px] lg:text-[22px] font-black text-white">{stat.value}</div>
             </Link>
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 32 }}>
-          {/* Recent Orders */}
-          <div className="glass-card flex flex-col overflow-hidden">
+        {/* Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 glass-card flex flex-col overflow-hidden p-0!">
             <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <h3 style={{ margin: 0, fontSize: 14, lg: 15, fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Clock size={16} color="var(--accent)" /> Oxirgi buyurtmalar
               </h3>
-              <Link href="/orders" style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', textDecoration: 'none', background: 'rgba(99,102,241,0.1)', padding: '5px 12px', borderRadius: 8 }}>
-                Hammasini ko'rish
+              <Link href="/orders" className="text-[11px] font-bold text-accent bg-accent/10 px-3 py-1.5 rounded-lg no-underline">
+                Hammasi
               </Link>
             </div>
-            <div style={{ padding: '8px 0' }}>
-              <table className="data-table">
+            <div className="overflow-x-auto">
+              <table className="data-table min-w-[500px] lg:min-w-full">
                 <thead>
                   <tr>
-                    <th>MAREKA / NOMI</th>
-                    <th>RAQAMI</th>
-                    <th>HOLAT</th>
-                    <th>SUMMA</th>
+                    <th>MASHINA</th>
+                    <th>RAQAM</th>
+                    <th className="desktop-only text-center">HOLAT</th>
+                    <th className="text-right">SUMMA</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentOrders.map((order) => (
                     <tr key={order.id}>
                       <td style={{ fontWeight: 700 }}>{order.mashina}</td>
-                      <td><span className="badge-outline">{order.raqam}</span></td>
-                      <td>
-                        <span className={`status-badge ${order.holat === 'tulangan' ? 'status-done' : order.holat === 'tamirlanmoqda' ? 'status-process' : 'status-pending'}`}>
+                      <td><span className="badge-outline text-[11px]">{order.raqam}</span></td>
+                      <td className="desktop-only text-center">
+                        <span className={`status-badge ${order.holat === 'tulangan' ? 'status-done' : 'status-pending'}`}>
                           {order.holat}
                         </span>
                       </td>
-                      <td style={{ color: 'var(--green)', fontWeight: 800 }}>{order.final.toLocaleString()}</td>
+                      <td className="text-right" style={{ color: 'var(--green)', fontWeight: 800 }}>{order.final.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -84,8 +83,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* AI Insights Sidebar Area */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div className="flex flex-col gap-6 lg:gap-8">
             <AiForecast />
           </div>
         </div>
