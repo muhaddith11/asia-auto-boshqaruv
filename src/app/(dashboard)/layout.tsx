@@ -1,7 +1,7 @@
 import Sidebar from "@/components/Sidebar";
 import GlobalNavbar from "@/components/GlobalNavbar";
-import BottomNav from "@/components/BottomNav";
 import React from 'react';
+import PWAAux from "@/components/PWAAux";
 
 export default function DashboardLayout({
   children,
@@ -9,22 +9,15 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex w-full bg-[#0b0d11]">
-      {/* Sidebar hidden on mobile, visible on lg screens */}
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      
-      {/* Content area: margin-left 0 on mobile, 240px on lg screens */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-[240px] pb-[70px] lg:pb-0">
+    <div style={{ minHeight: '100vh', display: 'flex', width: '100%' }}>
+      <Sidebar />
+      <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <GlobalNavbar />
-        <main className="flex-1 flex flex-col">
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
       </div>
-
-      {/* Mobile Navigation */}
-      <BottomNav />
+      <PWAAux />
     </div>
   );
 }
