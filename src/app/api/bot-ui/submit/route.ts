@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
     
     // Convert Bot UI format to Dashboard format (nom, narx, qty)
     const orderServices = (services || []).map((s: any) => ({
-      ...s,
       nom: s.name,
       narx: Number(s.price),
       workerId: worker.id,
@@ -58,7 +57,6 @@ export async function POST(req: NextRequest) {
     }));
 
     const orderParts = (parts || []).map((p: any) => ({
-      ...p,
       nom: p.name,
       narx: Number(p.price),
       qty: Number(p.quantity || 1)
@@ -77,7 +75,7 @@ export async function POST(req: NextRequest) {
       km: probeg || '',
       muammo: `Xizmatlar: ${servicesStr}\nZapchastlar: ${partsStr}`,
       sana: now.toISOString().split('T')[0],
-      created_at: now.toISOString(),
+      createdat: now.toISOString(),
       holat: 'tulanmagan',
       services: orderServices,
       zaps: orderParts,
@@ -86,11 +84,9 @@ export async function POST(req: NextRequest) {
       total: servicesTotal + partsTotal,
       final: servicesTotal + partsTotal,
       zarplata: zarplataTotal,
-      pribil: (servicesTotal + partsTotal) - zarplataTotal // simplified pribil for bot submissions
+      pribil: (servicesTotal + partsTotal) - zarplataTotal
     };
 
-    // Before inserting, double check to remove any JS-only camelCase props if needed.
-    // The previous error was strictly about 'createdAt'
     const { data: insertedData, error } = await supabase.from('orders').insert([orderData]).select();
 
     if (error) {
