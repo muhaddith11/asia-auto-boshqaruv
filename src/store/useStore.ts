@@ -291,8 +291,9 @@ export const useStore = create<AutoServisStore>()(
           method: from,
           toMethod: to,
           amount: amount,
-          category: 'Перевод между счетами',
-          source: 'system'
+          category: 'Puldagi o\'tkazma',
+          source: 'system',
+          createdAt: new Date().toISOString()
         }],
         counters: { ...state.counters, cash: state.counters.cash + 1 }
       })),
