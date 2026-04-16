@@ -14,45 +14,79 @@ export async function GET() {
     const { data: cars, error: carsError } = await supabase
       .from('cars_list')
       .select('brand, name')
-      .range(0, 2000)
+      .range(0, 5000)
       .order('brand', { ascending: true });
 
     if (carsError) throw carsError;
 
-    // 2. Fetch all services
+    // 2. Fetch all services (up to 10k rows)
     const { data: services, error: srvError } = await supabase
       .from('services_list')
       .select('brand, car_model, name, price')
-      .range(0, 10000)
-      .order('car_model', { ascending: true });
+      .range(0, 9999);
 
     if (srvError) throw srvError;
 
-    // 3. Build brands list
+    function toProperCase(str: string) {
+      if (!str) return '';
+      return str.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+
+    // 3. build catalog with normalization
+    const normalizedCatalog: any = {};
     const brandsSet = new Set<string>();
-    cars?.forEach((c: any) => brandsSet.add(c.brand));
-    const brands = Array.from(brandsSet).sort();
 
-    // 4. Build catalog
-    const catalog: any = {};
+    // Process services first (as they contain the actual data)
     services?.forEach((s: any) => {
-      const b = s.brand;
-      const m = s.car_model;
+      const b = toProperCase(s.brand || 'Boshqa');
+      const m = toProperCase(s.car_model || 'Umumiy');
+      
+      if (!normalizedCatalog[b]) normalizedCatalog[b] = {};
+      if (!normalizedCatalog[b][m]) normalizedCatalog[b][m] = [];
 
-      if (!catalog[b]) catalog[b] = {};
-      if (!catalog[b][m]) catalog[b][m] = [];
-
-      catalog[b][m].push({
+      normalizedCatalog[b][m].push({
         name: s.name,
         price: s.price
       });
+      brandsSet.add(b);
+    });
+
+    // Add brands/models from cars_list if they didn't have services yet
+    cars?.forEach((c: any) => {
+      const b = toProperCase(c.brand);
+      const m = toProperCase(c.name);
+      brandsSet.add(b);
+      if (!normalizedCatalog[b]) normalizedCatalog[b] = {};
+      if (!normalizedCatalog[b][m]) normalizedCatalog[b][m] = [];
+    });
+
+    // Cleanup: Filter out models that have 0 services if there are other models with services
+    const finalCatalog: any = {};
+    const finalBrands = Array.from(brandsSet).sort();
+
+    finalBrands.forEach(b => {
+      if (normalizedCatalog[b]) {
+        const models = Object.keys(normalizedCatalog[b]);
+        const brandObj: any = {};
+        models.forEach(m => {
+          if (normalizedCatalog[b][m] && normalizedCatalog[b][m].length > 0) {
+            brandObj[m] = normalizedCatalog[b][m];
+          }
+        });
+        
+        // If brand exists but all models empty, at least show models
+        if (Object.keys(brandObj).length === 0) {
+           models.forEach(m => brandObj[m] = []);
+        }
+        finalCatalog[b] = brandObj;
+      }
     });
 
     return new NextResponse(JSON.stringify({ 
-      version: "v3_final_check",
-      count: { cars: cars?.length, services: services?.length },
-      brands, 
-      catalog 
+      version: "v4_intelligent_merge",
+      count: { raw_cars: cars?.length, raw_services: services?.length },
+      brands: finalBrands, 
+      catalog: finalCatalog 
     }), {
       status: 200,
       headers: {

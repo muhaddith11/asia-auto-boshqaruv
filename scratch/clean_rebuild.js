@@ -18,34 +18,32 @@ const fullCatalog = {
     { m: 'Song Plus EV', type: 'EV' }, { m: 'Song Plus Gibrid', type: 'Hybrid' }, { m: 'Champion Gibrid', type: 'Hybrid' },
     { m: 'Chazor', type: 'Hybrid' }, { m: 'Seal', type: 'Hybrid' }, { m: 'Han Gibrid', type: 'Hybrid' },
     { m: 'Song Pro', type: 'Hybrid' }, { m: 'Seagull', type: 'EV' }, { m: 'Tang', type: 'Hybrid' },
-    { m: 'Yuan', type: 'EV' }, { m: 'Yuan Up EV', type: 'EV' }, { m: 'Yuan Up Gibrid', type: 'Hybrid_High' }
+    { m: 'Yuan Plus', type: 'EV' }, { m: 'Yuan Up EV', type: 'EV' }, { m: 'Yuan Up Gibrid', type: 'Hybrid' }
   ],
   'Kia': [
-    { m: 'Carnival', type: 'Hybrid' }, { m: 'Bongo', type: 'Bongo_Kia' }, { m: 'Bongo EV', type: 'EV' },
+    { m: 'Carnival', type: 'Hybrid' }, { m: 'Bongo', type: 'Hybrid' }, { m: 'Bongo EV', type: 'EV' },
     { m: 'EV 3', type: 'EV' }, { m: 'EV 5', type: 'EV' }, { m: 'EV 6', type: 'EV' }, { m: 'EV 9', type: 'EV' },
-    { m: 'K 3', type: 'Hybrid' }, { m: 'K 5', type: 'Hybrid' }, { m: 'K 8', type: 'Hybrid' }, { m: 'K 8 Restaylin', type: 'Hybrid' },
-    { m: 'K 9', type: 'Hybrid' }, { m: 'Morning', type: 'Hybrid_Small' }, { m: 'Seltos', type: 'Hybrid' }, { m: 'Sorento', type: 'Hybrid' }, { m: 'Sportage', type: 'Hybrid' }
+    { m: 'K 3', type: 'Hybrid' }, { m: 'K 5', type: 'Hybrid' }, { m: 'K 8', type: 'Hybrid' }, { m: 'K 9', type: 'Hybrid' },
+    { m: 'Morning', type: 'Hybrid' }, { m: 'Seltos', type: 'Hybrid' }, { m: 'Sorento', type: 'Hybrid' }, { m: 'Sportage', type: 'Hybrid' }
   ],
   'Hyundai': [
     { m: 'Elantra', type: 'Hybrid' }, { m: 'Creta', type: 'Hybrid' }, { m: 'Ioniq 5', type: 'EV' }, { m: 'Ioniq 6', type: 'EV' },
-    { m: 'Ioniq 9', type: 'EV' }, { m: 'Palisade', type: 'Hybrid' }, { m: 'Porter', type: 'Hybrid' }, { m: 'Santa Fe', type: 'Hybrid' },
-    { m: 'Sonata', type: 'Hybrid' }, { m: 'Sonata 2008', type: 'Sonata_Old' }, { m: 'Staria', type: 'Hybrid' }, { m: 'Starex', type: 'Hybrid' }, { m: 'Tranjet', type: 'Hybrid_Small' }
+    { m: 'Palisade', type: 'Hybrid' }, { m: 'Porter', type: 'Hybrid' }, { m: 'Santa Fe', type: 'Hybrid' }, { m: 'Sonata', type: 'Hybrid' },
+    { m: 'Staria', type: 'Hybrid' }
   ],
   'Li Auto': [
-    { m: 'LI 6', type: 'LI_Premium' }, { m: 'LI 7', type: 'LI_Premium' }, { m: 'LI 8', type: 'LI_Premium' }, { m: 'LI 9', type: 'LI_Premium' }, { m: 'LI 9 Restaling', type: 'LI_Premium' }
+    { m: 'L 6', type: 'LI_Hybrid' }, { m: 'L 7', type: 'LI_Hybrid' }, { m: 'L 8', type: 'LI_Hybrid' }, { m: 'L 9', type: 'LI_Hybrid' }, { m: 'MEGA', type: 'EV' }
   ],
   'BMW': [
-    { m: 'I3', type: 'EV' }, { m: 'I4', type: 'EV' }, { m: 'I5', type: 'EV' }, { m: 'I7', type: 'EV' }, { m: 'IX', type: 'EV' }, { m: 'IX3', type: 'EV' },
-    { m: '530 I', type: 'BMW_Premium' }, { m: '840 I', type: 'BMW_Lux' }, { m: 'X 3', type: 'BMW_Premium' }, { m: 'X 5', type: 'BMW_Premium' }, { m: 'X 6', type: 'BMW_Premium' }, { m: 'X 7', type: 'BMW_Premium' }
+    { m: 'I 3', type: 'EV' }, { m: 'I 4', type: 'EV' }, { m: 'I 5', type: 'EV' }, { m: 'I 7', type: 'EV' }, { m: 'IX', type: 'EV' }, { m: 'IX 3', type: 'EV' },
+    { m: '530 I', type: 'Hybrid' }, { m: 'X 5', type: 'Hybrid' }, { m: 'X 7', type: 'Hybrid' }
   ],
   'Mercedes-Benz': [
-    { m: 'W 124', type: 'Mers_Old' }, { m: 'W 140', type: 'Mers_Old' }, { m: 'W 221', type: 'Mers_Old' }, { m: 'W 222', type: 'Mers_Premium' }, { m: 'W 223', type: 'Mers_Premium' },
-    { m: 'E 200', type: 'Mers_Lux' }, { m: 'E 350', type: 'Mers_Premium' }, { m: 'EQA 250', type: 'EV' }, { m: 'EQE 350', type: 'EV' }, { m: 'EQS 450', type: 'EV' },
-    { m: 'GL 450', type: 'Mers_Premium' }, { m: 'GLE 450', type: 'Mers_Premium' }, { m: 'ML 320', type: 'Mers_Old' }, { m: 'Sprinter', type: 'Mers_Old' }, { m: 'Vito', type: 'Mers_Old' }
+    { m: 'S Class W 222', type: 'Mers_Lux' }, { m: 'S Class W 223', type: 'Mers_Lux' }, { m: 'E Class', type: 'Mers_Lux' },
+    { m: 'EQS', type: 'EV' }, { m: 'EQE', type: 'EV' }, { m: 'G Class', type: 'Mers_Lux' }
   ],
   'Toyota': [
-    { m: 'Corolla', type: 'Toyota_Std' }, { m: 'Camry', type: 'Toyota_Std' }, { m: 'Highlander', type: 'Toyota_Lux' }, { m: 'Hilux', type: 'Toyota_Lux' },
-    { m: 'LC 200', type: 'Toyota_Lux' }, { m: 'LC 300', type: 'Toyota_Lux' }, { m: 'BZ 3', type: 'EV' }
+    { m: 'Camry', type: 'Hybrid' }, { m: 'Land Cruiser 300', type: 'Hybrid' }, { m: 'Prado', type: 'Hybrid' }, { m: 'Corolla', type: 'Hybrid' }
   ]
 };
 
@@ -63,36 +61,35 @@ const templates = {
   ],
   'EV': [
     {n: '🔍 Diagnostika', p: 100000}, { n: '🔋 Batareya holatini tekshirish', p: 200000 }, { n: '🧵 Simlarni to\'g\'irlash (Izolatsiya)', p: 500000 },
-    { n: '🇷🇺 Russifikatsiya (Rus tilida qilish)', p: 1200000 }, { n: '📱 Ilovalar (App) o' + "'" + 'rnatish', p: 100000 }, { n: '🛣️ Probeg tekshirish', p: 100000 },
+    { n: '🇷🇺 Russifikatsiya (Rus tilida qilish)', p: 1200000 }, { n: '📱 Ilovalar (App) o\'rnatish', p: 100000 }, { n: '🛣️ Probeg tekshirish', p: 100000 },
     { n: '🛞 Batareya yechish', p: 12000000 }, { n: '🔌 Zaryadlash portini remonti', p: 600000 }, { n: '🚫 Tabloda datchik o\'chirish', p: 100000 },
     { n: '🌀 Konditsioner remont', p: 600000 }, { n: '⚡ Invertor holatini tekshirish', p: 100000 }
   ],
-  'LI_Premium': [
+  'LI_Hybrid': [
       {n: '🔍 Diagnostika', p: 100000}, {n: '⛽ Benzin sistemasini ko\'rish', p: 700000}, {n: '🚫 Tabloda datchik o\'chirish', p: 100000}, {n: '🕯️ Svechalarni almashtirish', p: 100000},
       {n: '🌀 Drosil tozalash', p: 100000}, {n: '💉 Injector tozalash', p: 600000}, {n: '🛣️ Probeg tekshirish', p: 100000}, {n: '💻 Programma yozish', p: 800000},
       {n: '🚀 Stage urish', p: 600000}, {n: '⛽ Gaz regulirovka', p: 100000}, {n: '⛽ Benzin nasos ko\'rish', p: 150000}, {n: '🧵 Simlarni to\'g\'irlash', p: 200000},
       {n: '🇷🇺 Russifikatsiya (Rus tilida qilish)', p: 1200000}, {n: '📱 Prilojeniye (Ilovalar) o\'rnatish', p: 300000}
   ],
-  'Mers_Premium': [
+  'Mers_Lux': [
     { n: '🔍 Diagnostika', p: 100000 }, { n: '⛽ Benzin sistemasini ko\'rish', p: 700000 }, { n: '🚫 Tabloda datchik o\'chirish', p: 100000 },
     { n: '🕯️ Svechalarni almashtirish', p: 100000 }, { n: '🌀 Drosil tozalash', p: 100000 }, { n: '💉 Injector tozalash', p: 600000 },
     { n: '🛣️ Probeg tekshirish', p: 100000 }, { n: '💻 Programma yozish', p: 800000 }, { n: '🚀 Stage urish', p: 600000 },
-    { n: '⛽ Gaz regulirovka', p: 100000 }, { n: '⛽ Benzin nasos ko\'rish', p: 150000 }, { n: '🧵 Simlarni to\'g\'irlash', p: 200000 },
-    { n: '🇷🇺 Russifikatsiya (Rus tilida qilish)', p: 1200000 }, { n: '📱 Prilojeniye (Ilovalar) o\'rnatish', p: 300000 }
-  ],
-  'BMW_Premium': [
-    { n: '🔍 Diagnostika', p: 100000 }, { n: '⛽ Benzin sistemasini ko\'rish', p: 700000 }, { n: '🚫 Tabloda datchik o\'chirish', p: 100000 },
-    { n: '🕯️ Svechalarni almashtirish', p: 100000 }, { n: '🌀 Drosil tozalash', p: 100000 }, { n: '💉 Injector tozalash', p: 600000 },
-    { n: '🛣️ Probeg tekshirish', p: 100000 }, { n: '💻 Programma yozish', p: 800000 }, { n: '🚀 Stage urish', p: 600000 },
-    { n: '⛽ Gaz regulirovka', p: 100000 }, { n: '⛽ Benzin nasos ko\'rish', p: 150000 }, { n: '🧵 Simlarni to\'g\'irlash', p: 200000 },
+    { n: '⛽ Gaz regulirovka', p: 100000 }, { n: '⛽ Benzin nasos ko\'rish', p: 150000 }, { n: '🧵 Simlarni to\'g' + "irlash" , p: 200000 },
     { n: '🇷🇺 Russifikatsiya (Rus tilida qilish)', p: 1200000 }, { n: '📱 Prilojeniye (Ilovalar) o\'rnatish', p: 300000 }
   ]
 };
 
 async function wipeAndRebuild() {
-    console.log('🧹 Wiping old data...');
-    await supabase.from('cars_list').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from('services_list').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    console.log('🧹 AGGRESSIVE WIPE STARTED...');
+    
+    // Deleting with .neq('id', 'null') is sometimes not enough, 
+    // let's use a more direct approach by deleting all rows specifically.
+    // In Supabase client, .delete().match({}) often deletes all rows if RLS allows.
+    const { error: d1 } = await supabase.from('cars_list').delete().neq('brand', 'IMPOSSIBLE_VALUE');
+    const { error: d2 } = await supabase.from('services_list').delete().neq('brand', 'IMPOSSIBLE_VALUE');
+
+    if (d1 || d2) console.error('Wipe error:', d1, d2);
 
     const brands = Object.keys(fullCatalog);
     const carsToInsert = [];
@@ -101,7 +98,8 @@ async function wipeAndRebuild() {
     for (const brand of brands) {
         const models = fullCatalog[brand];
         for (const mObj of models) {
-            carsToInsert.push({ brand, name: mObj.m });
+            const mName = mObj.m.trim();
+            carsToInsert.push({ brand, name: mName });
 
             let sList = [];
             if (mObj.type === 'CHEV_STD') {
@@ -113,7 +111,7 @@ async function wipeAndRebuild() {
             sList.forEach(s => {
                 servicesToInsert.push({
                     brand,
-                    car_model: mObj.m,
+                    car_model: mName,
                     name: s.n,
                     price: s.p,
                     stavka: 0
@@ -122,15 +120,15 @@ async function wipeAndRebuild() {
         }
     }
 
-    console.log(`📝 Inserting ${carsToInsert.length} cars...`);
+    console.log(`📝 Re-inserting ${carsToInsert.length} clean cars...`);
     await supabase.from('cars_list').insert(carsToInsert);
 
-    console.log(`🛠️ Inserting ${servicesToInsert.length} services...`);
+    console.log(`🛠️ Re-inserting ${servicesToInsert.length} clean services...`);
     for (let i = 0; i < servicesToInsert.length; i += 200) {
         await supabase.from('services_list').insert(servicesToInsert.slice(i, i + 200));
     }
 
-    console.log('🏁 CLEAN REBUILD COMPLETE!');
+    console.log('🏁 CLEAN REBUILD FINISHED!');
 }
 
 wipeAndRebuild();
