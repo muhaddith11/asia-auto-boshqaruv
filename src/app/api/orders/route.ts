@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 function mapRowToApp(row: any) {
   if (!row) return row;

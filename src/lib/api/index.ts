@@ -11,7 +11,7 @@ async function handleJson(res: Response) {
 }
 
 export async function getClients(): Promise<Mijoz[]> {
-  const res = await fetch(`${API_BASE}/clients`);
+  const res = await fetch(`${API_BASE}/clients`, { cache: 'no-store' });
   return handleJson(res);
 }
 
@@ -35,7 +35,7 @@ export async function deleteClient(id: number | string) {
 }
 
 export async function getOrders(): Promise<Buyurtma[]> {
-  const res = await fetch(`${API_BASE}/orders`);
+  const res = await fetch(`${API_BASE}/orders`, { cache: 'no-store' });
   return handleJson(res);
 }
 
@@ -59,7 +59,7 @@ export async function deleteOrder(id: number | string) {
 }
 
 export async function getWorkers(): Promise<Xodim[]> {
-  const res = await fetch(`${API_BASE}/workers`);
+  const res = await fetch(`${API_BASE}/workers`, { cache: 'no-store' });
   return handleJson(res);
 }
 
@@ -83,12 +83,12 @@ export async function deleteWorker(id: number | string) {
 }
 
 export async function getParts(): Promise<Zapchast[]> {
-  const res = await fetch(`${API_BASE}/parts`);
+  const res = await fetch(`${API_BASE}/parts`, { cache: 'no-store' });
   return handleJson(res);
 }
 
 export async function getCars(): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/cars`);
+  const res = await fetch(`${API_BASE}/cars`, { cache: 'no-store' });
   return handleJson(res);
 }
 
@@ -112,13 +112,13 @@ export async function deletePart(id: number | string) {
 }
 
 export async function getReports() {
-  const res = await fetch(`${API_BASE}/reports`);
+  const res = await fetch(`${API_BASE}/reports`, { cache: 'no-store' });
   return handleJson(res);
 }
 
 export async function getServices(carModel?: string): Promise<any[]> {
   const url = carModel ? `${API_BASE}/services?car_model=${encodeURIComponent(carModel)}` : `${API_BASE}/services`;
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   return handleJson(res);
 }
 
