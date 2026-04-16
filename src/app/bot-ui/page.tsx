@@ -32,7 +32,7 @@ export default function BotUIPage() {
       }
 
       try {
-        const res = await fetch('/api/bot-ui/catalog');
+        const res = await fetch(`/api/bot-ui/catalog?t=${Date.now()}`);
         const data = await res.json();
         if (data.error) setError(data.error);
         if (data.isFallback) console.warn("Using fallback catalog data due to error.");
