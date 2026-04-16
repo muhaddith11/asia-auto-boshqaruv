@@ -11,6 +11,8 @@ function mapRowToApp(row: any) {
   if (date !== undefined) {
     r.createdAt = date;
   }
+  // Calculate chegirma from total and final since the DB column is missing
+  r.chegirma = (r.total || 0) - (r.final || 0);
   return r;
 }
 
@@ -21,6 +23,10 @@ function mapAppToDB(body: any) {
     b.createdat = b.createdAt;
     b.created_at = b.createdAt; // Set both just in case, PG will ignore extra if not in request
     delete b.createdAt;
+  }
+  // Remove chegirma because it doesn't exist in the DB table
+  if (b.chegirma !== undefined) {
+    delete b.chegirma;
   }
   return b;
 }

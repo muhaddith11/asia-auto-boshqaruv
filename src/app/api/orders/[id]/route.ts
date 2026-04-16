@@ -11,6 +11,8 @@ function mapRowToApp(row: any) {
   if (date !== undefined) {
     r.createdAt = date;
   }
+  // Calculate chegirma from total and final
+  r.chegirma = (r.total || 0) - (r.final || 0);
   return r;
 }
 
@@ -20,6 +22,10 @@ function mapAppToDB(body: any) {
     b.createdat = b.createdAt;
     b.created_at = b.createdAt;
     delete b.createdAt;
+  }
+  // Remove chegirma for DB payload
+  if (b.chegirma !== undefined) {
+    delete b.chegirma;
   }
   return b;
 }
