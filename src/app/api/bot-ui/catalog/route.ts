@@ -90,7 +90,7 @@ export async function GET() {
     });
 
     return new NextResponse(JSON.stringify({ 
-      version: "v4_intelligent_merge",
+      version: "v5_persistence_fix",
       count: { raw_cars: cars?.length, raw_services: services?.length },
       brands: finalBrands, 
       catalog: finalCatalog 
