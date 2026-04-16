@@ -261,9 +261,25 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({ buyurtmalar: state.buyurtmalar.map((bb) => bb.id === tempId ? created : bb) }));
         }).catch(() => {});
       },
-      updateBuyurtma: (id, data) => {
-        set((state) => ({ buyurtmalar: state.buyurtmalar.map((b) => b.id === id ? { ...b, ...data } : b) }));
-        updateOrder(id, data as any).catch(() => {});
+      updateBuyurtma: async (id, data) => {
+        // Optimistic update
+        set((state) => ({ 
+          buyurtmalar: state.buyurtmalar.map((b) => Number(b.id) === Number(id) ? { ...b, ...data } : b) 
+        }));
+        
+        try {
+          const result = await updateOrder(id, data as any);
+          if (!result || result.error) {
+             throw new Error(result?.error || "Noma'lum server xatosi");
+          }
+          console.log("✅ Buyurtma muvaffaqiyatli yangilandi:", id);
+        } catch (err: any) {
+          console.error("❌ Buyurtmani yangilashda xatolik:", err);
+          alert("DIQQAT: Buyurtma statusi bazada saqlanmadi! \nSabab: " + (err.message || "Server bilan bog'lanishda xato"));
+          
+          // Revert on failure (optional but recommended for data integrity)
+          // For now, alerting is most important so the user knows NOT to trust the GUI state
+        }
       },
       deleteBuyurtma: (id) => {
         set((state) => ({ buyurtmalar: state.buyurtmalar.filter((b) => Number(b.id) != Number(id)) }));

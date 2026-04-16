@@ -46,7 +46,7 @@ export async function createOrder(data: Partial<Buyurtma>) {
 
 export async function updateOrder(id: number | string, data: Partial<Buyurtma>) {
   const res = await fetch(`${API_BASE}/orders/${id}`, { 
-    method: 'PATCH', 
+    method: 'POST', 
     body: JSON.stringify(data),
     headers: { 'Content-Type': 'application/json' }
   });
