@@ -21,7 +21,11 @@ export async function createClient(data: Partial<Mijoz>) {
 }
 
 export async function updateClient(id: number | string, data: Partial<Mijoz>) {
-  const res = await fetch(`${API_BASE}/clients/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/clients/${id}`, { 
+    method: 'PATCH', 
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  });
   return handleJson(res);
 }
 
@@ -41,7 +45,11 @@ export async function createOrder(data: Partial<Buyurtma>) {
 }
 
 export async function updateOrder(id: number | string, data: Partial<Buyurtma>) {
-  const res = await fetch(`${API_BASE}/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/orders/${id}`, { 
+    method: 'PATCH', 
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  });
   return handleJson(res);
 }
 
@@ -61,7 +69,11 @@ export async function createWorker(data: Partial<Xodim>) {
 }
 
 export async function updateWorker(id: number | string, data: Partial<Xodim>) {
-  const res = await fetch(`${API_BASE}/workers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/workers/${id}`, { 
+    method: 'PATCH', 
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  });
   return handleJson(res);
 }
 
@@ -86,7 +98,11 @@ export async function createPart(data: Partial<Zapchast>) {
 }
 
 export async function updatePart(id: number | string, data: Partial<Zapchast>) {
-  const res = await fetch(`${API_BASE}/parts/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/parts/${id}`, { 
+    method: 'PATCH', 
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  });
   return handleJson(res);
 }
 
@@ -112,7 +128,11 @@ export async function createService(data: any) {
 }
 
 export async function updateService(id: string | number, data: any) {
-  const res = await fetch(`${API_BASE}/services/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/services/${id}`, { 
+    method: 'PATCH', 
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  });
   return handleJson(res);
 }
 
