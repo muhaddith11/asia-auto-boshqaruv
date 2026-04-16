@@ -22,7 +22,7 @@ export async function createClient(data: Partial<Mijoz>) {
 
 export async function updateClient(id: number | string, data: Partial<Mijoz>) {
   const res = await fetch(`${API_BASE}/clients/${id}`, { 
-    method: 'PATCH', 
+    method: 'POST', 
     body: JSON.stringify(data),
     headers: { 'Content-Type': 'application/json' }
   });

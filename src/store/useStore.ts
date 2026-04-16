@@ -81,28 +81,45 @@ export const useStore = create<AutoServisStore>()(
       kassa: { naqd: 0, karta: 0 },
       counters: { mijoz: 1, xodim: 1, xizmat: 10, zap: 10, buyurtma: 1, cash: 1, maosh: 1, purchase: 1 },
 
-      addMijoz: (m) => {
+      addMijoz: async (m) => {
         const tempId = -Date.now();
         set((state) => ({
           mijozlar: [...state.mijozlar, { ...m, id: tempId, tashriflar: 0, jami: 0, qarzdorlik: 0 }],
           counters: { ...state.counters, mijoz: state.counters.mijoz + 1 }
         }));
-        createClient(m as any).then((created) => {
-          if (!created) return;
+        try {
+          const created = await createClient(m as any);
+          if (!created || (created as any).error) {
+             throw new Error((created as any).error || "Mijozni saqlashda xatolik");
+          }
           set((state) => ({
             mijozlar: state.mijozlar.map((mm) => mm.id === tempId ? created : mm)
           }));
-        }).catch(() => {
-          // keep local item if server fails
-        });
+          console.log("✅ Mijoz bazaga saqlandi:", created.id);
+        } catch (err: any) {
+          console.error("❌ Mijozni saqlashda xatolik:", err);
+          alert("XATOLIK: Mijoz bazada saqlanmadi! \nSabab: " + (err.message || "Server bilan aloqa yo'q"));
+          // Optionally revert
+          set((state) => ({ 
+            mijozlar: state.mijozlar.filter((mm) => mm.id !== tempId),
+            counters: { ...get().counters, mijoz: get().counters.mijoz - 1 }
+          }));
+        }
       },
-      updateMijoz: (id, data) => {
+      updateMijoz: async (id, data) => {
         set((state) => ({
-          mijozlar: state.mijozlar.map((m) => m.id === id ? { ...m, ...data } : m)
+          mijozlar: state.mijozlar.map((m) => Number(m.id) === Number(id) ? { ...m, ...data } : m)
         }));
-        updateClient(id, data as any).catch(() => {
-          // optionally reload or revert on failure
-        });
+        try {
+          const result = await updateClient(id, data as any);
+          if (!result || result.error) {
+             throw new Error(result?.error || "Mijozni yangilashda xatolik");
+          }
+          console.log("✅ Mijoz o'zgarishi saqlandi:", id);
+        } catch (err: any) {
+          console.error("❌ Mijozni yangilashda xatolik:", err);
+          alert("XATOLIK: Mijoz ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+        }
       },
       deleteMijoz: (id) => {
         set((state) => ({ mijozlar: state.mijozlar.filter((m) => Number(m.id) != Number(id)) }));
