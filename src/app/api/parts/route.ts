@@ -6,7 +6,8 @@ export const revalidate = 0;
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  const allowed = ['id', 'nom', 'mashina', 'sebestoimost', 'narx', 'bir', 'kat', 'balance'];
+  // Based on discovery: [ 'id', 'nom', 'narx', 'mashina', 'sebestoimost', 'balance' ]
+  const allowed = ['nom', 'narx', 'mashina', 'sebestoimost', 'balance'];
   const clean: any = {};
   allowed.forEach(key => {
     if (b[key] !== undefined) clean[key] = b[key];
