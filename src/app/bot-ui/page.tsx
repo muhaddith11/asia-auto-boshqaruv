@@ -119,7 +119,7 @@ export default function BotUIPage() {
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4 font-sans pb-24">
       <header className="mb-6">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          Asia Auto Service
+          Asia Auto Service (v2.0)
         </h1>
         {error && (
           <div className="mt-2 p-2 bg-red-900/30 border border-red-500/50 rounded-lg text-xs text-red-200">

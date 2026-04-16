@@ -68,7 +68,7 @@ export async function GET() {
       if (Object.keys(catalog[b]).length === 0) catalog[b]["Umumiy"] = [];
     });
 
-    return NextResponse.json({ brands, catalog });
+    return NextResponse.json({ version: "v2_rebuild_success", brands, catalog });
 
   } catch (error: any) {
     console.error('❌ Bot Catalog API Error:', error);
