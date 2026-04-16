@@ -23,6 +23,7 @@ export async function GET() {
     const { data: services, error: srvError } = await supabase
       .from('services_list')
       .select('brand, car_model, name, price')
+      .range(0, 9999)
       .order('name', { ascending: true });
 
     if (srvError) throw srvError;
