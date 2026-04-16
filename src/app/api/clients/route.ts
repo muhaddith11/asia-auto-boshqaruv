@@ -30,14 +30,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log("DEBUG: Incoming Client Body:", body);
     const dbBody = mapAppToDB(body);
+    console.log("DEBUG: Mapped DB Body:", dbBody);
+    
     const { data, error } = await supabase.from('clients').insert([dbBody]).select();
+    
     if (error) {
-      console.error("Client Insert Error:", error);
+      console.error("DEBUG: Supabase Client Insert Error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+    
+    console.log("DEBUG: Supabase Result:", data ? data[0] : 'No data');
     return NextResponse.json(mapRowToApp((data && data[0]) ?? null), { status: 201 });
   } catch (err) {
+    console.error("DEBUG: Client Route Catch Error:", err);
     return NextResponse.json({ error: 'Invalid JSON or server error' }, { status: 400 });
   }
 }
