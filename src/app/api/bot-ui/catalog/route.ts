@@ -19,13 +19,20 @@ export async function GET() {
 
     if (carsError) throw carsError;
 
-    // 2. Fetch all services (up to 10k rows)
-    const { data: services, error: srvError } = await supabase
-      .from('services_list')
-      .select('brand, car_model, name, price')
-      .range(0, 9999);
+    // 2. Fetch all services (fetching in chunks to overcome the 1000 row limit)
+    const [srv1, srv2, srv3] = await Promise.all([
+      supabase.from('services_list').select('brand, car_model, name, price').range(0, 999),
+      supabase.from('services_list').select('brand, car_model, name, price').range(1000, 1999),
+      supabase.from('services_list').select('brand, car_model, name, price').range(2000, 2999)
+    ]);
 
-    if (srvError) throw srvError;
+    const services = [
+      ...(srv1.data || []),
+      ...(srv2.data || []),
+      ...(srv3.data || [])
+    ];
+
+    if (srv1.error) throw srv1.error;
 
     function toProperCase(str: string) {
       if (!str) return '';
