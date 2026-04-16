@@ -11,14 +11,13 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  // Remove fields not present in Supabase 'clients' table
-  const allowed = ['id', 'ism', 'tel', 'mashina', 'raqam', 'vin', 'tashriflar', 'jami', 'qarzdorlik', 'created_at', 'createdat'];
-  Object.keys(b).forEach(key => {
-    if (!allowed.includes(key)) {
-      delete b[key];
-    }
+  // ONLY these columns exist in the DB. Others MUST be removed.
+  const allowed = ['ism', 'tel', 'mashina', 'raqam', 'vin', 'tashriflar', 'jami', 'qarzdorlik'];
+  const clean: any = {};
+  allowed.forEach(key => {
+    if (b[key] !== undefined) clean[key] = b[key];
   });
-  return b;
+  return clean;
 }
 
 export async function GET() {

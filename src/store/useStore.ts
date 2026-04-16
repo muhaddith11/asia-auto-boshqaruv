@@ -359,14 +359,14 @@ export const useStore = create<AutoServisStore>()(
       }),
       loadInitialData: async () => {
         try {
-          console.log('📡 API: Ma\'lumotlarni so\'rash boshlandi...');
+          // Force fresh data on init
           const [clients, orders, workers, parts, cars, services] = await Promise.all([
-            getClients().catch(() => []),
-            getOrders().catch(() => []),
-            getWorkers().catch(() => []),
-            getParts().catch(() => []),
-            getCars().catch(() => []),
-            getServices().catch(() => [])
+            getClients(),
+            getOrders(),
+            getWorkers(),
+            getParts(),
+            getCars(),
+            getServices()
           ]);
 
           console.log(`📦 API: Yuklandi: ${clients.length} mijoz, ${orders.length} buyurtma, ${workers.length} xodim, ${parts.length} zapchast, ${cars.length} mashina, ${services.length} xizmat.`);
