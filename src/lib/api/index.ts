@@ -68,14 +68,12 @@ export async function createWorker(data: Partial<Xodim>) {
   return handleJson(res);
 }
 
-export async function updateWorker(id: number | string, data: Partial<Xodim>) {
-  const res = await fetch(`${API_BASE}/workers/${id}`, { 
-    method: 'PATCH', 
-    body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' }
-  });
-  return handleJson(res);
-}
+export const updateWorker = (id: number | string, w: Partial<Xodim>) => 
+  fetch(`${API_BASE}/workers/${id}`, { 
+    method: 'POST', // Use POST for stability
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(w) 
+  }).then(handleJson);
 
 export async function deleteWorker(id: number | string) {
   const res = await fetch(`${API_BASE}/workers/${id}`, { method: 'DELETE' });
@@ -99,7 +97,7 @@ export async function createPart(data: Partial<Zapchast>) {
 
 export async function updatePart(id: number | string, data: Partial<Zapchast>) {
   const res = await fetch(`${API_BASE}/parts/${id}`, { 
-    method: 'PATCH', 
+    method: 'POST', // Use POST for stability
     body: JSON.stringify(data),
     headers: { 'Content-Type': 'application/json' }
   });
@@ -129,7 +127,7 @@ export async function createService(data: any) {
 
 export async function updateService(id: string | number, data: any) {
   const res = await fetch(`${API_BASE}/services/${id}`, { 
-    method: 'PATCH', 
+    method: 'POST', // Use POST for stability
     body: JSON.stringify(data),
     headers: { 'Content-Type': 'application/json' }
   });

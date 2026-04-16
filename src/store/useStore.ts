@@ -128,17 +128,15 @@ export const useStore = create<AutoServisStore>()(
         });
       },
 
-      addXodim: (x) => {
+      addXodim: async (x) => {
         const tempId = -Date.now();
         const now = new Date().toISOString();
         
-        // Optimistic update
         set((state) => ({
           xodimlar: [...state.xodimlar, { ...x, id: tempId, status: 'aktiv', createdAt: now }],
           counters: { ...state.counters, xodim: state.counters.xodim + 1 }
         }));
-
-        // ALL mandatory fields for Supabase (EXCLUDING 'izoh' as it doesn't exist in DB)
+        
         const apiData = {
           ism: x.ism,
           tel: x.tel || '',
@@ -150,27 +148,38 @@ export const useStore = create<AutoServisStore>()(
           parentId: x.parentId || null
         };
 
-        createWorker(apiData as any).then((created) => {
-          if (!created) throw new Error("Server xodimni qabul qilmadi");
+        try {
+          const created = await createWorker(apiData as any);
+          if (!created || (created as any).error) throw new Error((created as any).error || "Xodimni saqlashda xatolik");
           
           set((state) => ({ 
             xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? created : xx) 
           }));
-        }).catch((err) => {
-          console.error("Xodim qo'shishda xatolik:", err);
-          alert("Xodimni bazaga saqlab bo'lmadi! Sabab: " + (err.message || "Noma'lum xato"));
-          // Rollback local state
+          console.log("✅ Xodim bazaga saqlandi:", created.id);
+        } catch (err: any) {
+          console.error("❌ Xodim qo'shishda xatolik:", err);
+          alert("XATOLIK: Xodim bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
           set((state) => ({
-            xodimlar: state.xodimlar.filter(xx => xx.id !== tempId)
+            xodimlar: state.xodimlar.filter(xx => xx.id !== tempId),
+            counters: { ...get().counters, xodim: get().counters.xodim - 1 }
           }));
-        });
+        }
       },
-      updateXodim: (id, data) => {
+      updateXodim: async (id, data) => {
+        const original = get().xodimlar.find(x => x.id === id);
         set((state) => ({ xodimlar: state.xodimlar.map((x) => x.id === id ? { ...x, ...data } : x) }));
-        
-        // Remove 'izoh' if it exists in data before sending to Supabase
-        const { izoh, ...apiData } = data as any;
-        updateWorker(id, apiData).catch(() => {});
+        try {
+          const { izoh, ...apiData } = data as any;
+          const result = await updateWorker(id, apiData);
+          if (!result || result.error) throw new Error(result?.error || "Xodimni yangilashda xatolik");
+          console.log("✅ Xodim o'zgarishi saqlandi:", id);
+        } catch (err: any) {
+          console.error("❌ Xodimni yangilashda xatolik:", err);
+          alert("XATOLIK: Xodim ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          if (original) {
+            set((state) => ({ xodimlar: state.xodimlar.map(x => x.id === id ? original : x) }));
+          }
+        }
       },
       deleteXodim: (id) => {
         set((state) => ({ xodimlar: state.xodimlar.filter((x) => Number(x.id) != Number(id)) }));
@@ -188,54 +197,75 @@ export const useStore = create<AutoServisStore>()(
         }
       })),
 
-      addXizmat: (x) => {
+      addXizmat: async (x) => {
         const tempId = -Date.now();
         set((state) => ({
           xizmatlar: [...state.xizmatlar, { ...x, id: tempId }],
           counters: { ...state.counters, xizmat: state.counters.xizmat + 1 }
         }));
         
-        // Map to DB schema (best guess for brand/model from 'mashina' string)
+        // Map to DB schema
         const parts = x.mashina.split(' ');
         const brand = parts[0] || 'Umumiy';
-        const model = parts.slice(1).join(' ') || '';
+        const model = parts.slice(1).join(' ') || brand;
 
         const apiData = {
           name: x.nom,
           price: x.narx,
           brand: brand,
-          car_model: model || brand, // fallback
+          car_model: model,
           stavka: x.stavka || 0
         };
 
-        createService(apiData).then((created) => {
-          if (!created) return;
+        try {
+          const created = await createService(apiData);
+          if (!created || (created as any).error) throw new Error("Server xizmatni qabul qilmadi");
+          
+          const createdItem = Array.isArray(created) ? created[0] : created;
           const mapped = {
-            id: created.id,
-            nom: created.name,
-            narx: created.price,
-            mashina: created.brand === 'Umumiy' ? 'Umumiy' : `${created.brand} ${created.car_model}`.toUpperCase(),
-            stavka: created.stavka
+            id: createdItem.id,
+            nom: createdItem.name,
+            narx: createdItem.price,
+            mashina: createdItem.brand === 'Umumiy' ? 'Umumiy' : `${createdItem.brand} ${createdItem.car_model}`.toUpperCase(),
+            stavka: createdItem.stavka
           };
           set((state) => ({
             xizmatlar: state.xizmatlar.map((s) => s.id === tempId ? mapped : s)
           }));
-        }).catch(() => {});
+          console.log("✅ Xizmat bazaga saqlandi:", createdItem.id);
+        } catch (err: any) {
+          console.error("❌ Xizmat qo'shishda xatolik:", err);
+          alert("XATOLIK: Xizmat bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          set((state) => ({
+            xizmatlar: state.xizmatlar.filter(s => s.id !== tempId),
+            counters: { ...get().counters, xizmat: get().counters.xizmat - 1 }
+          }));
+        }
       },
-      updateXizmat: (id, data) => {
+      updateXizmat: async (id, data) => {
+        const original = get().xizmatlar.find(x => x.id === id);
         set((state) => ({
           xizmatlar: state.xizmatlar.map((x) => String(x.id) === String(id) ? { ...x, ...data } : x)
         }));
         
-        // Map to DB schema if those fields were updated
-        const apiData: any = {};
-        if (data.nom) apiData.name = data.nom;
-        if (data.narx) apiData.price = data.narx;
-        if (data.mashina) apiData.car_model = data.mashina;
-        if (data.stavka !== undefined) apiData.stavka = data.stavka;
+        try {
+          const apiData: any = {};
+          if (data.nom) apiData.name = data.nom;
+          if (data.narx) apiData.price = data.narx;
+          if (data.mashina) apiData.car_model = data.mashina;
+          if (data.stavka !== undefined) apiData.stavka = data.stavka;
 
-        if (Object.keys(apiData).length > 0) {
-          updateService(id, apiData).catch(() => {});
+          if (Object.keys(apiData).length > 0) {
+            const result = await updateService(id, apiData);
+            if (!result || result.error) throw new Error("Xizmatni yangilashda xatolik");
+          }
+          console.log("✅ Xizmat o'zgarishi saqlandi:", id);
+        } catch (err: any) {
+          console.error("❌ Xizmatni yangilashda xatolik:", err);
+          alert("XATOLIK: Xizmat bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          if (original) {
+            set((state) => ({ xizmatlar: state.xizmatlar.map(x => x.id === id ? original : x) }));
+          }
         }
       },
       deleteXizmat: (id) => {
@@ -245,20 +275,41 @@ export const useStore = create<AutoServisStore>()(
         deleteService(id).catch(() => {});
       },
 
-      addZapchast: (z) => {
+      addZapchast: async (z) => {
         const tempId = -Date.now();
         set((state) => ({
           zapchastlar: [...state.zapchastlar, { ...z, id: tempId, balance: 0 }],
           counters: { ...state.counters, zap: state.counters.zap + 1 }
         }));
-        createPart(z as any).then((created) => {
-          if (!created) return;
+        try {
+          const created = await createPart(z as any);
+          if (!created || (created as any).error) throw new Error((created as any).error || "Zapchastni saqlashda xatolik");
+          
           set((state) => ({ zapchastlar: state.zapchastlar.map((zz) => zz.id === tempId ? created : zz) }));
-        }).catch(() => {});
+          console.log("✅ Zapchast bazaga saqlandi:", created.id);
+        } catch (err: any) {
+          console.error("❌ Zapchast qo'shishda xatolik:", err);
+          alert("XATOLIK: Zapchast bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          set((state) => ({
+            zapchastlar: state.zapchastlar.filter(zz => zz.id !== tempId),
+            counters: { ...get().counters, zap: get().counters.zap - 1 }
+          }));
+        }
       },
-      updateZapchast: (id, data) => {
+      updateZapchast: async (id, data) => {
+        const original = get().zapchastlar.find(z => z.id === id);
         set((state) => ({ zapchastlar: state.zapchastlar.map((z) => z.id === id ? { ...z, ...data } : z) }));
-        updatePart(id, data as any).catch(() => {});
+        try {
+          const result = await updatePart(id, data as any);
+          if (!result || result.error) throw new Error(result?.error || "Zapchastni yangilashda xatolik");
+          console.log("✅ Zapchast o'zgarishi saqlandi:", id);
+        } catch (err: any) {
+          console.error("❌ Zapchastni yangilashda xatolik:", err);
+          alert("XATOLIK: Zapchast ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          if (original) {
+            set((state) => ({ zapchastlar: state.zapchastlar.map(z => z.id === id ? original : z) }));
+          }
+        }
       },
       deleteZapchast: (id) => {
         set((state) => ({ zapchastlar: state.zapchastlar.filter((z) => Number(z.id) != Number(id)) }));

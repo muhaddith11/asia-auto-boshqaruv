@@ -2,8 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, telegram, "shareType", "parentId", created_at';
+
+function mapAppToDB(body: any) {
+  const b = { ...body } as any;
+  // ONLY these columns exist in the DB or are expected.
+  // Note: some are dual-named in the DB but we use these:
+  const allowed = ['id', 'ism', 'tel', 'mutax', 'foiz', 'status', 'role', 'telegram', 'shareType', 'parentId'];
+  const clean: any = {};
+  allowed.forEach(key => {
+    if (b[key] !== undefined) clean[key] = b[key];
+  });
+  return clean;
+}
 
 export async function GET() {
   try {
@@ -23,9 +36,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     console.log("Adding worker, body:", body);
+    const dbBody = mapAppToDB(body);
     
     // Explicitly insert only allowed columns to be double safe
-    const { data, error } = await supabase.from('workers').insert([body]).select(WORKER_COLUMNS);
+    const { data, error } = await supabase.from('workers').insert([dbBody]).select(WORKER_COLUMNS);
     
     if (error) {
       console.error("Supabase POST Worker Error:", error);

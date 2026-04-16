@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import supabase from '@/lib/supabaseClient';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+function mapAppToDB(body: any) {
+  const b = { ...body } as any;
+  const allowed = ['id', 'name', 'brand', 'car_model', 'price', 'stavka'];
+  const clean: any = {};
+  allowed.forEach(key => {
+    if (b[key] !== undefined) clean[key] = b[key];
+  });
+  return clean;
+}
 
 // GET: Fetch all services or filter by car_model
 export async function GET(req: Request) {
@@ -37,7 +45,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     
     // Ensure body is an array for batch upsert
-    const services = Array.isArray(body) ? body : [body];
+    const servicesRaw = Array.isArray(body) ? body : [body];
+    const services = servicesRaw.map(s => mapAppToDB(s));
 
     const { data, error } = await supabase
       .from('services_list')
