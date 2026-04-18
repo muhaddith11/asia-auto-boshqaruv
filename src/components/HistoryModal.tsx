@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { X, Clock, User, Wrench, Package, Calendar, ChevronRight, Hash, Car, Gauge, Info } from 'lucide-react';
+import { X, Clock, User, Wrench, Package, Calendar, ChevronRight, Hash, ClipboardList, RotateCcw } from 'lucide-react';
 import { Buyurtma, Xodim } from '@/types';
 import { useStore } from '@/store/useStore';
 
@@ -48,14 +48,14 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
              
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <Car size={12} /> Raqami
+                   <Hash size={12} /> Raqami
                 </div>
                 <div className="text-[14px] text-white font-black uppercase">{order?.raqam || '—'}</div>
              </div>
 
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <Gauge size={12} /> Probeg
+                   <RotateCcw size={12} /> Probeg
                 </div>
                 <div className="text-[14px] text-white font-black">{order?.km ? Number(order.km).toLocaleString() + ' KM' : '—'}</div>
              </div>
@@ -86,7 +86,7 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
               {order?.muammo && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-[12px] font-black text-slate-400 uppercase tracking-widest border-l-4 border-amber-500 pl-5 py-1">
-                    <Info size={15} /> Muammo va Tavsif
+                    <ClipboardList size={15} /> Muammo va Tavsif
                   </div>
                   <div className="bg-amber-500/5 border border-amber-500/10 p-6 rounded-2xl">
                      <p className="text-[14px] text-slate-300 leading-relaxed italic whitespace-pre-wrap">
