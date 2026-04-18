@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { X, Clock, User, Wrench, Package, Calendar, ChevronRight, Hash } from 'lucide-react';
+import { X, Clock, User, Wrench, Package, Calendar, ChevronRight, Hash, Car, Gauge, Info } from 'lucide-react';
 import { Buyurtma, Xodim } from '@/types';
 import { useStore } from '@/store/useStore';
 
@@ -38,20 +38,65 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
         <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
           
           {/* Info Banner */}
-          <div className="grid grid-cols-2 gap-5">
-             <div className="bg-black/20 border border-white/5 p-5 rounded-2xl space-y-2 shadow-inner">
-                <div className="flex items-center gap-2 text-[11px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <Calendar size={13} /> Ochilgan sana
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <Calendar size={12} /> Sana
                 </div>
-                <div className="text-[15px] text-white font-black">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
+                <div className="text-[14px] text-white font-black">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
              </div>
-             <div className="bg-black/20 border border-white/5 p-5 rounded-2xl space-y-2 shadow-inner">
-                <div className="flex items-center gap-2 text-[11px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <Hash size={13} /> Buyurtma holati
+             
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <Car size={12} /> Raqami
                 </div>
-                <div className="text-[13px] text-indigo-400 font-black uppercase tracking-tight bg-indigo-500/5 px-3 py-1 rounded-lg border border-indigo-500/10 w-fit">{order?.holat || 'yaratildi'}</div>
+                <div className="text-[14px] text-white font-black uppercase">{order?.raqam || '—'}</div>
+             </div>
+
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <Gauge size={12} /> Probeg
+                </div>
+                <div className="text-[14px] text-white font-black">{order?.km ? Number(order.km).toLocaleString() + ' KM' : '—'}</div>
+             </div>
+
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <Hash size={12} /> Holati
+                </div>
+                <div className="text-[11px] text-indigo-400 font-black uppercase tracking-tight bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit">{order?.holat || 'yaratildi'}</div>
              </div>
           </div>
+
+          {/* Additional Info & Muammo */}
+          {(order?.vin || order?.muammo) && (
+            <div className="space-y-6">
+              {order?.vin && (
+                <div className="bg-indigo-500/5 border border-indigo-500/10 p-4 rounded-2xl flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                         <Hash size={14} />
+                      </div>
+                      <span className="text-[11px] text-slate-500 font-black uppercase tracking-widest">VIN KOD:</span>
+                   </div>
+                   <span className="text-[13px] text-indigo-200 font-mono font-bold tracking-widest">{order.vin}</span>
+                </div>
+              )}
+
+              {order?.muammo && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-[12px] font-black text-slate-400 uppercase tracking-widest border-l-4 border-amber-500 pl-5 py-1">
+                    <Info size={15} /> Muammo va Tavsif
+                  </div>
+                  <div className="bg-amber-500/5 border border-amber-500/10 p-6 rounded-2xl">
+                     <p className="text-[14px] text-slate-300 leading-relaxed italic whitespace-pre-wrap">
+                        "{order.muammo}"
+                     </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Services Group */}
           <div className="space-y-6">
