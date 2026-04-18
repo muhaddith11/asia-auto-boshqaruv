@@ -93,7 +93,7 @@ export const useStore = create<AutoServisStore>()(
              throw new Error((created as any).error || "Mijozni saqlashda xatolik");
           }
           set((state) => ({
-            mijozlar: state.mijozlar.map((mm) => mm.id === tempId ? created : mm)
+            mijozlar: state.mijozlar.map((mm) => Number(mm.id) === Number(tempId) ? created : mm)
           }));
           console.log("✅ Mijoz bazaga saqlandi:", created.id);
         } catch (err: any) {
@@ -153,7 +153,7 @@ export const useStore = create<AutoServisStore>()(
           if (!created || (created as any).error) throw new Error((created as any).error || "Xodimni saqlashda xatolik");
           
           set((state) => ({ 
-            xodimlar: state.xodimlar.map((xx) => xx.id === tempId ? created : xx) 
+            xodimlar: state.xodimlar.map((xx) => Number(xx.id) === Number(tempId) ? created : xx) 
           }));
           console.log("✅ Xodim bazaga saqlandi:", created.id);
         } catch (err: any) {
@@ -230,7 +230,7 @@ export const useStore = create<AutoServisStore>()(
             stavka: createdItem.stavka
           };
           set((state) => ({
-            xizmatlar: state.xizmatlar.map((s) => s.id === tempId ? mapped : s)
+            xizmatlar: state.xizmatlar.map((s) => Number(s.id) === Number(tempId) ? mapped : s)
           }));
           console.log("✅ Xizmat bazaga saqlandi:", createdItem.id);
         } catch (err: any) {
@@ -285,7 +285,7 @@ export const useStore = create<AutoServisStore>()(
           const created = await createPart(z as any);
           if (!created || (created as any).error) throw new Error((created as any).error || "Zapchastni saqlashda xatolik");
           
-          set((state) => ({ zapchastlar: state.zapchastlar.map((zz) => zz.id === tempId ? created : zz) }));
+          set((state) => ({ zapchastlar: state.zapchastlar.map((zz) => Number(zz.id) === Number(tempId) ? created : zz) }));
           console.log("✅ Zapchast bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Zapchast qo'shishda xatolik:", err);
@@ -326,7 +326,7 @@ export const useStore = create<AutoServisStore>()(
         }));
         createOrder(b as any).then((created) => {
           if (!created) return;
-          set((state) => ({ buyurtmalar: state.buyurtmalar.map((bb) => bb.id === tempId ? created : bb) }));
+          set((state) => ({ buyurtmalar: state.buyurtmalar.map((bb) => Number(bb.id) === Number(tempId) ? created : bb) }));
         }).catch(() => {});
       },
       updateBuyurtma: async (id, data) => {

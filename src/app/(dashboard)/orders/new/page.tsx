@@ -128,7 +128,7 @@ export default function NewOrderPage() {
 
   // ── Helpers ─────────────────────────────────────────────────
   const getServiceNarx = (serviceId: string | number) => {
-    const s = xizmatlar.find(x => x.id === Number(serviceId));
+    const s = xizmatlar.find(x => Number(x.id) === Number(serviceId));
     return s?.narx || 0;
   };
   const getPartNarx = (partId: string | number) => {
@@ -145,7 +145,7 @@ export default function NewOrderPage() {
 
   const zarplataTotal = assignments.reduce((sum, a) => {
     if (!a.workerId || !a.serviceId) return sum;
-    const worker = xodimlar.find(x => x.id === Number(a.workerId));
+    const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
     const foiz = worker?.foiz || 0;
     const base = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
     return sum + (isNaN(base) ? 0 : base * foiz / 100);
@@ -175,8 +175,8 @@ export default function NewOrderPage() {
     const orderServices = assignments
       .filter(a => a.workerId && a.serviceId)
       .map(a => {
-        const s = xizmatlar.find(x => x.id === Number(a.serviceId));
-        const worker = xodimlar.find(x => x.id === Number(a.workerId));
+        const s = xizmatlar.find(x => Number(x.id) === Number(a.serviceId));
+        const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
         const narx = a.customNarx ? parseFloat(a.customNarx) : (s?.narx || 0);
         return {
           ...s,
@@ -189,7 +189,7 @@ export default function NewOrderPage() {
     const orderParts = partRows
       .filter(r => r.partId)
       .map(r => {
-        const p = zapchastlar.find(x => x.id === Number(r.partId));
+        const p = zapchastlar.find(x => Number(x.id) === Number(r.partId));
         return { ...p, qty: r.qty || 1 };
       });
 
@@ -451,7 +451,7 @@ export default function NewOrderPage() {
                           value={a.serviceId}
                           onChange={e => {
                             const sId = e.target.value;
-                            const sObj = xizmatlar.find(x => x.id === Number(sId));
+                            const sObj = xizmatlar.find(x => Number(x.id) === Number(sId));
                             setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNarx: sObj ? sObj.narx.toString() : '' } : x));
                           }}
                         >
@@ -573,7 +573,7 @@ export default function NewOrderPage() {
                       justifyContent: 'flex-end', color: '#10b981', fontWeight: 700,
                       background: 'var(--surface2)',
                     }}>
-                      {row.partId ? Number(zapchastlar.find(z => z.id === Number(row.partId))?.narx || 0).toLocaleString() : '0'} so'm
+                      {row.partId ? Number(zapchastlar.find(z => Number(z.id) === Number(row.partId))?.narx || 0).toLocaleString() : '0'} so'm
                     </div>
                   </div>
 
