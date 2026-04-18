@@ -350,7 +350,9 @@ export default function OrdersPage() {
                       >
                         {/* ID */}
                         <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                          <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 12 }}>#{b.id}</span>
+                          <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 12 }}>
+                            {Number(b.id) < 0 ? '#' : `#${b.id}`}
+                          </span>
                         </td>
 
                         {/* Mijoz */}

@@ -449,7 +449,11 @@ export default function NewOrderPage() {
                         <select
                           style={{ ...S.select, background: 'var(--surface3)' }}
                           value={a.serviceId}
-                          onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: e.target.value, customNarx: '' } : x))}
+                          onChange={e => {
+                            const sId = e.target.value;
+                            const sObj = xizmatlar.find(x => x.id === Number(sId));
+                            setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNarx: sObj ? sObj.narx.toString() : '' } : x));
+                          }}
                         >
                           <option value="">— Xizmatni tanlang —</option>
                           {xizmatlar
