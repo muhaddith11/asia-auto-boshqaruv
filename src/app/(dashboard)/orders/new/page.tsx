@@ -2,12 +2,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  Trash2, 
-  Wrench, 
-  Package, 
-  User, 
+import {
+  Plus,
+  Trash2,
+  Wrench,
+  Package,
+  User,
   CheckCircle2,
   Save
 } from 'lucide-react';
@@ -15,12 +15,12 @@ import PhoneInput from '@/components/PhoneInput';
 import { normalizePhone } from '@/lib/phone';
 
 const STATUS_TABS = [
-  { key: 'yaratildi',             label: 'Yaratildi',             color: '#64748b' },
-  { key: 'tamirlanmoqda',         label: 'Tamirlanmoqda',         color: '#6366f1' },
-  { key: 'ehtiyot qism kutilyapti',label: 'Ehtiyot qism kutilyapti',color: '#06b6d4' },
-  { key: 'tulanmagan',            label: "To'lanmagan",           color: '#f97316' },
-  { key: 'tulangan',              label: "To'langan",             color: '#10b981' },
-  { key: 'bekor qilingan',        label: 'Bekor qilingan',        color: '#f43f5e' },
+  { key: 'yaratildi', label: 'Yaratildi', color: '#64748b' },
+  { key: 'tamirlanmoqda', label: 'Tamirlanmoqda', color: '#6366f1' },
+  { key: 'ehtiyot qism kutilyapti', label: 'Ehtiyot qism kutilyapti', color: '#06b6d4' },
+  { key: 'tulanmagan', label: "To'lanmagan", color: '#f97316' },
+  { key: 'tulangan', label: "To'langan", color: '#10b981' },
+  { key: 'bekor qilingan', label: 'Bekor qilingan', color: '#f43f5e' },
 ];
 
 /* ── styles ── */
@@ -264,18 +264,18 @@ export default function NewOrderPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {isAddingMashina ? (
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <input 
+                    <input
                       style={{ ...S.input, width: 180, padding: '6px 10px' }}
                       placeholder="MARKANI KIRITING..."
                       value={newMashinaName}
                       onChange={e => setNewMashinaName(e.target.value.toUpperCase())}
                       autoFocus
                     />
-                    <button 
+                    <button
                       onClick={handleAddMashina}
                       style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
                     >OK</button>
-                    <button 
+                    <button
                       onClick={() => setIsAddingMashina(false)}
                       style={{ background: 'var(--surface2)', color: 'var(--text3)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
                     >X</button>
@@ -365,8 +365,10 @@ export default function NewOrderPage() {
                 <label style={S.label}>Davlat raqami *</label>
                 <input
                   style={{ ...S.input, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}
-                  type="text" value={form.raqam} placeholder="01 A 000 AA"
-                  onChange={e => setForm({ ...form, raqam: e.target.value.toUpperCase() })}
+                  type="text" 
+                  value={form.raqam} 
+                  placeholder="01 A 000 AA"
+                  onChange={e => setForm({ ...form, raqam: formatRaqam(e.target.value) })}
                 />
               </div>
 

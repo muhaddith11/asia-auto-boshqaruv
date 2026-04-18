@@ -95,19 +95,20 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
   // ── Helpers ─────────────────────────────────────────────────
   const formatRaqam = (val: string) => {
-    const raw = val.replace(/\s/g, '').toUpperCase();
+    let raw = val.replace(/[^A-Z0-9]/gi, '').toUpperCase().slice(0, 8);
     if (raw.length <= 2) return raw;
     if (/^\d{2}[A-Z]/.test(raw)) {
-      // Format: 01 A 000 AA
       let res = raw.slice(0, 2) + ' ' + raw.slice(2, 3);
       if (raw.length > 3) res += ' ' + raw.slice(3, 6);
       if (raw.length > 6) res += ' ' + raw.slice(6, 8);
       return res.trim();
-    } else if (/^\d{5}/.test(raw) || /^\d{2}\s?\d{3}/.test(raw)) {
-      // Format: 01 000 AAA
+    } else if (/^\d{5}/.test(raw)) {
       let res = raw.slice(0, 2) + ' ' + raw.slice(2, 5);
       if (raw.length > 5) res += ' ' + raw.slice(5, 8);
       return res.trim();
+    }
+    if (/^\d{3,}/.test(raw)) {
+       return raw.slice(0, 2) + ' ' + raw.slice(2, 5) + (raw.length > 5 ? ' ' + raw.slice(5, 8) : '');
     }
     return raw;
   };
