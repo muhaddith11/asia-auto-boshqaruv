@@ -26,7 +26,6 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
             </div>
             <div>
               <h3 className="font-black text-white text-[16px] uppercase tracking-tight">Buyurtma Tarixi #{order?.id || '???'}</h3>
-              <p className="text-[12px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{order?.ism || "Noma'lum"} | {order?.mashina || "Noma'lum mashina"}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-white transition-all hover:bg-white/5 rounded-xl border border-transparent hover:border-white/10">
@@ -38,26 +37,40 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
         <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
           
           {/* Info Banner */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <Calendar size={12} /> Sana
+                   <User size={12} /> Mijoz
                 </div>
-                <div className="text-[14px] text-white font-black">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
+                <div className="text-[14px] text-white font-black">{order?.ism || "Noma'lum"}</div>
              </div>
-             
+
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <Hash size={12} /> Raqami
+                   <Hash size={12} /> Avto / Model
+                </div>
+                <div className="text-[14px] text-white font-black">{order?.mashina || "—"}</div>
+             </div>
+
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <Hash size={12} /> Davlat Raqami
                 </div>
                 <div className="text-[14px] text-white font-black uppercase">{order?.raqam || '—'}</div>
              </div>
 
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
-                   <RotateCcw size={12} /> Probeg
+                   <RotateCcw size={12} /> Probeg (KM)
                 </div>
-                <div className="text-[14px] text-white font-black">{order?.km ? Number(order.km).toLocaleString() + ' KM' : '—'}</div>
+                <div className="text-[14px] text-white font-black">{order?.km ? Number(order.km).toLocaleString() : '—'}</div>
+             </div>
+
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <Calendar size={12} /> Ochilgan Sana
+                </div>
+                <div className="text-[14px] text-white font-black">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
              </div>
 
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
