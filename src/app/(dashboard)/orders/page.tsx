@@ -58,6 +58,8 @@ export default function OrdersPage() {
   const [paymentOrder, setPaymentOrder] = useState<Buyurtma | null>(null);
   const [smsOrder, setSmsOrder] = useState<Buyurtma | null>(null);
   const [historyOrder, setHistoryOrder] = useState<Buyurtma | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
   const [isSendingSms, setIsSendingSms] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
 
@@ -80,11 +82,18 @@ export default function OrdersPage() {
     return true;
   });
 
-  const applyFilters = () => setApplied({ ...f });
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const applyFilters = () => {
+    setApplied({ ...f });
+    setCurrentPage(1);
+  };
   const resetFilters = () => {
     const empty = { tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '' };
     setF(empty);
     setApplied(empty);
+    setCurrentPage(1);
   };
 
   const fmtDate = (iso?: string) => {
@@ -95,8 +104,8 @@ export default function OrdersPage() {
       const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
       return (
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-          <span style={{ fontWeight: 600, fontSize: 10 }}>{dateStr}</span>
-          <span style={{ fontSize: 10, color: 'var(--text3)' }}>{timeStr}</span>
+          <span style={{ fontWeight: 600, fontSize: 12 }}>{dateStr}</span>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>{timeStr}</span>
         </div>
       );
     } catch { return iso; }
@@ -125,8 +134,8 @@ export default function OrdersPage() {
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
       }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0, letterSpacing: '-0.03em', display: 'flex', alignItems: 'center', gap: 10 }}>
-            Buyurtmalar <span style={{ fontSize: 10, background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: 4 }}>V3</span>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0, letterSpacing: '-0.03em' }}>
+            Buyurtmalar
           </h1>
           <p style={{ fontSize: 12, color: 'var(--text3)', margin: '4px 0 0', fontWeight: 500 }}>
             Barcha buyurtmalarni boshqarish — {buyurtmalar.length} ta jami
@@ -322,7 +331,7 @@ export default function OrdersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((b, idx) => {
+                  {paginated.map((b, idx) => {
                     const sc = STATUS_CONFIG[b.holat] || { label: b.holat, bg: 'transparent', color: 'var(--text3)' };
                     const profit = b.pribil || 0;
                     const srv = b.srv || 0;
@@ -371,7 +380,7 @@ export default function OrdersPage() {
                             padding: '1px 6px', borderRadius: 4, fontSize: 10,
                             fontWeight: 700, color: 'var(--text)', letterSpacing: '0.05em',
                           }}>
-                            {b.raqam}
+                            {b.raqam?.toUpperCase()}
                           </span>
                         </td>
 
@@ -516,6 +525,56 @@ export default function OrdersPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ── PAGINATION ── */}
+        {filtered.length > ITEMS_PER_PAGE && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 8, marginTop: 24, paddingBottom: 20
+          }}>
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{
+                padding: '8px 16px', borderRadius: 8, background: 'var(--surface)',
+                border: '1px solid var(--border)', color: 'var(--text2)',
+                fontSize: 12, fontWeight: 600, cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                opacity: currentPage === 1 ? 0.5 : 1
+              }}
+            >
+              Oldingi
+            </button>
+            
+            {Array.from({ length: Math.ceil(filtered.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  width: 36, height: 36, borderRadius: 8,
+                  background: currentPage === page ? 'var(--accent)' : 'var(--surface)',
+                  border: '1px solid' + (currentPage === page ? 'var(--accent)' : 'var(--border)'),
+                  color: currentPage === page ? 'white' : 'var(--text2)',
+                  fontSize: 12, fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / ITEMS_PER_PAGE), p + 1))}
+              disabled={currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE)}
+              style={{
+                padding: '8px 16px', borderRadius: 8, background: 'var(--surface)',
+                border: '1px solid var(--border)', color: 'var(--text2)',
+                fontSize: 12, fontWeight: 600, cursor: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 'not-allowed' : 'pointer',
+                opacity: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 0.5 : 1
+              }}
+            >
+              Keyingi
+            </button>
           </div>
         )}
       </div>

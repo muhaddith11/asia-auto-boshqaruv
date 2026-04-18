@@ -56,7 +56,7 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
                    <Hash size={12} /> Davlat Raqami
                 </div>
-                <div className="text-[14px] text-white font-black uppercase">{order?.raqam || '—'}</div>
+                <div className="text-[14px] text-white font-black uppercase">{order?.raqam?.toUpperCase() || '—'}</div>
              </div>
 
              <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
