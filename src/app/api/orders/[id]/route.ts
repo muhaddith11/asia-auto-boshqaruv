@@ -18,15 +18,19 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
+  
+  // Clean up fields that don't exist in Supabase 'orders' table
+  const fieldsToRemove = ['createdAt', 'chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal'];
+  
   if (b.createdAt !== undefined) {
     b.createdat = b.createdAt;
     b.created_at = b.createdAt;
-    delete b.createdAt;
   }
-  // Remove chegirma for DB payload
-  if (b.chegirma !== undefined) {
-    delete b.chegirma;
-  }
+
+  fieldsToRemove.forEach(f => {
+    if (f in b) delete b[f];
+  });
+
   return b;
 }
 
