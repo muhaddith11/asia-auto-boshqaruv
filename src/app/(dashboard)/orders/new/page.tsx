@@ -128,7 +128,7 @@ export default function NewOrderPage() {
 
   // ── Helpers ─────────────────────────────────────────────────
   const getServiceNarx = (serviceId: string | number) => {
-    const s = xizmatlar.find(x => Number(x.id) === Number(serviceId));
+    const s = xizmatlar.find(x => String(x.id) === String(serviceId));
     return s?.narx || 0;
   };
   const getPartNarx = (partId: string | number) => {
@@ -175,21 +175,23 @@ export default function NewOrderPage() {
     const orderServices = assignments
       .filter(a => a.workerId && a.serviceId)
       .map(a => {
-        const s = xizmatlar.find(x => Number(x.id) === Number(a.serviceId));
-        const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
-        const narx = a.customNarx ? parseFloat(a.customNarx) : (s?.narx || 0);
+        const s = xizmatlar.find(x => String(x.id) === String(a.serviceId));
+        const worker = xodimlar.find(x => String(x.id) === String(a.workerId));
+        const rawNarx = a.customNarx ? parseFloat(a.customNarx) : (s?.narx || 0);
+        const narx = isNaN(rawNarx) ? 0 : rawNarx;
+        const foiz = worker?.foiz || 0;
         return {
           ...s,
           narx,
           workerId: Number(a.workerId),
-          zarplata: narx * (worker?.foiz || 0) / 100,
+          zarplata: Math.round(narx * foiz / 100),
         };
       });
 
     const orderParts = partRows
       .filter(r => r.partId)
       .map(r => {
-        const p = zapchastlar.find(x => Number(x.id) === Number(r.partId));
+        const p = zapchastlar.find(x => String(x.id) === String(r.partId));
         return { ...p, qty: r.qty || 1 };
       });
 
@@ -451,7 +453,7 @@ export default function NewOrderPage() {
                           value={a.serviceId}
                           onChange={e => {
                             const sId = e.target.value;
-                            const sObj = xizmatlar.find(x => Number(x.id) === Number(sId));
+                            const sObj = xizmatlar.find(x => String(x.id) === String(sId));
                             setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNarx: sObj ? sObj.narx.toString() : '' } : x));
                           }}
                         >

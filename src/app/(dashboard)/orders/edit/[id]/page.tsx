@@ -94,8 +94,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   if (!mounted || !form) return null;
 
   // ── Helpers ─────────────────────────────────────────────────
-  const getServiceNarx = (serviceId: string | number) => xizmatlar.find(x => Number(x.id) === Number(serviceId))?.narx || 0;
-  const getPartNarx = (partId: string | number) => zapchastlar.find(x => Number(x.id) === Number(partId))?.narx || 0;
+  const getServiceNarx = (serviceId: string | number) => xizmatlar.find(x => String(x.id) === String(serviceId))?.narx || 0;
+  const getPartNarx = (partId: string | number) => zapchastlar.find(x => String(x.id) === String(partId))?.narx || 0;
 
   // ── Calculations ─────────────────────────────────────────────
   const servicesTotal = assignments.reduce((sum, a) => {
@@ -106,10 +106,11 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
   const zarplataTotal = assignments.reduce((sum, a) => {
     if (!a.workerId || !a.serviceId) return sum;
-    const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
+    const worker = xodimlar.find(x => String(x.id) === String(a.workerId));
     const foiz = worker?.foiz || 0;
-    const base = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
-    return sum + (isNaN(base) ? 0 : base * foiz / 100);
+    const baseRaw = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
+    const base = isNaN(baseRaw) ? 0 : baseRaw;
+    return sum + (base * foiz / 100);
   }, 0);
 
   const partsTotal = partRows.reduce((sum, r) => {
@@ -124,21 +125,23 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
     const updatedServices = assignments
       .filter(a => a.workerId && a.serviceId)
       .map(a => {
-        const s = xizmatlar.find(x => Number(x.id) === Number(a.serviceId));
-        const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
-        const narx = a.customNarx ? parseFloat(a.customNarx) : (s?.narx || 0);
+        const s = xizmatlar.find(x => String(x.id) === String(a.serviceId));
+        const worker = xodimlar.find(x => String(x.id) === String(a.workerId));
+        const rawNarx = a.customNarx ? parseFloat(a.customNarx) : (s?.narx || 0);
+        const narx = isNaN(rawNarx) ? 0 : rawNarx;
+        const foiz = worker?.foiz || 0;
         return {
           ...s,
           narx,
           workerId: Number(a.workerId),
-          zarplata: narx * (worker?.foiz || 0) / 100,
+          zarplata: Math.round(narx * foiz / 100),
         };
       });
 
     const updatedParts = partRows
       .filter(r => r.partId)
       .map(r => {
-        const p = zapchastlar.find(x => Number(x.id) === Number(r.partId));
+        const p = zapchastlar.find(x => String(x.id) === String(r.partId));
         return { ...p, qty: r.qty || 1 };
       });
 
@@ -245,7 +248,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                        <label style={S.label}>Xizmat</label>
                         <select style={S.select} value={a.serviceId} onChange={e => {
                            const sId = e.target.value;
-                           const s = xizmatlar.find(x => Number(x.id) === Number(sId));
+                           const s = xizmatlar.find(x => String(x.id) === String(sId));
                            setAssignments(assignments.map(x => x.id === a.id ? {...x, serviceId: sId, customNom: '', customNarx: s?.narx?.toString() || ''} : x));
                         }}>
                           <option value="">{a.customNom ? `[Maxsus] ${a.customNom}` : '— Tanlang —'}</option>

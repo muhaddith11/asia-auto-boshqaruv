@@ -325,9 +325,17 @@ export const useStore = create<AutoServisStore>()(
           counters: { ...state.counters, buyurtma: state.counters.buyurtma + 1 }
         }));
         createOrder(b as any).then((created) => {
-          if (!created) return;
-          set((state) => ({ buyurtmalar: state.buyurtmalar.map((bb) => Number(bb.id) === Number(tempId) ? created : bb) }));
-        }).catch(() => {});
+          if (!created || (created as any).error) {
+            throw new Error((created as any).error || "Buyurtmani saqlashda server xatosi");
+          }
+          set((state) => ({ 
+            buyurtmalar: state.buyurtmalar.map((bb) => String(bb.id) === String(tempId) ? created : bb) 
+          }));
+          console.log("✅ Buyurtma bazaga saqlandi:", created.id);
+        }).catch((err) => {
+          console.error("❌ Buyurtmani saqlashda xatolik:", err);
+          alert("XATOLIK: Buyurtma bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+        });
       },
       updateBuyurtma: async (id, data) => {
         // Optimistic update
