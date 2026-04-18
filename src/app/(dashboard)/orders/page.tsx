@@ -135,7 +135,7 @@ export default function OrdersPage() {
       }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0, letterSpacing: '-0.03em' }}>
-            Buyurtmalar <span style={{ fontSize: 10, background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: 4 }}>V7</span>
+            Buyurtmalar <span style={{ fontSize: 10, background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: 4 }}>V8</span>
           </h1>
           <p style={{ fontSize: 12, color: 'var(--text3)', margin: '4px 0 0', fontWeight: 500 }}>
             Barcha buyurtmalarni boshqarish — {buyurtmalar.length} ta jami

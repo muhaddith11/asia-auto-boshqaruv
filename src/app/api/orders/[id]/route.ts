@@ -24,7 +24,6 @@ function mapAppToDB(body: any) {
   
   if (b.createdAt !== undefined) {
     b.createdat = b.createdAt;
-    b.created_at = b.createdAt;
   }
 
   fieldsToRemove.forEach(f => {
