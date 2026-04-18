@@ -221,31 +221,31 @@ export default function WorkersPage() {
                     <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">Qo'shilgan</div>
-                        <div className="text-white font-bold text-[13px]">{fmtDate(x.createdAt)}</div>
+                        <div className="text-white font-bold text-[13px]">{fmtDate(x.createdat || x.createdAt)}</div>
                       </div>
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">To'langan</div>
-                        <div className="text-emerald-400 font-black">{totalPaid.toLocaleString()}</div>
+                        <div className="text-slate-200 font-bold">{totalPaid.toLocaleString()}</div>
                       </div>
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">Qoldiq</div>
-                        <div className="text-yellow-400 font-black">{unpaid.toLocaleString()}</div>
+                        <div className="text-slate-200 font-bold">{unpaid.toLocaleString()}</div>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="flex gap-2">
-                      <button onClick={() => setSalaryWorker(x)} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold flex items-center gap-2">
+                      <button onClick={() => setSalaryWorker(x)} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold flex items-center gap-2 text-[12px]">
                         <Banknote size={14} /> Maosh
                       </button>
-                      <button onClick={() => setHistoryWorker(x)} className="px-3 py-2 bg-surface2 hover:bg-surface3 text-slate-300 rounded-lg font-bold">
+                      <button onClick={() => setHistoryWorker(x)} className="px-3 py-2 bg-surface2 hover:bg-surface3 text-slate-300 rounded-lg font-bold text-[12px] border border-border">
                         Tarix
                       </button>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => openModal(x)} className="px-3 py-2 bg-[#10121a] border border-border text-slate-300 rounded-lg">Tahrirlash</button>
-                      <button onClick={() => setDeleteConfirm({ isOpen: true, id: x.id })} className="px-3 py-2 bg-[#2b0f14] border border-[#3b0f14] text-red-400 rounded-lg">O'chirish</button>
+                      <button onClick={() => openModal(x)} className="px-3 py-2 bg-surface2 hover:bg-surface3 border border-border text-slate-300 rounded-lg font-bold text-[12px]">Tahrirlash</button>
+                      <button onClick={() => setDeleteConfirm({ isOpen: true, id: x.id })} className="px-3 py-2 bg-[#2b0f14] border border-red-500/20 text-red-500 rounded-lg font-bold text-[12px]">O'chirish</button>
                     </div>
                   </div>
                 </div>

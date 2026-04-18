@@ -94,6 +94,24 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   if (!mounted || !form) return null;
 
   // ── Helpers ─────────────────────────────────────────────────
+  const formatRaqam = (val: string) => {
+    const raw = val.replace(/\s/g, '').toUpperCase();
+    if (raw.length <= 2) return raw;
+    if (/^\d{2}[A-Z]/.test(raw)) {
+      // Format: 01 A 000 AA
+      let res = raw.slice(0, 2) + ' ' + raw.slice(2, 3);
+      if (raw.length > 3) res += ' ' + raw.slice(3, 6);
+      if (raw.length > 6) res += ' ' + raw.slice(6, 8);
+      return res.trim();
+    } else if (/^\d{5}/.test(raw) || /^\d{2}\s?\d{3}/.test(raw)) {
+      // Format: 01 000 AAA
+      let res = raw.slice(0, 2) + ' ' + raw.slice(2, 5);
+      if (raw.length > 5) res += ' ' + raw.slice(5, 8);
+      return res.trim();
+    }
+    return raw;
+  };
+
   const getServiceNarx = (serviceId: string | number) => xizmatlar.find(x => String(x.id) === String(serviceId))?.narx || 0;
   const getPartNarx = (partId: string | number) => zapchastlar.find(x => String(x.id) === String(partId))?.narx || 0;
 
@@ -200,7 +218,12 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
               </div>
               <div>
                 <label style={S.label}>Davlat Raqami</label>
-                <input style={S.input} value={form.raqam} onChange={e => setForm({...form, raqam: e.target.value.toUpperCase()})} />
+                <input 
+                  style={S.input} 
+                  value={form.raqam} 
+                  placeholder="01 A 000 AA"
+                  onChange={e => setForm({...form, raqam: formatRaqam(e.target.value)})} 
+                />
               </div>
             </div>
             
