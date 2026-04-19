@@ -36,11 +36,23 @@ export async function GET() {
 
     function toProperCase(str: string) {
       if (!str) return '';
+      
+      // Homoglyph normalization: replace Cyrillic lookalikes with Latin equivalents
+      // This is crucial for brands like Chevrolet (Latin 'e' vs Cyrillic 'е')
+      const homoglyphs: Record<string, string> = {
+        'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x',
+        'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X'
+      };
+      
+      let clean = str.replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m);
+      
       // Aggressive cleanup: remove non-breaking spaces and other weird whitespace
-      const clean = str.replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ').trim();
+      clean = clean.replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ').trim();
+      
       if (!clean) return '';
       return clean.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     }
+
 
     // 3. build catalog with normalization
     const normalizedCatalog: any = {};

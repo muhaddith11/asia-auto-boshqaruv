@@ -535,9 +535,23 @@ export const useStore = create<AutoServisStore>()(
             getSalaries()
           ]);
 
+          const normalize = (str: string) => {
+            if (!str) return '';
+            const homoglyphs: Record<string, string> = {
+              'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x',
+              'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X'
+            };
+            return str
+              .replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m)
+              .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
+              .trim()
+              .toUpperCase();
+          };
+
           const mashinalarList = cars && cars.length > 0 
-            ? Array.from(new Set(cars.map((c: any) => `${c.brand} ${c.name}`.trim().toUpperCase()))).sort() 
+            ? Array.from(new Set(cars.map((c: any) => normalize(`${c.brand} ${c.name}`)))).sort() 
             : [];
+
 
           // DB IS ALWAYS THE SOURCE OF TRUTH — no local migration.
           // Financial data always comes from DB, never from localStorage.
@@ -572,9 +586,10 @@ export const useStore = create<AutoServisStore>()(
               id: s.id,
               nom: s.name,
               narx: s.price,
-              mashina: s.brand === 'Umumiy' ? 'Umumiy' : `${s.brand} ${s.car_model}`.toUpperCase(),
+              mashina: s.brand === 'Umumiy' ? 'Umumiy' : normalize(`${s.brand} ${s.car_model}`),
               stavka: s.stavka
             })) : []
+
           }));
         } catch (err) {
           console.error('❌ Store: loadInitialData xatosi:', err);
