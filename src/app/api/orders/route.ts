@@ -20,7 +20,7 @@ function mapAppToDB(body: any) {
   const b = { ...body } as any;
   
   // These fields are only for frontend calculation/display and don't exist in Supabase 'orders' table
-  const fieldsToRemove = ['chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal'];
+  const fieldsToRemove = ['createdAt', 'chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal'];
   
   if (b.createdAt !== undefined) {
     b.createdat = b.createdAt;
