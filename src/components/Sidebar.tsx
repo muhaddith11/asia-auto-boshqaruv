@@ -96,7 +96,7 @@ const navGroups: NavGroup[] = [
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const [openGroups, setOpenGroups] = useState<string[]>(['orders']);
+  const [openGroups, setOpenGroups] = useState<string[]>(['orders', 'finance']);
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
 
@@ -133,7 +133,7 @@ const Sidebar = () => {
       left: 0,
       top: 0,
       zIndex: 50,
-    }}>
+    }} className="desktop-only">
       {/* ── LOGO ── */}
       <div style={{
         padding: '24px 20px 20px',

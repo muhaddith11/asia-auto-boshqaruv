@@ -10,7 +10,8 @@ import { getClients, getOrders, getWorkers, getParts,
   createOrder, updateOrder, deleteOrder,
   createPart, updatePart, deletePart,
   getCars,
-  getServices, createService, updateService, deleteService
+  getServices, createService, updateService, deleteService,
+  getKassa, updateKassaState, getOperations, createOperation, deleteOperation, getSalaries, createSalary
 } from '@/lib/api';
 
 interface AutoServisStore {
@@ -188,14 +189,40 @@ export const useStore = create<AutoServisStore>()(
         });
       },
 
-      addMaosh: (m) => set((state) => ({
-        maoshTarixi: [...state.maoshTarixi, { ...m, id: state.counters.maosh, createdAt: new Date().toISOString() }],
-        counters: { ...state.counters, maosh: state.counters.maosh + 1 },
-        kassa: {
-          ...state.kassa,
-          [m.method]: state.kassa[m.method] - m.summa
+      addMaosh: async (m) => {
+        const tempId = -Date.now();
+        const now = new Date().toISOString();
+        set((state) => ({
+          maoshTarixi: [...state.maoshTarixi, { ...m, id: tempId, createdAt: now }],
+          counters: { ...state.counters, maosh: state.counters.maosh + 1 },
+          kassa: {
+            ...state.kassa,
+            [m.method]: state.kassa[m.method] - m.summa
+          }
+        }));
+        
+        try {
+          const apiData = {
+            worker_id: m.xodimId,
+            amount: m.summa,
+            method: m.method,
+            date: m.sana,
+            comment: m.izoh || ''
+          };
+          const created = await createSalary(apiData);
+          const newKassa = {
+            ...get().kassa,
+            [m.method]: get().kassa[m.method]
+          };
+          await updateKassaState(newKassa);
+          
+          set((state) => ({
+            maoshTarixi: state.maoshTarixi.map(mm => mm.id === tempId ? { ...mm, id: created.id } : mm)
+          }));
+        } catch (err) {
+          console.error("❌ Maosh saqlashda xatolik:", err);
         }
-      })),
+      },
 
       addXizmat: async (x) => {
         const tempId = -Date.now();
@@ -364,45 +391,116 @@ export const useStore = create<AutoServisStore>()(
         });
       },
 
-      updateKassa: (method, amount, operation) => set((state) => ({
-        kassa: {
-          ...state.kassa,
-          [method]: operation === 'add' ? state.kassa[method] + amount : state.kassa[method] - amount
+      updateKassa: async (method, amount, operation) => {
+        const currentKassa = get().kassa;
+        const newValue = operation === 'add' ? currentKassa[method] + amount : currentKassa[method] - amount;
+        const nextKassa = { ...currentKassa, [method]: newValue };
+        
+        set({ kassa: nextKassa });
+        try {
+          await updateKassaState(nextKassa);
+        } catch (err) {
+          console.error("❌ Kassa yangilashda xatolik:", err);
         }
-      })),
-      transferKassa: (from, to, amount) => set((state) => ({
-        kassa: {
-          ...state.kassa,
-          [from]: state.kassa[from] - amount,
-          [to]: state.kassa[to] + amount
-        },
-        tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, {
-          id: state.counters.cash,
-          date: new Date().toISOString().split('T')[0],
-          type: 'transfer',
-          method: from,
-          toMethod: to,
-          amount: amount,
-          category: 'Puldagi o\'tkazma',
-          source: 'system',
-          createdAt: new Date().toISOString()
-        }],
-        counters: { ...state.counters, cash: state.counters.cash + 1 }
-      })),
-      addTashqariOperatsiya: (op) => set((state) => ({
-        tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: state.counters.cash, createdAt: new Date().toISOString() }],
-        counters: { ...state.counters, cash: state.counters.cash + 1 }
-      })),
-      addIshxonaOperatsiya: (op) => set((state) => ({
-        ishxonaOperatsiyalar: [...state.ishxonaOperatsiyalar, { ...op, id: state.counters.cash, createdAt: new Date().toISOString() }],
-        counters: { ...state.counters, cash: state.counters.cash + 1 }
-      })),
-      deleteIshxonaOperatsiya: (id) => set((state) => ({
-        ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.filter((op) => Number(op.id) != Number(id))
-      })),
-      deleteTashqariOperatsiya: (id) => set((state) => ({
-        tashqariOperatsiyalar: state.tashqariOperatsiyalar.filter((op) => Number(op.id) != Number(id))
-      })),
+      },
+      transferKassa: async (from, to, amount) => {
+        const currentKassa = get().kassa;
+        const nextKassa = {
+          ...currentKassa,
+          [from]: currentKassa[from] - amount,
+          [to]: currentKassa[to] + amount
+        };
+        
+        set({
+          kassa: nextKassa,
+          ishxonaOperatsiyalar: [...get().ishxonaOperatsiyalar, {
+            id: -Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            type: 'transfer',
+            method: from,
+            toMethod: to,
+            amount: amount,
+            category: 'Puldagi o\'tkazma',
+            source: 'system',
+            createdAt: new Date().toISOString()
+          }]
+        });
+
+        try {
+          await updateKassaState(nextKassa);
+          await createOperation({
+            date: new Date().toISOString().split('T')[0],
+            type: 'transfer',
+            method: from,
+            toMethod: to,
+            amount: amount,
+            category: 'Puldagi o\'tkazma',
+            source: 'system'
+          });
+        } catch (err) {
+          console.error("❌ Transfer saqlashda xatolik:", err);
+        }
+      },
+      addTashqariOperatsiya: async (op) => {
+        const tempId = -Date.now();
+        set((state) => ({
+          tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: tempId, createdAt: new Date().toISOString() }],
+          counters: { ...state.counters, cash: state.counters.cash + 1 }
+        }));
+        
+        try {
+          // External operations can also be stored in the same financial_operations table with a different source/flag if needed
+          // For now, let's treat them as operations with source 'external'
+          await createOperation({ ...op, source: 'external' });
+        } catch (err) {
+          console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
+        }
+      },
+      addIshxonaOperatsiya: async (op) => {
+        const tempId = -Date.now();
+        set((state) => ({
+          ishxonaOperatsiyalar: [...state.ishxonaOperatsiyalar, { ...op, id: tempId, createdAt: new Date().toISOString() }],
+          counters: { ...state.counters, cash: state.counters.cash + 1 }
+        }));
+        
+        try {
+          const apiData = {
+            date: op.date,
+            type: op.type,
+            method: op.method,
+            amount: op.amount,
+            category: op.category,
+            comment: op.comment || '',
+            source: op.source || 'manual'
+          };
+          const created = await createOperation(apiData);
+          set((state) => ({
+            ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.map(o => o.id === tempId ? { ...o, id: created.id } : o)
+          }));
+        } catch (err) {
+          console.error("❌ Operatsiya saqlashda xatolik:", err);
+        }
+      },
+      deleteIshxonaOperatsiya: async (id) => {
+        set((state) => ({
+          ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.filter((op) => Number(op.id) != Number(id))
+        }));
+        try {
+          await deleteOperation(id);
+        } catch (err) {
+          console.error("❌ Operatsiya o'chirishda xatolik:", err);
+        }
+      },
+      deleteTashqariOperatsiya: async (id) => {
+        set((state) => ({
+          tashqariOperatsiyalar: state.tashqariOperatsiyalar.filter((op) => Number(op.id) != Number(id))
+        }));
+        try {
+          await deleteOperation(id);
+        } catch (err) {
+          console.error("❌ Tashqari operatsiya o'chirishda xatolik:", err);
+        }
+      },
       addPurchase: (p) => set((state) => ({
         purchases: [...state.purchases, { ...p, id: state.counters.purchase }],
         counters: { ...state.counters, purchase: state.counters.purchase + 1 }
@@ -410,22 +508,33 @@ export const useStore = create<AutoServisStore>()(
       addMashina: (m) => set((state) => ({
         mashinalar: [...state.mashinalar, m.toUpperCase()].sort()
       })),
-      resetKassa: () => set({ 
-        kassa: { naqd: 0, karta: 0 }, 
-        tashqariOperatsiyalar: [],
-        ishxonaOperatsiyalar: [],
-        maoshTarixi: []
-      }),
+      resetKassa: async () => {
+        const nextKassa = { naqd: 0, karta: 0 };
+        set({ 
+          kassa: nextKassa, 
+          tashqariOperatsiyalar: [],
+          ishxonaOperatsiyalar: [],
+          maoshTarixi: []
+        });
+        try {
+          await updateKassaState(nextKassa);
+        } catch (err) {
+          console.error("❌ Kassa resetda xatolik:", err);
+        }
+      },
       loadInitialData: async () => {
         try {
           // Force fresh data on init
-          const [clients, orders, workers, parts, cars, services] = await Promise.all([
+          const [clients, orders, workers, parts, cars, services, kassaData, ops, salaries] = await Promise.all([
             getClients(),
             getOrders(),
             getWorkers(),
             getParts(),
             getCars(),
-            getServices()
+            getServices(),
+            getKassa(),
+            getOperations(),
+            getSalaries()
           ]);
 
           console.log(`📦 API: Yuklandi: ${clients.length} mijoz, ${orders.length} buyurtma, ${workers.length} xodim, ${parts.length} zapchast, ${cars.length} mashina, ${services.length} xizmat.`);
@@ -435,18 +544,23 @@ export const useStore = create<AutoServisStore>()(
             ? cars.map((c: any) => `${c.brand} ${c.name}`.toUpperCase()).sort() 
             : [];
 
-          if (mashinalarList.length > 0) {
-             console.log('🚗 CAR_DATA_LOADED: Mashinalar ro\'yxati tayyor.');
-          } else {
-             console.warn('⚠️ CAR_DATA_EMPTY: Mashinalar ro\'yxati bo\'sh qaytdi.');
-          }
-
           set(() => ({
             mijozlar: clients || [],
             buyurtmalar: orders || [],
             xodimlar: workers || [],
             zapchastlar: parts || [],
             mashinalar: mashinalarList,
+            kassa: kassaData || { naqd: 0, karta: 0 },
+            ishxonaOperatsiyalar: ops || [],
+            maoshTarixi: salaries ? salaries.map((s: any) => ({
+              id: s.id,
+              xodimId: s.worker_id,
+              summa: s.amount,
+              method: s.method,
+              sana: s.date,
+              izoh: s.comment,
+              createdAt: s.created_at
+            })) : [],
             xizmatlar: services ? services.map((s: any) => ({
               id: s.id,
               nom: s.name,

@@ -4,6 +4,7 @@ import GlobalNavbar from "@/components/GlobalNavbar";
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import PWAAux from "@/components/PWAAux";
+import BottomNav from "@/components/BottomNav";
 
 export default function DashboardLayout({
   children,
@@ -25,13 +26,13 @@ export default function DashboardLayout({
   return (
     <div style={{ minHeight: '100vh', display: 'flex', width: '100%', background: 'var(--bg)' }}>
       <Sidebar />
-      <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div className="main-content-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <GlobalNavbar />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
       </div>
-      {/* Mobil menyular hozircha butunlay o'chirildi */}
+      <BottomNav />
       <PWAAux />
     </div>
   );

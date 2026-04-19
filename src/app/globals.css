@@ -408,6 +408,11 @@ html, body {
   }
 }
 
+.main-content-layout {
+  transition: margin-left 0.3s ease;
+  margin-left: 240px;
+}
+
 @media (max-width: 1023px) {
   .desktop-only {
     display: none !important;
@@ -416,8 +421,4 @@ html, body {
     margin-left: 0 !important;
     padding-bottom: 70px !important;
   }
-}
-
-.main-content-layout {
-  transition: margin-left 0.3s ease;
 }

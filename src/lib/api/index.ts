@@ -138,3 +138,51 @@ export async function deleteService(id: string | number) {
   const res = await fetch(`${API_BASE}/services/${id}`, { method: 'DELETE' });
   return handleJson(res);
 }
+
+// Financial Endpoints
+export async function getKassa() {
+  const res = await fetch(`${API_BASE}/kassa`, { cache: 'no-store' });
+  return handleJson(res);
+}
+
+export async function updateKassaState(data: { naqd: number; karta: number }) {
+  const res = await fetch(`${API_BASE}/kassa`, { 
+    method: 'POST', 
+    body: JSON.stringify(data), 
+    headers: { 'Content-Type': 'application/json' } 
+  });
+  return handleJson(res);
+}
+
+export async function getOperations() {
+  const res = await fetch(`${API_BASE}/operations`, { cache: 'no-store' });
+  return handleJson(res);
+}
+
+export async function createOperation(data: any) {
+  const res = await fetch(`${API_BASE}/operations`, { 
+    method: 'POST', 
+    body: JSON.stringify(data), 
+    headers: { 'Content-Type': 'application/json' } 
+  });
+  return handleJson(res);
+}
+
+export async function deleteOperation(id: string | number) {
+  const res = await fetch(`${API_BASE}/operations/${id}`, { method: 'DELETE' });
+  return handleJson(res);
+}
+
+export async function getSalaries() {
+  const res = await fetch(`${API_BASE}/salaries`, { cache: 'no-store' });
+  return handleJson(res);
+}
+
+export async function createSalary(data: any) {
+  const res = await fetch(`${API_BASE}/salaries`, { 
+    method: 'POST', 
+    body: JSON.stringify(data), 
+    headers: { 'Content-Type': 'application/json' } 
+  });
+  return handleJson(res);
+}
