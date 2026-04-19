@@ -524,8 +524,11 @@ export const useStore = create<AutoServisStore>()(
       },
       loadInitialData: async () => {
         try {
-          // Force fresh data on init
-          const [clients, orders, workers, parts, cars, services, kassaData, ops, salaries] = await Promise.all([
+          // Capture current kassa before API fetch locally for potential migration
+          const localKassa = get().kassa;
+          const localHasValue = (localKassa?.naqd || 0) > 0 || (localKassa?.karta || 0) > 0;
+
+          const [clients, orders, workers, parts, cars, services, kassaResult, ops, salaries] = await Promise.all([
             getClients(),
             getOrders(),
             getWorkers(),
@@ -536,6 +539,18 @@ export const useStore = create<AutoServisStore>()(
             getOperations(),
             getSalaries()
           ]);
+
+          let kassaData = kassaResult;
+          
+          // MIGRATION LOGIC:
+          // If DB is empty but local had something, push local to DB
+          const dbIsEmpty = !kassaData || (kassaData.naqd === 0 && kassaData.karta === 0);
+          
+          if (dbIsEmpty && localHasValue) {
+            console.log("🔄 Syncing local kassa to remote database...");
+            await updateKassaState(localKassa);
+            kassaData = localKassa;
+          }
 
           console.log(`📦 API: Yuklandi: ${clients.length} mijoz, ${orders.length} buyurtma, ${workers.length} xodim, ${parts.length} zapchast, ${cars.length} mashina, ${services.length} xizmat.`);
 
