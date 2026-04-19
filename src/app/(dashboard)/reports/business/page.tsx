@@ -177,7 +177,7 @@ export default function BusinessReportPage() {
                            <td style={{ padding: "20px 24px" }}>
                              <div className="flex flex-col gap-0.5">
                                <div className="text-[13px] text-white font-black">{displayDate}</div>
-                               <div className="text-[11px] text-blue-500 font-bold">{displayTime}</div>
+                               <div className="text-[11px] text-white/60 font-medium">{displayTime}</div>
                              </div>
                              <div className="mt-2 text-left">
                                <span className={`text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-tighter border ${

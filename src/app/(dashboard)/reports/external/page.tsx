@@ -164,9 +164,12 @@ export default function ExternalOperationsPage() {
                     <tr key={op.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-8 py-5">
                         <div className="flex flex-col gap-0.5">
-                          <div className="text-white font-black text-[14px]">{(op as any).date}</div>
-                          <div className="text-blue-500 font-bold text-[11px]">
-                            {op.createdAt ? new Date(op.createdAt).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          <div className="text-white font-black text-[14px]">{(op as any).date || (op as any).sana}</div>
+                          <div className="text-white/60 font-medium text-[11px]">
+                            {(() => {
+                              const ts = op.createdAt || (op as any).created_at;
+                              return ts ? new Date(ts).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : '';
+                            })()}
                           </div>
                         </div>
                       </td>
