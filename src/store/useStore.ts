@@ -523,10 +523,6 @@ export const useStore = create<AutoServisStore>()(
       },
       loadInitialData: async () => {
         try {
-          // Capture local kassa ONLY for first-time migration check
-          const localKassa = get().kassa;
-          const localHasValue = (localKassa?.naqd || 0) > 0 || (localKassa?.karta || 0) > 0;
-
           const [clients, orders, workers, parts, cars, services, kassaResult, ops, salaries] = await Promise.all([
             getClients(),
             getOrders(),
@@ -543,15 +539,9 @@ export const useStore = create<AutoServisStore>()(
             ? cars.map((c: any) => `${c.brand} ${c.name}`.toUpperCase()).sort() 
             : [];
 
-          // DB IS ALWAYS THE SOURCE OF TRUTH.
-          // Only migrate local kassa to DB on first-ever use (when DB is completely empty).
-          const dbKassaEmpty = !kassaResult || (kassaResult.naqd === 0 && kassaResult.karta === 0);
-          let finalKassa = kassaResult || { naqd: 0, karta: 0 };
-          if (dbKassaEmpty && localHasValue) {
-            console.log("🔄 First-time migration: pushing local kassa to DB...");
-            await updateKassaState(localKassa);
-            finalKassa = localKassa;
-          }
+          // DB IS ALWAYS THE SOURCE OF TRUTH — no local migration.
+          // Financial data always comes from DB, never from localStorage.
+          const finalKassa = kassaResult || { naqd: 0, karta: 0 };
 
           // FIX: Split operations by source to prevent double-listing in Hisobot.
           // source === 'external' => Aylanmadan tashqari (tashqariOperatsiyalar)
@@ -594,6 +584,12 @@ export const useStore = create<AutoServisStore>()(
     {
       name: 'avtoservis-pro-storage',
       storage: createJSONStorage(() => localStorage),
+      // ONLY persist UI-level data. Everything financial MUST come from DB.
+      // This prevents stale localStorage from overwriting correct DB values.
+      partialize: (state) => ({
+        counters: state.counters,
+        mashinalar: state.mashinalar,
+      }),
     }
   )
 );
