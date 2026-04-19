@@ -536,7 +536,7 @@ export const useStore = create<AutoServisStore>()(
           ]);
 
           const mashinalarList = cars && cars.length > 0 
-            ? cars.map((c: any) => `${c.brand} ${c.name}`.toUpperCase()).sort() 
+            ? Array.from(new Set(cars.map((c: any) => `${c.brand} ${c.name}`.trim().toUpperCase()))).sort() 
             : [];
 
           // DB IS ALWAYS THE SOURCE OF TRUTH — no local migration.

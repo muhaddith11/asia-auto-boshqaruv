@@ -36,7 +36,10 @@ export async function GET() {
 
     function toProperCase(str: string) {
       if (!str) return '';
-      return str.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      // Aggressive cleanup: remove non-breaking spaces and other weird whitespace
+      const clean = str.replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ').trim();
+      if (!clean) return '';
+      return clean.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     }
 
     // 3. build catalog with normalization
