@@ -6,10 +6,20 @@ export const revalidate = 0;
 
 const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, telegram, "shareType", "parentId", created_at';
 
+function mapRowToApp(row: any) {
+  if (!row) return row;
+  const r = { ...row } as any;
+  const date = r.created_at || r.createdat;
+  if (date !== undefined) {
+    r.createdAt = date;
+    r.createdat = date; // Support both for safety
+  }
+  return r;
+}
+
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
   // ONLY these columns exist in the DB or are expected.
-  // Note: some are dual-named in the DB but we use these:
   const allowed = ['id', 'ism', 'tel', 'mutax', 'foiz', 'status', 'role', 'telegram', 'shareType', 'parentId'];
   const clean: any = {};
   allowed.forEach(key => {
@@ -25,7 +35,8 @@ export async function GET() {
       console.error("Supabase GET Workers Error:", error);
       return NextResponse.json({ error: error.message, detail: error.details }, { status: 500 });
     }
-    return NextResponse.json(data ?? []);
+    const mapped = (data ?? []).map(mapRowToApp);
+    return NextResponse.json(mapped);
   } catch (err: any) {
     console.error("API GET Workers Crash:", err);
     return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
@@ -46,7 +57,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message, detail: error.details }, { status: 500 });
     }
     
-    return NextResponse.json((data && data[0]) ?? null, { status: 201 });
+    const created = (data && data[0]) ?? null;
+    return NextResponse.json(mapRowToApp(created), { status: 201 });
   } catch (err: any) {
     console.error("API POST Worker Crash:", err);
     return NextResponse.json({ error: err.message || 'Server error during worker creation' }, { status: 400 });
