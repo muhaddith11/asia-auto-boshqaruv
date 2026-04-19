@@ -46,6 +46,10 @@ export async function GET() {
       
       let clean = str.replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m);
       
+      // Fix common typo: 'Chevolet' -> 'Chevrolet'
+      clean = clean.replace(/Chevolet/gi, 'Chevrolet');
+
+      
       // Aggressive cleanup: remove non-breaking spaces and other weird whitespace
       clean = clean.replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ').trim();
       

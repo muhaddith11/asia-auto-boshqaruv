@@ -543,7 +543,9 @@ export const useStore = create<AutoServisStore>()(
             };
             return str
               .replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m)
+              .replace(/Chevolet/gi, 'Chevrolet')
               .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
+
               .trim()
               .toUpperCase();
           };
