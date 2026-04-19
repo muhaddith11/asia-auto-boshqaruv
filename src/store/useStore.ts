@@ -443,14 +443,13 @@ export const useStore = create<AutoServisStore>()(
       },
       addTashqariOperatsiya: async (op) => {
         const tempId = -Date.now();
+        // Always set source='external' so split filter works correctly in Hisobot
         set((state) => ({
-          tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: tempId, createdAt: new Date().toISOString() }],
+          tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: tempId, source: 'external', createdAt: new Date().toISOString() }],
           counters: { ...state.counters, cash: state.counters.cash + 1 }
         }));
         
         try {
-          // External operations can also be stored in the same financial_operations table with a different source/flag if needed
-          // For now, let's treat them as operations with source 'external'
           await createOperation({ ...op, source: 'external' });
         } catch (err) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
