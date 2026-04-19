@@ -4,7 +4,7 @@ import supabase from '@/lib/supabaseClient';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, telegram, "shareType", "parentId", created_at';
+const WORKER_COLUMNS = 'id, ism, familiya, tel, mutax, foiz, status, role, telegram, login, parol, "shareType", "parentId", created_at';
 
 function mapRowToApp(row: any) {
   if (!row) return row;
@@ -20,7 +20,7 @@ function mapRowToApp(row: any) {
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
   // ONLY these columns exist in the DB or are expected.
-  const allowed = ['id', 'ism', 'tel', 'mutax', 'foiz', 'status', 'role', 'telegram', 'shareType', 'parentId'];
+  const allowed = ['id', 'ism', 'familiya', 'tel', 'mutax', 'foiz', 'status', 'role', 'telegram', 'login', 'parol', 'shareType', 'parentId'];
   const clean: any = {};
   allowed.forEach(key => {
     if (b[key] !== undefined) clean[key] = b[key];

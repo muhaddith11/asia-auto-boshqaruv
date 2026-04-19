@@ -11,8 +11,11 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  // ONLY these columns exist in the DB. Others MUST be removed.
-  const allowed = ['ism', 'tel', 'mashina', 'raqam', 'vin', 'tashriflar', 'jami', 'qarzdorlik'];
+  // ONLY these columns exist in the DB.
+  const allowed = [
+    'ism', 'tel', 'tel2', 'mashina', 'raqam', 'yil', 'vin', 
+    'skidka', 'status', 'manzil', 'tashriflar', 'jami', 'qarzdorlik'
+  ];
   const clean: any = {};
   allowed.forEach(key => {
     if (b[key] !== undefined) clean[key] = b[key];

@@ -3,7 +3,7 @@ import supabase from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
-const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
+const WORKER_COLUMNS = 'id, ism, familiya, tel, mutax, foiz, status, role, telegram, login, parol, "shareType", "parentId", created_at';
 
 function mapRowToApp(row: any) {
   if (!row) return row;
@@ -18,7 +18,7 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  const allowed = ['id', 'ism', 'tel', 'mutax', 'foiz', 'status', 'role', 'telegram', 'shareType', 'parentId'];
+  const allowed = ['id', 'ism', 'familiya', 'tel', 'mutax', 'foiz', 'status', 'role', 'telegram', 'login', 'parol', 'shareType', 'parentId'];
   const clean: any = {};
   allowed.forEach(key => {
     if (b[key] !== undefined) clean[key] = b[key];

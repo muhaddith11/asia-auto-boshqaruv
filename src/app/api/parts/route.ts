@@ -6,8 +6,11 @@ export const revalidate = 0;
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  // Based on discovery: [ 'id', 'nom', 'narx', 'mashina', 'sebestoimost', 'balance' ]
-  const allowed = ['nom', 'narx', 'mashina', 'sebestoimost', 'balance'];
+  // Standardized columns for comprehensive inventory management
+  const allowed = [
+    'nom', 'narx', 'mashina', 'sebestoimost', 'balance', 
+    'bir', 'kat', 'supplier', 'min_qoldiq', 'artikul', 'soni', 'sotuv'
+  ];
   const clean: any = {};
   allowed.forEach(key => {
     if (b[key] !== undefined) clean[key] = b[key];

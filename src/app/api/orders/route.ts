@@ -19,13 +19,14 @@ function mapRowToApp(row: any) {
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
   
-  // Clean up fields that don't exist in Supabase 'orders' table
-  const fieldsToRemove = ['createdAt', 'chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal'];
+  // These fields are only for frontend calculation/display and don't exist in Supabase 'orders' table
+  const fieldsToRemove = ['chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal'];
   
   if (b.createdAt !== undefined) {
     b.createdat = b.createdAt;
   }
 
+  // Remove UI-only fields
   fieldsToRemove.forEach(f => {
     if (f in b) delete b[f];
   });
