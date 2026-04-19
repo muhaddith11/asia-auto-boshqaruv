@@ -144,7 +144,19 @@ export default function BusinessReportPage() {
                        const isOrder = 'final' in op;
                        const isMaosh = 'xodimId' in op;
                        
-                       const opDate = isOrder ? (op as any).sana : (op as any).date || (op as any).sana;
+                       // Full timestamp for time display
+                       const fullDate = (op as any).createdAt || (op as any).created_at || (op as any).sana || (op as any).date;
+                       let displayDate = (op as any).sana || (op as any).date;
+                       let displayTime = '';
+                       
+                       try {
+                         const dateObj = new Date(fullDate);
+                         if (!isNaN(dateObj.getTime())) {
+                           displayDate = dateObj.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                           displayTime = dateObj.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+                         }
+                       } catch (e) {}
+
                        const opAmount = isOrder ? (op as any).final : (isMaosh ? (op as any).summa : (op as any).amount);
                        const opType = isOrder ? 'BUYURTMA' : (isMaosh ? 'MAOSH' : (op as any).type);
                        
@@ -162,15 +174,20 @@ export default function BusinessReportPage() {
 
                        return (
                          <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }} className="hover:bg-white/[0.02] transition-colors">
-                           <td style={{ padding: "18px 24px" }}>
-                             <div className="text-[10px] text-slate-500 font-bold mb-1">{opDate}</div>
-                             <span className={`text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-tighter border ${
-                               isOrder || (op as any).type === 'income' 
-                               ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
-                               : 'bg-red-500/10 text-red-500 border-red-500/20'
-                             }`}>
-                               {opType === 'income' ? 'Kirim' : opType === 'expense' ? 'Chiqim' : opType === 'MAOSH' ? 'Ish xaqi' : 'Order'}
-                             </span>
+                           <td style={{ padding: "20px 24px" }}>
+                             <div className="flex flex-col gap-0.5">
+                               <div className="text-[13px] text-white font-black">{displayDate}</div>
+                               <div className="text-[11px] text-blue-500 font-bold">{displayTime}</div>
+                             </div>
+                             <div className="mt-2 text-left">
+                               <span className={`text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-tighter border ${
+                                 isOrder || (op as any).type === 'income' 
+                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                                 : 'bg-red-500/10 text-red-500 border-red-500/20'
+                               }`}>
+                                 {opType === 'income' ? 'Kirim' : opType === 'expense' ? 'Chiqim' : opType === 'MAOSH' ? 'Ish xaqi' : 'Order'}
+                               </span>
+                             </div>
                            </td>
                            <td style={{ padding: "18px 24px" }}>
                              <div className="max-w-[200px] truncate font-bold text-slate-300">{opComment}</div>

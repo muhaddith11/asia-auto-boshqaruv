@@ -162,8 +162,13 @@ export default function ExternalOperationsPage() {
                     return b.id - a.id;
                   }).map((op) => (
                     <tr key={op.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-8 py-4">
-                        <div className="text-slate-400 font-bold text-[13px]">{op.date}</div>
+                      <td className="px-8 py-5">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="text-white font-black text-[14px]">{(op as any).date}</div>
+                          <div className="text-blue-500 font-bold text-[11px]">
+                            {op.createdAt ? new Date(op.createdAt).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-tight border ${
