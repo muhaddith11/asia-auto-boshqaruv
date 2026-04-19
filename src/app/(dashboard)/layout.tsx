@@ -4,7 +4,6 @@ import GlobalNavbar from "@/components/GlobalNavbar";
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import PWAAux from "@/components/PWAAux";
-import BottomNav from "@/components/BottomNav";
 
 export default function DashboardLayout({
   children,
@@ -32,7 +31,6 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
-      <BottomNav />
       <PWAAux />
     </div>
   );

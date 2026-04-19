@@ -96,7 +96,7 @@ const navGroups: NavGroup[] = [
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const [openGroups, setOpenGroups] = useState<string[]>(['orders', 'finance']);
+  const [openGroups, setOpenGroups] = useState<string[]>(['orders']);
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
 
