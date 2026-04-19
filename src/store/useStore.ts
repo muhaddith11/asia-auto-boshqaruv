@@ -540,34 +540,75 @@ export const useStore = create<AutoServisStore>()(
             getSalaries()
           ]);
 
-          let kassaData = kassaResult;
-          
-          // MIGRATION LOGIC:
-          // If DB is empty but local had something, push local to DB
-          const dbIsEmpty = !kassaData || (kassaData.naqd === 0 && kassaData.karta === 0);
-          
-          if (dbIsEmpty && localHasValue) {
-            console.log("🔄 Syncing local kassa to remote database...");
-            await updateKassaState(localKassa);
-            kassaData = localKassa;
-          }
-
-          console.log(`📦 API: Yuklandi: ${clients.length} mijoz, ${orders.length} buyurtma, ${workers.length} xodim, ${parts.length} zapchast, ${cars.length} mashina, ${services.length} xizmat.`);
-
-          // Fallback if cars are empty but we expect them (optional safety)
           const mashinalarList = cars && cars.length > 0 
             ? cars.map((c: any) => `${c.brand} ${c.name}`.toUpperCase()).sort() 
             : [];
 
+          // SYNC LOGIC: PUSH MISSING LOCAL DATA TO CLOUD
+          console.log("🔍 Checking for missing data sync...");
+
+          // 1. SYNC KASSA
+          const localHasKassa = (localKassa?.naqd || 0) > 0 || (localKassa?.karta || 0) > 0;
+          const dbKassaEmpty = !kassaResult || (kassaResult.naqd === 0 && kassaResult.karta === 0);
+          
+          let finalKassa = kassaResult || { naqd: 0, karta: 0 };
+          if (dbKassaEmpty && localHasKassa) {
+            console.log("🔄 Syncing local kassa to remote database...");
+            await updateKassaState(localKassa);
+            finalKassa = localKassa;
+          }
+
+          // 2. SYNC OPERATIONS (Xarajatlar)
+          const localOps = get().ishxonaOperatsiyalar;
+          const dbOps = ops || [];
+          const missingOps = localOps.filter(localOp => {
+             return !dbOps.some((dbOp: any) => 
+                dbOp.amount === localOp.amount && 
+                dbOp.type === localOp.type && 
+                dbOp.date === localOp.date &&
+                dbOp.category === localOp.category
+             );
+          });
+
+          if (missingOps.length > 0) {
+            console.log(`🔄 Syncing ${missingOps.length} missing operations to cloud...`);
+            for (const op of missingOps) {
+               try { await createOperation(op); } catch (e) { console.error(e); }
+            }
+          }
+
+          // 3. SYNC ORDERS (Missing ones)
+          const localOrders = get().buyurtmalar;
+          const dbOrders = orders || [];
+          const missingOrders = localOrders.filter(localOrder => {
+             if (Number(localOrder.id) < 0) return true;
+             return !dbOrders.some((dbOrder: any) => Number(dbOrder.id) === Number(localOrder.id));
+          });
+
+          if (missingOrders.length > 0) {
+            console.log(`🔄 Syncing ${missingOrders.length} missing orders to cloud...`);
+            for (const order of missingOrders) {
+               try { await createOrder(order); } catch (e) { console.error(e); }
+            }
+          }
+
+          // Final Refresh: Wait a bit and re-fetch if we did major syncing
+          let finalClients = clients, finalOrders = orders, finalOps = ops, finalSalaries = salaries;
+          
+          if (missingOps.length > 0 || missingOrders.length > 0) {
+             console.log("♻️ Refreshing data after deep sync...");
+             [finalOrders, finalOps] = await Promise.all([getOrders(), getOperations()]);
+          }
+
           set(() => ({
-            mijozlar: clients || [],
-            buyurtmalar: orders || [],
+            mijozlar: finalClients || [],
+            buyurtmalar: finalOrders || [],
             xodimlar: workers || [],
             zapchastlar: parts || [],
             mashinalar: mashinalarList,
-            kassa: kassaData || { naqd: 0, karta: 0 },
-            ishxonaOperatsiyalar: ops || [],
-            maoshTarixi: salaries ? salaries.map((s: any) => ({
+            kassa: finalKassa,
+            ishxonaOperatsiyalar: finalOps || [],
+            maoshTarixi: finalSalaries ? finalSalaries.map((s: any) => ({
               id: s.id,
               xodimId: s.worker_id,
               summa: s.amount,
