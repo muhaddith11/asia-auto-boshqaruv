@@ -28,7 +28,8 @@ export default function BusinessReportPage() {
   const xodimlar = store?.xodimlar || [];
 
   const [filterCategory, setFilterCategory] = useState('');
-  const [filterFrom, setFilterFrom] = useState('');
+  const [filterType,     setFilterType]     = useState(''); // '', 'income', 'expense'
+  const [filterFrom,     setFilterFrom]     = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [activeQuick, setActiveQuick] = useState('oy');
 
@@ -111,8 +112,12 @@ export default function BusinessReportPage() {
     if (filterFrom && r._date < filterFrom) return false;
     if (filterTo   && r._date > filterTo)   return false;
     if (filterCategory && r._category !== filterCategory) return false;
+    if (filterType) {
+      if (filterType === 'income' && !r._positive) return false;
+      if (filterType === 'expense' && r._positive) return false;
+    }
     return true;
-  }), [allRows, filterFrom, filterTo, filterCategory]);
+  }), [allRows, filterFrom, filterTo, filterCategory, filterType]);
 
   const stats = useMemo(() => ({
     income:  filtered.filter(r => r._positive).reduce((s, r) => s + r._amount, 0),
@@ -149,6 +154,14 @@ export default function BusinessReportPage() {
             <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={inputStyle}>
               <option value="">Barchasi</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase' }}>Turi</label>
+            <select value={filterType} onChange={e => setFilterType(e.target.value)} style={inputStyle}>
+              <option value="">Barchasi</option>
+              <option value="income">Kirim</option>
+              <option value="expense">Chiqim</option>
             </select>
           </div>
           <div>
@@ -220,18 +233,27 @@ export default function BusinessReportPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-                {['ID', 'Sana', 'Kategoriya', 'Izoh', 'Mijoz', 'Summa', 'Usul'].map(h => (
+                {['ID', 'Sana', 'Turi', 'Kategoriya', 'Izoh', 'Mijoz', 'Summa', 'Usul'].map(h => (
                   <th key={h} style={{ padding: '14px 24px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Ma'lumot topilmadi</td></tr>
+                <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Ma'lumot topilmadi</td></tr>
               ) : filtered.map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '14px 24px', fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>#{row._id}</td>
                   <td style={{ padding: '14px 24px', fontSize: 12, color: 'white' }}>{row._date}</td>
+                  <td style={{ padding: '14px 24px' }}>
+                    <span style={{ 
+                      padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 800,
+                      background: row._positive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(251, 113, 133, 0.1)',
+                      color: row._positive ? '#10b981' : '#fb7185'
+                    }}>
+                      {row._positive ? 'KIRIM' : 'CHIQIM'}
+                    </span>
+                  </td>
                   <td style={{ padding: '14px 24px' }}>
                     <span style={{ padding: '3px 10px', borderRadius: 6, background: 'var(--surface2)', fontSize: 10, fontWeight: 700, color: 'var(--text2)' }}>{row._category}</span>
                   </td>
