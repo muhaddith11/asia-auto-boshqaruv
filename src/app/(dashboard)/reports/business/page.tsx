@@ -1,218 +1,299 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import Link from 'next/link';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  TrendingDown, 
-  Calendar, 
-  DollarSign, 
-  ArrowUpRight, 
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  DollarSign,
+  ArrowUpRight,
   ArrowDownRight,
   Wallet,
   Receipt,
   PieChart,
   Target,
   ArrowRight,
-  BrainCircuit,
   Zap,
-  ShieldCheck
+  Filter,
+  Clock,
+  Search,
+  Package,
+  ChevronDown,
 } from 'lucide-react';
 
-
+/**
+ * BusinessReportPage (Safe Re-implementation)
+ * -------------------------------------------
+ * Chiroyli va kengaytirilgan moliya hisoboti sahifasi.
+ * Foydalanuvchi so'ragan barcha filtrlar va jadval ustunlari bilan.
+ */
 export default function BusinessReportPage() {
-  const { buyurtmalar, ishxonaOperatsiyalar, kassa, maoshTarixi, xodimlar } = useStore();
-  const [mounted, setMounted] = useState(false);
-  const [period, setPeriod] = useState('oy'); // kun, hafta, oy, yil
+  const store = useStore();
+  const buyurtmalar = store?.buyurtmalar || [];
+  const ishxonaOperatsiyalar = store?.ishxonaOperatsiyalar || [];
+  const kassa = store?.kassa || { naqd: 0, karta: 0 };
+  const maoshTarixi = store?.maoshTarixi || [];
+  const xodimlar = store?.xodimlar || [];
 
+  const [mounted, setMounted] = useState(false);
+
+  // Filtrlar
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterFrom,     setFilterFrom]     = useState('');
+  const [filterTo,       setFilterTo]       = useState('');
+  const [activeQuick,    setActiveQuick]    = useState('oy');
+
+  useEffect(() => { setMounted(true); }, []);
+  
   useEffect(() => {
-    setMounted(true);
+    if (!mounted) return;
+    const now = new Date();
+    const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const to   = last.toISOString().split('T')[0];
+    setFilterFrom(from);
+    setFilterTo(to);
+  }, [mounted]);
+
+  const helpers = useMemo(() => {
+    const getWeekRange = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMon = (day === 0 ? -6 : 1 - day);
+      const mon = new Date(now); mon.setDate(now.getDate() + diffToMon);
+      const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+      return { from: mon.toISOString().split('T')[0], to: sun.toISOString().split('T')[0] };
+    };
+    const getMonthRange = () => {
+      const now = new Date();
+      const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      return { from, to: last.toISOString().split('T')[0] };
+    };
+    const getYearRange = () => {
+      const y = new Date().getFullYear();
+      return { from: `${y}-01-01`, to: `${y}-12-31` };
+    };
+    return { getWeekRange, getMonthRange, getYearRange };
   }, []);
 
   if (!mounted) return null;
 
-  // Simple statistics calculation for the current month
-  const now = new Date();
-  const currentMonth = now.toISOString().substring(0, 7);
-  const monthOrders = buyurtmalar.filter(b => b.sana && b.sana.startsWith(currentMonth) && b.holat === 'tulangan');
-  const orderIncome = monthOrders.reduce((sum, b) => sum + (b.final || 0), 0);
+  function applyQuick(q: string) {
+    setActiveQuick(q);
+    if (q === 'hafta') { const r = helpers.getWeekRange();  setFilterFrom(r.from); setFilterTo(r.to); }
+    if (q === 'oy')    { const r = helpers.getMonthRange(); setFilterFrom(r.from); setFilterTo(r.to); }
+    if (q === 'yil')   { const r = helpers.getYearRange();  setFilterFrom(r.from); setFilterTo(r.to); }
+  }
 
-  const localOps = ishxonaOperatsiyalar.filter(op => op.date && op.date.startsWith(currentMonth));
-  // Filter out operations that come from orders to avoid double counting
-  const manualIncome = localOps.filter(op => op.type === 'income' && op.source !== 'buyurtma').reduce((sum, op) => sum + op.amount, 0);
-  const manualExpense = localOps.filter(op => op.type === 'expense').reduce((sum, op) => sum + op.amount, 0);
+  function resetFilters() {
+    const r = helpers.getMonthRange();
+    setFilterFrom(r.from);
+    setFilterTo(r.to);
+    setFilterCategory('');
+    setActiveQuick('oy');
+  }
 
-  const monthMaosh = maoshTarixi.filter(m => m.sana && m.sana.startsWith(currentMonth));
-  const totalMaosh = monthMaosh.reduce((sum, m) => sum + m.summa, 0);
+  const allRows = useMemo(() => {
+    const rows: any[] = [];
 
-  const totalIncome = orderIncome + manualIncome;
-  const totalExpense = manualExpense + totalMaosh;
-  const netProfit = totalIncome - totalExpense;
+    buyurtmalar.forEach(b => {
+      const raw = (b as any).createdAt || (b as any).created_at || b.sana || '';
+      let dStr = b.sana || '';
+      try {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) dStr = d.toISOString().split('T')[0];
+      } catch {}
+      rows.push({
+        _id: String(b.id),
+        _date: dStr,
+        _rawDate: raw,
+        _type: 'ORDER',
+        _category: 'Buyurtma',
+        _izoh: b.muammo || b.mashina || '',
+        _mijoz: b.ism || '',
+        _amount: b.final || 0,
+        _method: 'NAQD',
+        _positive: true,
+      });
+    });
 
-  const stats = [
-    { label: 'Jami tushum', value: totalIncome, icon: <TrendingUp />, color: 'emerald', trend: '+12.5%' },
-    { label: 'Jami xarajat', value: totalExpense, icon: <TrendingDown />, color: 'red', trend: '-2.4%' },
-    { label: 'Kassa (Naqd/Karta)', value: kassa.naqd + kassa.karta, icon: <Wallet />, color: 'blue', trend: 'Mavjud' },
-    { label: 'Sof foyda (oy)', value: netProfit, icon: <Target />, color: 'amber', trend: '+8.1%' },
-  ];
+    ishxonaOperatsiyalar.forEach(op => {
+      if (op.source === 'buyurtma') return;
+      const raw = (op as any).createdAt || op.date || '';
+      let dStr = op.date || '';
+      try {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) dStr = d.toISOString().split('T')[0];
+      } catch {}
+      rows.push({
+        _id: String(op.id),
+        _date: dStr,
+        _rawDate: raw,
+        _type: op.type,
+        _category: op.category || '—',
+        _izoh: op.comment || '',
+        _mijoz: '',
+        _amount: op.amount || 0,
+        _method: (op.method || '').toUpperCase(),
+        _positive: op.type === 'income',
+      });
+    });
+
+    maoshTarixi.forEach(m => {
+      const raw = (m as any).createdAt || m.sana || '';
+      let dStr = m.sana || '';
+      try {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) dStr = d.toISOString().split('T')[0];
+      } catch {}
+      const worker = xodimlar.find(w => w.id === m.xodimId);
+      rows.push({
+        _id: String(m.id),
+        _date: dStr,
+        _rawDate: raw,
+        _type: 'MAOSH',
+        _category: 'Ish xaqi',
+        _izoh: m.izoh || '',
+        _mijoz: worker?.ism || 'Xodim',
+        _amount: m.summa || 0,
+        _method: (m.method || '').toUpperCase(),
+        _positive: false,
+      });
+    });
+
+    return rows.sort((a, b) => new Date(b._rawDate).getTime() - new Date(a._rawDate).getTime());
+  }, [buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar]);
+
+  const categories = useMemo(() => Array.from(new Set(allRows.map(r => r._category))).sort(), [allRows]);
+
+  const filtered = useMemo(() => allRows.filter(r => {
+    if (filterFrom && r._date < filterFrom) return false;
+    if (filterTo   && r._date > filterTo)   return false;
+    if (filterCategory && r._category !== filterCategory) return false;
+    return true;
+  }), [allRows, filterFrom, filterTo, filterCategory]);
+
+  const stats = {
+    income:  filtered.filter(r => r._positive).reduce((s, r) => s + r._amount, 0),
+    expense: filtered.filter(r => !r._positive).reduce((s, r) => s + r._amount, 0),
+  };
+
+  const inputStyle: React.CSSProperties = {
+    background: 'var(--surface2, #1e212b)',
+    border: '1px solid var(--border, rgba(255,255,255,0.08))',
+    borderRadius: 8,
+    padding: '8px 12px',
+    fontSize: 12,
+    color: 'white',
+    outline: 'none',
+    width: '100%',
+  };
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-screen">
-      {/* PAGE HEADER */}
-      <div className="px-8 pt-8 pb-4 flex items-start justify-between">
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)', minHeight: '100vh' }}>
+      
+      {/* HEADER */}
+      <div style={{ padding: '28px 28px 0', display: 'flex', justifyContent: 'space-between' }}>
         <div>
-          <h1 className="text-[22px] font-bold text-white tracking-tight">Moliyaviy tahlil</h1>
-          <p className="text-[13px] text-slate-400 font-medium mt-1.5">Avtoservisning umumiy moliyaviy holati, daromad va xarajatlar tahlili.</p>
-        </div>
-
-        <div className="flex bg-surface border border-border rounded-xl p-1 shadow-sm">
-          {['kun', 'hafta', 'oy', 'yil'].map((p) => (
-            <button 
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-5 py-2 text-[11px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                period === p ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] ring-1 ring-blue-400/50' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Hisobotlar</h1>
+          <p style={{ fontSize: 12, color: 'var(--text3)', margin: '4px 0 0' }}>Ishxona bo'yicha umumiy moliya tahlili</p>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8">
-        {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, i) => {
-             const isPositive = stat.trend.includes('+') || stat.trend === 'Mavjud';
-             return (
-              <div key={i} className="bg-surface border border-border rounded-2xl p-6 relative overflow-hidden group hover:border-blue-500/30 transition-all shadow-sm">
-                 <div className="flex items-center justify-between mb-5">
-                    <div className={`p-3 rounded-xl ${stat.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : stat.color === 'red' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : stat.color === 'blue' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
-                      {React.cloneElement(stat.icon as any, { size: 22, strokeWidth: 2.5 })}
-                    </div>
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${stat.color === 'red' ? 'bg-red-500/10 text-red-400' : stat.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : stat.trend === 'Mavjud' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
-                      {stat.trend}
-                    </span>
-                 </div>
-                 <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{stat.label}</div>
-                 <div className="text-[28px] font-black text-white leading-none">{stat.value.toLocaleString()} <span className="text-[12px] text-slate-500 font-bold ml-1 uppercase">UZS</span></div>
-              </div>
-             );
-          })}
-        </div>
-
-        {/* One-column area: Recent Operations (full width) */}
-        <div className="w-full">
-
-
-          {/* Recent Operations Log (full width) */}
-          <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
-             <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-[#191c25]">
-                <h3 className="text-[13px] font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Receipt size={18} className="text-blue-500" /> So'nggi operatsiyalar
-                </h3>
-                <Link href="/orders" className="px-4 py-2 rounded-xl bg-white/5 border border-border text-[10px] font-black text-blue-500 hover:text-blue-400 hover:bg-white/10 uppercase tracking-widest flex items-center gap-2 transition-all group/btn decoration-0">
-                  Hammasini ko'rish <ArrowRight size={13} className="group-hover/btn:translate-x-1 transition-transform" />
-                </Link>
-             </div>
-             <div className="overflow-x-auto min-h-[400px]">
-                <table className="w-full text-left text-[12px] whitespace-nowrap">
-                  <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
-                    <tr>
-                      <th className="px-6 py-4 w-[150px]">SANA / TURI</th>
-                      <th style={{ padding: "18px 24px" }}>IZOH / KLIENT</th>
-                      <th className="px-6 py-4 text-right w-[140px]">SUMMA</th>
-                      <th className="px-6 py-4 text-center w-[100px]">USUL</th>
-                    </tr>
-                  </thead>
-                  <tbody style={{ borderStyle: "solid" }}>
-                     {[...buyurtmalar, ...ishxonaOperatsiyalar.filter(op => op.source !== 'buyurtma'), ...maoshTarixi]
-                      .sort((a, b) => {
-                        const dateA = (a as any).createdAt || (a as any).sana || (a as any).date;
-                        const dateB = (b as any).createdAt || (b as any).sana || (b as any).date;
-                        
-                        const timeA = new Date(dateA).getTime();
-                        const timeB = new Date(dateB).getTime();
-                        
-                        if (timeB !== timeA) return timeB - timeA;
-                        return (b as any).id - (a as any).id;
-                      })
-                      .slice(0, 25).map((op, i) => {
-                       const isOrder = 'final' in op;
-                       const isMaosh = 'xodimId' in op;
-                       
-                       // Full timestamp for time display
-                       const fullDate = (op as any).createdAt || (op as any).created_at || (op as any).sana || (op as any).date;
-                       let displayDate = (op as any).sana || (op as any).date;
-                       let displayTime = '';
-                       
-                       try {
-                         const dateObj = new Date(fullDate);
-                         if (!isNaN(dateObj.getTime())) {
-                           displayDate = dateObj.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                           displayTime = dateObj.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
-                         }
-                       } catch (e) {}
-
-                       const opAmount = isOrder ? (op as any).final : (isMaosh ? (op as any).summa : (op as any).amount);
-                       const opType = isOrder ? 'BUYURTMA' : (isMaosh ? 'MAOSH' : (op as any).type);
-                       
-                       let opComment = '';
-                       if (isOrder) {
-                         opComment = (op as any).ism;
-                       } else if (isMaosh) {
-                         const worker = xodimlar.find(w => w.id === (op as any).xodimId);
-                         opComment = `Ish xaqi: ${worker?.ism || 'Xodim'}`;
-                       } else {
-                         opComment = (op as any).comment || (op as any).category;
-                       }
-
-                       const opMethod = isOrder ? 'NAQD' : (op as any).method;
-
-                       return (
-                         <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }} className="hover:bg-white/[0.02] transition-colors">
-                           <td style={{ padding: "20px 24px" }}>
-                             <div className="flex flex-col gap-0.5">
-                               <div className="text-[13px] text-white font-black">{displayDate}</div>
-                               <div className="text-[11px] text-white/60 font-medium">{displayTime}</div>
-                             </div>
-                             <div className="mt-2 text-left">
-                               <span className={`text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-tighter border ${
-                                 isOrder || (op as any).type === 'income' 
-                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
-                                 : 'bg-red-500/10 text-red-500 border-red-500/20'
-                               }`}>
-                                 {opType === 'income' ? 'Kirim' : opType === 'expense' ? 'Chiqim' : opType === 'MAOSH' ? 'Ish xaqi' : 'Order'}
-                               </span>
-                             </div>
-                           </td>
-                           <td style={{ padding: "18px 24px" }}>
-                             <div className="max-w-[200px] truncate font-bold text-slate-300">{opComment}</div>
-                           </td>
-                           <td style={{ padding: "18px 24px", textAlign: "right" }}>
-                             <span className={`font-black text-[14px] ${
-                               opAmount === 0 ? 'text-slate-600' :
-                               (isOrder || (op as any).type === 'income' ? 'text-emerald-400' : 'text-red-400')
-                             }`}>
-                               {opAmount?.toLocaleString?.() ?? opAmount}
-                             </span>
-                           </td>
-                           <td style={{ padding: "18px 24px", textAlign: "center" }}>
-                             <span className="text-[10px] text-slate-500 uppercase font-black border border-border px-3 py-1 rounded-lg bg-surface2/30">
-                               {opMethod}
-                             </span>
-                           </td>
-                         </tr>
-                       );
-                     })}
-                  </tbody>
-                </table>
-             </div>
+      <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        
+        {/* FILTERS */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, alignItems: 'flex-end' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase' }}>Kategoriya</label>
+              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={inputStyle}>
+                <option value="">Barchasi</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase' }}>Dan</label>
+              <input type="date" value={filterFrom} onChange={e => {setFilterFrom(e.target.value); setActiveQuick('custom');}} style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase' }}>Gacha</label>
+              <input type="date" value={filterTo} onChange={e => {setFilterTo(e.target.value); setActiveQuick('custom');}} style={inputStyle} />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['hafta', 'oy', 'yil'].map(q => (
+                <button key={q} onClick={() => applyQuick(q)} style={{
+                  padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                  background: activeQuick === q ? 'var(--accent)' : 'var(--surface2)',
+                  color: activeQuick === q ? 'white' : 'var(--text2)',
+                  border: 'none'
+                }}>{q.toUpperCase()}</button>
+              ))}
+              <button onClick={resetFilters} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--surface2)', color: 'var(--text3)', border: 'none', cursor: 'pointer' }}>
+                <Clock size={14} />
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* STATS */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+          {[
+            { label: 'Daromad', value: stats.income, icon: <TrendingUp size={20} />, color: '#10b981' },
+            { label: 'Xarajat', value: stats.expense, icon: <TrendingDown size={20} />, color: '#fb7185' },
+            { label: 'Foyda', value: stats.income - stats.expense, icon: <Target size={20} />, color: '#3b82f6' },
+            { label: 'Kassa', value: kassa.naqd + kassa.karta, icon: <Wallet size={20} />, color: '#f59e0b' },
+          ].map((s, i) => (
+            <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ padding: 8, borderRadius: 8, background: `${s.color}15`, color: s.color }}>{s.icon}</div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase' }}>{s.label}</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: 'white' }}>{s.value.toLocaleString()} <span style={{ fontSize: 10, color: 'var(--text3)' }}>UZS</span></div>
+            </div>
+          ))}
+        </div>
+
+        {/* TABLE */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Receipt size={16} color="var(--accent)" />
+            <span style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>OPERATSIYALAR</span>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+                  {['ID', 'Sana', 'Kategoriya', 'Izoh', 'Mijoz', 'Summa', 'Usul'].map(h => (
+                    <th key={h} style={{ padding: '12px 24px', fontSize: 10, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((row, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
+                    <td style={{ padding: '12px 24px', fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>#{row._id}</td>
+                    <td style={{ padding: '12px 24px', fontSize: 12, color: 'white' }}>{row._date}</td>
+                    <td style={{ padding: '12px 24px' }}>
+                      <span style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--surface2)', fontSize: 11, color: 'var(--text2)' }}>{row._category}</span>
+                    </td>
+                    <td style={{ padding: '12px 24px', fontSize: 12, color: 'var(--text2)' }}>{row._izoh || '—'}</td>
+                    <td style={{ padding: '12px 24px', fontSize: 12, color: 'white', fontWeight: 600 }}>{row._mijoz || '—'}</td>
+                    <td style={{ padding: '12px 24px', fontSize: 13, fontWeight: 800, color: row._positive ? '#10b981' : '#fb7185' }}>
+                      {row._amount.toLocaleString()}
+                    </td>
+                    <td style={{ padding: '12px 24px', fontSize: 11, color: 'var(--text3)' }}>{row._method}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   );
