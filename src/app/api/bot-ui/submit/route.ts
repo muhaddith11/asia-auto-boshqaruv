@@ -134,18 +134,20 @@ ${zapList}
       catch (e) { console.warn("Admin tg xabar ketmadi:", e); }
     }
     
-    // Send to Mechanic with auto-delete setTimeout
+    // Send to Mechanic and log for auto-deletion
     if (mechanicChatId && mechanicChatId.toString() !== adminId) {
       try { 
         const sentMsg = await bot.telegram.sendMessage(mechanicChatId, mechanicMsg); 
-        // 24 hours timer to delete the message for the mechanic
-        setTimeout(async () => {
-          try {
-            await bot.telegram.deleteMessage(mechanicChatId, sentMsg.message_id);
-          } catch (delErr) {
-            console.warn("Mexanikdagi xabarni o'chirishda xatolik:", delErr);
-          }
-        }, 24 * 60 * 60 * 1000);
+        
+        // Log to DB for guaranteed 24h deletion
+        const deleteAt = new Date();
+        deleteAt.setHours(deleteAt.getHours() + 24);
+
+        await supabase.from('bot_messages_to_delete').insert({
+          chat_id: Number(mechanicChatId),
+          message_id: sentMsg.message_id,
+          delete_at: deleteAt.toISOString()
+        });
 
       } catch (e) { console.warn("Mexanik tg xabar ketmadi:", e); }
     }

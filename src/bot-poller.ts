@@ -43,6 +43,47 @@ async function resetMenuButton(chatId: string) {
   });
 }
 
+async function cleanupExpiredMessages() {
+  try {
+    const now = new Date().toISOString();
+    const { data: toDelete, error } = await supabase
+      .from('bot_messages_to_delete')
+      .select('*')
+      .lte('delete_at', now);
+
+    if (error) {
+      console.error('❌ Cleanup fetch error:', error);
+      return;
+    }
+
+    if (toDelete && toDelete.length > 0) {
+      console.log(`🧹 Cleaning up ${toDelete.length} expired messages...`);
+      for (const msg of toDelete) {
+        try {
+          // Attempt to delete from Telegram
+          const res = await sendTg('deleteMessage', {
+            chat_id: msg.chat_id,
+            message_id: msg.message_id
+          });
+          
+          if (!res.ok) {
+            console.warn(`⚠️ Message already gone or error: ${msg.message_id}`);
+          }
+          
+          // Delete from DB regardless (to avoid infinite loops on old or missing messages)
+          await supabase.from('bot_messages_to_delete').delete().eq('id', msg.id);
+          
+        } catch (err) {
+          console.error(`❌ Failed to process message deletion ${msg.id}:`, err);
+        }
+      }
+      console.log('✅ Cleanup finished.');
+    }
+  } catch (err) {
+    console.error('❌ Global cleanup error:', err);
+  }
+}
+
 async function handleUpdate(update: any) {
   try {
     if (!update.message) return;
@@ -224,6 +265,11 @@ export async function startBotPolling() {
   } catch (e) {
     console.error('❌ Failed to delete webhook:', e);
   }
+
+  // Start background cleanup (every 5 minutes)
+  console.log('🧹 Background cleanup worker started (5m interval)');
+  setInterval(cleanupExpiredMessages, 5 * 60 * 1000);
+  cleanupExpiredMessages(); // Initial run
 
   while (true) {
     try {
