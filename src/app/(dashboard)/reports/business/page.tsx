@@ -51,10 +51,18 @@ export default function BusinessReportPage() {
       buyurtmalar.forEach((b: any) => {
         const raw = b.createdAt || b.created_at || b.sana || '';
         let dStr = b.sana || '';
-        try { const d = new Date(raw); if (!isNaN(d.getTime())) dStr = d.toISOString().split('T')[0]; } catch {}
+        let disp = b.sana || '';
+        try { 
+          const d = new Date(raw); 
+          if (!isNaN(d.getTime())) {
+            dStr = d.toISOString().split('T')[0];
+            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch {}
         rows.push({
           _id: String(b.id),
           _date: dStr,
+          _displayDate: disp,
           _rawDate: raw,
           _category: 'Buyurtma',
           _izoh: b.muammo || b.mashina || '',
@@ -69,10 +77,18 @@ export default function BusinessReportPage() {
         if (op.source === 'buyurtma') return;
         const raw = op.createdAt || op.date || '';
         let dStr = op.date || '';
-        try { const d = new Date(raw); if (!isNaN(d.getTime())) dStr = d.toISOString().split('T')[0]; } catch {}
+        let disp = op.date || '';
+        try { 
+          const d = new Date(raw); 
+          if (!isNaN(d.getTime())) {
+            dStr = d.toISOString().split('T')[0];
+            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch {}
         rows.push({
           _id: String(op.id),
           _date: dStr,
+          _displayDate: disp,
           _rawDate: raw,
           _category: op.category || 'Operatsiya',
           _izoh: op.comment || '',
@@ -86,11 +102,19 @@ export default function BusinessReportPage() {
       maoshTarixi.forEach((m: any) => {
         const raw = m.createdAt || m.sana || '';
         let dStr = m.sana || '';
-        try { const d = new Date(raw); if (!isNaN(d.getTime())) dStr = d.toISOString().split('T')[0]; } catch {}
+        let disp = m.sana || '';
+        try { 
+          const d = new Date(raw); 
+          if (!isNaN(d.getTime())) {
+            dStr = d.toISOString().split('T')[0];
+            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch {}
         const worker = xodimlar.find((w: any) => w.id === m.xodimId);
         rows.push({
           _id: String(m.id),
           _date: dStr,
+          _displayDate: disp,
           _rawDate: raw,
           _category: 'Ish xaqi',
           _izoh: m.izoh || '',
@@ -244,7 +268,9 @@ export default function BusinessReportPage() {
               ) : filtered.map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '14px 24px', fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>#{row._id}</td>
-                  <td style={{ padding: '14px 24px', fontSize: 12, color: 'white' }}>{row._date}</td>
+                  <td style={{ padding: '14px 24px', fontSize: 11, color: 'white', whiteSpace: 'nowrap' }}>
+                    {row._displayDate}
+                  </td>
                   <td style={{ padding: '14px 24px' }}>
                     <span style={{ 
                       padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 800,
