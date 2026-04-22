@@ -3,6 +3,16 @@ import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host');
+
+  // Yangi bot domeni
+  const botDomain = 'asiaautobot.com';
+  const botDomainWww = 'www.asiaautobot.com';
+
+  // Agar bot domeni orqali kelsa va asosiy sahifada bo'lsa
+  if ((hostname === botDomain || hostname === botDomainWww) && pathname === '/') {
+    return NextResponse.rewrite(new URL('/bot-ui', request.url));
+  }
 
   // Normalize path (remove double slashes)
   const normalizedPath = pathname.replace(/\/+/g, '/');
