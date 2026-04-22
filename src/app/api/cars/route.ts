@@ -12,7 +12,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('cars_list')
       .select('*')
-      .range(0, 9999)
+      .range(0, 10000)
       .order('brand', { ascending: true })
       .order('name', { ascending: true });
 

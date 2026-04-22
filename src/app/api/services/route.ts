@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     const carModel = searchParams.get('car_model');
     const brand = searchParams.get('brand');
 
-    let query = supabase.from('services_list').select('*').range(0, 9999).order('brand', { ascending: true }).order('car_model', { ascending: true });
+    let query = supabase.from('services_list').select('*').range(0, 10000).order('brand', { ascending: true }).order('car_model', { ascending: true });
 
     if (carModel) {
       query = query.eq('car_model', carModel);
