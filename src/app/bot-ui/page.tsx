@@ -133,7 +133,7 @@ export default function BotUIPage() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <TelegramLogin 
-          botName="asia_auto_bot" 
+          botName="Asiaautoservice_bot" 
           onAuth={(user) => {
             setAuthUser(user);
             localStorage.setItem('bot_auth_user', JSON.stringify(user));
