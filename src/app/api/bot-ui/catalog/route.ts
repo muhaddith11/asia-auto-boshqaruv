@@ -70,10 +70,17 @@ export async function GET() {
       if (!normalizedCatalog[b]) normalizedCatalog[b] = {};
       if (!normalizedCatalog[b][m]) normalizedCatalog[b][m] = [];
 
-      normalizedCatalog[b][m].push({
-        name: s.name,
-        price: s.price
-      });
+      // Check for duplicates before pushing
+      const isDuplicate = normalizedCatalog[b][m].some((existing: any) => 
+        existing.name.trim().toUpperCase() === s.name.trim().toUpperCase()
+      );
+
+      if (!isDuplicate) {
+        normalizedCatalog[b][m].push({
+          name: s.name,
+          price: s.price
+        });
+      }
       brandsSet.add(b);
     });
 
