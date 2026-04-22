@@ -21,13 +21,19 @@ export async function GET(req: Request) {
     const carModel = searchParams.get('car_model');
     const brand = searchParams.get('brand');
 
-    let allData: any[] = [];
+    const uniqueData = new Map();
     let page = 0;
     const pageSize = 1000;
     let hasMore = true;
 
     while (hasMore) {
-      let query = supabase.from('services_list').select('*').range(page * pageSize, (page + 1) * pageSize - 1).order('brand', { ascending: true }).order('car_model', { ascending: true });
+      let query = supabase
+        .from('services_list')
+        .select('*')
+        .range(page * pageSize, (page + 1) * pageSize - 1)
+        .order('brand', { ascending: true })
+        .order('car_model', { ascending: true })
+        .order('id', { ascending: true }); // Added stable sort
 
       if (carModel) {
         query = query.eq('car_model', carModel);
@@ -40,7 +46,10 @@ export async function GET(req: Request) {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        allData = [...allData, ...data];
+        data.forEach((item: any) => {
+          uniqueData.set(item.id, item);
+        });
+        
         if (data.length < pageSize) {
           hasMore = false;
         } else {
@@ -50,11 +59,10 @@ export async function GET(req: Request) {
         hasMore = false;
       }
       
-      // Safety break to prevent infinite loop
       if (page > 50) hasMore = false; 
     }
 
-    return NextResponse.json(allData);
+    return NextResponse.json(Array.from(uniqueData.values()));
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
