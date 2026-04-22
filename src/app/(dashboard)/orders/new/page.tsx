@@ -106,8 +106,6 @@ export default function NewOrderPage() {
   const [partRows, setPartRows] = useState<any[]>([
     { id: Date.now(), partId: '', qty: 1 }
   ]);
-  const [showAllServices, setShowAllServices] = useState(false);
-  const [showAllParts, setShowAllParts] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -329,11 +327,12 @@ export default function NewOrderPage() {
                   value={form.mashina}
                   onChange={e => {
                     const newMashina = e.target.value;
+                    const normNew = normalize(newMashina);
                     setForm({ ...form, mashina: newMashina });
                     // Reset service IDs if they don't belong to the new car
                     setAssignments(prev => prev.map(a => {
                       const s = xizmatlar.find(x => x.id === Number(a.serviceId));
-                      if (s && s.mashina !== 'UMUMIY' && s.mashina !== newMashina) {
+                      if (s && s.mashina !== 'UMUMIY' && normalize(s.mashina) !== normNew) {
                         return { ...a, serviceId: '', customNarx: '' };
                       }
                       return a;
@@ -469,13 +468,7 @@ export default function NewOrderPage() {
                         </select>
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                          <label style={{ ...S.label, marginBottom: 0 }}>Xizmat *</label>
-                          <label style={{ fontSize: 10, color: 'var(--text3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <input type="checkbox" checked={showAllServices} onChange={e => setShowAllServices(e.target.checked)} />
-                            Barchasi
-                          </label>
-                        </div>
+                        <label style={{ ...S.label, marginBottom: 4 }}>Xizmat *</label>
                         <select
                           style={{ ...S.select, background: 'var(--surface3)' }}
                           value={a.serviceId}
@@ -488,15 +481,14 @@ export default function NewOrderPage() {
                           <option value="">— Xizmatni tanlang —</option>
                           {xizmatlar
                             .filter(s => {
-                              if (showAllServices || !form.mashina) return true;
                               const car = normalize(form.mashina);
                               const serviceCar = normalize(s.mashina || 'UMUMIY');
-                              
+                              if (!car) return serviceCar === 'UMUMIY';
                               return serviceCar === 'UMUMIY' || serviceCar === car;
                             })
                             .map(s => (
                               <option key={s.id} value={s.id}>
-                                {s.nom} {s.mashina !== 'UMUMIY' ? `(${s.mashina})` : ''} — {s.narx.toLocaleString()} so'm
+                                {s.nom} — {s.narx.toLocaleString()} so'm
                               </option>
                             ))}
                         </select>
@@ -591,15 +583,7 @@ export default function NewOrderPage() {
                   gap: 12, alignItems: 'end', marginBottom: 12,
                 }}>
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                      {idx === 0 && <label style={{ ...S.label, marginBottom: 0 }}>Zapchast</label>}
-                      {idx === 0 && (
-                        <label style={{ fontSize: 10, color: 'var(--text3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <input type="checkbox" checked={showAllParts} onChange={e => setShowAllParts(e.target.checked)} />
-                          Barchasi
-                        </label>
-                      )}
-                    </div>
+                    <label style={S.label}>Zapchast</label>
                     <select
                       style={S.select}
                       value={row.partId}
@@ -608,15 +592,14 @@ export default function NewOrderPage() {
                       <option value="">— Zapchast tanlang —</option>
                       {zapchastlar
                         .filter(p => {
-                          if (showAllParts || !form.mashina) return true;
                           const car = normalize(form.mashina);
                           const partCar = normalize(p.mashina || 'UMUMIY');
-                          
+                          if (!car) return partCar === 'UMUMIY';
                           return partCar === 'UMUMIY' || partCar === car;
                         })
                         .map(p => (
                           <option key={p.id} value={p.id}>
-                            {p.nom} {p.mashina !== 'UMUMIY' ? `(${p.mashina})` : ''} (balans: {p.balance ?? '?'})
+                            {p.nom} (balans: {p.balance ?? '?'})
                           </option>
                         ))}
                     </select>
