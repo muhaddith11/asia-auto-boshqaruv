@@ -479,7 +479,14 @@ export default function NewOrderPage() {
                         >
                           <option value="">— Xizmatni tanlang —</option>
                           {xizmatlar
-                            .filter(s => !form.mashina || s.mashina === 'UMUMIY' || s.mashina === form.mashina)
+                            .filter(s => {
+                              if (!form.mashina) return true;
+                              if (s.mashina === 'UMUMIY') return true;
+                              if (s.mashina === form.mashina) return true;
+                              // If car is "CHEVROLET MALIBU", also show services for "CHEVROLET"
+                              if (form.mashina.startsWith(s.mashina + ' ')) return true;
+                              return false;
+                            })
                             .map(s => <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>)}
                         </select>
                       </div>
@@ -581,7 +588,13 @@ export default function NewOrderPage() {
                     >
                       <option value="">— Zapchast tanlang —</option>
                       {zapchastlar
-                        .filter(p => !form.mashina || p.mashina === 'UMUMIY' || p.mashina === form.mashina)
+                        .filter(p => {
+                          if (!form.mashina) return true;
+                          if (p.mashina === 'UMUMIY') return true;
+                          if (p.mashina === form.mashina) return true;
+                          if (form.mashina.startsWith(p.mashina + ' ')) return true;
+                          return false;
+                        })
                         .map(p => (
                           <option key={p.id} value={p.id}>{p.nom} (balans: {p.balance ?? '?'})</option>
                         ))}

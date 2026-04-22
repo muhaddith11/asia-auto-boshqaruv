@@ -234,7 +234,7 @@ export const useStore = create<AutoServisStore>()(
         // Map to DB schema
         const parts = x.mashina.split(' ');
         const brand = parts[0] || 'UMUMIY';
-        const model = parts.slice(1).join(' ') || brand;
+        const model = parts.slice(1).join(' ') || '';
 
         const apiData = {
           name: x.nom,
@@ -545,6 +545,7 @@ export const useStore = create<AutoServisStore>()(
               .replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m)
               .replace(/Chevolet/gi, 'Chevrolet')
               .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
+              .replace(/\s+/g, ' ')
 
               .trim()
               .toUpperCase();
@@ -588,7 +589,9 @@ export const useStore = create<AutoServisStore>()(
               id: s.id,
               nom: s.name,
               narx: s.price,
-              mashina: s.brand === 'Umumiy' || s.brand === 'UMUMIY' ? 'UMUMIY' : normalize(`${s.brand} ${s.car_model}`),
+              mashina: (s.brand === 'Umumiy' || s.brand === 'UMUMIY' || !s.brand) 
+                ? 'UMUMIY' 
+                : normalize(`${s.brand} ${s.car_model || ''}`),
               stavka: s.stavka
             })) : []
 
