@@ -14,6 +14,21 @@ import { getClients, getOrders, getWorkers, getParts,
   getKassa, updateKassaState, getOperations, createOperation, deleteOperation, getSalaries, createSalary
 } from '@/lib/api';
 
+export const normalize = (str: string) => {
+  if (!str) return '';
+  const homoglyphs: Record<string, string> = {
+    'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x',
+    'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X'
+  };
+  return str
+    .replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m)
+    .replace(/Chevolet/gi, 'Chevrolet')
+    .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase();
+};
+
 interface AutoServisStore {
   mijozlar: Mijoz[];
   xodimlar: Xodim[];
@@ -535,21 +550,6 @@ export const useStore = create<AutoServisStore>()(
             getSalaries()
           ]);
 
-          const normalize = (str: string) => {
-            if (!str) return '';
-            const homoglyphs: Record<string, string> = {
-              'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x',
-              'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X'
-            };
-            return str
-              .replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m)
-              .replace(/Chevolet/gi, 'Chevrolet')
-              .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
-              .replace(/\s+/g, ' ')
-
-              .trim()
-              .toUpperCase();
-          };
 
           const mashinalarList = cars && cars.length > 0 
             ? Array.from(new Set(cars.map((c: any) => normalize(`${c.brand} ${c.name}`)))).sort() 

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
-import { useStore } from '@/store/useStore';
+import { useStore, normalize } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import {
   Plus,
@@ -478,9 +478,24 @@ export default function NewOrderPage() {
                           }}
                         >
                           <option value="">— Xizmatni tanlang —</option>
-                          {xizmatlar.map(s => (
-                            <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>
-                          ))}
+                          {xizmatlar
+                            .filter(s => {
+                              if (!form.mashina) return true;
+                              const car = normalize(form.mashina);
+                              const serviceCar = normalize(s.mashina || 'UMUMIY');
+                              
+                              if (serviceCar === 'UMUMIY') return true;
+                              if (car === serviceCar) return true;
+                              // Match brand (e.g., if car is "CHEVROLET MALIBU" and service is "CHEVROLET")
+                              if (car.startsWith(serviceCar + ' ')) return true;
+                              // Match model even if brand is slightly different in catalog
+                              if (car.includes(serviceCar)) return true;
+                              
+                              return false;
+                            })
+                            .map(s => (
+                              <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>
+                            ))}
                         </select>
                       </div>
                       <div style={{ minWidth: 120 }}>
@@ -580,9 +595,22 @@ export default function NewOrderPage() {
                       onChange={e => setPartRows(partRows.map(x => x.id === row.id ? { ...x, partId: e.target.value } : x))}
                     >
                       <option value="">— Zapchast tanlang —</option>
-                      {zapchastlar.map(p => (
-                        <option key={p.id} value={p.id}>{p.nom} (balans: {p.balance ?? '?'})</option>
-                      ))}
+                      {zapchastlar
+                        .filter(p => {
+                          if (!form.mashina) return true;
+                          const car = normalize(form.mashina);
+                          const partCar = normalize(p.mashina || 'UMUMIY');
+                          
+                          if (partCar === 'UMUMIY') return true;
+                          if (car === partCar) return true;
+                          if (car.startsWith(partCar + ' ')) return true;
+                          if (car.includes(partCar)) return true;
+                          
+                          return false;
+                        })
+                        .map(p => (
+                          <option key={p.id} value={p.id}>{p.nom} (balans: {p.balance ?? '?'})</option>
+                        ))}
                     </select>
                   </div>
 
