@@ -20,11 +20,15 @@ export default function BotUIPage() {
   const [authUser, setAuthUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check if we have a saved user in localStorage (for browser mode)
-    const savedUser = localStorage.getItem('bot_auth_user');
-    if (savedUser) {
-      setAuthUser(JSON.parse(savedUser));
+    const saved = localStorage.getItem('bot_auth_user');
+    if (saved) {
+      try {
+        setAuthUser(JSON.parse(saved));
+      } catch (e) {
+        localStorage.removeItem('bot_auth_user');
+      }
     }
+    setLoading(false);
 
     (async () => {
       try {
