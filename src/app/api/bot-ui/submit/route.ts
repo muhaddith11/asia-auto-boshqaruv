@@ -11,34 +11,34 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { brand, model, probeg, plateNumber, services, parts, mechanicChatId, workerPhone } = body;
 
-    // Optional: look up worker from phone or chatId
-    // Defaulting to "Bot Orqali" if worker cannot be determined precisely
-    let worker_id = null;
-    let workerName = "Noma'lum Usta";
+    const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
+    let worker = null;
 
-    if (!workerPhone) {
-        return NextResponse.json({ ok: false, error: 'Telefon raqami yuborilmadi' }, { status: 400 });
+    if (workerPhone) {
+        const cleanInputPhone = workerPhone.replace(/\D/g, '');
+        const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
+        const { data: allWorkers } = await supabase.from('workers').select(WORKER_COLUMNS);
+        worker = allWorkers?.find((w: any) => {
+            if (!w.tel) return false;
+            const dbNormalized = String(w.tel).replace(/\D/g, '');
+            return dbNormalized.endsWith(searchTarget) || dbNormalized === cleanInputPhone;
+        });
     }
 
-    // Normalize input phone: remove all non-digits
-    const cleanInputPhone = workerPhone.replace(/\D/g, '');
-    const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
-
-    // Fetch all workers and find match manually to handle formatting differences in DB
-    const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
-    const { data: allWorkers } = await supabase.from('workers').select(WORKER_COLUMNS);
-    
-    const worker = allWorkers?.find((w: any) => {
-        if (!w.tel) return false;
-        const dbNormalized = String(w.tel).replace(/\D/g, '');
-        return dbNormalized.endsWith(searchTarget) || dbNormalized === cleanInputPhone;
-    });
+    if (!worker && mechanicChatId) {
+        const { data: workerByTg } = await supabase
+            .from('workers')
+            .select(WORKER_COLUMNS)
+            .eq('telegram', mechanicChatId.toString())
+            .maybeSingle();
+        worker = workerByTg;
+    }
 
     if (!worker) {
-        console.warn(`Tizimda yo'q xodim urinishi: ${workerPhone} (Clean: ${cleanInputPhone})`);
+        console.warn(`Tizimda yo'q xodim urinishi: Phone=${workerPhone}, TgID=${mechanicChatId}`);
         return NextResponse.json({ 
             ok: false, 
-            error: 'Siz tizimda ro\'yxatdan o\'tmagansiz. Iltimos, adminga murojaat qiling.' 
+            error: 'Siz tizimda xodim sifatida topilmadingiz. Iltimos, raqamingizni botda tasdiqlang yoki rahbaringizga murojaat qiling.' 
         }, { status: 403 });
     }
 
