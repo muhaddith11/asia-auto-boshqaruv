@@ -488,7 +488,7 @@ export default function NewOrderPage() {
                             })
                             .map(s => (
                               <option key={s.id} value={s.id}>
-                                {s.nom} — {s.narx.toLocaleString()} so'm
+                                {s.nom} {s.mashina !== 'UMUMIY' ? `(${s.mashina})` : ''} — {s.narx.toLocaleString()} so'm
                               </option>
                             ))}
                         </select>
@@ -599,7 +599,7 @@ export default function NewOrderPage() {
                         })
                         .map(p => (
                           <option key={p.id} value={p.id}>
-                            {p.nom} (balans: {p.balance ?? '?'})
+                            {p.nom} {p.mashina !== 'UMUMIY' ? `(${p.mashina})` : ''} (balans: {p.balance ?? '?'})
                           </option>
                         ))}
                     </select>
