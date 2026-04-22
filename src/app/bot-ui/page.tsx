@@ -88,31 +88,30 @@ export default function BotUIPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      
       const resJson = await res.json().catch(()=>({}));
+      
       if (!res.ok) {
-        throw new Error(resJson.error || "Server xatosi");
+        throw new Error(resJson.error || `Server xatosi: ${res.status}`);
       }
 
+      const successMsg = `Muvaffaqiyatli! Chek id: #${resJson.id}`;
       if (webAppRef.current && typeof webAppRef.current.showPopup === 'function') {
         webAppRef.current.showPopup({
           title: 'Muvaffaqiyatli',
-          message: 'Chek bot orqali yuborildi va bazaga saqlandi!',
+          message: successMsg,
           buttons: [{ type: 'ok' }]
         }, () => {
           webAppRef.current?.close();
         });
       } else {
-        alert("Chek yuborildi!");
+        alert(successMsg);
       }
 
     } catch (error: any) {
       console.error(error);
       const errMsg = error.message || 'Xatolik yuz berdi. Qaytadan urinib ko\'ring.';
-      if (webAppRef.current && typeof webAppRef.current.showAlert === 'function') {
-        webAppRef.current.showAlert(errMsg);
-      } else {
-        alert(errMsg);
-      }
+      alert("XATOLIK: " + errMsg);
     } finally {
       setIsSubmitting(false);
     }
