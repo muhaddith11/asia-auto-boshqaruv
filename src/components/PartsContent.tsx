@@ -55,7 +55,7 @@ export default function PartsContent() {
   const [editingPart, setEditingPart] = useState<any>(null);
   const [formData, setFormData] = useState({
     nom: '',
-    mashina: 'Umumiy',
+    mashina: 'UMUMIY',
     sebestoimost: 0,
     narx: 0,
     bir: 'dona',
@@ -81,7 +81,7 @@ export default function PartsContent() {
     setEditingPart(part);
     setFormData({
       nom: part.nom,
-      mashina: part.mashina || 'Umumiy',
+      mashina: part.mashina || 'UMUMIY',
       sebestoimost: part.sebestoimost || 0,
       narx: part.narx || 0,
       bir: part.bir || 'dona',
@@ -131,7 +131,7 @@ export default function PartsContent() {
         <button 
           onClick={() => {
             setEditingPart(null);
-            setFormData({ nom: '', mashina: 'Umumiy', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa' });
+            setFormData({ nom: '', mashina: 'UMUMIY', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa' });
             setIsModalOpen(true);
           }}
           className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-emerald-900/20 active:scale-95 uppercase tracking-widest"
@@ -402,7 +402,7 @@ export default function PartsContent() {
                         className="bg-transparent border-none outline-none flex-1 text-white text-[15px] font-semibold appearance-none cursor-pointer"
                         style={{ colorScheme: 'dark' }}
                       >
-                        <option value="Umumiy" style={{ background: '#1a1c24', color: 'white' }}>Umumiy (Barcha markalar)</option>
+                        <option value="UMUMIY" style={{ background: '#1a1c24', color: 'white' }}>Umumiy (Barcha markalar)</option>
                         {mashinalar.map(m => <option key={m} value={m} style={{ background: '#1a1c24', color: 'white' }}>{m}</option>)}
                       </select>
                     </div>

@@ -233,7 +233,7 @@ export const useStore = create<AutoServisStore>()(
         
         // Map to DB schema
         const parts = x.mashina.split(' ');
-        const brand = parts[0] || 'Umumiy';
+        const brand = parts[0] || 'UMUMIY';
         const model = parts.slice(1).join(' ') || brand;
 
         const apiData = {
@@ -253,7 +253,7 @@ export const useStore = create<AutoServisStore>()(
             id: createdItem.id,
             nom: createdItem.name,
             narx: createdItem.price,
-            mashina: createdItem.brand === 'Umumiy' ? 'Umumiy' : `${createdItem.brand} ${createdItem.car_model}`.toUpperCase(),
+            mashina: createdItem.brand === 'UMUMIY' || createdItem.brand === 'Umumiy' ? 'UMUMIY' : `${createdItem.brand} ${createdItem.car_model}`.toUpperCase(),
             stavka: createdItem.stavka
           };
           set((state) => ({
@@ -588,7 +588,7 @@ export const useStore = create<AutoServisStore>()(
               id: s.id,
               nom: s.name,
               narx: s.price,
-              mashina: s.brand === 'Umumiy' ? 'Umumiy' : normalize(`${s.brand} ${s.car_model}`),
+              mashina: s.brand === 'Umumiy' || s.brand === 'UMUMIY' ? 'UMUMIY' : normalize(`${s.brand} ${s.car_model}`),
               stavka: s.stavka
             })) : []
 

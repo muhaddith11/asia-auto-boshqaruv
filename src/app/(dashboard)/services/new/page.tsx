@@ -12,7 +12,7 @@ export default function AddServicePage() {
   const [formData, setFormData] = useState({
     nom: '',
     narx: '',
-    mashina: 'Umumiy',
+    mashina: 'UMUMIY',
     stavka: '0' // Adding stake as in reference image
   });
 
@@ -105,7 +105,7 @@ export default function AddServicePage() {
                 onChange={e => setFormData({...formData, mashina: e.target.value})}
                 className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-12 pr-10 py-4 outline-none focus:border-amber-500/50 text-white text-[15px] font-medium transition-all appearance-none cursor-pointer"
               >
-                <option value="Umumiy">Barcha mashinalar (Umumiy)</option>
+                <option value="UMUMIY">Barcha mashinalar (Umumiy)</option>
                 {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>

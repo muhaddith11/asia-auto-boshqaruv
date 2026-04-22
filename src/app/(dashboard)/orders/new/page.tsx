@@ -331,7 +331,7 @@ export default function NewOrderPage() {
                     // Reset service IDs if they don't belong to the new car
                     setAssignments(prev => prev.map(a => {
                       const s = xizmatlar.find(x => x.id === Number(a.serviceId));
-                      if (s && s.mashina !== 'Umumiy' && s.mashina !== newMashina) {
+                      if (s && s.mashina !== 'UMUMIY' && s.mashina !== newMashina) {
                         return { ...a, serviceId: '', customNarx: '' };
                       }
                       return a;
@@ -479,7 +479,7 @@ export default function NewOrderPage() {
                         >
                           <option value="">— Xizmatni tanlang —</option>
                           {xizmatlar
-                            .filter(s => !form.mashina || s.mashina === 'Umumiy' || s.mashina === form.mashina)
+                            .filter(s => !form.mashina || s.mashina === 'UMUMIY' || s.mashina === form.mashina)
                             .map(s => <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>)}
                         </select>
                       </div>
@@ -581,7 +581,7 @@ export default function NewOrderPage() {
                     >
                       <option value="">— Zapchast tanlang —</option>
                       {zapchastlar
-                        .filter(p => !form.mashina || p.mashina === 'Umumiy' || p.mashina === form.mashina)
+                        .filter(p => !form.mashina || p.mashina === 'UMUMIY' || p.mashina === form.mashina)
                         .map(p => (
                           <option key={p.id} value={p.id}>{p.nom} (balans: {p.balance ?? '?'})</option>
                         ))}

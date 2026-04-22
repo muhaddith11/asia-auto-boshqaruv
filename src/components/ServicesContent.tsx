@@ -59,7 +59,7 @@ export default function ServicesContent() {
   const [formData, setFormData] = useState({
     nom: '',
     narx: 0,
-    mashina: 'Umumiy',
+    mashina: 'UMUMIY',
     stavka: 0
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
@@ -131,7 +131,7 @@ export default function ServicesContent() {
         <button 
           onClick={() => {
             setEditingService(null);
-            setFormData({ nom: '', narx: 0, mashina: 'Umumiy', stavka: 0 });
+            setFormData({ nom: '', narx: 0, mashina: 'UMUMIY', stavka: 0 });
             setIsModalOpen(true);
           }}
           className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-indigo-900/10 active:scale-95"
@@ -184,7 +184,7 @@ export default function ServicesContent() {
                 className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all text-white text-[14px] appearance-none cursor-pointer"
               >
                 <option value="">Barcha markalar</option>
-                <option value="Umumiy">Umumiy (Barchasi)</option>
+                <option value="UMUMIY">Umumiy (Barchasi)</option>
                 {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-focus-within:text-indigo-500 transition-colors" size={18} />
@@ -361,7 +361,7 @@ export default function ServicesContent() {
                         className="bg-transparent border-none outline-none flex-1 text-white text-[15px] font-semibold appearance-none cursor-pointer"
                         style={{ colorScheme: 'dark' }}
                       >
-                        <option value="Umumiy" style={{ background: '#1a1c24', color: 'white' }}>Umumiy (Barcha markalar)</option>
+                        <option value="UMUMIY" style={{ background: '#1a1c24', color: 'white' }}>Umumiy (Barcha markalar)</option>
                         {mashinalar.map(m => <option key={m} value={m} style={{ background: '#1a1c24', color: 'white' }}>{m}</option>)}
                       </select>
                     </div>
