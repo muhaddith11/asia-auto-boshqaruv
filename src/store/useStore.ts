@@ -586,15 +586,23 @@ export const useStore = create<AutoServisStore>()(
               izoh: s.comment,
               createdAt: s.created_at
             })) : [],
-            xizmatlar: services ? services.map((s: any) => ({
-              id: s.id,
-              nom: s.name,
-              narx: s.price,
-              mashina: (s.brand === 'Umumiy' || s.brand === 'UMUMIY' || !s.brand) 
-                ? 'UMUMIY' 
-                : normalize(`${s.brand} ${s.car_model || ''}`).trim(),
-              stavka: s.stavka
-            })) : []
+            xizmatlar: services ? (() => {
+              const uniqueMap = new Map();
+              services.forEach((s: any) => {
+                const normName = normalize(s.name);
+                const normCar = normalize(s.brand === 'UMUMIY' || s.brand === 'Umumiy' || !s.brand ? 'UMUMIY' : `${s.brand} ${s.car_model || ''}`);
+                const key = `${normName}_${normCar}`;
+                // Keep the one with icons if both exist, or just keep the latest
+                uniqueMap.set(key, {
+                  id: s.id,
+                  nom: s.name,
+                  narx: s.price,
+                  mashina: normCar === 'UMUMIY' ? 'UMUMIY' : normalize(`${s.brand} ${s.car_model || ''}`).trim(),
+                  stavka: s.stavka
+                });
+              });
+              return Array.from(uniqueMap.values());
+            })() : []
 
           }));
         } catch (err) {
