@@ -21,7 +21,8 @@ import {
   X,
   Save,
   Briefcase,
-  ChevronDown
+  ChevronDown,
+  Send
 } from 'lucide-react';
 
 const S = {
@@ -64,7 +65,8 @@ export default function WorkersPage() {
     foiz: 40,
     role: 'xodim' as 'xodim' | 'sherik',
     shareType: 'total' as 'total' | 'sub',
-    parentId: undefined as number | undefined
+    parentId: undefined as number | undefined,
+    telegram: ''
   });
 
   useEffect(() => {
@@ -83,13 +85,15 @@ export default function WorkersPage() {
         foiz: worker.foiz || 40,
         role: worker.role || 'xodim',
         shareType: worker.shareType || 'total',
-        parentId: worker.parentId
+        parentId: worker.parentId,
+        telegram: worker.telegram || ''
       });
     } else {
       setEditingWorker(null);
       setFormData({ 
         ism: '', tel: '', mutax: '', foiz: 40, 
-        role: 'xodim', shareType: 'total', parentId: undefined 
+        role: 'xodim', shareType: 'total', parentId: undefined,
+        telegram: ''
       });
     }
     setIsModalOpen(true);
@@ -296,6 +300,21 @@ export default function WorkersPage() {
                         </div>
                     </div>
                     <div className="space-y-1.5">
+                        <label style={S.label}>Telegram ID (Brauzer uchun)</label>
+                        <div className="relative group">
+                          <Send size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
+                          <input 
+                            type="text" value={formData.telegram} 
+                            onChange={(e) => setFormData({...formData, telegram: e.target.value})} 
+                            style={{ ...S.input, paddingLeft: '34px' }}
+                            placeholder="8042807902"
+                          />
+                        </div>
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
                         <label style={S.label}>Telefon</label>
                         <div className="relative group">
                           <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
@@ -306,10 +325,7 @@ export default function WorkersPage() {
                           />
                         </div>
                     </div>
-                 </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-1.5">
+                    <div className="space-y-1.5">
                         <label style={S.label}>Rol *</label>
                         <select 
                           value={formData.role} 
