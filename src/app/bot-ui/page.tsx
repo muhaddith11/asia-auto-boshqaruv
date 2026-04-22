@@ -83,6 +83,11 @@ export default function BotUIPage() {
         workerPhone
       };
 
+      // Debug: Show ID to user
+      if (!isInsideTelegram) {
+        alert("Yuborilayotgan Telegram ID: " + mechanicChatId);
+      }
+
       const res = await fetch('/api/bot-ui/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
