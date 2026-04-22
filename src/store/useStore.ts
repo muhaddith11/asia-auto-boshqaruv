@@ -592,7 +592,7 @@ export const useStore = create<AutoServisStore>()(
               narx: s.price,
               mashina: (s.brand === 'Umumiy' || s.brand === 'UMUMIY' || !s.brand) 
                 ? 'UMUMIY' 
-                : normalize(`${s.brand} ${s.car_model || ''}`),
+                : normalize(`${s.brand} ${s.car_model || ''}`).trim(),
               stavka: s.stavka
             })) : []
 

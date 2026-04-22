@@ -495,7 +495,9 @@ export default function NewOrderPage() {
                               return serviceCar === 'UMUMIY' || serviceCar === car;
                             })
                             .map(s => (
-                              <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>
+                              <option key={s.id} value={s.id}>
+                                {s.nom} {s.mashina !== 'UMUMIY' ? `(${s.mashina})` : ''} — {s.narx.toLocaleString()} so'm
+                              </option>
                             ))}
                         </select>
                       </div>
@@ -613,7 +615,9 @@ export default function NewOrderPage() {
                           return partCar === 'UMUMIY' || partCar === car;
                         })
                         .map(p => (
-                          <option key={p.id} value={p.id}>{p.nom} (balans: {p.balance ?? '?'})</option>
+                          <option key={p.id} value={p.id}>
+                            {p.nom} {p.mashina !== 'UMUMIY' ? `(${p.mashina})` : ''} (balans: {p.balance ?? '?'})
+                          </option>
                         ))}
                     </select>
                   </div>
