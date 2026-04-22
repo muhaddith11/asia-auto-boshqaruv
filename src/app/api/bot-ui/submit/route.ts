@@ -42,8 +42,8 @@ export async function POST(req: NextRequest) {
         }, { status: 403 });
     }
 
-    worker_id = worker.id;
-    workerName = worker.ism;
+    const worker_id = worker.id;
+    const workerName = worker.ism;
 
     const servicesTotal = services?.reduce((sum: number, s: any) => sum + Number(s.price), 0) || 0;
     const partsTotal = parts?.reduce((sum: number, p: any) => sum + (Number(p.price) * p.quantity), 0) || 0;
