@@ -481,10 +481,14 @@ export default function NewOrderPage() {
                           {xizmatlar
                             .filter(s => {
                               if (!form.mashina) return true;
-                              if (s.mashina === 'UMUMIY') return true;
-                              if (s.mashina === form.mashina) return true;
-                              // If car is "CHEVROLET MALIBU", also show services for "CHEVROLET"
-                              if (form.mashina.startsWith(s.mashina + ' ')) return true;
+                              const car = form.mashina.toUpperCase().trim();
+                              const serviceCar = (s.mashina || 'UMUMIY').toUpperCase().trim();
+                              
+                              if (serviceCar === 'UMUMIY') return true;
+                              if (car === serviceCar) return true;
+                              if (car.includes(serviceCar)) return true;
+                              if (serviceCar.includes(car)) return true;
+                              
                               return false;
                             })
                             .map(s => <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>)}
@@ -590,9 +594,14 @@ export default function NewOrderPage() {
                       {zapchastlar
                         .filter(p => {
                           if (!form.mashina) return true;
-                          if (p.mashina === 'UMUMIY') return true;
-                          if (p.mashina === form.mashina) return true;
-                          if (form.mashina.startsWith(p.mashina + ' ')) return true;
+                          const car = form.mashina.toUpperCase().trim();
+                          const partCar = (p.mashina || 'UMUMIY').toUpperCase().trim();
+                          
+                          if (partCar === 'UMUMIY') return true;
+                          if (car === partCar) return true;
+                          if (car.includes(partCar)) return true;
+                          if (partCar.includes(car)) return true;
+                          
                           return false;
                         })
                         .map(p => (
