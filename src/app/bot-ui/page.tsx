@@ -7,6 +7,7 @@ import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
 import { Loader2 } from 'lucide-react';
+import TelegramLogin from '@/components/bot-ui/TelegramLogin';
 
 export default function BotUIPage() {
   const [step, setStep] = useState(1);
@@ -16,7 +17,15 @@ export default function BotUIPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const store = useBotOrderStore();
   const webAppRef = useRef<any>(null);
+  const [authUser, setAuthUser] = useState<any>(null);
+
   useEffect(() => {
+    // Check if we have a saved user in localStorage (for browser mode)
+    const savedUser = localStorage.getItem('bot_auth_user');
+    if (savedUser) {
+      setAuthUser(JSON.parse(savedUser));
+    }
+
     (async () => {
       try {
         const mod = await import('@twa-dev/sdk');
@@ -59,7 +68,9 @@ export default function BotUIPage() {
         workerPhone = urlParams.get('phone') || '';
       }
 
-      const mechanicChatId = (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id : undefined) || webAppRef.current?.initDataUnsafe?.user?.id;
+      const mechanicChatId = (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id : undefined) 
+        || webAppRef.current?.initDataUnsafe?.user?.id
+        || authUser?.id;
       
       const payload = {
         brand: store.brand,
@@ -111,6 +122,23 @@ export default function BotUIPage() {
     return (
       <div className="flex bg-gray-900 text-white min-h-screen items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  // If not in Telegram TMA and no authUser, show login screen
+  const isInsideTelegram = typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.initData?.length > 0;
+  
+  if (!isInsideTelegram && !authUser) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <TelegramLogin 
+          botName="asia_auto_bot" 
+          onAuth={(user) => {
+            setAuthUser(user);
+            localStorage.setItem('bot_auth_user', JSON.stringify(user));
+          }} 
+        />
       </div>
     );
   }
