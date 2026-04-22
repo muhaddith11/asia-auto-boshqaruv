@@ -106,6 +106,8 @@ export default function NewOrderPage() {
   const [partRows, setPartRows] = useState<any[]>([
     { id: Date.now(), partId: '', qty: 1 }
   ]);
+  const [showAllServices, setShowAllServices] = useState(false);
+  const [showAllParts, setShowAllParts] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -467,7 +469,13 @@ export default function NewOrderPage() {
                         </select>
                       </div>
                       <div style={{ flex: 1 }}>
-                        <label style={{ ...S.label, marginBottom: 4 }}>Xizmat *</label>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <label style={{ ...S.label, marginBottom: 0 }}>Xizmat *</label>
+                          <label style={{ fontSize: 10, color: 'var(--text3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <input type="checkbox" checked={showAllServices} onChange={e => setShowAllServices(e.target.checked)} />
+                            Barchasi
+                          </label>
+                        </div>
                         <select
                           style={{ ...S.select, background: 'var(--surface3)' }}
                           value={a.serviceId}
@@ -480,16 +488,14 @@ export default function NewOrderPage() {
                           <option value="">— Xizmatni tanlang —</option>
                           {xizmatlar
                             .filter(s => {
-                              if (!form.mashina) return true;
+                              if (showAllServices || !form.mashina) return true;
                               const car = normalize(form.mashina);
                               const serviceCar = normalize(s.mashina || 'UMUMIY');
                               
                               if (serviceCar === 'UMUMIY') return true;
                               if (car === serviceCar) return true;
-                              // Match brand (e.g., if car is "CHEVROLET MALIBU" and service is "CHEVROLET")
-                              if (car.startsWith(serviceCar + ' ')) return true;
-                              // Match model even if brand is slightly different in catalog
                               if (car.includes(serviceCar)) return true;
+                              if (serviceCar.includes(car)) return true;
                               
                               return false;
                             })
@@ -588,7 +594,15 @@ export default function NewOrderPage() {
                   gap: 12, alignItems: 'end', marginBottom: 12,
                 }}>
                   <div>
-                    {idx === 0 && <label style={S.label}>Zapchast</label>}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      {idx === 0 && <label style={{ ...S.label, marginBottom: 0 }}>Zapchast</label>}
+                      {idx === 0 && (
+                        <label style={{ fontSize: 10, color: 'var(--text3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <input type="checkbox" checked={showAllParts} onChange={e => setShowAllParts(e.target.checked)} />
+                          Barchasi
+                        </label>
+                      )}
+                    </div>
                     <select
                       style={S.select}
                       value={row.partId}
@@ -597,14 +611,14 @@ export default function NewOrderPage() {
                       <option value="">— Zapchast tanlang —</option>
                       {zapchastlar
                         .filter(p => {
-                          if (!form.mashina) return true;
+                          if (showAllParts || !form.mashina) return true;
                           const car = normalize(form.mashina);
                           const partCar = normalize(p.mashina || 'UMUMIY');
                           
                           if (partCar === 'UMUMIY') return true;
                           if (car === partCar) return true;
-                          if (car.startsWith(partCar + ' ')) return true;
                           if (car.includes(partCar)) return true;
+                          if (partCar.includes(car)) return true;
                           
                           return false;
                         })

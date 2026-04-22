@@ -17,11 +17,12 @@ import { getClients, getOrders, getWorkers, getParts,
 export const normalize = (str: string) => {
   if (!str) return '';
   const homoglyphs: Record<string, string> = {
-    'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x',
-    'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X'
+    'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x', 'у': 'y', 'к': 'k', 'і': 'i', 'м': 'm', 'т': 't', 'в': 'v',
+    'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X', 'У': 'Y', 'К': 'K', 'І': 'I', 'М': 'M', 'Т': 'T', 'В': 'V',
+    'Н': 'H', 'Ь': '', 'ъ': ''
   };
   return str
-    .replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m)
+    .replace(/[еаосрхукімтвЕАОСРХУКІМТВНЬъ]/g, m => homoglyphs[m] || m)
     .replace(/Chevolet/gi, 'Chevrolet')
     .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
     .replace(/\s+/g, ' ')
