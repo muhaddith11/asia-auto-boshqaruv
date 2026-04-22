@@ -492,12 +492,7 @@ export default function NewOrderPage() {
                               const car = normalize(form.mashina);
                               const serviceCar = normalize(s.mashina || 'UMUMIY');
                               
-                              if (serviceCar === 'UMUMIY') return true;
-                              if (car === serviceCar) return true;
-                              if (car.includes(serviceCar)) return true;
-                              if (serviceCar.includes(car)) return true;
-                              
-                              return false;
+                              return serviceCar === 'UMUMIY' || serviceCar === car;
                             })
                             .map(s => (
                               <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>
@@ -615,12 +610,7 @@ export default function NewOrderPage() {
                           const car = normalize(form.mashina);
                           const partCar = normalize(p.mashina || 'UMUMIY');
                           
-                          if (partCar === 'UMUMIY') return true;
-                          if (car === partCar) return true;
-                          if (car.includes(partCar)) return true;
-                          if (partCar.includes(car)) return true;
-                          
-                          return false;
+                          return partCar === 'UMUMIY' || partCar === car;
                         })
                         .map(p => (
                           <option key={p.id} value={p.id}>{p.nom} (balans: {p.balance ?? '?'})</option>
