@@ -21,19 +21,40 @@ export async function GET(req: Request) {
     const carModel = searchParams.get('car_model');
     const brand = searchParams.get('brand');
 
-    let query = supabase.from('services_list').select('*').range(0, 10000).order('brand', { ascending: true }).order('car_model', { ascending: true });
+    let allData: any[] = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (carModel) {
-      query = query.eq('car_model', carModel);
+    while (hasMore) {
+      let query = supabase.from('services_list').select('*').range(page * pageSize, (page + 1) * pageSize - 1).order('brand', { ascending: true }).order('car_model', { ascending: true });
+
+      if (carModel) {
+        query = query.eq('car_model', carModel);
+      }
+      if (brand) {
+        query = query.eq('brand', brand);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+        if (data.length < pageSize) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      } else {
+        hasMore = false;
+      }
+      
+      // Safety break to prevent infinite loop
+      if (page > 50) hasMore = false; 
     }
-    if (brand) {
-      query = query.eq('brand', brand);
-    }
 
-    const { data, error } = await query;
-    if (error) throw error;
-
-    return NextResponse.json(data);
+    return NextResponse.json(allData);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
