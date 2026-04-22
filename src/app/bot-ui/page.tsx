@@ -96,7 +96,8 @@ export default function BotUIPage() {
       }
 
       const successMsg = `Muvaffaqiyatli! Chek id: #${resJson.id}`;
-      if (webAppRef.current && typeof webAppRef.current.showPopup === 'function') {
+      
+      if (isInsideTelegram && webAppRef.current && typeof webAppRef.current.showPopup === 'function') {
         webAppRef.current.showPopup({
           title: 'Muvaffaqiyatli',
           message: successMsg,
