@@ -4,7 +4,7 @@ import supabase from '@/lib/supabaseClient';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { data, error } = await supabase.from('kassa_state').select('*').eq('id', 1).single();
+  const { data, error } = await supabase.from('kassa').select('*').eq('id', 1).single();
   if (error && error.code !== 'PGRST116') {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   try {
     const { naqd, karta } = await request.json();
     const { data, error } = await supabase
-      .from('kassa_state')
+      .from('kassa')
       .upsert({ id: 1, naqd, karta, updated_at: new Date().toISOString() })
       .select()
       .single();
