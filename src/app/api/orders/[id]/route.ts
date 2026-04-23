@@ -19,15 +19,18 @@ function mapRowToApp(row: any) {
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
   
+  // Safe mapping for status/holat
+  if (b.holat !== undefined) {
+    b.status = b.holat;
+  }
+  
   // These fields are only for frontend calculation/display or handled by DB defaults.
-  // We remove them to prevent "column not found" errors in Supabase.
   const fieldsToRemove = [
     'createdAt', 'created_at', 'createdat', 
     'chegirmaFoiz', 'subTotal', 'finalTotal',
     'print_status'
   ];
   
-  // Remove UI-only and internal date fields
   fieldsToRemove.forEach(f => {
     if (f in b) delete b[f];
   });
@@ -48,10 +51,23 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     const { id: idStr } = await context.params;
     const id = Number(idStr);
     const body = await request.json();
-    const dbBody = mapAppToDB(body);
     
-    // Explicitly prevent updating the ID column
-    if (dbBody.id) delete dbBody.id;
+    // Whitelist: Faqat bazada borligi aniq bo'lgan ustunlar
+    const whitelist = [
+      'ism', 'tel', 'mashina', 'raqam', 'vin', 
+      'srv', 'zap', 'total', 'final', 'holat', 'sana',
+      'services', 'zaps'
+    ];
+    
+    const dbBody: any = {};
+    whitelist.forEach(key => {
+      if (body[key] !== undefined) dbBody[key] = body[key];
+    });
+    
+    // Agar frontend 'holat' yuborgan bo'lsa-yu, bazada 'status' bo'lsa deb, statusga ham yozib qo'yamiz
+    if (body.holat !== undefined) dbBody.status = body.holat;
+
+    console.log("DEBUG: Updating order", id, dbBody);
 
     const { data, error } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     

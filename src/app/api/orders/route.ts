@@ -19,15 +19,17 @@ function mapRowToApp(row: any) {
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
   
-  // These fields are only for frontend calculation/display or handled by DB defaults.
-  // We remove them to prevent "column not found" errors in Supabase.
+  // Safe mapping for status/holat
+  if (b.holat !== undefined) {
+    b.status = b.holat;
+  }
+
   const fieldsToRemove = [
     'createdAt', 'created_at', 'createdat', 
     'chegirmaFoiz', 'subTotal', 'finalTotal',
     'print_status'
   ];
   
-  // Remove UI-only and internal date fields
   fieldsToRemove.forEach(f => {
     if (f in b) delete b[f];
   });
@@ -45,7 +47,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const dbBody = mapAppToDB(body);
+    
+    // Whitelist
+    const whitelist = [
+      'ism', 'tel', 'mashina', 'raqam', 'vin', 
+      'srv', 'zap', 'total', 'final', 'holat', 'sana',
+      'services', 'zaps'
+    ];
+    
+    const dbBody: any = {};
+    whitelist.forEach(key => {
+      if (body[key] !== undefined) dbBody[key] = body[key];
+    });
+
+    if (body.holat !== undefined) dbBody.status = body.holat;
+
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const created = (data && data[0]) ?? null;
