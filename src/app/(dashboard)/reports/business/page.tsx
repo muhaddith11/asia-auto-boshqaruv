@@ -48,8 +48,39 @@ export default function BusinessReportPage() {
   const allRows = useMemo(() => {
     const rows: any[] = [];
     try {
+      // 1. Amaliyotlar (Asosiy moliya manbasi)
+      ishxonaOperatsiyalar.forEach((op: any) => {
+        const raw = op.createdAt || op.date || '';
+        let dStr = op.date || '';
+        let disp = op.date || '';
+        try { 
+          const d = new Date(raw); 
+          if (!isNaN(d.getTime())) {
+            dStr = d.toISOString().split('T')[0];
+            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch {}
+        
+        rows.push({
+          _id: String(op.id),
+          _date: dStr,
+          _displayDate: disp,
+          _rawDate: raw,
+          _category: op.category || (op.source === 'buyurtma' ? 'Buyurtma' : 'Operatsiya'),
+          _izoh: op.comment || '',
+          _mijoz: op.source === 'buyurtma' ? (buyurtmalar.find(b => b.id === op.orderId)?.ism || '') : '',
+          _amount: Number(op.amount) || 0,
+          _method: (op.method || '').toUpperCase(),
+          _positive: op.type === 'income',
+        });
+      });
+
+      // 2. Buyurtmalar (Faqat operatsiyasi yo'q to'langan buyurtmalar uchun - eski ma'lumotlar uchun ehtiyot shart)
       buyurtmalar.forEach((b: any) => {
-        if (b.holat !== 'tulangan') return; // Faqat to'langan buyurtmalar hisobotga tushadi
+        if (b.holat !== 'tulangan') return;
+        // Agar bu buyurtma uchun allaqachon operatsiya bo'lsa, qayta qo'shmaymiz
+        if (ishxonaOperatsiyalar.some(op => op.orderId === b.id)) return;
+
         const raw = b.createdAt || b.created_at || b.sana || '';
         let dStr = b.sana || '';
         let disp = b.sana || '';
@@ -66,7 +97,7 @@ export default function BusinessReportPage() {
           _displayDate: disp,
           _rawDate: raw,
           _category: 'Buyurtma',
-          _izoh: b.muammo || b.mashina || '',
+          _izoh: b.mashina || '',
           _mijoz: b.ism || '',
           _amount: Number(b.final) || 0,
           _method: 'NAQD',
@@ -74,32 +105,7 @@ export default function BusinessReportPage() {
         });
       });
 
-      ishxonaOperatsiyalar.forEach((op: any) => {
-        if (op.source === 'buyurtma') return;
-        const raw = op.createdAt || op.date || '';
-        let dStr = op.date || '';
-        let disp = op.date || '';
-        try { 
-          const d = new Date(raw); 
-          if (!isNaN(d.getTime())) {
-            dStr = d.toISOString().split('T')[0];
-            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          }
-        } catch {}
-        rows.push({
-          _id: String(op.id),
-          _date: dStr,
-          _displayDate: disp,
-          _rawDate: raw,
-          _category: op.category || 'Operatsiya',
-          _izoh: op.comment || '',
-          _mijoz: '',
-          _amount: Number(op.amount) || 0,
-          _method: (op.method || '').toUpperCase(),
-          _positive: op.type === 'income',
-        });
-      });
-
+      // 3. Maoshlar
       maoshTarixi.forEach((m: any) => {
         const raw = m.createdAt || m.sana || '';
         let dStr = m.sana || '';
