@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Whitelist
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
-      'srv', 'zap', 'total', 'final', 'holat', 'status', 'sana',
+      'srv', 'zap', 'total', 'final', 'holat', 'sana',
       'services', 'zaps', 'zarplata', 'pribil'
     ];
     

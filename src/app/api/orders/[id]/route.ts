@@ -58,7 +58,7 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     // Whitelist: Faqat bazada borligi aniq bo'lgan ustunlar
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
-      'srv', 'zap', 'total', 'final', 'holat', 'status', 'sana',
+      'srv', 'zap', 'total', 'final', 'holat', 'sana',
       'services', 'zaps', 'zarplata', 'pribil'
     ];
     
