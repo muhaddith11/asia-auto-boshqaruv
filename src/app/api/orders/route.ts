@@ -60,8 +60,6 @@ export async function POST(request: NextRequest) {
       if (body[key] !== undefined) dbBody[key] = body[key];
     });
 
-    if (body.holat !== undefined) dbBody.status = body.holat;
-
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const created = (data && data[0]) ?? null;

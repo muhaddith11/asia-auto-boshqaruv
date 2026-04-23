@@ -64,9 +64,6 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       if (body[key] !== undefined) dbBody[key] = body[key];
     });
     
-    // Agar frontend 'holat' yuborgan bo'lsa-yu, bazada 'status' bo'lsa deb, statusga ham yozib qo'yamiz
-    if (body.holat !== undefined) dbBody.status = body.holat;
-
     console.log("DEBUG: Updating order", id, dbBody);
 
     const { data, error, status, statusText } = await supabase.from('orders').update(dbBody).eq('id', id).select();
