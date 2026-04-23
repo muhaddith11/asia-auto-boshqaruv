@@ -254,6 +254,83 @@ export default function BusinessReportPage() {
         ))}
       </div>
 
+      {/* SHERIKLAR ULUSHI TAQSIMOTI */}
+      <div style={{ background: 'linear-gradient(135deg, #151225 0%, #0b1220 100%)', border: '1px solid #4f46e540', borderRadius: 16, padding: 24, marginBottom: 28, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div style={{ padding: 8, borderRadius: 8, background: '#4f46e520', color: '#818cf8' }}><TrendingUp size={20} /></div>
+          <div>
+            <h3 style={{ fontSize: 14, fontWeight: 800, margin: 0, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sheriklar Ulushi Taqsimoti</h3>
+            <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Buyurtma foydasi + barcha tashqari operatsiyalar asosida</p>
+          </div>
+        </div>
+
+        {(() => {
+          // 1. Buyurtmalar foydasi (Filtered)
+          const filteredOrders = buyurtmalar.filter(b => {
+             if (!b.sana) return false;
+             if (filterFrom && b.sana < filterFrom) return false;
+             if (filterTo && b.sana > filterTo) return false;
+             return b.holat === 'tulangan';
+          });
+          const orderProfit = filteredOrders.reduce((sum, b) => sum + (Number(b.pribil) || 0), 0);
+
+          // 2. Tashqari operatsiyalar jami summasi (Kirim + Chiqim)
+          const filteredOps = ishxonaOperatsiyalar.filter(op => {
+             const d = op.date || (op.createdAt ? op.createdAt.split('T')[0] : '');
+             if (filterFrom && d < filterFrom) return false;
+             if (filterTo && d > filterTo) return false;
+             return true;
+          });
+          const externalTotal = filteredOps.reduce((sum, op) => sum + (Number(op.amount) || 0), 0);
+
+          // 3. JAMI POOL
+          const totalPool = orderProfit + externalTotal;
+
+          const partners = xodimlar.filter(x => x.role === 'sherik');
+
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: 20, borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>Jami Taqsimot Summasi</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: '#818cf8' }}>
+                  {totalPool.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 500 }}>UZS</span>
+                </div>
+                <div style={{ marginTop: 12, fontSize: 11, color: '#64748b', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span>• Buyurtma foydasi: {orderProfit.toLocaleString()}</span>
+                  <span>• Tashqari operatsiyalar: {externalTotal.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {partners.map(p => {
+                  let shareAmount = 0;
+                  if (p.shareType === 'sub') {
+                    // Sub-partner: Takes from parent's share
+                    const parent = xodimlar.find(px => px.id === p.parentId);
+                    const parentPool = parent ? totalPool * (parent.foiz / 100) : 0;
+                    shareAmount = parentPool * (p.foiz / 100);
+                  } else {
+                    shareAmount = totalPool * (p.foiz / 100);
+                  }
+
+                  return (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.03)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#818cf8' }}></div>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>{p.ism} <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>({p.foiz}%)</span></span>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>
+                        {Math.round(shareAmount).toLocaleString()} <span style={{ fontSize: 10, color: '#64748b' }}>UZS</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
       {/* JADVAL */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -302,7 +379,6 @@ export default function BusinessReportPage() {
           </table>
         </div>
       </div>
-
     </div>
   );
 }
