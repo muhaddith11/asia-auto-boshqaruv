@@ -95,6 +95,7 @@ export interface Buyurtma {
   final: number; // After discount (To'lov)
   zarplata: number; // Total workers' commission
   pribil: number; // Net profit (Final - Zarplata - Part Costs)
+  print_status?: 'pending' | 'printed';
   createdAt: string;
   paid?: number;
 }

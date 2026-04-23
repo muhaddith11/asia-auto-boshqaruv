@@ -2,6 +2,8 @@
 import React, { useRef } from 'react';
 import { X, Printer, Download, Share2 } from 'lucide-react';
 import { Buyurtma } from '@/types';
+import { useStore } from '@/store/useStore';
+import toast from 'react-hot-toast';
 
 interface InvoiceModalProps {
   order: Buyurtma;
@@ -10,50 +12,18 @@ interface InvoiceModalProps {
 
 export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const updateBuyurtma = useStore((state) => state.updateBuyurtma);
+  const [isPrinting, setIsPrinting] = React.useState(false);
 
-  const handlePrint = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
-
-    const windowUrl = 'about:blank';
-    const uniqueName = new Date().getTime();
-    const windowName = 'Print' + uniqueName;
-    const printWindow = window.open(windowUrl, windowName, 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>AutoServis Pro - Check #${order.id}</title>
-            <style>
-              body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; }
-              .header { text-align: center; border-bottom: 2px dashed #eee; padding-bottom: 20px; margin-bottom: 20px; }
-              .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
-              .id { font-size: 14px; color: #666; margin-top: 5px; }
-              .section { margin-bottom: 20px; }
-              .label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #999; margin-bottom: 4px; }
-              .value { font-size: 14px; font-weight: 700; }
-              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-              th { text-align: left; font-size: 10px; color: #999; border-bottom: 1px solid #eee; padding: 10px 0; }
-              td { padding: 12px 0; font-size: 13px; border-bottom: 1px solid #f9f9f9; }
-              .total-row { border-top: 2px solid #000; margin-top: 10px; padding-top: 10px; }
-              .grand-total { font-size: 22px; font-weight: 900; text-align: right; }
-              .footer { text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
-              @media print {
-                body { padding: 0; }
-                .no-print { display: none; }
-              }
-            </style>
-          </head>
-          <body>
-            ${printContent.innerHTML}
-            <script>
-              window.onload = function() { window.print(); window.close(); }
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
+  const handleAgentPrint = async () => {
+    setIsPrinting(true);
+    try {
+      updateBuyurtma(order.id, { print_status: 'pending' });
+      toast.success('Printerga yuborildi!');
+    } catch (error) {
+      toast.error('Xatolik yuz berdi');
+    } finally {
+      setTimeout(() => setIsPrinting(false), 2000);
     }
   };
 
@@ -146,20 +116,22 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                       </tbody>
                    </table>
 
-                   <div className="pt-6 border-t-2 border-slate-900 space-y-3">
-                      <div className="flex justify-between items-center text-slate-400">
-                         <span className="text-[12px] font-bold uppercase tracking-widest">Umumiy xizmatlar</span>
-                         <span className="font-bold">{( (order.final || 0) - (order.zap || 0)).toLocaleString()} UZS</span>
-                      </div>
-                      <div className="flex justify-between items-center text-slate-400">
-                         <span className="text-[12px] font-bold uppercase tracking-widest">Zapchastlar</span>
-                         <span className="font-bold">{(order.zap || 0).toLocaleString()} UZS</span>
-                      </div>
-                       <tr className="border-t-2 border-slate-900">
-                          <td className="py-8 pt-10 text-[14px] font-black text-slate-400 uppercase tracking-widest">Jami To'lov</td>
-                          <td className="py-8 pt-10 text-right text-[32px] font-black text-slate-900 tracking-tighter">{(order?.final || 0).toLocaleString()} <span className="text-[14px] text-slate-500 uppercase ml-1">Sum</span></td>
-                       </tr>
-                   </div>
+                    <div className="pt-6 border-t-2 border-slate-900 space-y-3">
+                       <div className="flex justify-between items-center text-slate-400">
+                          <span className="text-[12px] font-bold uppercase tracking-widest">Umumiy xizmatlar</span>
+                          <span className="font-bold">{( (order.final || 0) - (order.zap || 0)).toLocaleString()} UZS</span>
+                       </div>
+                       <div className="flex justify-between items-center text-slate-400">
+                          <span className="text-[12px] font-bold uppercase tracking-widest">Zapchastlar</span>
+                          <span className="font-bold">{(order.zap || 0).toLocaleString()} UZS</span>
+                       </div>
+                       <div className="flex justify-between items-end pt-6 mt-4 border-t-2 border-slate-900">
+                          <div className="text-[14px] font-black text-slate-400 uppercase tracking-widest pb-1">Jami To'lov</div>
+                          <div className="text-right text-[32px] font-black text-slate-900 tracking-tighter">
+                            {(order?.final || 0).toLocaleString()} <span className="text-[14px] text-slate-500 uppercase ml-1">Sum</span>
+                          </div>
+                       </div>
+                    </div>
 
                    <div className="footer text-center pt-10 border-t border-dashed border-slate-100 mt-8">
                       <div className="text-[13px] font-black text-slate-800 mb-1">Xarid uchun rahmat!</div>
@@ -176,16 +148,18 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
         {/* Action Buttons */}
         <div className="p-8 bg-white border-t border-slate-100 flex gap-4">
             <button 
-              onClick={handlePrint}
-              className="flex-2 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-10 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-blue-600/20"
+              onClick={handleAgentPrint}
+              disabled={isPrinting}
+              className={`flex-1 ${isPrinting ? 'bg-emerald-500' : 'bg-blue-600 hover:bg-blue-700'} text-white font-black py-5 px-10 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-blue-600/20 disabled:opacity-70`}
             >
-              <Printer size={20} strokeWidth={2.5} /> Checkni chiqarish
+              <Printer size={22} strokeWidth={2.5} /> 
+              {isPrinting ? 'PRINTERGA YUBORILDI...' : 'CHECKNI CHIQARISH (AVTOMAT)'}
             </button>
-            <button className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all">
-              <Download size={20} /> PDF
+            <button className="w-16 h-16 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl flex items-center justify-center transition-all">
+              <Download size={22} />
             </button>
-            <button className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold py-4 rounded-2xl flex items-center justify-center gap-1 transition-all">
-              <Share2 size={20} />
+            <button className="w-16 h-16 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl flex items-center justify-center transition-all">
+              <Share2 size={22} />
             </button>
         </div>
       </div>
