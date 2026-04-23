@@ -23,7 +23,8 @@ function mapAppToDB(body: any) {
   // We remove them to prevent "column not found" errors in Supabase.
   const fieldsToRemove = [
     'createdAt', 'created_at', 'createdat', 
-    'chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal'
+    'chegirma', 'chegirmaFoiz', 'subTotal', 'finalTotal',
+    'print_status'
   ];
   
   // Remove UI-only and internal date fields
