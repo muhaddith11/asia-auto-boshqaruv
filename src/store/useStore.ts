@@ -594,8 +594,8 @@ export const useStore = create<AutoServisStore>()(
             console.error('❌ Xizmatlarni yuklashda xatolik:', servicesRes.reason);
           }
 
-          const mashinalarList = cars && cars.length > 0
-            ? Array.from(new Set(cars.map((c: any) => normalize(`${c.brand} ${c.name}`)))).sort()
+          const mashinalarList: string[] = cars && cars.length > 0
+            ? Array.from(new Set(cars.map((c: any) => normalize(`${c.brand} ${c.name}`)))).sort() as string[]
             : [];
 
           const finalKassa = kassaResult || { naqd: 0, karta: 0 };
@@ -603,7 +603,8 @@ export const useStore = create<AutoServisStore>()(
           const bizOps = allOps.filter((o: any) => o.source !== 'external');
           const extOps = allOps.filter((o: any) => o.source === 'external');
 
-          set(() => ({
+          set((state) => ({
+            ...state,
             mijozlar: clients || [],
             buyurtmalar: orders || [],
             xodimlar: workers || [],
@@ -631,7 +632,7 @@ export const useStore = create<AutoServisStore>()(
                   stavka: s.stavka
                 });
               });
-              return Array.from(uniqueMap.values());
+              return Array.from(uniqueMap.values()) as any[];
             })() : []
           }));
           console.log(`✅ Store yuklandi: ${clients?.length || 0} mijoz, ${services?.length || 0} xizmat.`);
