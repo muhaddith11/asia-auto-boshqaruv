@@ -11,7 +11,7 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  const allowed = ['id', 'ism', 'tel', 'mashina', 'raqam', 'vin', 'tashriflar', 'jami', 'qarzdorlik', 'created_at', 'createdat'];
+  const allowed = ['id', 'ism', 'tel', 'mashina', 'raqam', 'vin', 'tashriflar', 'jami', 'qarzdorlik', 'created_at'];
   Object.keys(b).forEach(key => {
     if (!allowed.includes(key)) {
       delete b[key];

@@ -30,7 +30,6 @@ export interface Xodim {
   telegram?: string;
   status: 'aktiv' | 'noaktiv';
   createdAt?: string;
-  createdat?: string;
 }
 
 export interface Xizmat {
