@@ -69,15 +69,21 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
 
     console.log("DEBUG: Updating order", id, dbBody);
 
-    const { data, error } = await supabase.from('orders').update(dbBody).eq('id', id).select();
+    const { data, error, status, statusText } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     
     if (error) {
-       console.error("Supabase Update Error:", error);
-       return NextResponse.json({ error: error.message }, { status: 500 });
+       console.error("❌ Supabase Update Error:", error);
+       return NextResponse.json({ 
+         error: error.message, 
+         details: error.details, 
+         hint: error.hint,
+         status: status 
+       }, { status: 500 });
     }
     
     if (!data || data.length === 0) {
-       return NextResponse.json({ error: "Record not found or not updated" }, { status: 404 });
+       console.warn("⚠️ No data returned after update. ID might be wrong or RLS blocking.");
+       return NextResponse.json({ error: "Record not found or update blocked by RLS policies" }, { status: 404 });
     }
 
     return NextResponse.json(mapRowToApp(data[0]));
