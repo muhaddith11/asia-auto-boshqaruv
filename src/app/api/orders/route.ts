@@ -48,16 +48,19 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
+    // Map application fields to database schema
+    const dbBodyRaw = mapAppToDB(body);
+    
     // Whitelist
     const whitelist = [
-      'ism', 'tel', 'mashina', 'raqam', 'vin', 
-      'srv', 'zap', 'total', 'final', 'holat', 'sana',
-      'services', 'zaps'
+      'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
+      'srv', 'zap', 'total', 'final', 'holat', 'status', 'sana',
+      'services', 'zaps', 'zarplata', 'pribil'
     ];
     
     const dbBody: any = {};
     whitelist.forEach(key => {
-      if (body[key] !== undefined) dbBody[key] = body[key];
+      if (dbBodyRaw[key] !== undefined) dbBody[key] = dbBodyRaw[key];
     });
 
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();

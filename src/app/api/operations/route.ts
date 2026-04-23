@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
       amount: body.amount,
       category: body.category,
       comment: body.comment || '',
-      method: body.method || 'naqd'
+      method: body.method || 'naqd',
+      source: body.source || 'manual',
+      toMethod: body.toMethod || null
     };
     
     const { data, error, status } = await supabase

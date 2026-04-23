@@ -52,21 +52,24 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     const id = Number(idStr);
     const body = await request.json();
     
+    // Map application fields to database schema
+    const dbBody = mapAppToDB(body);
+    
     // Whitelist: Faqat bazada borligi aniq bo'lgan ustunlar
     const whitelist = [
-      'ism', 'tel', 'mashina', 'raqam', 'vin', 
-      'srv', 'zap', 'total', 'final', 'holat', 'sana',
-      'services', 'zaps'
+      'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
+      'srv', 'zap', 'total', 'final', 'holat', 'status', 'sana',
+      'services', 'zaps', 'zarplata', 'pribil'
     ];
     
-    const dbBody: any = {};
+    const cleanBody: any = {};
     whitelist.forEach(key => {
-      if (body[key] !== undefined) dbBody[key] = body[key];
+      if (dbBody[key] !== undefined) cleanBody[key] = dbBody[key];
     });
     
-    console.log("DEBUG: Updating order", id, dbBody);
+    console.log("DEBUG: Updating order", id, cleanBody);
 
-    const { data, error, status, statusText } = await supabase.from('orders').update(dbBody).eq('id', id).select();
+    const { data, error, status } = await supabase.from('orders').update(cleanBody).eq('id', id).select();
     
     if (error) {
        console.error("❌ Supabase Update Error:", error);
