@@ -225,7 +225,7 @@ export default function WorkersPage() {
                     <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">Qo'shilgan</div>
-                        <div className="text-white font-bold text-[13px]">{fmtDate(x.createdat || x.createdAt)}</div>
+                        <div className="text-white font-bold text-[13px]">{fmtDate(x.createdAt)}</div>
                       </div>
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">To'langan</div>
