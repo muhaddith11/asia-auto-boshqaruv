@@ -57,8 +57,8 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 {/* Print Content Starts Here */}
                 <div className="header text-center pb-8 border-b-2 border-dashed border-slate-100">
                    <div className="text-[28px] font-black tracking-tighter text-black uppercase">AsiaAutoService</div>
-                   <div className="text-[11px] font-bold text-slate-400 tracking-[0.2em] mt-1 mb-4 uppercase">Professional xizmat markazi</div>
-                   <div className="text-[13px] font-bold text-slate-800">Sana: {order.sana}</div>
+                   <div className="text-[11px] font-bold text-slate-500 tracking-[0.2em] mt-1 mb-2 uppercase">Mashinangiz biz bilan ishonchli qo'llarda!</div>
+                   <div className="text-[13px] font-bold text-slate-800">Sana: {order.sana} {new Date().toLocaleTimeString('uz-UZ', {hour: '2-digit', minute: '2-digit'})}</div>
                 </div>
 
                 <div className="mt-8 space-y-6">
@@ -71,7 +71,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
               </div>
               <div className="text-right space-y-1">
                  <div className="text-[18px] font-black text-slate-900 uppercase">Asia Auto Service</div>
-                 <div className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{order?.sana || order?.createdAt?.split('T')[0] || '—'}</div>
+                 <div className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{order?.sana} {new Date().toLocaleTimeString('uz-UZ', {hour: '2-digit', minute: '2-digit'})}</div>
               </div>
            </div>
                    <div className="flex justify-between">
@@ -137,7 +137,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                       <div className="text-[13px] font-black text-slate-800 mb-1">Xarid uchun rahmat!</div>
                       <div className="text-[10px] text-slate-400 font-bold leading-relaxed uppercase tracking-widest">
                          Manzil: Toshkent sh., Chilonzor tumani<br />
-                         Tel: +998 90 123 45 67<br />
+                         Tel: +998 90 570 88 88<br />
                          Telegram: @AsiaAutoService
                       </div>
                    </div>
