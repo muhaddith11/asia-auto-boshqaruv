@@ -57,7 +57,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 {/* Print Content Starts Here */}
                 <div className="header text-center pb-8 border-b-2 border-dashed border-slate-100">
                    <div className="text-[28px] font-black tracking-tighter text-black uppercase">AsiaAutoService</div>
-                   <div className="text-[11px] font-bold text-slate-500 tracking-[0.2em] mt-1 mb-2 uppercase">Mashinangiz biz bilan ishonchli qo'llarda!</div>
+                   <div className="text-[11px] font-bold text-slate-500 tracking-[0.2em] mt-1 mb-2 uppercase">Sifatli xizmat — xavfsiz yo'l garovi!</div>
                    <div className="text-[13px] font-bold text-slate-800">Sana: {order.sana} {new Date().toLocaleTimeString('uz-UZ', {hour: '2-digit', minute: '2-digit'})}</div>
                 </div>
 
@@ -136,7 +136,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                    <div className="footer text-center pt-10 border-t border-dashed border-slate-100 mt-8">
                       <div className="text-[13px] font-black text-slate-800 mb-1">Xarid uchun rahmat!</div>
                       <div className="text-[10px] text-slate-400 font-bold leading-relaxed uppercase tracking-widest">
-                         Manzil: Toshkent sh., Chilonzor tumani<br />
+                         Manzil: Qo'qon shahar Ubay Oripov 12<br />
                          Tel: +998 90 570 88 88<br />
                          Telegram: @AsiaAutoService
                       </div>
