@@ -15,9 +15,20 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    // Bazada borligi aniq bo'lgan ustunlarni saralab olamiz
+    const cleanBody: any = {
+      date: body.date,
+      type: body.type,
+      amount: body.amount,
+      category: body.category,
+      comment: body.comment || '',
+      method: body.method || 'naqd'
+    };
+    
     const { data, error } = await supabase
       .from('operations')
-      .insert([body])
+      .insert([cleanBody])
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
