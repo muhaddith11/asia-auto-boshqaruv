@@ -215,7 +215,6 @@ export default function WorkersPage() {
                 try { return new Date(iso).toLocaleDateString('ru-RU'); } catch { return iso; }
               };
 
-              const isPartner = x.role === 'sherik';
               const parentPartner = x.parentId ? xodimlar.find(xp => xp.id === x.parentId) : null;
 
               return (
