@@ -26,14 +26,25 @@ export async function POST(request: NextRequest) {
       method: body.method || 'naqd'
     };
     
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from('operations')
       .insert([cleanBody])
       .select()
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    if (error) {
+       console.error("❌ Supabase Operations Error:", error);
+       return NextResponse.json({ 
+         error: error.message, 
+         details: error.details, 
+         hint: error.hint,
+         status: status 
+       }, { status: 500 });
+    }
+    
     return NextResponse.json(data);
-  } catch (err) {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  } catch (err: any) {
+    console.error("❌ Operations Handler Error:", err);
+    return NextResponse.json({ error: err.message || 'Invalid request' }, { status: 400 });
   }
 }
