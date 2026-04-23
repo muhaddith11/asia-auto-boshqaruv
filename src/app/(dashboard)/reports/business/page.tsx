@@ -49,6 +49,7 @@ export default function BusinessReportPage() {
     const rows: any[] = [];
     try {
       buyurtmalar.forEach((b: any) => {
+        if (b.holat !== 'tulangan') return; // Faqat to'langan buyurtmalar hisobotga tushadi
         const raw = b.createdAt || b.created_at || b.sana || '';
         let dStr = b.sana || '';
         let disp = b.sana || '';

@@ -470,8 +470,10 @@ export const useStore = create<AutoServisStore>()(
 
         try {
           await createOperation({ ...op, source: 'external' });
-        } catch (err) {
+          console.log("✅ Tashqari operatsiya saqlandi");
+        } catch (err: any) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
+          alert("XATOLIK: Operatsiya bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
         }
       },
       addIshxonaOperatsiya: async (op) => {
@@ -492,11 +494,15 @@ export const useStore = create<AutoServisStore>()(
             source: op.source || 'manual'
           };
           const created = await createOperation(apiData);
+          if (!created || (created as any).error) throw new Error((created as any).error || "Server xatosi");
+          
           set((state) => ({
             ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.map(o => o.id === tempId ? { ...o, id: created.id } : o)
           }));
-        } catch (err) {
+          console.log("✅ Ishxona operatsiyasi saqlandi:", created.id);
+        } catch (err: any) {
           console.error("❌ Operatsiya saqlashda xatolik:", err);
+          alert("XATOLIK: Amaliyot bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
         }
       },
       deleteIshxonaOperatsiya: async (id) => {
