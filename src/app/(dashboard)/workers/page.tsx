@@ -47,7 +47,7 @@ const S = {
 };
 
 export default function WorkersPage() {
-  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi } = useStore();
+  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({ search: '' });
   const [appliedFilters, setAppliedFilters] = useState({ search: '' });
@@ -187,7 +187,7 @@ export default function WorkersPage() {
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => sum + (Number(b.pribil) || 0), 0);
                 
-                const externalTotal = (store as any).ishxonaOperatsiyalar?.reduce((sum: number, op: any) => sum + (Number(op.amount) || 0), 0) || 0;
+                const externalTotal = (ishxonaOperatsiyalar as any)?.reduce((sum: number, op: any) => sum + (Number(op.amount) || 0), 0) || 0;
                 const totalPool = orderProfit + externalTotal;
 
                 if (x.shareType === 'sub') {
