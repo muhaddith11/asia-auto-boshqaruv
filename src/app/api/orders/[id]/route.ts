@@ -53,43 +53,54 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     const body = await request.json();
     
     // Map application fields to database schema
-    const dbBody = mapAppToDB(body);
+    const dbBody: any = {};
     
     // Whitelist: Faqat bazada borligi aniq bo'lgan ustunlar
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
       'srv', 'zap', 'total', 'final', 'holat', 'sana',
-      'services', 'zaps', 'zarplata', 'pribil'
+      'services', 'zaps', 'zarplata', 'pribil', 'print_status'
     ];
     
-    const cleanBody: any = {};
     whitelist.forEach(key => {
-      if (dbBody[key] !== undefined) cleanBody[key] = dbBody[key];
+      if (body[key] !== undefined) dbBody[key] = body[key];
     });
     
-    console.log("DEBUG: Updating order", id, cleanBody);
+    // 🔄 Handle status/holat mapping
+    // If frontend sends 'status' but not 'holat', map it
+    if (body.status !== undefined && dbBody.holat === undefined) {
+      dbBody.holat = body.status;
+    }
 
-    const { data, error, status } = await supabase.from('orders').update(cleanBody).eq('id', id).select();
+    if (Object.keys(dbBody).length === 0) {
+      return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
+    }
+
+    console.log("DEBUG: Updating order", id, dbBody);
+
+    const { data, error, status } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     
     if (error) {
        console.error("❌ Supabase Update Error:", error);
        return NextResponse.json({ 
          error: error.message, 
          details: error.details, 
-         hint: error.hint,
          status: status 
        }, { status: 500 });
     }
     
     if (!data || data.length === 0) {
-       console.warn("⚠️ No data returned after update. ID might be wrong or RLS blocking.");
-       return NextResponse.json({ error: "Record not found or update blocked by RLS policies" }, { status: 404 });
+       return NextResponse.json({ 
+         error: `Record with ID ${id} not found or update blocked by RLS policies`,
+         receivedId: id,
+         sentData: dbBody
+       }, { status: 404 });
     }
 
     return NextResponse.json(mapRowToApp(data[0]));
-  } catch (err) {
+  } catch (err: any) {
     console.error("Update Handler Error:", err);
-    return NextResponse.json({ error: 'Invalid request or server error' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid request: ' + err.message }, { status: 400 });
   }
 }
 
