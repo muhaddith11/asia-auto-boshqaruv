@@ -384,7 +384,7 @@ export const useStore = create<AutoServisStore>()(
         });
       },
       updateBuyurtma: async (id, data) => {
-        // Optimistic update - immediately update local state
+        // Optimistic update
         set((state) => ({
           buyurtmalar: state.buyurtmalar.map((b) => Number(b.id) === Number(id) ? { ...b, ...data } : b)
         }));
@@ -392,13 +392,13 @@ export const useStore = create<AutoServisStore>()(
         try {
           const result = await updateOrder(id, data as any);
           if (result && result.error) {
-            // Log the error but don't stop the flow
-            console.error("❌ Database update warning:", result.error);
+             throw new Error(result.error);
           }
+          console.log("✅ Buyurtma bazada yangilandi:", id);
         } catch (err: any) {
           console.error("❌ Buyurtmani bazada yangilashda xatolik:", err);
-          // Don't show alert to user if it's just a schema error, 
-          // let them continue with local state.
+          alert("DIQQAT: Ma'lumot bazada saqlanmadi! \nSabab: " + (err.message || "Ulanish xatosi"));
+          // Revert logic could go here if needed, but for now we need the alert
         }
       },
       deleteBuyurtma: (id) => {
