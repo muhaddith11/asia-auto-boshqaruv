@@ -178,12 +178,35 @@ export default function WorkersPage() {
         ) : (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredWorkers.map((x) => {
-              const workerServices = buyurtmalar.flatMap(b => (
-                b.services
-                  .filter(s => s.workerId === x.id)
-                  .map(s => ({ ...s, orderId: b.id, orderDate: b.sana }))
-              ));
-              const totalDue = workerServices.reduce((sum, s) => sum + (s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100)), 0);
+              const isPartner = x.role === 'sherik';
+              
+              let totalDue = 0;
+              if (isPartner) {
+                // 🏦 SHERIKLAR UCHUN HISOB-KITOB
+                const orderProfit = buyurtmalar
+                  .filter(b => b.holat === 'tulangan')
+                  .reduce((sum, b) => sum + (Number(b.pribil) || 0), 0);
+                
+                const externalTotal = (store as any).ishxonaOperatsiyalar?.reduce((sum: number, op: any) => sum + (Number(op.amount) || 0), 0) || 0;
+                const totalPool = orderProfit + externalTotal;
+
+                if (x.shareType === 'sub') {
+                  const parent = xodimlar.find(p => p.id === x.parentId);
+                  const parentShare = parent ? totalPool * (parent.foiz / 100) : 0;
+                  totalDue = parentShare * (x.foiz / 100);
+                } else {
+                  totalDue = totalPool * (x.foiz / 100);
+                }
+              } else {
+                // 🛠️ ODDIY XODIMLAR UCHUN HISOB-KITOB
+                const workerServices = buyurtmalar.flatMap(b => (
+                  b.services
+                    .filter(s => s.workerId === x.id)
+                    .map(s => ({ ...s, orderId: b.id, orderDate: b.sana }))
+                ));
+                totalDue = workerServices.reduce((sum, s) => sum + (s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100)), 0);
+              }
+
               const totalPaid = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id)).reduce((s, m) => s + (m.summa || 0), 0);
               const unpaid = Math.max(0, totalDue - totalPaid);
 
@@ -224,8 +247,10 @@ export default function WorkersPage() {
 
                     <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
-                        <div className="text-[11px] text-slate-400">Qo'shilgan</div>
-                        <div className="text-white font-bold text-[13px]">{fmtDate(x.createdAt)}</div>
+                        <div className="text-[11px] text-slate-400">{isPartner ? 'Jami ulush' : 'Qo\'shilgan'}</div>
+                        <div className="text-white font-bold text-[13px]">
+                          {isPartner ? Math.round(totalDue).toLocaleString() : fmtDate(x.createdAt)}
+                        </div>
                       </div>
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">To'langan</div>
