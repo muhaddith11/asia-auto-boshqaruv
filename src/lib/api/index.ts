@@ -186,3 +186,26 @@ export async function createSalary(data: any) {
   });
   return handleJson(res);
 }
+
+export async function getPurchases() {
+  const res = await fetch(`${API_BASE}/purchases`, { cache: 'no-store' });
+  return handleJson(res);
+}
+
+export async function createPurchase(data: any) {
+  const res = await fetch(`${API_BASE}/purchases`, { 
+    method: 'POST', 
+    body: JSON.stringify(data), 
+    headers: { 'Content-Type': 'application/json' } 
+  });
+  return handleJson(res);
+}
+
+export async function createCar(brand: string, name: string) {
+  const res = await fetch(`${API_BASE}/cars`, {
+    method: 'POST',
+    body: JSON.stringify({ brand, name }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return handleJson(res);
+}

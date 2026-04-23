@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host');
 
@@ -17,18 +17,12 @@ export function proxy(request: NextRequest) {
   // Normalize path (remove double slashes)
   const normalizedPath = pathname.replace(/\/+/g, '/');
 
-  // Allow Telegram Webhook, Login page, and Bot UI Web App
+  // Allow API routes, Telegram Webhook, Login page, and Bot UI Web App
   if (
+    normalizedPath.startsWith('/api/') ||
     normalizedPath === '/login' || 
     normalizedPath === '/tg-webhook' || 
     normalizedPath.startsWith('/tg-webhook/') || 
-    normalizedPath.startsWith('/api/debug-outgoing') || 
-    normalizedPath.startsWith('/api/bot') || 
-    normalizedPath.startsWith('/api/telegram-webhook') || 
-    normalizedPath.startsWith('/api/bot-test') || 
-    normalizedPath.startsWith('/api/debug-env') || 
-    normalizedPath.startsWith('/api/debug-tg') || 
-    normalizedPath.startsWith('/api/bulk-import') || 
     normalizedPath.startsWith('/bot-ui')
   ) {
     return NextResponse.next();

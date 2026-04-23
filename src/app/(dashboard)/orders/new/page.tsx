@@ -80,7 +80,7 @@ export default function NewOrderPage() {
   const router = useRouter();
   const {
     mijozlar, xodimlar, xizmatlar, zapchastlar, mashinalar,
-    addBuyurtma, updateMijoz, updateZapchast, addMashina
+    addBuyurtma, updateMijoz, updateZapchast, addMashina, loadInitialData
   } = useStore();
 
   const [mounted, setMounted] = useState(false);
@@ -107,7 +107,10 @@ export default function NewOrderPage() {
     { id: Date.now(), partId: '', qty: 1 }
   ]);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    loadInitialData(); // Ensure fresh data on page load
+  }, []);
 
   const [isAddingMashina, setIsAddingMashina] = useState(false);
   const [newMashinaName, setNewMashinaName] = useState('');
@@ -329,13 +332,18 @@ export default function NewOrderPage() {
                     const newMashina = e.target.value;
                     const normNew = normalize(newMashina);
                     setForm({ ...form, mashina: newMashina });
-                    // Reset service IDs if they don't belong to the new car
+                    // Only reset if the new mashina is fundamentally different
                     setAssignments(prev => prev.map(a => {
-                      const s = xizmatlar.find(x => x.id === Number(a.serviceId));
-                      if (s && s.mashina !== 'UMUMIY' && normalize(s.mashina) !== normNew) {
-                        return { ...a, serviceId: '', customNarx: '' };
-                      }
-                      return a;
+                      if (!a.serviceId) return a;
+                      const s = xizmatlar.find(x => String(x.id) === String(a.serviceId));
+                      if (!s) return a;
+                      const serviceCar = normalize(s.mashina || 'UMUMIY');
+                      if (serviceCar === 'UMUMIY') return a;
+                      
+                      // If the new car still "contains" the service car or vice versa, don't reset
+                      if (normNew.includes(serviceCar) || serviceCar.includes(normNew)) return a;
+                      
+                      return { ...a, serviceId: '', customNarx: '' };
                     }));
                   }}
                 >
@@ -366,8 +374,8 @@ export default function NewOrderPage() {
                 <label style={S.label}>Davlat raqami *</label>
                 <input
                   style={{ ...S.input, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}
-                  type="text" 
-                  value={form.raqam} 
+                  type="text"
+                  value={form.raqam}
                   placeholder="01 A 000 AA"
                   onChange={e => setForm({ ...form, raqam: formatRaqam(e.target.value) })}
                 />
@@ -481,10 +489,21 @@ export default function NewOrderPage() {
                           <option value="">— Xizmatni tanlang —</option>
                           {xizmatlar
                             .filter(s => {
-                              const car = normalize(form.mashina);
+                              const selectedCar = normalize(form.mashina);
                               const serviceCar = normalize(s.mashina || 'UMUMIY');
-                              if (!car) return serviceCar === 'UMUMIY';
-                              return serviceCar === 'UMUMIY' || serviceCar === car;
+
+                              if (serviceCar === 'UMUMIY') return true;
+                              if (!selectedCar) return true; // Mashina tanlanmagan bo'lsa hamma xizmatni ko'rsatish
+
+                              // Flexible matching:
+                              // 1. Exact match
+                              if (serviceCar === selectedCar) return true;
+                              // 2. Service car is part of selected car (e.g. "CHEVROLET" matches "CHEVROLET NEXIA")
+                              if (selectedCar.includes(serviceCar)) return true;
+                              // 3. Selected car is part of service car (e.g. "NEXIA" matches "CHEVROLET NEXIA")
+                              if (serviceCar.includes(selectedCar)) return true;
+
+                              return false;
                             })
                             .map(s => (
                               <option key={s.id} value={s.id}>
