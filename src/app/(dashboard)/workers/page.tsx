@@ -234,6 +234,11 @@ export default function WorkersPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <div className="text-white font-bold uppercase">{x.ism}</div>
+                          {x.telegram && (
+                            <div className="flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 mt-0.5">
+                              <Send size={8} /> {x.telegram}
+                            </div>
+                          )}
                             {isPartner && (
                               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 tracking-widest">Sherik</span>
                             )}
