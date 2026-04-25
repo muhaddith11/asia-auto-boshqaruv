@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Default: Set Webhook
-    const host = req.headers.get('host') || 'asiaautoservice.com';
+    const host = req.headers.get('host') || 'asiaautobot.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const webhookUrl = `${protocol}://${host}/api/telegram-webhook`;
 
