@@ -367,7 +367,7 @@ export const useStore = create<AutoServisStore>()(
       addBuyurtma: (b) => {
         const tempId = -Date.now();
         set((state) => ({
-          buyurtmalar: [...state.buyurtmalar, { ...b, id: tempId }],
+          buyurtmalar: [{ ...b, id: tempId }, ...state.buyurtmalar],
           counters: { ...state.counters, buyurtma: state.counters.buyurtma + 1 }
         }));
         createOrder(b as any).then((created) => {

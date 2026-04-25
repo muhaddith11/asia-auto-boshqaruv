@@ -72,7 +72,9 @@ export default function OrdersPage() {
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
 
-  const filtered = [...buyurtmalar].filter(b => {
+  const filtered = [...buyurtmalar]
+    .sort((a, b) => Number(b.id) - Number(a.id))
+    .filter(b => {
     if (applied.tel && (!b.tel || !b.tel.includes(applied.tel))) return false;
     if (applied.ism    && !b.ism.toLowerCase().includes(applied.ism.toLowerCase())) return false;
     if (applied.mashina && !b.mashina.toLowerCase().includes(applied.mashina.toLowerCase())) return false;

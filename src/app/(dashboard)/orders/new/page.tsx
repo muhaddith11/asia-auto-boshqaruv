@@ -228,6 +228,7 @@ export default function NewOrderPage() {
       final: finalTotal,
       zarplata: zarplataTotal,
       pribil: netProfit,
+      print_status: 'pending'
     };
 
     addBuyurtma(newOrder as any);
