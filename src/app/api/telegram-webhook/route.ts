@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const text = body.message.text;
     
     // Detect host for dynamic URLs
-    const host = req.headers.get('host') || 'asiaautobot.com';
+    const host = req.headers.get('host') || 'asiaautoservice.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
