@@ -34,7 +34,7 @@ export default function LoginPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center mb-6">
             <img 
-              src="/logo-full.png" 
+              src="/logo-full.png?v=2" 
               alt="Asia Auto Service" 
               style={{ maxWidth: '280px', height: 'auto' }}
             />

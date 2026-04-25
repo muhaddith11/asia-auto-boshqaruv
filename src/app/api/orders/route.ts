@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { Telegraf } from 'telegraf';
+
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const adminId = process.env.ADMIN_TELEGRAM_ID;
+const bot = token ? new Telegraf(token) : null;
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -65,9 +70,36 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    
     const created = (data && data[0]) ?? null;
+
+    // Send Telegram Notification to Admin
+    if (created && bot && adminId) {
+      try {
+        const sanasi = new Date(created.created_at || created.sana).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' });
+        const message = `🔔 YANGI BUYURTMA (Dashboard)
+        
+👤 Mijoz: ${created.ism || '-'}
+📞 Tel: ${created.tel || '-'}
+🚗 Avto: ${created.mashina || '-'}
+🔢 Raqam: ${created.raqam || '-'}
+🛠 Xizmatlar: ${created.srv?.toLocaleString() || 0} UZS
+⚙️ Zapchastlar: ${created.zap?.toLocaleString() || 0} UZS
+---------------------------
+💰 JAMI: ${created.total?.toLocaleString() || 0} UZS
+🕒 Sana: ${sanasi}
+
+(ID: #${created.id})`;
+
+        await bot.telegram.sendMessage(adminId, message);
+      } catch (tgErr) {
+        console.error('Telegram notification failed:', tgErr);
+      }
+    }
+
     return NextResponse.json(mapRowToApp(created), { status: 201 });
   } catch (err) {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    console.error('Order POST error:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
