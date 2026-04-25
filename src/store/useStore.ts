@@ -211,9 +211,11 @@ export const useStore = create<AutoServisStore>()(
       addMaosh: async (m) => {
         const tempId = -Date.now();
         const now = new Date().toISOString();
+        const originalKassa = { ...get().kassa };
+
+        // Optimistic Update
         set((state) => ({
-          maoshTarixi: [...state.maoshTarixi, { ...m, id: tempId, createdAt: now }],
-          counters: { ...state.counters, maosh: state.counters.maosh + 1 },
+          maoshTarixi: [{ ...m, id: tempId, createdAt: now }, ...state.maoshTarixi],
           kassa: {
             ...state.kassa,
             [m.method]: state.kassa[m.method] - m.summa
@@ -228,18 +230,37 @@ export const useStore = create<AutoServisStore>()(
             date: m.sana,
             comment: m.izoh || ''
           };
+          
           const created = await createSalary(apiData);
-          const newKassa = {
+          if (!created || created.error) throw new Error(created?.error || "Maoshni saqlashda xatolik");
+
+          // Sync Kassa with DB
+          const nextKassa = {
             ...get().kassa,
             [m.method]: get().kassa[m.method]
           };
-          await updateKassaState(newKassa);
+          await updateKassaState(nextKassa);
 
           set((state) => ({
-            maoshTarixi: state.maoshTarixi.map(mm => mm.id === tempId ? { ...mm, id: created.id } : mm)
+            maoshTarixi: state.maoshTarixi.map(mm => mm.id === tempId ? {
+              id: created.id,
+              xodimId: created.worker_id,
+              summa: created.amount,
+              method: created.method,
+              sana: created.date,
+              izoh: created.comment,
+              createdAt: created.created_at
+            } : mm)
           }));
-        } catch (err) {
+          console.log("✅ Maosh bazaga saqlandi:", created.id);
+        } catch (err: any) {
           console.error("❌ Maosh saqlashda xatolik:", err);
+          alert("XATOLIK: Maosh bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          // Revert
+          set((state) => ({
+            maoshTarixi: state.maoshTarixi.filter(mm => mm.id !== tempId),
+            kassa: originalKassa
+          }));
         }
       },
 

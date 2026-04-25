@@ -36,7 +36,8 @@ export default function SalaryModal({ worker, onClose }: SalaryModalProps) {
   const [formData, setFormData] = useState({
     amount: '',
     method: 'naqd' as 'naqd' | 'karta',
-    comment: ''
+    comment: '',
+    date: new Date().toISOString().split('T')[0]
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,7 +50,8 @@ export default function SalaryModal({ worker, onClose }: SalaryModalProps) {
       summa: amount,
       davr: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }),
       method: formData.method,
-      sana: new Date().toISOString().split('T')[0]
+      sana: formData.date || new Date().toISOString().split('T')[0],
+      izoh: formData.comment
     });
     
     onClose();
@@ -122,6 +124,17 @@ export default function SalaryModal({ worker, onClose }: SalaryModalProps) {
                 <CreditCard size={16} /> Karta
               </button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label style={S.label}>To'lov sanasi</label>
+            <input 
+              type="date" 
+              value={formData.date}
+              onChange={(e) => setFormData({...formData, date: e.target.value})}
+              style={S.input}
+              className="text-[13px]"
+            />
           </div>
 
           <div className="space-y-2">
