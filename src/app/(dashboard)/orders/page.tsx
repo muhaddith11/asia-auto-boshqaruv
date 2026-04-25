@@ -355,12 +355,6 @@ export default function OrdersPage() {
                           <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 12 }}>
                             {Number(b.id) < 0 ? '#...' : `#${b.id}`}
                           </span>
-                          {b.print_status === 'pending' && (
-                            <div style={{ fontSize: 9, color: '#f59e0b', fontWeight: 800, marginTop: 2 }}>⏳ KUTILYAPTI...</div>
-                          )}
-                          {b.print_status === 'printed' && (
-                            <div style={{ fontSize: 9, color: '#10b981', fontWeight: 800, marginTop: 2 }}>✅ BOSILDI</div>
-                          )}
                         </td>
 
                         {/* Mijoz */}
