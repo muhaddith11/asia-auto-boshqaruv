@@ -140,41 +140,42 @@ const Sidebar = () => {
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         display: 'flex',
         alignItems: 'center',
-        gap: 14,
+        gap: 12,
       }}>
         <div style={{
-          width: 40,
-          height: 40,
-          background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
-          borderRadius: 12,
+          width: 42,
+          height: 42,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 16px -4px rgba(79,70,229,0.5)',
           flexShrink: 0,
         }}>
-          <Wrench size={22} color="white" />
+          <img 
+            src="/logo-icon.png" 
+            alt="Asia Auto" 
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <div style={{ 
             color: '#ffffff', 
             fontWeight: 900, 
-            fontSize: 16, 
-            letterSpacing: '-0.04em', 
-            lineHeight: 1,
+            fontSize: 15, 
+            letterSpacing: '-0.02em', 
+            lineHeight: 1.1,
             textTransform: 'uppercase'
           }}>
-            AsiaAuto
+            Asia Auto
           </div>
           <div style={{ 
             color: '#6366f1', 
-            fontSize: 11, 
+            fontSize: 10, 
             fontWeight: 800, 
-            letterSpacing: '0.1em', 
+            letterSpacing: '0.15em', 
             textTransform: 'uppercase', 
             opacity: 0.9
           }}>
-            Service
+            Management
           </div>
         </div>
       </div>

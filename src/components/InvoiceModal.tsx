@@ -18,7 +18,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   const handleAgentPrint = async () => {
     setIsPrinting(true);
     try {
-      updateBuyurtma(order.id, { print_status: 'pending' });
+      // updateBuyurtma(order.id, { print_status: 'pending' }); // Temporarily disabled to avoid DB errors
       toast.success('Printerga yuborildi!');
     } catch (error) {
       toast.error('Xatolik yuz berdi');

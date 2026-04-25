@@ -32,11 +32,14 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo Section */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-blue-600 shadow-[0_0_40px_rgba(37,99,235,0.3)] mb-6">
-            <ShieldCheck size={40} className="text-white" />
+          <div className="inline-flex items-center justify-center mb-6">
+            <img 
+              src="/logo-full.png" 
+              alt="Asia Auto Service" 
+              style={{ maxWidth: '280px', height: 'auto' }}
+            />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight uppercase mb-2">Asia Auto Service</h1>
-          <p className="text-slate-500 font-medium">Boshqaruv tizimiga xush kelibsiz</p>
+          <p className="text-slate-500 font-medium tracking-wide">Boshqaruv tizimiga xush kelibsiz</p>
         </div>
 
         {/* Login Card */}

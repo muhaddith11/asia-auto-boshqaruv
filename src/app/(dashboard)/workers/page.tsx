@@ -179,7 +179,7 @@ export default function WorkersPage() {
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredWorkers.map((x) => {
               const isPartner = x.role === 'sherik';
-              
+
               let totalDue = 0;
               if (isPartner) {
                 // 🏦 SHERIKLAR UCHUN HISOB-KITOB
@@ -187,8 +187,16 @@ export default function WorkersPage() {
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => sum + (Number(b.pribil) || 0), 0);
                 
-                const externalTotal = (ishxonaOperatsiyalar as any)?.reduce((sum: number, op: any) => sum + (Number(op.amount) || 0), 0) || 0;
-                const totalPool = orderProfit + externalTotal;
+                // 🛠️ Ishxona operatsiyalari (Kirim - Chiqim)
+                // "Aylanmadan tashqari" chiqimlar bu yerda hisobga olinmaydi, 
+                // chunki ular tashqariOperatsiyalar arrayida bo'ladi.
+                const externalNet = (ishxonaOperatsiyalar || []).reduce((sum: number, op: any) => {
+                  if (op.type === 'income') return sum + (Number(op.amount) || 0);
+                  if (op.type === 'expense') return sum - (Number(op.amount) || 0);
+                  return sum;
+                }, 0);
+
+                const totalPool = orderProfit + externalNet;
 
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);

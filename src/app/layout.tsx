@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   description: "Professional avtoservis boshqaruv tizimi",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icons/icon-192x192.png",
-    apple: "/icons/icon-192x192.png",
+    icon: "/logo-icon.png",
+    apple: "/logo-icon.png",
   },
 };
 
