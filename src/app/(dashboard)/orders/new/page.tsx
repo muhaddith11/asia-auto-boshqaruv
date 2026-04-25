@@ -113,17 +113,22 @@ export default function NewOrderPage() {
   }, []);
 
   const [isAddingMashina, setIsAddingMashina] = useState(false);
-  const [newMashinaName, setNewMashinaName] = useState('');
+  const [newCar, setNewCar] = useState({ brand: '', model: '' });
 
   const handleAddMashina = () => {
-    if (newMashinaName && newMashinaName.trim()) {
-      const upperName = newMashinaName.trim().toUpperCase();
-      if (!mashinalar.includes(upperName)) {
-        addMashina(upperName);
+    if (newCar.brand.trim() && newCar.model.trim()) {
+      const brand = newCar.brand.trim().toUpperCase();
+      const model = newCar.model.trim().toUpperCase();
+      const fullName = `${brand} ${model}`;
+      
+      if (!mashinalar.includes(fullName)) {
+        addMashina(fullName);
       }
-      setForm(prev => ({ ...prev, mashina: upperName }));
-      setNewMashinaName('');
+      setForm(prev => ({ ...prev, mashina: fullName }));
+      setNewCar({ brand: '', model: '' });
       setIsAddingMashina(false);
+    } else {
+      alert("Brend va Modelni kiriting!");
     }
   };
 
@@ -255,16 +260,22 @@ export default function NewOrderPage() {
                 {isAddingMashina ? (
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <input
-                      style={{ ...S.input, width: 180, padding: '6px 10px' }}
-                      placeholder="MARKANI KIRITING..."
-                      value={newMashinaName}
-                      onChange={e => setNewMashinaName(e.target.value.toUpperCase())}
+                      style={{ ...S.input, width: 130, padding: '6px 10px' }}
+                      placeholder="BREND (MASALAN: BMW)"
+                      value={newCar.brand}
+                      onChange={e => setNewCar({ ...newCar, brand: e.target.value.toUpperCase() })}
                       autoFocus
+                    />
+                    <input
+                      style={{ ...S.input, width: 130, padding: '6px 10px' }}
+                      placeholder="MODEL (MASALAN: X5)"
+                      value={newCar.model}
+                      onChange={e => setNewCar({ ...newCar, model: e.target.value.toUpperCase() })}
                     />
                     <button
                       onClick={handleAddMashina}
-                      style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
-                    >OK</button>
+                      style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: 6, padding: '6px 12px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
+                    >SAQLASH</button>
                     <button
                       onClick={() => setIsAddingMashina(false)}
                       style={{ background: 'var(--surface2)', color: 'var(--text3)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
