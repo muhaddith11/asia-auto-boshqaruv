@@ -131,21 +131,7 @@ export default function NewOrderPage() {
 
   // ── Helpers ─────────────────────────────────────────────────
   const formatRaqam = (val: string) => {
-    const raw = val.replace(/\s/g, '').toUpperCase();
-    if (raw.length <= 2) return raw;
-    if (/^\d{2}[A-Z]/.test(raw)) {
-      // Format: 01 A 000 AA
-      let res = raw.slice(0, 2) + ' ' + raw.slice(2, 3);
-      if (raw.length > 3) res += ' ' + raw.slice(3, 6);
-      if (raw.length > 6) res += ' ' + raw.slice(6, 8);
-      return res.trim();
-    } else if (/^\d{5}/.test(raw) || /^\d{2}\s?\d{3}/.test(raw)) {
-      // Format: 01 000 AAA
-      let res = raw.slice(0, 2) + ' ' + raw.slice(2, 5);
-      if (raw.length > 5) res += ' ' + raw.slice(5, 8);
-      return res.trim();
-    }
-    return raw;
+    return val.replace(/\s/g, '').toUpperCase();
   };
 
   const getServiceNarx = (serviceId: string | number) => {
@@ -377,7 +363,7 @@ export default function NewOrderPage() {
                   style={{ ...S.input, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}
                   type="text"
                   value={form.raqam}
-                  placeholder="01 A 000 AA"
+                  placeholder="01A000AA"
                   onChange={e => setForm({ ...form, raqam: formatRaqam(e.target.value) })}
                 />
               </div>
