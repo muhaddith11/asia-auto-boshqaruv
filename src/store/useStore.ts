@@ -248,6 +248,7 @@ export const useStore = create<AutoServisStore>()(
               summa: created.amount,
               method: created.method,
               sana: created.date,
+              davr: m.davr,
               izoh: created.comment,
               createdAt: created.created_at
             } : mm)
