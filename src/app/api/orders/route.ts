@@ -43,7 +43,7 @@ function mapAppToDB(body: any) {
 }
 
 export async function GET() {
-  const { data, error } = await supabase.from('orders').select('*');
+  const { data, error } = await supabase.from('orders').select('*').order('id', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const mapped = (data ?? []).map(mapRowToApp);
   return NextResponse.json(mapped);
