@@ -27,8 +27,7 @@ function mapAppToDB(body: any) {
   // These fields are only for frontend calculation/display or handled by DB defaults.
   const fieldsToRemove = [
     'createdAt', 'created_at', 'createdat', 
-    'chegirmaFoiz', 'subTotal', 'finalTotal',
-    'print_status'
+    'chegirmaFoiz', 'subTotal', 'finalTotal'
   ];
   
   fieldsToRemove.forEach(f => {

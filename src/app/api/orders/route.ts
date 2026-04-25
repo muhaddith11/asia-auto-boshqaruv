@@ -31,8 +31,7 @@ function mapAppToDB(body: any) {
 
   const fieldsToRemove = [
     'createdAt', 'created_at', 'createdat', 
-    'chegirmaFoiz', 'subTotal', 'finalTotal',
-    'print_status'
+    'chegirmaFoiz', 'subTotal', 'finalTotal'
   ];
   
   fieldsToRemove.forEach(f => {
@@ -60,7 +59,7 @@ export async function POST(request: NextRequest) {
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
       'srv', 'zap', 'total', 'final', 'holat', 'sana',
-      'services', 'zaps', 'zarplata', 'pribil'
+      'services', 'zaps', 'zarplata', 'pribil', 'print_status'
     ];
     
     const dbBody: any = {};

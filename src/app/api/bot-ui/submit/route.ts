@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
       zarplata: zarplataTotal,
       pribil: (servicesTotal + partsTotal) - zarplataTotal,
       vin: '',
-      yil: ''
+      yil: '',
+      print_status: 'pending'
     };
 
     const { data: insertedData, error } = await supabase.from('orders').insert([orderData]).select();
