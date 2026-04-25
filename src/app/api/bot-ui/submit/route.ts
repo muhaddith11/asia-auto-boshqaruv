@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const orderData = {
       ism: 'Kunlik Mijoz',
+      tel: workerPhone || 'Bot Order',
       mashina: `${brand} ${model}`,
       raqam: plateNumber || '',
       km: probeg || '',
@@ -84,14 +85,20 @@ export async function POST(req: NextRequest) {
       total: servicesTotal + partsTotal,
       final: servicesTotal + partsTotal,
       zarplata: zarplataTotal,
-      pribil: (servicesTotal + partsTotal) - zarplataTotal
+      pribil: (servicesTotal + partsTotal) - zarplataTotal,
+      vin: '',
+      yil: ''
     };
 
     const { data: insertedData, error } = await supabase.from('orders').insert([orderData]).select();
 
     if (error) {
       console.error("Supabase Save Error:", error);
-      return NextResponse.json({ ok: false, error: JSON.stringify(error) }, { status: 500 });
+      return NextResponse.json({ ok: false, error: "Bazaga saqlashda xatolik: " + error.message }, { status: 500 });
+    }
+
+    if (!insertedData || insertedData.length === 0) {
+      return NextResponse.json({ ok: false, error: "Ma'lumot saqlanmadi (no data returned)" }, { status: 500 });
     }
 
     // Formatted Receipt Message

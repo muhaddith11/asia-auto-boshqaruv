@@ -73,7 +73,7 @@ export default function OrdersPage() {
   if (!mounted) return null;
 
   const filtered = [...buyurtmalar].reverse().filter(b => {
-    if (applied.tel    && !b.tel?.includes(applied.tel))                      return false;
+    if (applied.tel && (!b.tel || !b.tel.includes(applied.tel))) return false;
     if (applied.ism    && !b.ism.toLowerCase().includes(applied.ism.toLowerCase())) return false;
     if (applied.mashina && !b.mashina.toLowerCase().includes(applied.mashina.toLowerCase())) return false;
     if (applied.raqam  && !b.raqam.toLowerCase().includes(applied.raqam.toLowerCase())) return false;
