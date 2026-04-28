@@ -146,14 +146,13 @@ def print_receipt(order):
         print(f"Boyitilgan chek chiqarildi! ID: {order['id']}")
         return True
     except Exception as e:
-        print(f"Chop etishda xato: {e}")
+        print(f"Chop etishda xato (ID: {order.get('id')}): {e}")
         return False
 
 def get_pending_prints():
     """Chop etilishi kerak bo'lgan (yangi yoki qo'lda bosilgan) buyurtmalarni oladi"""
-    # 1. Yangi buyurtmalarni tekshirish (ID bo'yicha)
-    # 2. Qo'lda "Print" bosilganlarni tekshirish (print_status = 'pending')
-    url = f"{SUPABASE_URL}/rest/v1/orders?or=(print_status.eq.pending)&order=id.desc"
+    # print("Pending buyurtmalarni tekshirmoqdaman...")
+    url = f"{SUPABASE_URL}/rest/v1/orders?print_status=eq.pending&order=id.desc"
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -163,9 +162,11 @@ def get_pending_prints():
     try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            if data: print(f"Pending buyurtmalar topildi: {len(data)} ta")
+            return data
     except Exception as e:
-        print(f"Baza bilan ulanishda xato: {e}")
+        print(f"Baza bilan ulanishda xato (pending): {e}")
     return []
 
 def mark_as_printed(order_id):
@@ -178,8 +179,9 @@ def mark_as_printed(order_id):
     }
     try:
         requests.patch(url, headers=headers, json={"print_status": "printed"})
-    except:
-        pass
+        print(f"Buyurtma #{order_id} 'printed' holatiga o'tkazildi.")
+    except Exception as e:
+        print(f"Statusni yangilashda xato: {e}")
 
 def main():
     global LAST_ORDER_ID
@@ -191,35 +193,47 @@ def main():
     headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
     try:
         res = requests.get(url, headers=headers).json()
-        if res: LAST_ORDER_ID = res[0]['id']
-    except: pass
+        if res: 
+            LAST_ORDER_ID = res[0]['id']
+            print(f"Oxirgi buyurtma ID: {LAST_ORDER_ID}")
+    except Exception as e:
+        print(f"Boshlang'ich ID ni olishda xato: {e}")
 
+    counter = 0
     while True:
         try:
             # 1. Yangi buyurtmalarni tekshirish
             url_new = f"{SUPABASE_URL}/rest/v1/orders?id=gt.{LAST_ORDER_ID or 0}&order=id.asc"
             new_orders = requests.get(url_new, headers=headers).json()
-            for order in new_orders:
-                print(f"Yangi buyurtma keldi! ID: {order['id']}")
-                if print_receipt(order):
-                    LAST_ORDER_ID = order['id']
-                    mark_as_printed(order['id'])
-
+            if isinstance(new_orders, list) and new_orders:
+                for order in new_orders:
+                    print(f"Yangi buyurtma keldi! ID: {order['id']}")
+                    if print_receipt(order):
+                        LAST_ORDER_ID = order['id']
+                        mark_as_printed(order['id'])
+            
             # 2. Qo'lda bosilganlarni (Re-print) tekshirish
             pending = get_pending_prints()
             for order in pending:
-                if order['id'] <= (LAST_ORDER_ID or 0): # Faqat re-print bo'lsa
-                    print(f"Saytdan chop etish buyrug'i keldi! ID: {order['id']}")
-                    if print_receipt(order):
-                        mark_as_printed(order['id'])
+                # Agar bu yangi bo'lsa (ID > LAST_ORDER_ID), uni tepada Loop 1 qayta ishlaydi yoki u hali Loop 1 ga kirmagan
+                # Agar bu eski bo'lsa (ID <= LAST_ORDER_ID), bu aniq Re-print
+                print(f"Saytdan chop etish buyrug'i keldi! ID: {order['id']}")
+                if print_receipt(order):
+                    mark_as_printed(order['id'])
             
+            counter += 1
+            if counter >= 12: # Har 1 daqiqada (5s * 12) "alive" xabari
+                print(f"Agent ishlayapti... {datetime.now().strftime('%H:%M:%S')}")
+                counter = 0
+
             time.sleep(CHECK_INTERVAL)
         except KeyboardInterrupt:
             print("\nDastur to'xtatildi.")
             break
         except Exception as e:
-            # print(f"Xato: {e}")
+            print(f"Loop xatosi: {e}")
             time.sleep(CHECK_INTERVAL)
+
 
 if __name__ == "__main__":
     main()

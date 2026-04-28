@@ -56,6 +56,24 @@ export async function POST(req: NextRequest) {
       zarplata: Number(s.price) * (worker.foiz || 0) / 100
     }));
 
+    // Saqlanmagan (isCustom) xizmatlarni bazaga qo'shish
+    const customServices = (services || []).filter((s: any) => s.isCustom);
+    if (customServices.length > 0) {
+      for (const cs of customServices) {
+        try {
+          await supabase.from('services_list').insert({
+            name: cs.name,
+            price: Number(cs.price),
+            brand: brand || 'UMUMIY',
+            car_model: model || '',
+            stavka: 0
+          });
+        } catch (err) {
+          console.error("Custom xizmatni saqlashda xatolik:", err);
+        }
+      }
+    }
+
     const orderParts = (parts || []).map((p: any) => ({
       nom: p.name,
       narx: Number(p.price),
