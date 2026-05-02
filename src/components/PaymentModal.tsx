@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   User,
@@ -37,6 +37,11 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
 
   // Amount being paid right now
   const [paidNow, setPaidNow] = useState<number>(remaining);
+
+  // Sync paidNow when discount changes, but only if it's the first time or matches the full amount
+  useEffect(() => {
+    setPaidNow(remaining);
+  }, [discount, remaining]);
 
   const handleConfirmPayment = async () => {
     if (paidNow <= 0 && discount <= 0) return;
