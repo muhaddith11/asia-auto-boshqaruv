@@ -27,14 +27,14 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
   const [discount, setDiscount] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   // Total amount to be paid after discount
   const totalToPay = Math.max(0, (order?.final || 0) - discount);
   // How much has already been paid
   const alreadyPaid = order.paid || 0;
   // Remaining balance
   const remaining = Math.max(0, totalToPay - alreadyPaid);
-  
+
   // Amount being paid right now
   const [paidNow, setPaidNow] = useState<number>(remaining);
 
@@ -149,40 +149,28 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
               <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                 <Zap size={14} className="text-blue-500" /> Moliyaviy ma'lumotlar
               </h4>
-              <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-5 space-y-3">
-                <table className="w-full text-[12px]">
-                  <tbody className="divide-y divide-white/5">
-                    <tr className="pb-2">
-                      <td className="py-2 text-slate-400">Jami buyurtma summasi</td>
-                      <td className="py-2 text-right font-bold text-white">{(order?.final || 0).toLocaleString()} so'm</td>
-                    </tr>
-                    {alreadyPaid > 0 && (
-                      <tr className="py-2">
-                        <td className="py-2 text-emerald-400">Avval to'langan</td>
-                        <td className="py-2 text-right font-bold text-emerald-400">{(alreadyPaid).toLocaleString()} so'm</td>
-                      </tr>
-                    )}
-                    <tr className="py-2">
-                      <td className="py-2 text-blue-400">Hozir to'lanmoqda</td>
-                      <td className="py-2 text-right font-bold text-blue-400">{(paidNow).toLocaleString()} so'm</td>
-                    </tr>
-                    {discount > 0 && (
-                      <tr className="py-2">
-                        <td className="py-2 text-red-400">Yangi chegirma</td>
-                        <td className="py-2 text-right font-black text-red-400">-{discount.toLocaleString()} so'm</td>
-                      </tr>
-                    )}
-                    <tr className="pt-3 border-t-2 border-blue-500/30">
-                      <td className="pt-3 text-[13px] text-white font-black uppercase tracking-widest">Qolgan qarz</td>
-                      <td className="pt-3 text-right">
-                        <span className="text-[22px] text-blue-400 font-black tracking-tight">{Math.max(0, remaining - paidNow).toLocaleString()}</span>
-                        <span className="text-[10px] text-slate-500 uppercase ml-1">sum</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-5 space-y-4">
+                <div className="flex justify-between items-center text-[12px] text-slate-400">
+                  <span>Jami summa</span>
+                  <span className="font-bold text-white">{(order?.final || 0).toLocaleString()} so'm</span>
+                </div>
+                {alreadyPaid > 0 && (
+                  <div className="flex justify-between items-center text-[12px] text-emerald-400">
+                    <span>Avval to'langan</span>
+                    <span className="font-bold">{(alreadyPaid).toLocaleString()} so'm</span>
+                  </div>
+                )}
+                {discount > 0 && (
+                  <div className="flex justify-between items-center text-[12px] text-red-400">
+                    <span>Yangi chegirma</span>
+                    <span className="font-black">-{discount.toLocaleString()} so'm</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center pt-2 border-t border-white/10 mt-2">
+                  <span className="text-[13px] text-white font-black uppercase tracking-widest">Qolgan qarz</span>
+                  <span className="text-[22px] text-blue-400 font-black tracking-tight">{remaining.toLocaleString()} <span className="text-[10px] text-slate-500 uppercase">sum</span></span>
+                </div>
               </div>
-
             </div>
           </div>
 

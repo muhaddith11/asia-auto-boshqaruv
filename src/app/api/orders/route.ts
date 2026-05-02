@@ -23,17 +23,17 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  
+
   // Safe mapping for status/holat
   if (b.holat !== undefined) {
     b.status = b.holat;
   }
 
   const fieldsToRemove = [
-    'createdAt', 'created_at', 'createdat', 
+    'createdAt', 'created_at', 'createdat',
     'chegirmaFoiz', 'subTotal', 'finalTotal'
   ];
-  
+
   fieldsToRemove.forEach(f => {
     if (f in b) delete b[f];
   });
@@ -51,17 +51,17 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Map application fields to database schema
     const dbBodyRaw = mapAppToDB(body);
-    
+
     // Whitelist
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
       'srv', 'zap', 'total', 'final', 'holat', 'sana',
       'services', 'zaps', 'zarplata', 'pribil', 'print_status', 'paid'
     ];
-    
+
     const dbBody: any = {};
     whitelist.forEach(key => {
       if (dbBodyRaw[key] !== undefined) {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    
+
     const created = (data && data[0]) ?? null;
 
     // Send Telegram Notification to Admin

@@ -18,18 +18,18 @@ function mapRowToApp(row: any) {
 
 function mapAppToDB(body: any) {
   const b = { ...body } as any;
-  
+
   // Safe mapping for status/holat
   if (b.holat !== undefined) {
     b.status = b.holat;
   }
-  
+
   // These fields are only for frontend calculation/display or handled by DB defaults.
   const fieldsToRemove = [
-    'createdAt', 'created_at', 'createdat', 
+    'createdAt', 'created_at', 'createdat',
     'chegirmaFoiz', 'subTotal', 'finalTotal'
   ];
-  
+
   fieldsToRemove.forEach(f => {
     if (f in b) delete b[f];
   });
@@ -50,17 +50,17 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     const { id: idStr } = await context.params;
     const id = Number(idStr);
     const body = await request.json();
-    
+
     // Map application fields to database schema
     const dbBody: any = {};
-    
-    // Whitelist
+
+    // Whitelist: Faqat bazada borligi aniq bo'lgan ustunlar
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
       'srv', 'zap', 'total', 'final', 'holat', 'sana',
       'services', 'zaps', 'zarplata', 'pribil', 'print_status', 'paid'
     ];
-    
+
     whitelist.forEach(key => {
       if (body[key] !== undefined) {
         if (key === 'holat') {
@@ -71,32 +71,29 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       }
     });
 
+
     if (Object.keys(dbBody).length === 0) {
       return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
     }
 
     console.log("DEBUG: Updating order", id, dbBody);
 
-    const { data, error, status } = await supabase.from('orders').update(dbBody).eq('id', id).select();
+    const { data, error, status: sbStatus } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     
     if (error) {
-       console.error("❌ Supabase Update Error:", error);
-       return NextResponse.json({ 
-         error: error.message, 
-         details: error.details, 
-         status: status 
-       }, { status: 500 });
+      console.error("❌ Supabase Update Error:", error);
+      return NextResponse.json({ error: error.message, details: error.details }, { status: 500 });
     }
     
+    console.log("✅ Supabase Response Data:", data);
+
     if (!data || data.length === 0) {
-       return NextResponse.json({ 
-         error: `Record with ID ${id} not found or update blocked by RLS policies`,
-         receivedId: id,
-         sentData: dbBody
-       }, { status: 404 });
+      console.error("⚠️ No data returned from update. Possible RLS issue or wrong ID:", id);
+      return NextResponse.json({ error: "No data returned from update" }, { status: 404 });
     }
 
     return NextResponse.json(mapRowToApp(data[0]));
+
   } catch (err: any) {
     console.error("Update Handler Error:", err);
     return NextResponse.json({ error: 'Invalid request: ' + err.message }, { status: 400 });
