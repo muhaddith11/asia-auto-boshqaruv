@@ -63,13 +63,10 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
 
     whitelist.forEach(key => {
       if (body[key] !== undefined) {
-        if (key === 'holat') {
-          dbBody.status = body[key];
-        } else {
-          dbBody[key] = body[key];
-        }
+        dbBody[key] = body[key];
       }
     });
+
 
 
     if (Object.keys(dbBody).length === 0) {

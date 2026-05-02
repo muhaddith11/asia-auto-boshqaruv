@@ -65,11 +65,7 @@ export async function POST(request: NextRequest) {
     const dbBody: any = {};
     whitelist.forEach(key => {
       if (dbBodyRaw[key] !== undefined) {
-        if (key === 'holat') {
-          dbBody.status = dbBodyRaw[key];
-        } else {
-          dbBody[key] = dbBodyRaw[key];
-        }
+        dbBody[key] = dbBodyRaw[key];
       }
     });
 
