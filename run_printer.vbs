@@ -1,6 +1,5 @@
-Set WinScriptHost = CreateObject("WScript.Shell")
-' Loyiha papkasini aniqlash
-strPath = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
-' Pythonw orqali skriptni terminalsiz ishga tushirish
-WinScriptHost.Run "pythonw """ & strPath & "\print_agent.py""", 0
-Set WinScriptHost = Nothing
+Dim objShell
+Set objShell = CreateObject("WScript.Shell")
+' pythonw ishlatiladi - terminal oynasisiz, mustaqil ishlaydi
+objShell.Run "pythonw ""C:\Users\nout.plus\OneDrive\Desktop\Projects made by AI\Asia Auto Service\boshqaruv\print_agent.py""", 0, False
+Set objShell = Nothing

@@ -58,7 +58,7 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
       'srv', 'zap', 'total', 'final', 'holat', 'sana',
-      'services', 'zaps', 'zarplata', 'pribil', 'print_status'
+      'services', 'zaps', 'zarplata', 'pribil', 'print_status', 'paid'
     ];
     
     whitelist.forEach(key => {

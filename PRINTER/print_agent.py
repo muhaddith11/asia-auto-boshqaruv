@@ -12,9 +12,8 @@ PRINTER_NAME = "XP-80" # Windowsdagi printer nomi
 SUPABASE_URL = "https://fwktbleovtkxxpsccqqr.supabase.co"
 SUPABASE_KEY = "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
 
-CHECK_INTERVAL = 5 # Har 5 soniyada tekshiradi
+CHECK_INTERVAL = 2 # Har 2 soniyada tekshiradi
 LAST_ORDER_ID = 0
-WORKERS_MAP = {}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "print_agent_log.txt")
@@ -29,18 +28,6 @@ def log_message(message):
             f.write(full_message + "\n")
     except:
         pass
-
-def fetch_workers():
-    global WORKERS_MAP
-    url = f"{SUPABASE_URL}/rest/v1/workers?select=id,ism"
-    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            for w in response.json():
-                WORKERS_MAP[w['id']] = w['ism']
-    except Exception as e:
-        log_message(f"Ishchilarni yuklashda xato: {e}")
 
 def print_receipt(order):
     """Buyurtmani boyitilgan ko'rinishda chop etadi"""
@@ -77,17 +64,6 @@ def print_receipt(order):
         dc.TextOut(0, y, "--------------------------------")
         y += 30
         
-        # Xizmatlardan xodimlarni yig'ish
-        services = order.get('services', [])
-        if isinstance(services, str): services = json.loads(services)
-        
-        workers_set = set()
-        for s in (services or []):
-            worker_id = s.get('workerId')
-            if worker_id and worker_id in WORKERS_MAP:
-                workers_set.add(WORKERS_MAP[worker_id])
-        workers_str = ", ".join(workers_set)
-
         # Buyurtma ma'lumotlari
         dc.TextOut(0, y, f"BUYURTMA: #{order['id']}")
         y += 35
@@ -98,14 +74,7 @@ def print_receipt(order):
         dc.TextOut(0, y, f"MASHINA: {str(order.get('mashina', ''))[:20]}")
         y += 35
         dc.TextOut(0, y, f"RAQAM: {order.get('raqam', '')}")
-        y += 35
-        
-        if workers_str:
-            dc.TextOut(0, y, f"XODIM: {workers_str[:22]}")
-            y += 40
-        else:
-            y += 5
-            
+        y += 40
         dc.TextOut(0, y, "--------------------------------")
         y += 35
         
@@ -115,8 +84,10 @@ def print_receipt(order):
         y += 40
         dc.SelectObject(font_normal)
         
+        services = order.get('services', [])
+        if isinstance(services, str): services = json.loads(services)
         for s in (services or []):
-            nom = s.get('nom', 'Xizmat')[:28]
+            nom = s.get('nom', 'Xizmat')[:22]
             narx = f"{int(s.get('narx', 0)):,}".replace(',', ' ')
             dc.TextOut(10, y, f"{nom}")
             dc.TextOut(350, y, f"{narx}")
@@ -153,10 +124,9 @@ def print_receipt(order):
         dc.SelectObject(font_normal)
         dc.TextOut(0, y, "Tel: +998 90 570 88 88")
         y += 35
-        dc.TextOut(0, y, "Qo'qon shahar Ubay Oripov 10")
+        dc.TextOut(0, y, "Qo'qon shahar Ubay Oripov 12")
         
-        y += 300 # Qog'oz surilishi
-        dc.TextOut(0, y, ".") # Qog'ozni haqiqatdan ham pastga surish uchun ko'rinmas yoki kichik belgi
+        y += 250 # Qog'oz surilishi
         
         dc.EndPage()
         dc.EndDoc()
@@ -214,7 +184,10 @@ def get_orders_to_print():
         all_to_print = {o['id']: o for o in (pending_list + new_list)}.values()
         return sorted(all_to_print, key=lambda x: x['id'])
     except Exception as e:
-        log_message(f"Baza bilan ulanishda xato: {e}")
+        if "Connection aborted" in str(e) or "ConnectionResetError" in str(e):
+             log_message(f"Baza bilan ulanish uzildi (qaytadan ulanmoqda...)")
+        else:
+             log_message(f"Baza bilan ulanishda xato: {e}")
         return []
 
 def mark_as_printed(order_id):
@@ -226,18 +199,14 @@ def mark_as_printed(order_id):
         "Content-Type": "application/json"
     }
     try:
-        response = requests.patch(url, headers=headers, json={"print_status": "printed"}, timeout=10)
-        if response.status_code not in (200, 204):
-            log_message(f"Statusni yangilashda xatolik (HTTP {response.status_code}): {response.text}")
+        requests.patch(url, headers=headers, json={"print_status": "printed"}, timeout=10)
     except Exception as e:
-        log_message(f"Statusni yangilashda xato (Network): {e}")
+        log_message(f"Statusni yangilashda xato: {e}")
 
 def main():
     global LAST_ORDER_ID
     log_message("Professional Print Agent ishga tushdi...")
     log_message(f"Printer: {PRINTER_NAME}")
-    
-    fetch_workers()
     
     # Boshlang'ich oxirgi ID - oxirgi PRINTERD orderni topamiz
     url = f"{SUPABASE_URL}/rest/v1/orders?select=id&print_status=eq.printed&order=id.desc&limit=1"
@@ -261,10 +230,6 @@ def main():
     counter = 0
     while True:
         try:
-            # Vaqti-vaqti bilan ishchilarni yangilab turish (masalan har 12-tsiklda, ya'ni 1 daqiqada 1 marta)
-            if counter == 0:
-                fetch_workers()
-                
             to_print = get_orders_to_print()
             for order in to_print:
                 # Agar status 'printed' bo'lsa o'tkazib yuboramiz (get_orders_to_print'da filter bor, lekin ehtiyot shart)

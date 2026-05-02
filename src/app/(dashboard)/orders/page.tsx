@@ -421,7 +421,12 @@ export default function OrdersPage() {
 
                         {/* To'lov */}
                         <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', fontSize: 11 }}>
-                          {(b.final || 0).toLocaleString()} so'm
+                          <div>{(b.final || 0).toLocaleString()} so'm</div>
+                          {((b.paid || 0) < (b.final || 0) && (b.paid || 0) > 0) && (
+                            <div style={{ color: 'var(--red)', fontSize: 9, fontWeight: 700, marginTop: 1 }}>
+                              Qarz: {((b.final || 0) - (b.paid || 0)).toLocaleString()} so'm
+                            </div>
+                          )}
                         </td>
 
                         {/* Maosh */}

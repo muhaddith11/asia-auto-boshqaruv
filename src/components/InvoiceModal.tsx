@@ -125,8 +125,18 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                           <span className="text-[12px] font-bold uppercase tracking-widest">Zapchastlar</span>
                           <span className="font-bold">{(order.zap || 0).toLocaleString()} UZS</span>
                        </div>
+                       <div className="flex justify-between items-center text-slate-400 pt-2 border-t border-slate-100">
+                          <span className="text-[12px] font-bold uppercase tracking-widest">To'langan</span>
+                          <span className="font-bold text-emerald-600">{(order.paid || 0).toLocaleString()} UZS</span>
+                       </div>
+                       {((order.final || 0) - (order.paid || 0)) > 0 && (
+                        <div className="flex justify-between items-center text-red-500 font-black">
+                           <span className="text-[12px] font-bold uppercase tracking-widest">Qolgan qarz</span>
+                           <span>{((order.final || 0) - (order.paid || 0)).toLocaleString()} UZS</span>
+                        </div>
+                       )}
                        <div className="flex justify-between items-end pt-6 mt-4 border-t-2 border-slate-900">
-                          <div className="text-[14px] font-black text-slate-400 uppercase tracking-widest pb-1">Jami To'lov</div>
+                          <div className="text-[14px] font-black text-slate-400 uppercase tracking-widest pb-1">Jami Summa</div>
                           <div className="text-right text-[32px] font-black text-slate-900 tracking-tighter">
                             {(order?.final || 0).toLocaleString()} <span className="text-[14px] text-slate-500 uppercase ml-1">Sum</span>
                           </div>

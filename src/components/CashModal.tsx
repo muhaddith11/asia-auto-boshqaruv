@@ -47,7 +47,7 @@ const S = {
 };
 
 export default function CashModal({ type, onClose }: CashModalProps) {
-  const { updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh } = useStore();
+  const { updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh, buyurtmalar, updateBuyurtma } = useStore();
   
   const [formData, setFormData] = useState({
     amount: '',
@@ -56,10 +56,15 @@ export default function CashModal({ type, onClose }: CashModalProps) {
     source: '',
     opType: OPERATION_TYPES[0],
     comment: '',
-    customCategory: ''
+    customCategory: '',
+    orderId: ''
   });
 
   const categories = type === 'income' ? CATEGORIES_INCOME : CATEGORIES_EXPENSE;
+
+  const selectedClient = mijozlar.find(m => m.ism === formData.source);
+  const clientDiscount = (formData.category === "Buyurtma bo'yicha to'lov" && selectedClient) ? (selectedClient.skidka || 0) : 0;
+  const discountedAmount = formData.amount ? Math.round(parseInt(formData.amount) * (1 - (clientDiscount / 100))) : 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +85,48 @@ export default function CashModal({ type, onClose }: CashModalProps) {
         method: formData.method,
         izoh: formData.comment || "Maosh to'lovi"
       });
+    } else if (formData.category === "Buyurtma bo'yicha to'lov") {
+      // Logic for Task 2: Expense linked to Order
+      const targetOrder = buyurtmalar.find(b => String(b.id) === formData.orderId);
+      if (!targetOrder) {
+        alert("XATO: Bunday ID dagi buyurtma topilmadi!");
+        return;
+      }
+
+      // Add as a "virtual" part to the order
+      const newZap = {
+        id: -Date.now(),
+        nom: `Xarajat: ${formData.comment || 'Qo\'shimcha'}`,
+        qty: 1,
+        narx: discountedAmount,
+        sebestoimost: amount,
+        bir: 'dona',
+        kat: 'Xarajat'
+      };
+
+      const updatedZaps = [...(targetOrder.zaps || []), newZap];
+      const addedToZap = discountedAmount;
+      
+      updateBuyurtma(targetOrder.id, {
+        zaps: updatedZaps as any,
+        zap: (targetOrder.zap || 0) + addedToZap,
+        total: (targetOrder.total || 0) + addedToZap,
+        final: (targetOrder.final || 0) + addedToZap
+      });
+
+      // Also record the expense in Kassa
+      updateKassa(formData.method, amount, 'sub');
+      const op = {
+        date: new Date().toISOString().split('T')[0],
+        type: 'expense',
+        method: formData.method,
+        amount: amount,
+        category: finalCategory,
+        comment: `${formData.comment} (Buyurtma #${formData.orderId})`,
+        source: formData.source || 'manual',
+        orderId: formData.orderId
+      };
+      addIshxonaOperatsiya(op as any);
     } else {
       updateKassa(formData.method, amount, type === 'income' ? 'add' : 'sub');
       const op = {
@@ -106,7 +153,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
     <div className={S.overlay}>
       <div className={S.card}>
         
-        {/* Header (Matching Image 2 Style) */}
+        {/* Header */}
         <div className={S.header}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
@@ -141,6 +188,11 @@ export default function CashModal({ type, onClose }: CashModalProps) {
               />
               <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-slate-500 text-[12px] uppercase">UZS</span>
             </div>
+            {clientDiscount > 0 && (
+              <p className="text-[10px] text-emerald-400 font-bold px-1">
+                Mijoz chegirmasi ({clientDiscount}%): {discountedAmount.toLocaleString()} so'm qo'shiladi
+              </p>
+            )}
           </div>
 
           {/* Kategoriya */}
@@ -176,7 +228,24 @@ export default function CashModal({ type, onClose }: CashModalProps) {
             </div>
           )}
 
-          {/* Istoshnik/Poluchatel - Filtered based on request logic */}
+          {/* Buyurtma ID - Task 2 */}
+          {formData.category === "Buyurtma bo'yicha to'lov" && (
+            <div className="space-y-1.5 px-1 animate-in slide-in-from-top-2 duration-200">
+              <label className={S.label}>Buyurtma ID *</label>
+              <div className="relative">
+                <input 
+                  type="text" required
+                  value={formData.orderId}
+                  onChange={(e) => setFormData({...formData, orderId: e.target.value})}
+                  className={S.input}
+                  placeholder="Buyurtma raqamini kiriting (masalan: 123)..."
+                />
+                <Hash className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              </div>
+            </div>
+          )}
+
+          {/* Istoshnik/Poluchatel */}
           {formData.category !== "Ishxona" && (
             <div className="space-y-1.5 px-1">
               <label className={S.label}>Manba / Qabul qiluvchi *</label>
@@ -192,6 +261,11 @@ export default function CashModal({ type, onClose }: CashModalProps) {
                     <option value="Yahyo aka">👤 Yahyo aka</option>
                   ) : formData.category === "Ish xaqi" ? (
                     xodimlar.map(x => <option key={x.id} value={x.ism}>🛠️ {x.ism} - Sotrudnik</option>)
+                  ) : formData.category === "Buyurtma bo'yicha to'lov" ? (
+                    <>
+                      <option value="Kunlik mijoz">👤 Kunlik mijoz</option>
+                      {mijozlar.map(m => <option key={m.id} value={m.ism}>👤 {m.ism} - Klient</option>)}
+                    </>
                   ) : (type === 'income' && formData.category === "Buyurtma to'lovi") ? (
                     mijozlar.map(m => <option key={m.id} value={m.ism}>👤 {m.ism} - Klient</option>)
                   ) : (
@@ -238,7 +312,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
             </div>
           </div>
 
-          {/* Actions (Matching Image 2 Style) */}
+          {/* Actions */}
           <div className="pt-4 flex gap-4">
             <button 
               type="button" onClick={onClose}

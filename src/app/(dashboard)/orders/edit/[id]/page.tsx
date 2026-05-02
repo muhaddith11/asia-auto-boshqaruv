@@ -3,12 +3,12 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useMemo, use } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  Trash2, 
-  Wrench, 
-  Package, 
-  User, 
+import {
+  Plus,
+  Trash2,
+  Wrench,
+  Package,
+  User,
   CheckCircle2,
   Save,
   ArrowLeft
@@ -17,12 +17,12 @@ import PhoneInput from '@/components/PhoneInput';
 import { normalizePhone } from '@/lib/phone';
 
 const STATUS_TABS = [
-  { key: 'yaratildi',             label: 'Yaratildi',             color: '#64748b' },
-  { key: 'tamirlanmoqda',         label: 'Tamirlanmoqda',         color: '#6366f1' },
-  { key: 'ehtiyot qism kutilyapti',label: 'Ehtiyot qism kutilyapti',color: '#06b6d4' },
-  { key: 'tulanmagan',            label: "To'lanmagan",           color: '#f97316' },
-  { key: 'tulangan',              label: "To'langan",             color: '#10b981' },
-  { key: 'bekor qilingan',        label: 'Bekor qilingan',        color: '#f43f5e' },
+  { key: 'yaratildi', label: 'Yaratildi', color: '#64748b' },
+  { key: 'tamirlanmoqda', label: 'Tamirlanmoqda', color: '#6366f1' },
+  { key: 'ehtiyot qism kutilyapti', label: 'Ehtiyot qism kutilyapti', color: '#06b6d4' },
+  { key: 'tulanmagan', label: "To'lanmagan", color: '#f97316' },
+  { key: 'tulangan', label: "To'langan", color: '#10b981' },
+  { key: 'bekor qilingan', label: 'Bekor qilingan', color: '#f43f5e' },
 ];
 
 const S = {
@@ -64,7 +64,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         chegirma: order.chegirma || 0,
         subTotal: order.total || 0
       });
-      
+
       // Load assignments from services
       setAssignments(order.services.map((s, idx) => {
         // Try to find the service in the catalog by ID or Name
@@ -108,7 +108,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       return res.trim();
     }
     if (/^\d{3,}/.test(raw)) {
-       return raw.slice(0, 2) + ' ' + raw.slice(2, 5) + (raw.length > 5 ? ' ' + raw.slice(5, 8) : '');
+      return raw.slice(0, 2) + ' ' + raw.slice(2, 5) + (raw.length > 5 ? ' ' + raw.slice(5, 8) : '');
     }
     return raw;
   };
@@ -181,15 +181,15 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)', minHeight: '100vh' }}>
-       <div style={{ padding: '16px 28px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => router.back()} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-all">
-             <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h1 className="text-[16px] font-black text-white uppercase tracking-tight">Buyurtmani Tahrirlash #{orderId}</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{form.ism} | {form.mashina}</p>
-          </div>
-       </div>
+      <div style={{ padding: '16px 28px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <button onClick={() => router.back()} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-all">
+          <ArrowLeft size={20} />
+        </button>
+        <div>
+          <h1 className="text-[16px] font-black text-white uppercase tracking-tight">Buyurtmani Tahrirlash #{orderId}</h1>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{form.ism} | {form.mashina}</p>
+        </div>
+      </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
@@ -205,29 +205,29 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
             <div style={{ ...S.cardBody, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
                 <label style={S.label}>Ism Familiya *</label>
-                <input style={S.input} value={form.ism} onChange={e => setForm({...form, ism: e.target.value})} />
+                <input style={S.input} value={form.ism} onChange={e => setForm({ ...form, ism: e.target.value })} />
               </div>
               <div>
                 <label style={S.label}>Mashina *</label>
-                <select style={S.select} value={form.mashina} onChange={e => setForm({...form, mashina: e.target.value})}>
+                <select style={S.select} value={form.mashina} onChange={e => setForm({ ...form, mashina: e.target.value })}>
                   {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div>
                 <label style={S.label}>Telefon</label>
-                <PhoneInput style={S.input} value={form.tel} onChange={(v) => setForm({...form, tel: v})} />
+                <PhoneInput style={S.input} value={form.tel} onChange={(v) => setForm({ ...form, tel: v })} />
               </div>
               <div>
                 <label style={S.label}>Davlat Raqami</label>
-                <input 
-                  style={S.input} 
-                  value={form.raqam} 
+                <input
+                  style={S.input}
+                  value={form.raqam}
                   placeholder="01 A 000 AA"
-                  onChange={e => setForm({...form, raqam: formatRaqam(e.target.value)})} 
+                  onChange={e => setForm({ ...form, raqam: formatRaqam(e.target.value) })}
                 />
               </div>
             </div>
-            
+
             <div style={{ padding: '0 24px 24px', display: 'flex', gap: 8 }}>
               {STATUS_TABS.map(tab => (
                 <button
@@ -249,92 +249,92 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
           {/* SECTION 2: Xizmatlar */}
           <div style={S.card}>
-             <div style={S.cardHeader}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                 <Wrench size={16} color="#6366f1" />
-                 <span className="text-[12px] font-black text-white uppercase tracking-wider">Xizmatlar</span>
-               </div>
-               <button onClick={() => setAssignments([...assignments, { id: Date.now(), workerId: '', serviceId: '', customNarx: '' }])} className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300">
-                  + Xizmat qo'shish
-               </button>
-             </div>
-             <div style={S.cardBody}>
-               {assignments.map((a, idx) => (
-                 <div key={idx} className="bg-white/5 border border-white/5 rounded-xl p-4 mb-4 grid grid-cols-[1fr_1fr_120px_40px] gap-4 items-end">
-                    <div>
-                       <label style={S.label}>Usta</label>
-                       <select style={S.select} value={a.workerId} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? {...x, workerId: e.target.value} : x))}>
-                          <option value="">— Tanlang —</option>
-                          {xodimlar.map(x => <option key={x.id} value={x.id}>{x.ism}</option>)}
-                       </select>
-                    </div>
-                    <div>
-                       <label style={S.label}>Xizmat</label>
-                        <select style={S.select} value={a.serviceId} onChange={e => {
-                           const sId = e.target.value;
-                           const s = xizmatlar.find(x => String(x.id) === String(sId));
-                           setAssignments(assignments.map(x => x.id === a.id ? {...x, serviceId: sId, customNom: '', customNarx: s?.narx?.toString() || ''} : x));
-                        }}>
-                          <option value="">{a.customNom ? `[Maxsus] ${a.customNom}` : '— Tanlang —'}</option>
-                          {xizmatlar.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
-                       </select>
-                    </div>
-                    <div>
-                       <label style={S.label}>Narx</label>
-                       <input style={S.input} type="number" value={a.customNarx || getServiceNarx(a.serviceId) || ''} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? {...x, customNarx: e.target.value} : x))} />
-                    </div>
-                    <button onClick={() => setAssignments(assignments.filter(x => x.id !== a.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
-                       <Trash2 size={16} />
-                    </button>
-                 </div>
-               ))}
-             </div>
+            <div style={S.cardHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Wrench size={16} color="#6366f1" />
+                <span className="text-[12px] font-black text-white uppercase tracking-wider">Xizmatlar</span>
+              </div>
+              <button onClick={() => setAssignments([...assignments, { id: Date.now(), workerId: '', serviceId: '', customNarx: '' }])} className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300">
+                + Xizmat qo'shish
+              </button>
+            </div>
+            <div style={S.cardBody}>
+              {assignments.map((a, idx) => (
+                <div key={idx} className="bg-white/5 border border-white/5 rounded-xl p-4 mb-4 grid grid-cols-[1fr_1fr_120px_40px] gap-4 items-end">
+                  <div>
+                    <label style={S.label}>Usta</label>
+                    <select style={S.select} value={a.workerId} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, workerId: e.target.value } : x))}>
+                      <option value="">— Tanlang —</option>
+                      {xodimlar.map(x => <option key={x.id} value={x.id}>{x.ism}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Xizmat</label>
+                    <select style={S.select} value={a.serviceId} onChange={e => {
+                      const sId = e.target.value;
+                      const s = xizmatlar.find(x => String(x.id) === String(sId));
+                      setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNom: '', customNarx: s?.narx?.toString() || '' } : x));
+                    }}>
+                      <option value="">{a.customNom ? `[Maxsus] ${a.customNom}` : '— Tanlang —'}</option>
+                      {xizmatlar.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Narx</label>
+                    <input style={S.input} type="number" value={a.customNarx || getServiceNarx(a.serviceId) || ''} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, customNarx: e.target.value } : x))} />
+                  </div>
+                  <button onClick={() => setAssignments(assignments.filter(x => x.id !== a.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* SECTION 3: Zapchastlar */}
           <div style={S.card}>
-             <div style={S.cardHeader}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                 <Package size={16} color="#10b981" />
-                 <span className="text-[12px] font-black text-white uppercase tracking-wider">Ehtiyot qismlar</span>
-               </div>
-               <button onClick={() => setPartRows([...partRows, { id: Date.now(), partId: '', qty: 1 }])} className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300">
-                  + Zapchast qo'shish
-               </button>
-             </div>
-             <div style={S.cardBody}>
-               {partRows.map((r, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_120px_100px_40px] gap-4 mb-4 items-end">
-                     <div>
-                        <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? {...x, partId: e.target.value, customNom: ''} : x))}>
-                           <option value="">{r.customNom ? `[Maxsus] ${r.customNom}` : '— Tanlang —'}</option>
-                           {zapchastlar.map(p => <option key={p.id} value={p.id}>{p.nom} ({p.balance})</option>)}
-                        </select>
-                     </div>
-                     <div className="text-[13px] font-bold text-emerald-400 py-2.5 px-4 bg-white/5 rounded-xl text-right">
-                        {(getPartNarx(r.partId) * r.qty).toLocaleString()} sum
-                     </div>
-                     <input style={S.input} type="number" value={r.qty} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? {...x, qty: parseInt(e.target.value) || 1} : x))} />
-                     <button onClick={() => setPartRows(partRows.filter(x => x.id !== r.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
-                        <Trash2 size={16} />
-                     </button>
+            <div style={S.cardHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Package size={16} color="#10b981" />
+                <span className="text-[12px] font-black text-white uppercase tracking-wider">Ehtiyot qismlar</span>
+              </div>
+              <button onClick={() => setPartRows([...partRows, { id: Date.now(), partId: '', qty: 1 }])} className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300">
+                + Zapchast qo'shish
+              </button>
+            </div>
+            <div style={S.cardBody}>
+              {partRows.map((r, idx) => (
+                <div key={idx} className="grid grid-cols-[1fr_120px_100px_40px] gap-4 mb-4 items-end">
+                  <div>
+                    <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, partId: e.target.value, customNom: '' } : x))}>
+                      <option value="">{r.customNom ? `[Maxsus] ${r.customNom}` : '— Tanlang —'}</option>
+                      {zapchastlar.map(p => <option key={p.id} value={p.id}>{p.nom} ({p.balance})</option>)}
+                    </select>
                   </div>
-               ))}
-             </div>
+                  <div className="text-[13px] font-bold text-emerald-400 py-2.5 px-4 bg-white/5 rounded-xl text-right">
+                    {(getPartNarx(r.partId) * r.qty).toLocaleString()} sum
+                  </div>
+                  <input style={S.input} type="number" value={r.qty} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, qty: parseInt(e.target.value) || 1 } : x))} />
+                  <button onClick={() => setPartRows(partRows.filter(x => x.id !== r.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Totals */}
           <div className="bg-[#1f222d] border border-white/5 rounded-2xl p-6 flex items-center justify-between">
-             <div className="space-y-1">
-                <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Jami to'lov</span>
-                <div className="text-[28px] font-black text-white">{finalTotal.toLocaleString()} <span className="text-[14px] text-slate-500">sum</span></div>
-             </div>
-             <button 
+            <div className="space-y-1">
+              <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Jami to'lov</span>
+              <div className="text-[28px] font-black text-white">{finalTotal.toLocaleString()} <span className="text-[14px] text-slate-500">sum</span></div>
+            </div>
+            <button
               onClick={handleUpdate}
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-10 py-4 rounded-xl text-[14px] uppercase tracking-widest transition-all shadow-xl shadow-emerald-900/20 flex items-center gap-2"
-             >
-               <Save size={20} /> O'zgarishlarni saqlash
-             </button>
+            >
+              <Save size={20} /> O'zgarishlarni saqlash
+            </button>
           </div>
 
         </div>
