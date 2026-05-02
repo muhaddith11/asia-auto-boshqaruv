@@ -79,8 +79,9 @@ export async function POST(req: Request) {
 
     const { data, error } = await supabase
       .from('services_list')
-      .upsert(services, { onConflict: 'name,brand,car_model' }) // Unique constraint should be on these
+      .insert(services)
       .select();
+
 
     if (error) throw error;
     return NextResponse.json(data);
