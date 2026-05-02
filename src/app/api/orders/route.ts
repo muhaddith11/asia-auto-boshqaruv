@@ -64,7 +64,13 @@ export async function POST(request: NextRequest) {
     
     const dbBody: any = {};
     whitelist.forEach(key => {
-      if (dbBodyRaw[key] !== undefined) dbBody[key] = dbBodyRaw[key];
+      if (dbBodyRaw[key] !== undefined) {
+        if (key === 'holat') {
+          dbBody.status = dbBodyRaw[key];
+        } else {
+          dbBody[key] = dbBodyRaw[key];
+        }
+      }
     });
 
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();

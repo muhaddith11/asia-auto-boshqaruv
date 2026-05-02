@@ -54,7 +54,7 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     // Map application fields to database schema
     const dbBody: any = {};
     
-    // Whitelist: Faqat bazada borligi aniq bo'lgan ustunlar
+    // Whitelist
     const whitelist = [
       'ism', 'tel', 'mashina', 'raqam', 'vin', 'yil', 'km', 'muammo',
       'srv', 'zap', 'total', 'final', 'holat', 'sana',
@@ -62,14 +62,14 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     ];
     
     whitelist.forEach(key => {
-      if (body[key] !== undefined) dbBody[key] = body[key];
+      if (body[key] !== undefined) {
+        if (key === 'holat') {
+          dbBody.status = body[key];
+        } else {
+          dbBody[key] = body[key];
+        }
+      }
     });
-    
-    // 🔄 Handle status/holat mapping
-    // If frontend sends 'status' but not 'holat', map it
-    if (body.status !== undefined && dbBody.holat === undefined) {
-      dbBody.holat = body.status;
-    }
 
     if (Object.keys(dbBody).length === 0) {
       return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });

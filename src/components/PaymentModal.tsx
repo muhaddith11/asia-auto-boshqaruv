@@ -22,10 +22,11 @@ interface PaymentModalProps {
 }
 
 export default function PaymentModal({ order, onClose }: PaymentModalProps) {
-  const { updateBuyurtma, updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, xodimlar } = useStore();
+  const { updateKassa, addIshxonaOperatsiya, xodimlar, loadInitialData } = useStore();
   const [method, setMethod] = useState<'naqd' | 'karta'>('naqd');
   const [discount, setDiscount] = useState(0);
   const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // Total amount to be paid after discount
   const totalToPay = Math.max(0, (order?.final || 0) - discount);
@@ -37,45 +38,62 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
   // Amount being paid right now
   const [paidNow, setPaidNow] = useState<number>(remaining);
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     if (paidNow <= 0 && discount <= 0) return;
+    setLoading(true);
 
     const newPaidTotal = alreadyPaid + paidNow;
     const isFullyPaid = newPaidTotal >= totalToPay;
+    const newHolat = isFullyPaid ? 'tulangan' : order.holat;
 
-    // 1. Update order status and discount
-    updateBuyurtma(order.id, {
-      holat: isFullyPaid ? 'tulangan' : order.holat,
-      chegirma: order.chegirma + discount,
-      final: totalToPay,
-      paid: newPaidTotal
-    });
+    try {
+      // To'g'ridan-to'g'ri API ga yuborish (ishonchli)
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          holat: newHolat,
+          final: totalToPay,
+          paid: newPaidTotal,
+        })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || `Server xatosi: ${res.status}`);
+      }
 
-    // 2. Add to Kassa
-    if (paidNow > 0) {
-      updateKassa(method, paidNow, 'add');
+      // Kassani yangilash
+      if (paidNow > 0) {
+        updateKassa(method, paidNow, 'add');
+        const op = {
+          date: new Date().toISOString().split('T')[0],
+          type: 'income',
+          method: method,
+          amount: paidNow,
+          category: "Buyurtma to'lovi",
+          comment: `Buyurtma #${order.id} - ${order.ism}${isFullyPaid ? ' (To\'liq)' : ' (Qisman)'}${comment ? ' | ' + comment : ''}`,
+          source: 'buyurtma',
+          orderId: order.id
+        };
+        addIshxonaOperatsiya(op as any);
+      }
 
-      // 3. Log transaction
-      const op = {
-        date: new Date().toISOString().split('T')[0],
-        type: 'income',
-        method: method,
-        amount: paidNow,
-        category: 'Buyurtma to\'lovi',
-        comment: `Buyurtma #${order.id} - ${order.ism}${isFullyPaid ? ' (To\'liq)' : ' (Qisman)'}${comment ? ' | ' + comment : ''}`,
-        source: 'buyurtma',
-        orderId: order.id
-      };
-      addIshxonaOperatsiya(op as any);
+      // Ma'lumotlarni DB dan yangilash
+      await loadInitialData();
+      onClose();
+    } catch (err: any) {
+      alert('XATOLIK: ' + (err.message || 'Noma\'lum xato'));
+    } finally {
+      setLoading(false);
     }
-
-    onClose();
   };
+
 
   const getWorkerName = (id: number) => {
     const w = xodimlar.find(x => x.id === id);
     return w ? `${w.ism} ${w.familiya || ''}` : 'Noma\'lum usta';
   };
+
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-[6px] animate-in fade-in duration-300">
@@ -131,28 +149,40 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
               <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                 <Zap size={14} className="text-blue-500" /> Moliyaviy ma'lumotlar
               </h4>
-              <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-5 space-y-4">
-                <div className="flex justify-between items-center text-[12px] text-slate-400">
-                  <span>Jami summa</span>
-                  <span className="font-bold text-white">{(order?.final || 0).toLocaleString()} so'm</span>
-                </div>
-                {alreadyPaid > 0 && (
-                  <div className="flex justify-between items-center text-[12px] text-emerald-400">
-                    <span>Avval to'langan</span>
-                    <span className="font-bold">{(alreadyPaid).toLocaleString()} so'm</span>
-                  </div>
-                )}
-                {discount > 0 && (
-                  <div className="flex justify-between items-center text-[12px] text-red-400">
-                    <span>Yangi chegirma</span>
-                    <span className="font-black">-{discount.toLocaleString()} so'm</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center pt-2 border-t border-white/10 mt-2">
-                  <span className="text-[13px] text-white font-black uppercase tracking-widest">Qolgan qarz</span>
-                  <span className="text-[22px] text-blue-400 font-black tracking-tight">{remaining.toLocaleString()} <span className="text-[10px] text-slate-500 uppercase">sum</span></span>
-                </div>
+              <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-5 space-y-3">
+                <table className="w-full text-[12px]">
+                  <tbody className="divide-y divide-white/5">
+                    <tr className="pb-2">
+                      <td className="py-2 text-slate-400">Jami buyurtma summasi</td>
+                      <td className="py-2 text-right font-bold text-white">{(order?.final || 0).toLocaleString()} so'm</td>
+                    </tr>
+                    {alreadyPaid > 0 && (
+                      <tr className="py-2">
+                        <td className="py-2 text-emerald-400">Avval to'langan</td>
+                        <td className="py-2 text-right font-bold text-emerald-400">{(alreadyPaid).toLocaleString()} so'm</td>
+                      </tr>
+                    )}
+                    <tr className="py-2">
+                      <td className="py-2 text-blue-400">Hozir to'lanmoqda</td>
+                      <td className="py-2 text-right font-bold text-blue-400">{(paidNow).toLocaleString()} so'm</td>
+                    </tr>
+                    {discount > 0 && (
+                      <tr className="py-2">
+                        <td className="py-2 text-red-400">Yangi chegirma</td>
+                        <td className="py-2 text-right font-black text-red-400">-{discount.toLocaleString()} so'm</td>
+                      </tr>
+                    )}
+                    <tr className="pt-3 border-t-2 border-blue-500/30">
+                      <td className="pt-3 text-[13px] text-white font-black uppercase tracking-widest">Qolgan qarz</td>
+                      <td className="pt-3 text-right">
+                        <span className="text-[22px] text-blue-400 font-black tracking-tight">{Math.max(0, remaining - paidNow).toLocaleString()}</span>
+                        <span className="text-[10px] text-slate-500 uppercase ml-1">sum</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+
             </div>
           </div>
 
@@ -265,17 +295,21 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         <div className="px-8 py-6 border-t border-[#2a2d3d] bg-[#1f222d] flex items-center justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-3 rounded-xl text-slate-500 text-[12px] font-black uppercase tracking-widest hover:bg-white/5 transition-all"
+            disabled={loading}
+            className="px-6 py-3 rounded-xl text-slate-500 text-[12px] font-black uppercase tracking-widest hover:bg-white/5 transition-all disabled:opacity-50"
           >
             Bekor qilish
           </button>
           <button
             onClick={handleConfirmPayment}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-black px-10 py-3.5 rounded-xl text-[13px] uppercase tracking-widest transition-all shadow-xl shadow-blue-900/40 flex items-center gap-2 active:scale-95"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-70 text-white font-black px-10 py-3.5 rounded-xl text-[13px] uppercase tracking-widest transition-all shadow-xl shadow-blue-900/40 flex items-center gap-2 active:scale-95"
           >
-            <ShieldCheck size={18} /> To'lovni tasdiqlash
+            <ShieldCheck size={18} />
+            {loading ? 'Saqlanmoqda...' : "To'lovni tasdiqlash"}
           </button>
         </div>
+
       </div>
     </div>
   );
