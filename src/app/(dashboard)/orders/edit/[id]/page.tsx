@@ -174,6 +174,11 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         };
       });
 
+    const partsCost = updatedParts.reduce((sum, r) => {
+      const catalogPart = zapchastlar.find(x => String(x.id) === String(r.id));
+      return sum + (catalogPart?.sebestoimost || 0) * (r.qty || 1);
+    }, 0);
+
     updateBuyurtma(orderId, {
       ...form,
       services: updatedServices,
@@ -183,7 +188,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       total: subTotal,
       final: finalTotal,
       zarplata: zarplataTotal,
-      pribil: finalTotal - zarplataTotal
+      pribil: finalTotal - zarplataTotal - partsCost
     });
 
     router.push('/orders');

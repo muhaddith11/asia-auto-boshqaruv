@@ -99,6 +99,17 @@ export async function POST(req: NextRequest) {
     const servicesStr = services?.map((s: any) => `${s.name} - ${s.price}`).join(', ') || 'Xizmatlar yo\'q';
     const partsStr = parts?.map((p: any) => `${p.name} (${p.quantity}x) - ${p.price}`).join(', ') || 'Zapchastlar yo\'q';
 
+    // Calculate Parts Cost for accurate Profit
+    let partsCostTotal = 0;
+    for (const p of orderParts) {
+      if (p.id) {
+        const { data: dbPart } = await supabase.from('parts').select('sebestoimost').eq('id', p.id).maybeSingle();
+        if (dbPart) {
+          partsCostTotal += (Number(dbPart.sebestoimost) || 0) * (p.qty || 1);
+        }
+      }
+    }
+
     const zarplataTotal = orderServices.reduce((sum: number, s: any) => sum + (s.zarplata || 0), 0);
 
     const now = new Date();
@@ -119,7 +130,7 @@ export async function POST(req: NextRequest) {
       total: servicesTotal + partsTotal,
       final: servicesTotal + partsTotal,
       zarplata: zarplataTotal,
-      pribil: (servicesTotal + partsTotal) - zarplataTotal,
+      pribil: (servicesTotal + partsTotal) - zarplataTotal - partsCostTotal,
       vin: '',
       yil: '',
       print_status: 'pending'
