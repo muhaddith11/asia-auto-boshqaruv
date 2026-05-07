@@ -175,7 +175,8 @@ export default function NewOrderPage() {
     const p = zapchastlar.find(x => x.id === Number(r.partId));
     return sum + (p?.sebestoimost || 0) * (r.qty || 1);
   }, 0);
-  const netProfit = finalTotal - zarplataTotal - partsCost;
+  // pribil = faqat xizmatlardan foyda (zapchast kiritilmaydi)
+  const netProfit = Math.max(0, servicesTotal - zarplataTotal - (form.chegirma || 0));
 
   // ── Save ─────────────────────────────────────────────────────
   const handleSave = () => {
