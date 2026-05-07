@@ -184,28 +184,17 @@ export default function WorkersPage() {
               if (isPartner) {
                 // 🏦 SHERIKLAR UCHUN HISOB-KITOB
                 // b.pribil ishlatiladi — DBda saqlanadi, har yuklanishda o'zgarmaydi.
-                // pribil = srv - zarplata - chegirma (yangi buyurtmalarda to'g'ri saqlanadi)
-                const orderProfit = buyurtmalar
+                const uniqueOrders = Array.from(new Map(buyurtmalar.map(b => [b.id, b])).values());
+                const orderProfit = uniqueOrders
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => sum + Math.max(0, Number(b.pribil) || 0), 0);
                 
-                // 🛠️ Ishxona operatsiyalari (Kirim - Chiqim)
-                // "Aylanmadan tashqari" chiqimlar bu yerda hisobga olinmaydi, 
-                // chunki ular tashqariOperatsiyalar arrayida bo'ladi.
-                const externalNet = (ishxonaOperatsiyalar || []).reduce((sum: number, op: any) => {
-                  if (op.type === 'income') return sum + (Number(op.amount) || 0);
-                  if (op.type === 'expense') return sum - (Number(op.amount) || 0);
-                  return sum;
-                }, 0);
-
-                const totalPool = orderProfit + externalNet;
-
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
-                  const parentShare = parent ? totalPool * (parent.foiz / 100) : 0;
+                  const parentShare = parent ? orderProfit * (parent.foiz / 100) : 0;
                   totalDue = parentShare * (x.foiz / 100);
                 } else {
-                  totalDue = totalPool * (x.foiz / 100);
+                  totalDue = orderProfit * (x.foiz / 100);
                 }
               } else {
                 // 🛠️ ODDIY XODIMLAR UCHUN HISOB-KITOB

@@ -71,7 +71,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
       if (paidNow > 0) {
         updateKassa(method, paidNow, 'add');
         const op = {
-          date: new Date().toISOString().split('T')[0],
+          date: new Date().toISOString(), // To'liq vaqt (ISO format)
           type: 'income',
           method: method,
           amount: paidNow,

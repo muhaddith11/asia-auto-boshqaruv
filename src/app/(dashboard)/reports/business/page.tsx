@@ -50,7 +50,7 @@ export default function BusinessReportPage() {
     try {
       // 1. Amaliyotlar (Asosiy moliya manbasi)
       ishxonaOperatsiyalar.forEach((op: any) => {
-        const raw = op.createdAt || op.date || '';
+        const raw = op.created_at || op.createdAt || op.date || '';
         let dStr = op.date || '';
         let disp = op.date || '';
         try { 
@@ -134,7 +134,11 @@ export default function BusinessReportPage() {
     } catch (e) {
       console.error("Data processing error:", e);
     }
-    return rows.sort((a, b) => new Date(b._rawDate).getTime() - new Date(a._rawDate).getTime());
+    return rows.sort((a, b) => {
+      const timeA = new Date(a._rawDate || a._date).getTime();
+      const timeB = new Date(b._rawDate || b._date).getTime();
+      return timeB - timeA;
+    });
   }, [buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar]);
 
   const categories = useMemo(() => Array.from(new Set(allRows.map(r => r._category))).sort(), [allRows]);
