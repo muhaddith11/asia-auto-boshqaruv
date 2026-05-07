@@ -281,7 +281,7 @@ export default function BusinessReportPage() {
               ) : filtered.map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '14px 24px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>{i + 1}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>{filtered.length - i}</div>
                     <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>#{row._id}</div>
                   </td>
                   <td style={{ padding: '14px 24px', fontSize: 11, color: 'white', whiteSpace: 'nowrap' }}>
