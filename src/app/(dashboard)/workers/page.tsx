@@ -183,14 +183,17 @@ export default function WorkersPage() {
               let totalDue = 0;
               if (isPartner) {
                 // 🏦 SHERIKLAR UCHUN HISOB-KITOB
-                // Formula: srv (xizmatlar) - zarplata (usta maoshi) - chegirma (total - final)
-                // b.srv ishlatiladi (zapchast yo'q, doim to'g'ri saqlanadi)
-                // b.zap ishlatilmaydi — eski buyurtmalarda null bo'lishi mumkin
+                // Formula: srv - zarplata - chegirma
+                // zarplata: services[] JSON massividan hisoblanadi (DBda doim to'g'ri saqlanadi)
+                // b.zarplata ustuni null bo'lishi mumkin — shuning uchun ishlatilmaydi
                 const orderProfit = buyurtmalar
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => {
-                    const srv      = Number(b.srv)      || 0;
-                    const zarplata = Number(b.zarplata) || 0;
+                    const srv = Number(b.srv) || 0;
+                    // zarplatani services[] dan hisoblash (eng ishonchli usul)
+                    const zarplata = Array.isArray(b.services) && b.services.length > 0
+                      ? b.services.reduce((s: number, svc: any) => s + (Number(svc.zarplata) || 0), 0)
+                      : (Number(b.zarplata) || 0);
                     const chegirma = (Number(b.total) || 0) - (Number(b.final) || 0);
                     const sof = srv - zarplata - Math.max(0, chegirma);
                     return sum + Math.max(0, sof);
