@@ -183,9 +183,15 @@ export default function WorkersPage() {
               let totalDue = 0;
               if (isPartner) {
                 // 🏦 SHERIKLAR UCHUN HISOB-KITOB
+                // formula: final (chegirmadan keyin) - zap (zapchast) - zarplata (usta maoshi)
+                // bu yerda pribil ishlatilmaydi, chunki u eskirgan bo'lishi yoki zapchast
+                // sebestoimosti 0 bo'lganda noto'g'ri hisoblashi mumkin.
                 const orderProfit = buyurtmalar
                   .filter(b => b.holat === 'tulangan')
-                  .reduce((sum, b) => sum + (Number(b.pribil) || 0), 0);
+                  .reduce((sum, b) => {
+                    const sof = (Number(b.final) || 0) - (Number(b.zap) || 0) - (Number(b.zarplata) || 0);
+                    return sum + Math.max(0, sof);
+                  }, 0);
                 
                 // 🛠️ Ishxona operatsiyalari (Kirim - Chiqim)
                 // "Aylanmadan tashqari" chiqimlar bu yerda hisobga olinmaydi, 
