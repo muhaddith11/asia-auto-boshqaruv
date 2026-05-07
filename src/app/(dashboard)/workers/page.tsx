@@ -183,13 +183,16 @@ export default function WorkersPage() {
               let totalDue = 0;
               if (isPartner) {
                 // 🏦 SHERIKLAR UCHUN HISOB-KITOB
-                // formula: final (chegirmadan keyin) - zap (zapchast) - zarplata (usta maoshi)
-                // bu yerda pribil ishlatilmaydi, chunki u eskirgan bo'lishi yoki zapchast
-                // sebestoimosti 0 bo'lganda noto'g'ri hisoblashi mumkin.
+                // Formula: srv (xizmatlar) - zarplata (usta maoshi) - chegirma (total - final)
+                // b.srv ishlatiladi (zapchast yo'q, doim to'g'ri saqlanadi)
+                // b.zap ishlatilmaydi — eski buyurtmalarda null bo'lishi mumkin
                 const orderProfit = buyurtmalar
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => {
-                    const sof = (Number(b.final) || 0) - (Number(b.zap) || 0) - (Number(b.zarplata) || 0);
+                    const srv      = Number(b.srv)      || 0;
+                    const zarplata = Number(b.zarplata) || 0;
+                    const chegirma = (Number(b.total) || 0) - (Number(b.final) || 0);
+                    const sof = srv - zarplata - Math.max(0, chegirma);
                     return sum + Math.max(0, sof);
                   }, 0);
                 
