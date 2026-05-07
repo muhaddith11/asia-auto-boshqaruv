@@ -15,31 +15,31 @@ export async function POST(req: NextRequest) {
     let worker = null;
 
     if (workerPhone) {
-        const cleanInputPhone = workerPhone.replace(/\D/g, '');
-        const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
-        const { data: allWorkers } = await supabase.from('workers').select(WORKER_COLUMNS);
-        worker = allWorkers?.find((w: any) => {
-            if (!w.tel) return false;
-            const dbNormalized = String(w.tel).replace(/\D/g, '');
-            return dbNormalized.endsWith(searchTarget) || dbNormalized === cleanInputPhone;
-        });
+      const cleanInputPhone = workerPhone.replace(/\D/g, '');
+      const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
+      const { data: allWorkers } = await supabase.from('workers').select(WORKER_COLUMNS);
+      worker = allWorkers?.find((w: any) => {
+        if (!w.tel) return false;
+        const dbNormalized = String(w.tel).replace(/\D/g, '');
+        return dbNormalized.endsWith(searchTarget) || dbNormalized === cleanInputPhone;
+      });
     }
 
     if (!worker && mechanicChatId) {
-        const { data: workerByTg } = await supabase
-            .from('workers')
-            .select(WORKER_COLUMNS)
-            .eq('telegram', mechanicChatId.toString())
-            .maybeSingle();
-        worker = workerByTg;
+      const { data: workerByTg } = await supabase
+        .from('workers')
+        .select(WORKER_COLUMNS)
+        .eq('telegram', mechanicChatId.toString())
+        .maybeSingle();
+      worker = workerByTg;
     }
 
     if (!worker) {
-        console.warn(`Tizimda yo'q xodim urinishi: Phone=${workerPhone}, TgID=${mechanicChatId}`);
-        return NextResponse.json({ 
-            ok: false, 
-            error: 'Siz tizimda xodim sifatida topilmadingiz. Iltimos, raqamingizni botda tasdiqlang yoki rahbaringizga murojaat qiling.' 
-        }, { status: 403 });
+      console.warn(`Tizimda yo'q xodim urinishi: Phone=${workerPhone}, TgID=${mechanicChatId}`);
+      return NextResponse.json({
+        ok: false,
+        error: 'Siz tizimda xodim sifatida topilmadingiz. Iltimos, raqamingizni botda tasdiqlang yoki rahbaringizga murojaat qiling.'
+      }, { status: 403 });
     }
 
     const worker_id = worker.id;
@@ -47,44 +47,60 @@ export async function POST(req: NextRequest) {
 
     const servicesTotal = services?.reduce((sum: number, s: any) => sum + Number(s.price), 0) || 0;
     const partsTotal = parts?.reduce((sum: number, p: any) => sum + (Number(p.price) * p.quantity), 0) || 0;
-    
-    // Convert Bot UI format to Dashboard format (nom, narx, qty)
-    const orderServices = (services || []).map((s: any) => ({
-      nom: s.name,
-      narx: Number(s.price),
-      workerId: worker.id,
-      zarplata: Number(s.price) * (worker.foiz || 0) / 100
-    }));
 
-    // Saqlanmagan (isCustom) xizmatlarni bazaga qo'shish
-    const customServices = (services || []).filter((s: any) => s.isCustom);
-    if (customServices.length > 0) {
-      for (const cs of customServices) {
+    // ── Process Services ──────────────────────────────────────────
+    const orderServices = [];
+    for (const s of (services || [])) {
+      let sId = s.id;
+      if (s.isCustom) {
         try {
-          await supabase.from('services_list').insert({
-            name: cs.name,
-            price: Number(cs.price),
-            brand: brand || 'UMUMIY',
-            car_model: model || '',
+          const { data: newS } = await supabase.from('services_list').insert({
+            name: s.name,
+            price: Number(s.price),
+            brand: (brand || 'UMUMIY').toUpperCase(),
+            car_model: (model || '').toUpperCase(),
             stavka: 0
-          });
-        } catch (err) {
-          console.error("Custom xizmatni saqlashda xatolik:", err);
-        }
+          }).select('id').single();
+          if (newS) sId = newS.id;
+        } catch (e) { console.error("Service insert error:", e); }
       }
+      orderServices.push({
+        id: sId,
+        nom: s.name,
+        narx: Number(s.price),
+        workerId: worker.id,
+        zarplata: Math.round(Number(s.price) * (worker.foiz || 0) / 100)
+      });
     }
 
-    const orderParts = (parts || []).map((p: any) => ({
-      nom: p.name,
-      narx: Number(p.price),
-      qty: Number(p.quantity || 1)
-    }));
+    // ── Process Parts ─────────────────────────────────────────────
+    const orderParts = [];
+    for (const p of (parts || [])) {
+      let pId = p.id;
+      if (p.isCustom) {
+        try {
+          const { data: newP } = await supabase.from('parts').insert({
+            nom: p.name,
+            narx: Number(p.price),
+            balance: 0,
+            mashina: (brand || 'UMUMIY').toUpperCase()
+          }).select('id').single();
+          if (newP) pId = newP.id;
+        } catch (e) { console.error("Part insert error:", e); }
+      }
+      orderParts.push({
+        id: pId,
+        nom: p.name,
+        narx: Number(p.price),
+        qty: Number(p.quantity || 1)
+      });
+    }
 
     const servicesStr = services?.map((s: any) => `${s.name} - ${s.price}`).join(', ') || 'Xizmatlar yo\'q';
     const partsStr = parts?.map((p: any) => `${p.name} (${p.quantity}x) - ${p.price}`).join(', ') || 'Zapchastlar yo\'q';
 
     const zarplataTotal = orderServices.reduce((sum: number, s: any) => sum + (s.zarplata || 0), 0);
-    
+
     const now = new Date();
     const orderData = {
       ism: 'Kunlik Mijoz',
@@ -122,11 +138,11 @@ export async function POST(req: NextRequest) {
 
     // Formatted Receipt Message
     const sanasi = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' });
-    const srvList = services?.length > 0 
+    const srvList = services?.length > 0
       ? services.map((s: any, i: number) => `${i + 1}. ${s.name} - ${Number(s.price).toLocaleString()} UZS`).join('\n')
       : "Xizmat kiritilmagan";
-      
-    const zapList = parts?.length > 0 
+
+    const zapList = parts?.length > 0
       ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${(Number(p.price) * p.quantity).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${partsTotal.toLocaleString()} UZS\n`
       : "";
 
@@ -156,15 +172,15 @@ ${zapList}
 
     // Send to Admin
     if (adminId) {
-      try { await bot.telegram.sendMessage(adminId, adminMsg); } 
+      try { await bot.telegram.sendMessage(adminId, adminMsg); }
       catch (e) { console.warn("Admin tg xabar ketmadi:", e); }
     }
-    
+
     // Send to Mechanic and log for auto-deletion
     if (mechanicChatId && mechanicChatId.toString() !== adminId) {
-      try { 
-        const sentMsg = await bot.telegram.sendMessage(mechanicChatId, mechanicMsg); 
-        
+      try {
+        const sentMsg = await bot.telegram.sendMessage(mechanicChatId, mechanicMsg);
+
         // Log to DB for guaranteed 24h deletion
         const deleteAt = new Date();
         deleteAt.setHours(deleteAt.getHours() + 24);

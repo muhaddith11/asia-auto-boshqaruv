@@ -67,29 +67,29 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
       // Load assignments from services
       setAssignments(order.services.map((s, idx) => {
-        // Try to find the service in the catalog by ID or Name
-        const catalogService = xizmatlar.find(x => x.id === s.id || x.nom === (s.nom || s.name));
+        const catalogService = xizmatlar.find(x => String(x.id) === String(s.id) || x.nom === (s.nom || s.name));
         return {
           id: idx,
           workerId: s.workerId?.toString() || '',
-          serviceId: catalogService?.id?.toString() || '', // If not in catalog, leave ID empty but we'll see the name below
-          customNom: catalogService ? '' : (s.nom || s.name), // Cache custom name if not in catalog
+          serviceId: catalogService?.id?.toString() || '',
+          customNom: catalogService ? '' : (s.nom || s.name),
           customNarx: s.narx?.toString() || s.price?.toString() || ''
         };
       }));
 
       // Load parts
       setPartRows(order.zaps.map((z, idx) => {
-        const catalogPart = zapchastlar.find(x => x.id === z.id || x.nom === (z.nom || z.name));
+        const catalogPart = zapchastlar.find(x => String(x.id) === String(z.id) || x.nom === (z.nom || z.name));
         return {
           id: idx,
           partId: catalogPart?.id?.toString() || '',
           customNom: catalogPart ? '' : (z.nom || z.name),
+          customNarx: z.narx?.toString() || z.price?.toString() || '',
           qty: Number(z.qty || z.quantity || 1)
         };
       }));
     }
-  }, [orderId, buyurtmalar]);
+  }, [orderId, buyurtmalar, xizmatlar, zapchastlar]);
 
   if (!mounted || !form) return null;
 
@@ -118,13 +118,13 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
   // ── Calculations ─────────────────────────────────────────────
   const servicesTotal = assignments.reduce((sum, a) => {
-    if (!a.serviceId) return sum;
+    if (!a.serviceId && !a.customNom) return sum;
     const base = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
     return sum + (isNaN(base) ? 0 : base);
   }, 0);
 
   const zarplataTotal = assignments.reduce((sum, a) => {
-    if (!a.workerId || !a.serviceId) return sum;
+    if (!a.workerId || (!a.serviceId && !a.customNom)) return sum;
     const worker = xodimlar.find(x => String(x.id) === String(a.workerId));
     const foiz = worker?.foiz || 0;
     const baseRaw = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
@@ -133,8 +133,10 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   }, 0);
 
   const partsTotal = partRows.reduce((sum, r) => {
-    if (!r.partId) return sum;
-    return sum + getPartNarx(r.partId) * (r.qty || 1);
+    if (!r.partId && !r.customNom) return sum;
+    const base = r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId);
+    const narx = isNaN(base) ? 0 : base;
+    return sum + narx * (r.qty || 1);
   }, 0);
 
   const subTotal = servicesTotal + partsTotal;
@@ -142,7 +144,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
   const handleUpdate = () => {
     const updatedServices = assignments
-      .filter(a => a.workerId && a.serviceId)
+      .filter(a => a.workerId && (a.serviceId || a.customNom))
       .map(a => {
         const s = xizmatlar.find(x => String(x.id) === String(a.serviceId));
         const worker = xodimlar.find(x => String(x.id) === String(a.workerId));
@@ -150,7 +152,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         const narx = isNaN(rawNarx) ? 0 : rawNarx;
         const foiz = worker?.foiz || 0;
         return {
-          ...s,
+          id: s?.id || null,
+          nom: s?.nom || a.customNom,
           narx,
           workerId: Number(a.workerId),
           zarplata: Math.round(narx * foiz / 100),
@@ -158,10 +161,17 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       });
 
     const updatedParts = partRows
-      .filter(r => r.partId)
+      .filter(r => r.partId || r.customNom)
       .map(r => {
         const p = zapchastlar.find(x => String(x.id) === String(r.partId));
-        return { ...p, qty: r.qty || 1 };
+        const rawNarx = r.customNarx ? parseFloat(r.customNarx) : (p?.narx || 0);
+        const narx = isNaN(rawNarx) ? 0 : rawNarx;
+        return {
+          id: p?.id || null,
+          nom: p?.nom || r.customNom,
+          narx: narx,
+          qty: r.qty || 1
+        };
       });
 
     updateBuyurtma(orderId, {
@@ -173,7 +183,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       total: subTotal,
       final: finalTotal,
       zarplata: zarplataTotal,
-      pribil: finalTotal - zarplataTotal // simplified pribil for now
+      pribil: finalTotal - zarplataTotal
     });
 
     router.push('/orders');
@@ -312,7 +322,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                     </select>
                   </div>
                   <div className="text-[13px] font-bold text-emerald-400 py-2.5 px-4 bg-white/5 rounded-xl text-right">
-                    {(getPartNarx(r.partId) * r.qty).toLocaleString()} sum
+                    {((r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId)) * r.qty).toLocaleString()} sum
                   </div>
                   <input style={S.input} type="number" value={r.qty} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, qty: parseInt(e.target.value) || 1 } : x))} />
                   <button onClick={() => setPartRows(partRows.filter(x => x.id !== r.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
