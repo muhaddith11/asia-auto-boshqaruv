@@ -75,11 +75,12 @@ export default function BusinessReportPage() {
         });
       });
 
-      // 2. Buyurtmalar (Faqat operatsiyasi yo'q to'langan buyurtmalar uchun - eski ma'lumotlar uchun ehtiyot shart)
+      // 2. Buyurtmalar (Zaxira - faqat operatsiyasi yo'q to'langan buyurtmalar uchun)
       buyurtmalar.forEach((b: any) => {
         if (b.holat !== 'tulangan') return;
-        // Agar bu buyurtma uchun allaqachon operatsiya bo'lsa, qayta qo'shmaymiz
-        if (ishxonaOperatsiyalar.some(op => op.orderId === b.id)) return;
+        // Dublikatni tekshirish (String/Number farqini yo'qotish uchun Number() ishlatamiz)
+        const hasOperation = ishxonaOperatsiyalar.some(op => Number(op.orderId) === Number(b.id));
+        if (hasOperation) return;
 
         const raw = b.createdAt || b.created_at || b.sana || '';
         let dStr = b.sana || '';
@@ -96,8 +97,8 @@ export default function BusinessReportPage() {
           _date: dStr,
           _displayDate: disp,
           _rawDate: raw,
-          _category: 'Buyurtma',
-          _izoh: b.mashina || '',
+          _category: "Buyurtma to'lovi", // Nomini bir xil qildik
+          _izoh: `Buyurtma #${b.id} - ${b.mashina || ''}`,
           _mijoz: b.ism || '',
           _amount: Number(b.final) || 0,
           _method: 'NAQD',
@@ -269,7 +270,7 @@ export default function BusinessReportPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-                {['ID', 'Sana', 'Turi', 'Kategoriya', 'Izoh', 'Mijoz', 'Summa', 'Usul'].map(h => (
+                {['T/r', 'Sana', 'Turi', 'Kategoriya', 'Izoh', 'Mijoz', 'Summa', 'Usul'].map(h => (
                   <th key={h} style={{ padding: '14px 24px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
@@ -279,7 +280,10 @@ export default function BusinessReportPage() {
                 <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Ma'lumot topilmadi</td></tr>
               ) : filtered.map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
-                  <td style={{ padding: '14px 24px', fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>#{row._id}</td>
+                  <td style={{ padding: '14px 24px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>{i + 1}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>#{row._id}</div>
+                  </td>
                   <td style={{ padding: '14px 24px', fontSize: 11, color: 'white', whiteSpace: 'nowrap' }}>
                     {row._displayDate}
                   </td>
