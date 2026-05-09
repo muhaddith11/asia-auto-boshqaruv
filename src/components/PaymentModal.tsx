@@ -69,7 +69,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
 
       // Kassani yangilash
       if (paidNow > 0) {
-        updateKassa(method, paidNow, 'add');
+        await updateKassa(method, paidNow, 'add');
         const op = {
           date: new Date().toISOString(), // To'liq vaqt (ISO format)
           type: 'income',
@@ -80,7 +80,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
           source: 'buyurtma',
           orderId: order.id
         };
-        addIshxonaOperatsiya(op as any);
+        await addIshxonaOperatsiya(op as any);
       }
 
       // Ma'lumotlarni DB dan yangilash

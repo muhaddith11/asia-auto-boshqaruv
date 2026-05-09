@@ -70,10 +70,10 @@ interface AutoServisStore {
   updateBuyurtma: (id: number, data: Partial<Buyurtma>) => void;
   deleteBuyurtma: (id: number) => void;
 
-  updateKassa: (method: keyof Kassa, amount: number, operation: 'add' | 'sub') => void;
+  updateKassa: (method: keyof Kassa, amount: number, operation: 'add' | 'sub') => Promise<void>;
   transferKassa: (from: keyof Kassa, to: keyof Kassa, amount: number) => void; // New
   addTashqariOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => void;
-  addIshxonaOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => void;
+  addIshxonaOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => Promise<void>;
   deleteIshxonaOperatsiya: (id: number) => void;
   deleteTashqariOperatsiya: (id: number) => void;
 

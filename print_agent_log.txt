@@ -5579,3 +5579,543 @@
 [2026-05-07 20:34:22] Agent ishlayapti... 20:34:22
 [2026-05-07 20:35:42] Agent ishlayapti... 20:35:42
 [2026-05-07 20:37:03] Agent ishlayapti... 20:37:03
+[2026-05-07 20:38:24] Agent ishlayapti... 20:38:24
+[2026-05-07 20:39:44] Agent ishlayapti... 20:39:44
+[2026-05-07 20:41:13] Agent ishlayapti... 20:41:13
+[2026-05-07 20:42:35] Agent ishlayapti... 20:42:35
+[2026-05-07 20:43:55] Agent ishlayapti... 20:43:55
+[2026-05-07 20:45:16] Agent ishlayapti... 20:45:16
+[2026-05-07 20:46:36] Agent ishlayapti... 20:46:36
+[2026-05-07 20:47:56] Agent ishlayapti... 20:47:56
+[2026-05-07 20:49:15] Agent ishlayapti... 20:49:15
+[2026-05-07 20:50:35] Agent ishlayapti... 20:50:35
+[2026-05-07 20:51:55] Agent ishlayapti... 20:51:55
+[2026-05-07 20:53:15] Agent ishlayapti... 20:53:15
+[2026-05-07 20:54:36] Agent ishlayapti... 20:54:36
+[2026-05-07 20:55:59] Agent ishlayapti... 20:55:59
+[2026-05-07 20:57:20] Agent ishlayapti... 20:57:20
+[2026-05-07 20:58:40] Agent ishlayapti... 20:58:40
+[2026-05-07 21:00:00] Agent ishlayapti... 21:00:00
+[2026-05-07 21:01:19] Agent ishlayapti... 21:01:19
+[2026-05-07 21:02:38] Agent ishlayapti... 21:02:38
+[2026-05-07 21:03:58] Agent ishlayapti... 21:03:58
+[2026-05-07 21:05:17] Agent ishlayapti... 21:05:17
+[2026-05-07 21:06:36] Agent ishlayapti... 21:06:36
+[2026-05-07 21:07:55] Agent ishlayapti... 21:07:55
+[2026-05-07 21:09:14] Agent ishlayapti... 21:09:14
+[2026-05-07 21:10:33] Agent ishlayapti... 21:10:33
+[2026-05-07 21:11:52] Agent ishlayapti... 21:11:52
+[2026-05-07 21:13:12] Agent ishlayapti... 21:13:12
+[2026-05-07 21:14:31] Agent ishlayapti... 21:14:31
+[2026-05-07 21:15:50] Agent ishlayapti... 21:15:50
+[2026-05-07 21:17:08] Agent ishlayapti... 21:17:08
+[2026-05-07 21:18:27] Agent ishlayapti... 21:18:27
+[2026-05-07 21:19:46] Agent ishlayapti... 21:19:46
+[2026-05-07 21:21:04] Agent ishlayapti... 21:21:04
+[2026-05-07 21:22:24] Agent ishlayapti... 21:22:24
+[2026-05-07 21:23:42] Agent ishlayapti... 21:23:42
+[2026-05-07 21:24:10] Chop etilmoqda... ID: 254
+[2026-05-07 21:24:10] Chek chiqarildi! ID: 254
+[2026-05-07 21:25:03] Agent ishlayapti... 21:25:03
+[2026-05-07 21:26:22] Agent ishlayapti... 21:26:22
+[2026-05-07 21:27:28] Chop etilmoqda... ID: 255
+[2026-05-07 21:27:28] Chek chiqarildi! ID: 255
+[2026-05-07 21:27:42] Agent ishlayapti... 21:27:42
+[2026-05-07 21:29:01] Agent ishlayapti... 21:29:01
+[2026-05-07 21:30:32] Baza bilan ulanishda xato: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+[2026-05-07 21:31:10] Agent ishlayapti... 21:31:10
+[2026-05-09 10:01:48] Professional Print Agent ishga tushdi...
+[2026-05-09 10:01:48] Printer: XP-80
+[2026-05-09 10:01:51] Oxirgi chop etilgan ID: 255
+[2026-05-09 10:03:12] Agent ishlayapti... 10:03:12
+[2026-05-09 10:04:40] Agent ishlayapti... 10:04:40
+[2026-05-09 10:06:08] Agent ishlayapti... 10:06:08
+[2026-05-09 10:07:35] Agent ishlayapti... 10:07:35
+[2026-05-09 10:09:01] Agent ishlayapti... 10:09:01
+[2026-05-09 10:10:29] Agent ishlayapti... 10:10:29
+[2026-05-09 10:11:58] Agent ishlayapti... 10:11:58
+[2026-05-09 10:13:28] Agent ishlayapti... 10:13:28
+[2026-05-09 10:14:56] Agent ishlayapti... 10:14:56
+[2026-05-09 10:16:25] Agent ishlayapti... 10:16:25
+[2026-05-09 10:17:56] Agent ishlayapti... 10:17:56
+[2026-05-09 10:19:25] Agent ishlayapti... 10:19:25
+[2026-05-09 10:20:55] Agent ishlayapti... 10:20:55
+[2026-05-09 10:22:27] Agent ishlayapti... 10:22:27
+[2026-05-09 10:23:57] Agent ishlayapti... 10:23:57
+[2026-05-09 10:25:26] Agent ishlayapti... 10:25:26
+[2026-05-09 10:26:56] Agent ishlayapti... 10:26:56
+[2026-05-09 10:28:26] Agent ishlayapti... 10:28:26
+[2026-05-09 10:29:55] Agent ishlayapti... 10:29:55
+[2026-05-09 10:31:25] Agent ishlayapti... 10:31:25
+[2026-05-09 10:32:56] Agent ishlayapti... 10:32:56
+[2026-05-09 10:34:25] Agent ishlayapti... 10:34:25
+[2026-05-09 10:35:56] Agent ishlayapti... 10:35:56
+[2026-05-09 10:37:27] Agent ishlayapti... 10:37:27
+[2026-05-09 10:38:57] Agent ishlayapti... 10:38:57
+[2026-05-09 10:40:27] Agent ishlayapti... 10:40:27
+[2026-05-09 10:41:56] Agent ishlayapti... 10:41:56
+[2026-05-09 10:43:26] Agent ishlayapti... 10:43:26
+[2026-05-09 10:44:56] Agent ishlayapti... 10:44:56
+[2026-05-09 10:46:25] Agent ishlayapti... 10:46:25
+[2026-05-09 10:47:54] Agent ishlayapti... 10:47:54
+[2026-05-09 10:49:24] Agent ishlayapti... 10:49:24
+[2026-05-09 10:50:53] Agent ishlayapti... 10:50:53
+[2026-05-09 10:52:21] Agent ishlayapti... 10:52:21
+[2026-05-09 10:53:50] Agent ishlayapti... 10:53:50
+[2026-05-09 10:55:19] Agent ishlayapti... 10:55:19
+[2026-05-09 10:56:50] Agent ishlayapti... 10:56:50
+[2026-05-09 10:58:19] Agent ishlayapti... 10:58:19
+[2026-05-09 10:59:48] Agent ishlayapti... 10:59:48
+[2026-05-09 11:01:18] Agent ishlayapti... 11:01:18
+[2026-05-09 11:02:46] Agent ishlayapti... 11:02:46
+[2026-05-09 11:04:16] Agent ishlayapti... 11:04:16
+[2026-05-09 11:05:46] Agent ishlayapti... 11:05:46
+[2026-05-09 11:07:16] Agent ishlayapti... 11:07:16
+[2026-05-09 11:08:46] Agent ishlayapti... 11:08:46
+[2026-05-09 11:10:16] Agent ishlayapti... 11:10:16
+[2026-05-09 11:11:50] Agent ishlayapti... 11:11:50
+[2026-05-09 11:13:18] Agent ishlayapti... 11:13:18
+[2026-05-09 11:14:47] Agent ishlayapti... 11:14:47
+[2026-05-09 11:16:17] Agent ishlayapti... 11:16:17
+[2026-05-09 11:17:47] Agent ishlayapti... 11:17:47
+[2026-05-09 11:19:20] Agent ishlayapti... 11:19:20
+[2026-05-09 11:20:54] Agent ishlayapti... 11:20:54
+[2026-05-09 11:21:19] Baza bilan ulanishda xato: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+[2026-05-09 11:22:32] Agent ishlayapti... 11:22:32
+[2026-05-09 11:24:09] Agent ishlayapti... 11:24:09
+[2026-05-09 11:25:44] Agent ishlayapti... 11:25:44
+[2026-05-09 11:27:19] Agent ishlayapti... 11:27:19
+[2026-05-09 11:28:52] Agent ishlayapti... 11:28:52
+[2026-05-09 11:30:25] Agent ishlayapti... 11:30:25
+[2026-05-09 11:31:56] Agent ishlayapti... 11:31:56
+[2026-05-09 11:33:30] Agent ishlayapti... 11:33:30
+[2026-05-09 11:35:02] Agent ishlayapti... 11:35:02
+[2026-05-09 11:36:32] Agent ishlayapti... 11:36:32
+[2026-05-09 11:38:01] Agent ishlayapti... 11:38:01
+[2026-05-09 11:39:31] Agent ishlayapti... 11:39:31
+[2026-05-09 11:41:03] Agent ishlayapti... 11:41:03
+[2026-05-09 11:42:39] Agent ishlayapti... 11:42:39
+[2026-05-09 11:44:12] Agent ishlayapti... 11:44:12
+[2026-05-09 11:45:43] Agent ishlayapti... 11:45:43
+[2026-05-09 11:47:16] Agent ishlayapti... 11:47:16
+[2026-05-09 11:48:49] Agent ishlayapti... 11:48:49
+[2026-05-09 11:50:21] Agent ishlayapti... 11:50:21
+[2026-05-09 11:51:54] Agent ishlayapti... 11:51:54
+[2026-05-09 11:53:28] Agent ishlayapti... 11:53:28
+[2026-05-09 11:54:59] Agent ishlayapti... 11:54:59
+[2026-05-09 11:56:31] Agent ishlayapti... 11:56:31
+[2026-05-09 11:58:01] Agent ishlayapti... 11:58:01
+[2026-05-09 11:59:09] Chop etilmoqda... ID: 256
+[2026-05-09 11:59:09] Chek chiqarildi! ID: 256
+[2026-05-09 11:59:32] Agent ishlayapti... 11:59:32
+[2026-05-09 12:01:03] Agent ishlayapti... 12:01:03
+[2026-05-09 12:02:36] Agent ishlayapti... 12:02:36
+[2026-05-09 12:04:19] Agent ishlayapti... 12:04:19
+[2026-05-09 12:06:01] Agent ishlayapti... 12:06:01
+[2026-05-09 12:07:43] Agent ishlayapti... 12:07:43
+[2026-05-09 12:09:26] Agent ishlayapti... 12:09:26
+[2026-05-09 12:11:10] Agent ishlayapti... 12:11:10
+[2026-05-09 12:12:55] Agent ishlayapti... 12:12:55
+[2026-05-09 12:14:40] Agent ishlayapti... 12:14:40
+[2026-05-09 12:16:24] Agent ishlayapti... 12:16:24
+[2026-05-09 12:18:12] Agent ishlayapti... 12:18:12
+[2026-05-09 12:19:55] Agent ishlayapti... 12:19:55
+[2026-05-09 12:21:38] Agent ishlayapti... 12:21:38
+[2026-05-09 12:23:22] Agent ishlayapti... 12:23:22
+[2026-05-09 12:25:05] Agent ishlayapti... 12:25:05
+[2026-05-09 12:26:46] Agent ishlayapti... 12:26:46
+[2026-05-09 12:28:28] Agent ishlayapti... 12:28:28
+[2026-05-09 12:30:11] Agent ishlayapti... 12:30:11
+[2026-05-09 12:31:58] Agent ishlayapti... 12:31:58
+[2026-05-09 12:33:42] Agent ishlayapti... 12:33:42
+[2026-05-09 12:35:26] Agent ishlayapti... 12:35:26
+[2026-05-09 12:37:10] Agent ishlayapti... 12:37:10
+[2026-05-09 12:38:51] Agent ishlayapti... 12:38:51
+[2026-05-09 12:40:34] Agent ishlayapti... 12:40:34
+[2026-05-09 12:42:13] Agent ishlayapti... 12:42:13
+[2026-05-09 12:43:52] Agent ishlayapti... 12:43:52
+[2026-05-09 12:45:30] Agent ishlayapti... 12:45:30
+[2026-05-09 12:47:07] Agent ishlayapti... 12:47:07
+[2026-05-09 12:48:44] Agent ishlayapti... 12:48:44
+[2026-05-09 12:50:29] Agent ishlayapti... 12:50:29
+[2026-05-09 12:52:12] Agent ishlayapti... 12:52:12
+[2026-05-09 12:53:52] Agent ishlayapti... 12:53:52
+[2026-05-09 12:55:31] Agent ishlayapti... 12:55:31
+[2026-05-09 12:57:11] Agent ishlayapti... 12:57:11
+[2026-05-09 12:58:52] Agent ishlayapti... 12:58:52
+[2026-05-09 13:00:36] Agent ishlayapti... 13:00:36
+[2026-05-09 13:02:18] Agent ishlayapti... 13:02:18
+[2026-05-09 13:04:01] Agent ishlayapti... 13:04:01
+[2026-05-09 13:05:43] Agent ishlayapti... 13:05:43
+[2026-05-09 13:07:27] Agent ishlayapti... 13:07:27
+[2026-05-09 13:09:08] Agent ishlayapti... 13:09:08
+[2026-05-09 13:10:47] Agent ishlayapti... 13:10:47
+[2026-05-09 13:12:36] Agent ishlayapti... 13:12:36
+[2026-05-09 13:14:20] Agent ishlayapti... 13:14:20
+[2026-05-09 13:16:03] Agent ishlayapti... 13:16:03
+[2026-05-09 13:17:45] Agent ishlayapti... 13:17:45
+[2026-05-09 13:19:27] Agent ishlayapti... 13:19:27
+[2026-05-09 13:21:11] Agent ishlayapti... 13:21:11
+[2026-05-09 13:22:54] Agent ishlayapti... 13:22:54
+[2026-05-09 13:24:35] Agent ishlayapti... 13:24:35
+[2026-05-09 13:26:18] Agent ishlayapti... 13:26:18
+[2026-05-09 13:28:01] Agent ishlayapti... 13:28:01
+[2026-05-09 13:29:46] Agent ishlayapti... 13:29:46
+[2026-05-09 13:31:39] Agent ishlayapti... 13:31:39
+[2026-05-09 13:33:28] Agent ishlayapti... 13:33:28
+[2026-05-09 13:35:22] Agent ishlayapti... 13:35:22
+[2026-05-09 13:37:12] Agent ishlayapti... 13:37:12
+[2026-05-09 13:38:56] Agent ishlayapti... 13:38:56
+[2026-05-09 13:40:46] Agent ishlayapti... 13:40:46
+[2026-05-09 13:42:34] Agent ishlayapti... 13:42:34
+[2026-05-09 13:44:27] Agent ishlayapti... 13:44:27
+[2026-05-09 13:46:18] Agent ishlayapti... 13:46:18
+[2026-05-09 13:48:31] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:48:31] Agent ishlayapti... 13:48:31
+[2026-05-09 13:49:15] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:49:33] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:49:51] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:50:58] Agent ishlayapti... 13:50:58
+[2026-05-09 13:52:51] Agent ishlayapti... 13:52:51
+[2026-05-09 13:54:51] Agent ishlayapti... 13:54:51
+[2026-05-09 13:55:49] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:56:58] Agent ishlayapti... 13:56:58
+[2026-05-09 13:58:59] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:59:18] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 13:59:18] Agent ishlayapti... 13:59:18
+[2026-05-09 14:01:21] Agent ishlayapti... 14:01:21
+[2026-05-09 14:03:15] Agent ishlayapti... 14:03:15
+[2026-05-09 14:05:08] Agent ishlayapti... 14:05:08
+[2026-05-09 14:07:00] Agent ishlayapti... 14:07:00
+[2026-05-09 14:08:47] Agent ishlayapti... 14:08:47
+[2026-05-09 14:10:36] Agent ishlayapti... 14:10:36
+[2026-05-09 14:11:04] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 14:12:43] Agent ishlayapti... 14:12:43
+[2026-05-09 14:14:52] Agent ishlayapti... 14:14:52
+[2026-05-09 14:16:35] Agent ishlayapti... 14:16:35
+[2026-05-09 14:17:18] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 14:18:20] Agent ishlayapti... 14:18:20
+[2026-05-09 14:19:58] Agent ishlayapti... 14:19:58
+[2026-05-09 14:21:38] Agent ishlayapti... 14:21:38
+[2026-05-09 14:23:14] Agent ishlayapti... 14:23:14
+[2026-05-09 14:24:53] Agent ishlayapti... 14:24:53
+[2026-05-09 14:26:40] Agent ishlayapti... 14:26:40
+[2026-05-09 14:28:13] Agent ishlayapti... 14:28:13
+[2026-05-09 14:29:48] Agent ishlayapti... 14:29:48
+[2026-05-09 14:31:22] Agent ishlayapti... 14:31:22
+[2026-05-09 14:32:54] Agent ishlayapti... 14:32:54
+[2026-05-09 14:34:26] Agent ishlayapti... 14:34:26
+[2026-05-09 14:36:01] Agent ishlayapti... 14:36:01
+[2026-05-09 14:37:39] Agent ishlayapti... 14:37:39
+[2026-05-09 14:39:15] Agent ishlayapti... 14:39:15
+[2026-05-09 14:40:46] Agent ishlayapti... 14:40:46
+[2026-05-09 14:42:19] Agent ishlayapti... 14:42:19
+[2026-05-09 14:43:51] Agent ishlayapti... 14:43:51
+[2026-05-09 14:45:23] Agent ishlayapti... 14:45:23
+[2026-05-09 14:46:54] Agent ishlayapti... 14:46:54
+[2026-05-09 14:48:24] Agent ishlayapti... 14:48:24
+[2026-05-09 14:49:53] Agent ishlayapti... 14:49:53
+[2026-05-09 14:51:25] Agent ishlayapti... 14:51:25
+[2026-05-09 14:52:56] Agent ishlayapti... 14:52:56
+[2026-05-09 14:54:28] Agent ishlayapti... 14:54:28
+[2026-05-09 14:56:00] Agent ishlayapti... 14:56:00
+[2026-05-09 14:57:31] Agent ishlayapti... 14:57:31
+[2026-05-09 14:59:02] Agent ishlayapti... 14:59:02
+[2026-05-09 15:00:33] Agent ishlayapti... 15:00:33
+[2026-05-09 15:02:06] Agent ishlayapti... 15:02:06
+[2026-05-09 15:03:37] Agent ishlayapti... 15:03:37
+[2026-05-09 15:05:15] Agent ishlayapti... 15:05:15
+[2026-05-09 15:06:49] Agent ishlayapti... 15:06:49
+[2026-05-09 15:08:22] Agent ishlayapti... 15:08:22
+[2026-05-09 15:09:53] Agent ishlayapti... 15:09:53
+[2026-05-09 15:11:24] Agent ishlayapti... 15:11:24
+[2026-05-09 15:12:57] Agent ishlayapti... 15:12:57
+[2026-05-09 15:14:29] Agent ishlayapti... 15:14:29
+[2026-05-09 15:16:00] Agent ishlayapti... 15:16:00
+[2026-05-09 15:17:30] Agent ishlayapti... 15:17:30
+[2026-05-09 15:19:01] Agent ishlayapti... 15:19:01
+[2026-05-09 15:20:31] Agent ishlayapti... 15:20:31
+[2026-05-09 15:22:03] Agent ishlayapti... 15:22:03
+[2026-05-09 15:23:34] Agent ishlayapti... 15:23:34
+[2026-05-09 15:25:06] Agent ishlayapti... 15:25:06
+[2026-05-09 15:26:39] Agent ishlayapti... 15:26:39
+[2026-05-09 15:28:12] Agent ishlayapti... 15:28:12
+[2026-05-09 15:29:43] Agent ishlayapti... 15:29:43
+[2026-05-09 15:31:14] Agent ishlayapti... 15:31:14
+[2026-05-09 15:32:37] Agent ishlayapti... 15:32:37
+[2026-05-09 15:33:58] Agent ishlayapti... 15:33:58
+[2026-05-09 15:35:18] Agent ishlayapti... 15:35:18
+[2026-05-09 15:36:42] Agent ishlayapti... 15:36:42
+[2026-05-09 15:38:02] Agent ishlayapti... 15:38:02
+[2026-05-09 15:39:22] Agent ishlayapti... 15:39:22
+[2026-05-09 15:40:55] Agent ishlayapti... 15:40:55
+[2026-05-09 15:42:30] Agent ishlayapti... 15:42:30
+[2026-05-09 15:44:01] Agent ishlayapti... 15:44:01
+[2026-05-09 15:45:33] Agent ishlayapti... 15:45:33
+[2026-05-09 15:47:05] Agent ishlayapti... 15:47:05
+[2026-05-09 15:48:36] Agent ishlayapti... 15:48:36
+[2026-05-09 15:50:08] Agent ishlayapti... 15:50:08
+[2026-05-09 15:51:42] Agent ishlayapti... 15:51:42
+[2026-05-09 15:53:14] Agent ishlayapti... 15:53:14
+[2026-05-09 15:54:44] Agent ishlayapti... 15:54:44
+[2026-05-09 15:56:18] Agent ishlayapti... 15:56:18
+[2026-05-09 15:57:52] Agent ishlayapti... 15:57:52
+[2026-05-09 15:59:27] Agent ishlayapti... 15:59:27
+[2026-05-09 16:00:57] Agent ishlayapti... 16:00:57
+[2026-05-09 16:02:32] Agent ishlayapti... 16:02:32
+[2026-05-09 16:04:05] Agent ishlayapti... 16:04:05
+[2026-05-09 16:05:38] Agent ishlayapti... 16:05:38
+[2026-05-09 16:07:15] Agent ishlayapti... 16:07:15
+[2026-05-09 16:08:45] Agent ishlayapti... 16:08:45
+[2026-05-09 16:10:05] Agent ishlayapti... 16:10:05
+[2026-05-09 16:11:28] Agent ishlayapti... 16:11:28
+[2026-05-09 16:12:49] Agent ishlayapti... 16:12:49
+[2026-05-09 16:14:09] Agent ishlayapti... 16:14:09
+[2026-05-09 16:15:36] Agent ishlayapti... 16:15:36
+[2026-05-09 16:16:56] Agent ishlayapti... 16:16:56
+[2026-05-09 16:18:15] Agent ishlayapti... 16:18:15
+[2026-05-09 16:19:35] Agent ishlayapti... 16:19:35
+[2026-05-09 16:20:54] Agent ishlayapti... 16:20:54
+[2026-05-09 16:22:13] Agent ishlayapti... 16:22:13
+[2026-05-09 16:23:33] Agent ishlayapti... 16:23:33
+[2026-05-09 16:24:54] Agent ishlayapti... 16:24:54
+[2026-05-09 16:26:14] Agent ishlayapti... 16:26:14
+[2026-05-09 16:27:34] Agent ishlayapti... 16:27:34
+[2026-05-09 16:28:53] Agent ishlayapti... 16:28:53
+[2026-05-09 16:30:15] Agent ishlayapti... 16:30:15
+[2026-05-09 16:31:34] Agent ishlayapti... 16:31:34
+[2026-05-09 16:32:54] Agent ishlayapti... 16:32:54
+[2026-05-09 16:34:14] Agent ishlayapti... 16:34:14
+[2026-05-09 16:35:34] Agent ishlayapti... 16:35:34
+[2026-05-09 16:36:53] Agent ishlayapti... 16:36:53
+[2026-05-09 16:38:15] Agent ishlayapti... 16:38:15
+[2026-05-09 16:39:40] Agent ishlayapti... 16:39:40
+[2026-05-09 16:41:03] Agent ishlayapti... 16:41:03
+[2026-05-09 16:42:24] Agent ishlayapti... 16:42:24
+[2026-05-09 16:43:45] Agent ishlayapti... 16:43:45
+[2026-05-09 16:45:07] Agent ishlayapti... 16:45:07
+[2026-05-09 16:46:30] Agent ishlayapti... 16:46:30
+[2026-05-09 16:47:50] Agent ishlayapti... 16:47:50
+[2026-05-09 16:49:10] Agent ishlayapti... 16:49:10
+[2026-05-09 16:50:30] Agent ishlayapti... 16:50:30
+[2026-05-09 16:51:50] Agent ishlayapti... 16:51:50
+[2026-05-09 16:53:11] Agent ishlayapti... 16:53:11
+[2026-05-09 16:54:30] Agent ishlayapti... 16:54:30
+[2026-05-09 16:55:51] Agent ishlayapti... 16:55:51
+[2026-05-09 16:57:14] Agent ishlayapti... 16:57:14
+[2026-05-09 16:58:35] Agent ishlayapti... 16:58:35
+[2026-05-09 16:59:55] Agent ishlayapti... 16:59:55
+[2026-05-09 17:01:19] Agent ishlayapti... 17:01:19
+[2026-05-09 17:02:40] Agent ishlayapti... 17:02:40
+[2026-05-09 17:04:00] Agent ishlayapti... 17:04:00
+[2026-05-09 17:05:21] Agent ishlayapti... 17:05:21
+[2026-05-09 17:06:39] Agent ishlayapti... 17:06:39
+[2026-05-09 17:08:06] Agent ishlayapti... 17:08:06
+[2026-05-09 17:09:25] Agent ishlayapti... 17:09:25
+[2026-05-09 17:10:45] Agent ishlayapti... 17:10:45
+[2026-05-09 17:12:03] Agent ishlayapti... 17:12:03
+[2026-05-09 17:13:22] Agent ishlayapti... 17:13:22
+[2026-05-09 17:14:41] Agent ishlayapti... 17:14:41
+[2026-05-09 17:16:00] Agent ishlayapti... 17:16:00
+[2026-05-09 17:17:21] Agent ishlayapti... 17:17:21
+[2026-05-09 17:18:41] Agent ishlayapti... 17:18:41
+[2026-05-09 17:20:01] Agent ishlayapti... 17:20:01
+[2026-05-09 17:21:21] Agent ishlayapti... 17:21:21
+[2026-05-09 17:22:41] Agent ishlayapti... 17:22:41
+[2026-05-09 17:24:01] Agent ishlayapti... 17:24:01
+[2026-05-09 17:25:20] Agent ishlayapti... 17:25:20
+[2026-05-09 17:26:39] Agent ishlayapti... 17:26:39
+[2026-05-09 17:28:00] Agent ishlayapti... 17:28:00
+[2026-05-09 17:29:20] Agent ishlayapti... 17:29:20
+[2026-05-09 17:30:39] Agent ishlayapti... 17:30:39
+[2026-05-09 17:32:00] Agent ishlayapti... 17:32:00
+[2026-05-09 17:33:21] Agent ishlayapti... 17:33:21
+[2026-05-09 17:34:42] Agent ishlayapti... 17:34:42
+[2026-05-09 17:36:01] Chop etilmoqda... ID: 257
+[2026-05-09 17:36:02] Chek chiqarildi! ID: 257
+[2026-05-09 17:36:03] Agent ishlayapti... 17:36:03
+[2026-05-09 17:37:21] Agent ishlayapti... 17:37:21
+[2026-05-09 17:38:38] Agent ishlayapti... 17:38:38
+[2026-05-09 17:39:57] Agent ishlayapti... 17:39:57
+[2026-05-09 17:41:17] Agent ishlayapti... 17:41:17
+[2026-05-09 17:42:36] Agent ishlayapti... 17:42:36
+[2026-05-09 17:43:54] Agent ishlayapti... 17:43:54
+[2026-05-09 17:45:12] Agent ishlayapti... 17:45:12
+[2026-05-09 17:46:30] Agent ishlayapti... 17:46:30
+[2026-05-09 17:47:37] Chop etilmoqda... ID: 258
+[2026-05-09 17:47:38] Chek chiqarildi! ID: 258
+[2026-05-09 17:47:51] Agent ishlayapti... 17:47:51
+[2026-05-09 17:49:10] Agent ishlayapti... 17:49:10
+[2026-05-09 17:50:28] Agent ishlayapti... 17:50:28
+[2026-05-09 17:51:49] Agent ishlayapti... 17:51:49
+[2026-05-09 17:53:08] Agent ishlayapti... 17:53:08
+[2026-05-09 17:54:27] Agent ishlayapti... 17:54:27
+[2026-05-09 17:55:57] Agent ishlayapti... 17:55:57
+[2026-05-09 17:57:18] Agent ishlayapti... 17:57:18
+[2026-05-09 17:58:38] Agent ishlayapti... 17:58:38
+[2026-05-09 17:59:58] Agent ishlayapti... 17:59:58
+[2026-05-09 18:00:11] Chop etilmoqda... ID: 259
+[2026-05-09 18:00:12] Chek chiqarildi! ID: 259
+[2026-05-09 18:01:18] Agent ishlayapti... 18:01:18
+[2026-05-09 18:01:59] Chop etilmoqda... ID: 260
+[2026-05-09 18:02:00] Chek chiqarildi! ID: 260
+[2026-05-09 18:02:40] Agent ishlayapti... 18:02:40
+[2026-05-09 18:03:59] Agent ishlayapti... 18:03:59
+[2026-05-09 18:05:21] Agent ishlayapti... 18:05:21
+[2026-05-09 18:06:38] Agent ishlayapti... 18:06:38
+[2026-05-09 18:07:56] Agent ishlayapti... 18:07:56
+[2026-05-09 18:09:14] Agent ishlayapti... 18:09:14
+[2026-05-09 18:10:34] Agent ishlayapti... 18:10:34
+[2026-05-09 18:11:34] Chop etilmoqda... ID: 261
+[2026-05-09 18:11:35] Chek chiqarildi! ID: 261
+[2026-05-09 18:11:55] Agent ishlayapti... 18:11:55
+[2026-05-09 18:13:21] Agent ishlayapti... 18:13:21
+[2026-05-09 18:14:49] Agent ishlayapti... 18:14:49
+[2026-05-09 18:16:09] Agent ishlayapti... 18:16:09
+[2026-05-09 18:17:26] Agent ishlayapti... 18:17:26
+[2026-05-09 18:17:39] Chop etilmoqda... ID: 262
+[2026-05-09 18:17:39] Chek chiqarildi! ID: 262
+[2026-05-09 18:18:45] Agent ishlayapti... 18:18:45
+[2026-05-09 18:20:03] Agent ishlayapti... 18:20:03
+[2026-05-09 18:20:18] Chop etilmoqda... ID: 263
+[2026-05-09 18:20:18] Chek chiqarildi! ID: 263
+[2026-05-09 18:21:24] Agent ishlayapti... 18:21:24
+[2026-05-09 18:22:43] Agent ishlayapti... 18:22:43
+[2026-05-09 18:24:02] Agent ishlayapti... 18:24:02
+[2026-05-09 18:25:20] Agent ishlayapti... 18:25:20
+[2026-05-09 18:26:39] Agent ishlayapti... 18:26:39
+[2026-05-09 18:27:58] Agent ishlayapti... 18:27:58
+[2026-05-09 18:29:16] Agent ishlayapti... 18:29:16
+[2026-05-09 18:29:29] Chop etilmoqda... ID: 264
+[2026-05-09 18:29:30] Chek chiqarildi! ID: 264
+[2026-05-09 18:30:35] Agent ishlayapti... 18:30:35
+[2026-05-09 18:31:53] Agent ishlayapti... 18:31:53
+[2026-05-09 18:33:11] Agent ishlayapti... 18:33:11
+[2026-05-09 18:34:30] Agent ishlayapti... 18:34:30
+[2026-05-09 18:35:49] Agent ishlayapti... 18:35:49
+[2026-05-09 18:37:08] Agent ishlayapti... 18:37:08
+[2026-05-09 18:38:29] Agent ishlayapti... 18:38:29
+[2026-05-09 18:39:49] Agent ishlayapti... 18:39:49
+[2026-05-09 18:41:07] Agent ishlayapti... 18:41:07
+[2026-05-09 18:42:27] Agent ishlayapti... 18:42:27
+[2026-05-09 18:43:47] Agent ishlayapti... 18:43:47
+[2026-05-09 18:45:04] Agent ishlayapti... 18:45:04
+[2026-05-09 18:46:21] Agent ishlayapti... 18:46:21
+[2026-05-09 18:47:39] Agent ishlayapti... 18:47:39
+[2026-05-09 18:48:57] Agent ishlayapti... 18:48:57
+[2026-05-09 18:50:15] Agent ishlayapti... 18:50:15
+[2026-05-09 18:51:34] Agent ishlayapti... 18:51:34
+[2026-05-09 18:52:53] Agent ishlayapti... 18:52:53
+[2026-05-09 18:54:14] Agent ishlayapti... 18:54:14
+[2026-05-09 18:55:34] Agent ishlayapti... 18:55:34
+[2026-05-09 18:56:54] Agent ishlayapti... 18:56:54
+[2026-05-09 18:58:14] Agent ishlayapti... 18:58:14
+[2026-05-09 18:59:34] Agent ishlayapti... 18:59:34
+[2026-05-09 19:00:54] Agent ishlayapti... 19:00:54
+[2026-05-09 19:02:12] Agent ishlayapti... 19:02:12
+[2026-05-09 19:03:32] Chop etilmoqda... ID: 265
+[2026-05-09 19:03:32] Chek chiqarildi! ID: 265
+[2026-05-09 19:03:33] Agent ishlayapti... 19:03:33
+[2026-05-09 19:04:25] Chop etilmoqda... ID: 266
+[2026-05-09 19:04:25] Chek chiqarildi! ID: 266
+[2026-05-09 19:04:52] Agent ishlayapti... 19:04:52
+[2026-05-09 19:06:10] Agent ishlayapti... 19:06:10
+[2026-05-09 19:06:49] Chop etilmoqda... ID: 267
+[2026-05-09 19:06:49] Chek chiqarildi! ID: 267
+[2026-05-09 19:07:29] Agent ishlayapti... 19:07:29
+[2026-05-09 19:07:57] Chop etilmoqda... ID: 268
+[2026-05-09 19:07:57] Chek chiqarildi! ID: 268
+[2026-05-09 19:08:50] Agent ishlayapti... 19:08:50
+[2026-05-09 19:10:08] Agent ishlayapti... 19:10:08
+[2026-05-09 19:11:28] Agent ishlayapti... 19:11:28
+[2026-05-09 19:12:47] Agent ishlayapti... 19:12:47
+[2026-05-09 19:14:07] Agent ishlayapti... 19:14:07
+[2026-05-09 19:15:42] Agent ishlayapti... 19:15:42
+[2026-05-09 19:17:10] Agent ishlayapti... 19:17:10
+[2026-05-09 19:18:31] Agent ishlayapti... 19:18:31
+[2026-05-09 19:19:56] Agent ishlayapti... 19:19:56
+[2026-05-09 19:21:19] Agent ishlayapti... 19:21:19
+[2026-05-09 19:22:54] Agent ishlayapti... 19:22:54
+[2026-05-09 19:24:18] Agent ishlayapti... 19:24:18
+[2026-05-09 19:25:50] Agent ishlayapti... 19:25:50
+[2026-05-09 19:27:24] Agent ishlayapti... 19:27:24
+[2026-05-09 19:28:58] Agent ishlayapti... 19:28:58
+[2026-05-09 19:30:32] Agent ishlayapti... 19:30:32
+[2026-05-09 19:32:11] Agent ishlayapti... 19:32:11
+[2026-05-09 19:33:41] Agent ishlayapti... 19:33:41
+[2026-05-09 19:35:11] Agent ishlayapti... 19:35:11
+[2026-05-09 19:36:44] Agent ishlayapti... 19:36:44
+[2026-05-09 19:38:14] Agent ishlayapti... 19:38:14
+[2026-05-09 19:39:46] Agent ishlayapti... 19:39:46
+[2026-05-09 19:41:17] Agent ishlayapti... 19:41:17
+[2026-05-09 19:42:50] Agent ishlayapti... 19:42:50
+[2026-05-09 19:44:21] Agent ishlayapti... 19:44:21
+[2026-05-09 19:45:52] Agent ishlayapti... 19:45:52
+[2026-05-09 19:47:25] Agent ishlayapti... 19:47:25
+[2026-05-09 19:48:56] Agent ishlayapti... 19:48:56
+[2026-05-09 19:50:26] Agent ishlayapti... 19:50:26
+[2026-05-09 19:51:57] Agent ishlayapti... 19:51:57
+[2026-05-09 19:53:28] Agent ishlayapti... 19:53:28
+[2026-05-09 19:54:17] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 19:55:27] Agent ishlayapti... 19:55:27
+[2026-05-09 19:55:59] Baza bilan ulanishda xato: HTTPSConnectionPool(host='fwktbleovtkxxpsccqqr.supabase.co', port=443): Read timed out. (read timeout=10)
+[2026-05-09 19:57:21] Agent ishlayapti... 19:57:21
+[2026-05-09 19:58:56] Agent ishlayapti... 19:58:56
+[2026-05-09 20:00:27] Agent ishlayapti... 20:00:27
+[2026-05-09 20:02:00] Agent ishlayapti... 20:02:00
+[2026-05-09 20:03:31] Agent ishlayapti... 20:03:31
+[2026-05-09 20:05:03] Agent ishlayapti... 20:05:03
+[2026-05-09 20:06:36] Agent ishlayapti... 20:06:36
+[2026-05-09 20:07:07] Chop etilmoqda... ID: 269
+[2026-05-09 20:07:08] Chek chiqarildi! ID: 269
+[2026-05-09 20:08:09] Chop etilmoqda... ID: 270
+[2026-05-09 20:08:09] Chek chiqarildi! ID: 270
+[2026-05-09 20:08:12] Agent ishlayapti... 20:08:12
+[2026-05-09 20:09:06] Chop etilmoqda... ID: 271
+[2026-05-09 20:09:07] Chek chiqarildi! ID: 271
+[2026-05-09 20:09:46] Agent ishlayapti... 20:09:46
+[2026-05-09 20:11:16] Agent ishlayapti... 20:11:16
+[2026-05-09 20:12:48] Agent ishlayapti... 20:12:48
+[2026-05-09 20:14:19] Agent ishlayapti... 20:14:19
+[2026-05-09 20:15:50] Agent ishlayapti... 20:15:50
+[2026-05-09 20:17:21] Agent ishlayapti... 20:17:21
+[2026-05-09 20:18:56] Agent ishlayapti... 20:18:56
+[2026-05-09 20:20:18] Chop etilmoqda... ID: 272
+[2026-05-09 20:20:19] Chek chiqarildi! ID: 272
+[2026-05-09 20:20:37] Agent ishlayapti... 20:20:37
+[2026-05-09 20:22:27] Agent ishlayapti... 20:22:27
+[2026-05-09 20:23:59] Agent ishlayapti... 20:23:59
+[2026-05-09 20:25:33] Agent ishlayapti... 20:25:33
+[2026-05-09 20:27:14] Agent ishlayapti... 20:27:14
+[2026-05-09 20:28:55] Agent ishlayapti... 20:28:55
+[2026-05-09 20:30:31] Agent ishlayapti... 20:30:31
+[2026-05-09 20:32:06] Agent ishlayapti... 20:32:06
+[2026-05-09 20:33:47] Agent ishlayapti... 20:33:47
+[2026-05-09 20:35:25] Agent ishlayapti... 20:35:25
+[2026-05-09 20:37:00] Agent ishlayapti... 20:37:00
+[2026-05-09 20:38:36] Agent ishlayapti... 20:38:36
+[2026-05-09 20:40:07] Agent ishlayapti... 20:40:07
+[2026-05-09 20:41:44] Agent ishlayapti... 20:41:44
+[2026-05-09 20:43:19] Agent ishlayapti... 20:43:19
+[2026-05-09 20:44:55] Agent ishlayapti... 20:44:55
+[2026-05-09 20:46:31] Agent ishlayapti... 20:46:31
+[2026-05-09 20:48:06] Agent ishlayapti... 20:48:06
+[2026-05-09 20:49:37] Agent ishlayapti... 20:49:37
+[2026-05-09 20:51:09] Agent ishlayapti... 20:51:09
+[2026-05-09 20:52:42] Agent ishlayapti... 20:52:42
+[2026-05-09 20:54:12] Agent ishlayapti... 20:54:12
+[2026-05-09 20:55:43] Agent ishlayapti... 20:55:43
+[2026-05-09 20:57:15] Agent ishlayapti... 20:57:15
+[2026-05-09 20:58:47] Agent ishlayapti... 20:58:47
+[2026-05-09 21:00:18] Agent ishlayapti... 21:00:18
+[2026-05-09 21:01:54] Agent ishlayapti... 21:01:54
+[2026-05-09 21:03:31] Agent ishlayapti... 21:03:31
+[2026-05-09 21:05:04] Agent ishlayapti... 21:05:04
+[2026-05-09 21:06:36] Agent ishlayapti... 21:06:36
+[2026-05-09 21:08:10] Agent ishlayapti... 21:08:10
+[2026-05-09 21:09:42] Agent ishlayapti... 21:09:42
+[2026-05-09 21:11:13] Agent ishlayapti... 21:11:13
+[2026-05-09 21:12:46] Agent ishlayapti... 21:12:46
+[2026-05-09 21:14:19] Agent ishlayapti... 21:14:19
+[2026-05-09 21:15:50] Agent ishlayapti... 21:15:50
+[2026-05-09 21:17:22] Agent ishlayapti... 21:17:22
