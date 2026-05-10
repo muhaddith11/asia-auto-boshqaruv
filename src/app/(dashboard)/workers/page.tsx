@@ -207,7 +207,7 @@ export default function WorkersPage() {
               }
 
               const totalPaid = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id)).reduce((s, m) => s + (m.summa || 0), 0);
-              const unpaid = Math.max(0, totalDue - totalPaid);
+              const unpaid = totalDue - totalPaid;
 
               const fmtDate = (iso?: string) => {
                 if (!iso) return '—';
@@ -261,7 +261,7 @@ export default function WorkersPage() {
                       </div>
                       <div className="bg-[#07111a] border border-[#0f1b25] rounded-md py-3">
                         <div className="text-[11px] text-slate-400">Qoldiq</div>
-                        <div className="text-slate-200 font-bold">{unpaid.toLocaleString()}</div>
+                        <div className={`font-bold ${unpaid < 0 ? 'text-red-400' : 'text-slate-200'}`}>{unpaid.toLocaleString()}</div>
                       </div>
                     </div>
                   </div>
