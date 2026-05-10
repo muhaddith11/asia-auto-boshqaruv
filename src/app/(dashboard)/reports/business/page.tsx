@@ -68,7 +68,7 @@ export default function BusinessReportPage() {
           _rawDate: raw,
           _category: op.category || (op.source === 'buyurtma' ? 'Buyurtma' : 'Operatsiya'),
           _izoh: op.comment || '',
-          _mijoz: op.source === 'buyurtma' ? (buyurtmalar.find(b => b.id === op.orderId)?.ism || '') : '',
+          _mijoz: op.source === 'buyurtma' ? (buyurtmalar.find(b => Number(b.id) === Number(op.order_id || op.orderId))?.ism || '') : '',
           _amount: Number(op.amount) || 0,
           _method: (op.method || '').toUpperCase(),
           _positive: op.type === 'income',
@@ -79,7 +79,7 @@ export default function BusinessReportPage() {
       buyurtmalar.forEach((b: any) => {
         if (b.holat !== 'tulangan') return;
         // Dublikatni tekshirish (String/Number farqini yo'qotish uchun Number() ishlatamiz)
-        const hasOperation = ishxonaOperatsiyalar.some(op => Number(op.orderId) === Number(b.id));
+        const hasOperation = ishxonaOperatsiyalar.some(op => Number(op.order_id || op.orderId) === Number(b.id));
         if (hasOperation) return;
 
         const raw = b.createdAt || b.created_at || b.sana || '';

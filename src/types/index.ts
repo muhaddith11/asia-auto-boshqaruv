@@ -131,6 +131,7 @@ export interface TashqariOperatsiya {
   comment?: string;
   source: string;
   orderId?: string | number;
+  order_id?: string | number;
   profit?: number;
   toMethod?: 'naqd' | 'karta'; // For transfers
   createdAt: string;
