@@ -54,7 +54,11 @@ export default function ClientReportsPage() {
   if (!mounted) return null;
 
   const clientStats = mijozlar.map(m => {
-    const orders = buyurtmalar.filter(b => b.tel === m.tel || b.ism === m.ism);
+    const orders = buyurtmalar.filter(b => {
+      if (m.tel && b.tel && m.tel.trim() === b.tel.trim()) return true;
+      if (m.ism && b.ism && m.ism.trim().toLowerCase() === b.ism.trim().toLowerCase()) return true;
+      return false;
+    });
     const totalSpent = orders.reduce((sum, b) => sum + (b.final || 0), 0);
     const totalProfit = orders.reduce((sum, b) => sum + (b.pribil || 0), 0);
     const servicesCount = orders.reduce((sum, b) => sum + b.services.length, 0);
