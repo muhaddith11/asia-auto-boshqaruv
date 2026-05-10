@@ -62,6 +62,8 @@ export default function PartsContent() {
     kat: 'Boshqa'
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 30;
 
   useEffect(() => {
     setMounted(true);
@@ -105,10 +107,11 @@ export default function PartsContent() {
     closeModal();
   };
 
-  const applyFilters = () => setAppliedFilters({ ...filters });
+  const applyFilters = () => { setAppliedFilters({ ...filters }); setCurrentPage(1); };
   const resetFilters = () => {
     setFilters({ search: '', mashina: '', kat: '' });
     setAppliedFilters({ search: '', mashina: '', kat: '' });
+    setCurrentPage(1);
   };
 
   const filteredParts = zapchastlar.filter(p => {
@@ -230,7 +233,7 @@ export default function PartsContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredParts.map((p, idx) => (
+                {filteredParts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((p, idx) => (
                   <tr key={p.id} className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]'} hover:bg-white/[0.02] transition-colors group`}>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
@@ -299,6 +302,25 @@ export default function PartsContent() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {filteredParts.length > ITEMS_PER_PAGE && (
+          <div className="flex items-center justify-center gap-2 mt-6 pb-2">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+              className="px-4 py-2 rounded-lg bg-surface border border-border text-slate-400 text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-all">
+              Oldingi
+            </button>
+            {Array.from({ length: Math.ceil(filteredParts.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
+              <button key={page} onClick={() => setCurrentPage(page)}
+                className={`w-9 h-9 rounded-lg text-[12px] font-bold transition-all ${currentPage === page ? 'bg-emerald-600 text-white border border-emerald-600' : 'bg-surface border border-border text-slate-400 hover:border-slate-500'}`}>
+                {page}
+              </button>
+            ))}
+            <button onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredParts.length / ITEMS_PER_PAGE), p + 1))} disabled={currentPage === Math.ceil(filteredParts.length / ITEMS_PER_PAGE)}
+              className="px-4 py-2 rounded-lg bg-surface border border-border text-slate-400 text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-all">
+              Keyingi
+            </button>
           </div>
         )}
       </div>

@@ -29,10 +29,11 @@ export default function ExternalOperationsPage() {
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 30;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { setCurrentPage(1); }, [filters]);
 
   if (!mounted) return null;
 
@@ -46,6 +47,15 @@ export default function ExternalOperationsPage() {
     // Or just show everything that isn't connected to a direct order purchase/system
     return matchesSearch && matchesType && matchesCat;
   });
+
+  const sortedOps = [...filteredOps].sort((a, b) => {
+    const timeA = new Date(a.createdAt || a.date).getTime();
+    const timeB = new Date(b.createdAt || b.date).getTime();
+    if (timeB !== timeA) return timeB - timeA;
+    return b.id - a.id;
+  });
+  const totalPages = Math.ceil(filteredOps.length / ITEMS_PER_PAGE);
+  const paginatedOps = sortedOps.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const uniqueCategories = Array.from(new Set(tashqariOperatsiyalar.map(op => op.category)));
 
@@ -155,12 +165,7 @@ export default function ExternalOperationsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
-                  {filteredOps.sort((a, b) => {
-                    const timeA = new Date(a.createdAt || a.date).getTime();
-                    const timeB = new Date(b.createdAt || b.date).getTime();
-                    if (timeB !== timeA) return timeB - timeA;
-                    return b.id - a.id;
-                  }).map((op) => (
+                  {paginatedOps.map((op) => (
                     <tr key={op.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-8 py-5">
                         <div className="flex flex-col gap-0.5">
@@ -218,10 +223,29 @@ export default function ExternalOperationsPage() {
               </table>
             </div>
           )}
+
+          {filteredOps.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-center gap-2 mt-6 pb-4">
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                className="px-4 py-2 rounded-lg bg-surface border border-border text-slate-400 text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-all">
+                Oldingi
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button key={page} onClick={() => setCurrentPage(page)}
+                  className={`w-9 h-9 rounded-lg text-[12px] font-bold transition-all ${currentPage === page ? 'bg-indigo-600 text-white border border-indigo-600' : 'bg-surface border border-border text-slate-400 hover:border-slate-500'}`}>
+                  {page}
+                </button>
+              ))}
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                className="px-4 py-2 rounded-lg bg-surface border border-border text-slate-400 text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-all">
+                Keyingi
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={deleteConfirm.isOpen}
         title="Operatsiyani o'chirish"
         message="Haqiqatdan ham ushbu moliyaviy amaliyotni o'chirib tashlamoqchimisiz? Bu kassa balansiga ta'sir qilishi mumkin."

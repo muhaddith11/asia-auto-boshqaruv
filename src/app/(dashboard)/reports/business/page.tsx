@@ -32,6 +32,8 @@ export default function BusinessReportPage() {
   const [filterFrom,     setFilterFrom]     = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [activeQuick, setActiveQuick] = useState('oy');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 30;
 
   useEffect(() => { 
     setMounted(true); 
@@ -169,6 +171,10 @@ export default function BusinessReportPage() {
     expense: filtered.filter(r => !r._positive).reduce((s, r) => s + r._amount, 0),
   }), [filtered]);
 
+  const paginated = useMemo(() => filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE), [filtered, currentPage]);
+
+  useEffect(() => { setCurrentPage(1); }, [filtered]);
+
   if (!mounted) return null;
 
   const inputStyle: React.CSSProperties = {
@@ -287,10 +293,10 @@ export default function BusinessReportPage() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Ma'lumot topilmadi</td></tr>
-              ) : filtered.map((row, i) => (
+              ) : paginated.map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '14px 24px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>{filtered.length - i}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>{filtered.length - ((currentPage - 1) * ITEMS_PER_PAGE + i)}</div>
                     <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>#{row._id}</div>
                   </td>
                   <td style={{ padding: '14px 24px', fontSize: 11, color: 'white', whiteSpace: 'nowrap' }}>
@@ -320,6 +326,25 @@ export default function BusinessReportPage() {
           </table>
         </div>
       </div>
+
+      {filtered.length > ITEMS_PER_PAGE && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24, paddingBottom: 20 }}>
+          <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+            style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 12, fontWeight: 600, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}>
+            Oldingi
+          </button>
+          {Array.from({ length: Math.ceil(filtered.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
+            <button key={page} onClick={() => setCurrentPage(page)}
+              style={{ width: 36, height: 36, borderRadius: 8, background: currentPage === page ? 'var(--accent)' : 'var(--surface)', border: `1px solid ${currentPage === page ? 'var(--accent)' : 'var(--border)'}`, color: currentPage === page ? 'white' : 'var(--text2)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              {page}
+            </button>
+          ))}
+          <button onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / ITEMS_PER_PAGE), p + 1))} disabled={currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE)}
+            style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 12, fontWeight: 600, cursor: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 'not-allowed' : 'pointer', opacity: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 0.5 : 1 }}>
+            Keyingi
+          </button>
+        </div>
+      )}
     </div>
   );
 }
