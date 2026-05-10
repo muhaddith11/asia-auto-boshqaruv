@@ -3,12 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!
-);
-
 export async function GET() {
+  const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+  const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.json({ error: 'Supabase credentials missing' }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   try {
     const catalogPath = path.join(process.cwd(), 'src/app/api/bot-ui/catalog/route.ts');
     const content = fs.readFileSync(catalogPath, 'utf-8');
