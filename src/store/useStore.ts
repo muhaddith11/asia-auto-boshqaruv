@@ -674,7 +674,6 @@ export const useStore = create<AutoServisStore>()(
       // This prevents stale localStorage from overwriting correct DB values.
       partialize: (state) => ({
         counters: state.counters,
-        mashinalar: state.mashinalar,
       }),
     }
   )
