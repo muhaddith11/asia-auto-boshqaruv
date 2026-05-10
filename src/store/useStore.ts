@@ -318,9 +318,9 @@ export const useStore = create<AutoServisStore>()(
 
         try {
           const apiData: any = {};
-          if (data.nom) apiData.name = data.nom;
-          if (data.narx) apiData.price = data.narx;
-          if (data.mashina) apiData.car_model = data.mashina;
+          if (data.nom !== undefined) apiData.name = data.nom;
+          if (data.narx !== undefined) apiData.price = data.narx;
+          if (data.mashina !== undefined) apiData.car_model = data.mashina;
           if (data.stavka !== undefined) apiData.stavka = data.stavka;
 
           if (Object.keys(apiData).length > 0) {
