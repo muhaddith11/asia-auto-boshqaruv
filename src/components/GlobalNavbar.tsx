@@ -1,12 +1,12 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw } from 'lucide-react';
+import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw, Menu } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import CashModal from '@/components/CashModal';
 import TransferModal from '@/components/TransferModal';
 
-export default function GlobalNavbar() {
+export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const { kassa } = useStore();
@@ -35,7 +35,20 @@ export default function GlobalNavbar() {
         flexShrink: 0,
       }}>
         {/* Section 1: Back Section (Tugma faqat kerakli joyda chiqadi) */}
-        <div style={{ display: 'flex', alignItems: 'center', width: '220px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '220px' }}>
+          {/* Hamburger — only on mobile */}
+          <button
+            onClick={onMenuToggle}
+            className="lg:hidden"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 10, padding: '8px 10px', cursor: 'pointer', color: '#94a3b8',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Menu size={18} />
+          </button>
           {!isHome && (
             <button
               onClick={() => router.back()}

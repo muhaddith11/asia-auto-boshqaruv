@@ -94,7 +94,12 @@ const navGroups: NavGroup[] = [
   }
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
   const pathname = usePathname();
   const [openGroups, setOpenGroups] = useState<string[]>(['orders']);
   const [time, setTime] = useState(new Date());
@@ -121,6 +126,10 @@ const Sidebar = () => {
     );
   };
 
+  const handleNavClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
     <aside style={{
       width: 240,
@@ -133,7 +142,8 @@ const Sidebar = () => {
       left: 0,
       top: 0,
       zIndex: 50,
-    }} className="desktop-only">
+      transition: 'transform 0.3s ease',
+    }} className={isOpen ? '' : 'sidebar-mobile-hidden'}>
       {/* ── LOGO ── */}
       <div style={{
         padding: '24px 20px 20px',
@@ -183,7 +193,7 @@ const Sidebar = () => {
       {/* ── NAV ── */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }} className="scrollbar-none">
         {/* Dashboard */}
-        <Link href="/" style={{ textDecoration: 'none' }}>
+        <Link href="/" style={{ textDecoration: 'none' }} onClick={handleNavClick}>
           <div className={`nav-item ${pathname === '/' ? 'active' : ''}`}>
             <LayoutDashboard size={16} />
             <span>Bosh Sahifa</span>
@@ -247,7 +257,7 @@ const Sidebar = () => {
                     {group.subItems.map(item => {
                       const isActive = pathname === item.href;
                       return (
-                        <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
+                        <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }} onClick={handleNavClick}>
                           <div className={`nav-sub-item ${isActive ? 'active' : ''}`}
                             style={isActive ? { color: group.color } : {}}>
                             <div style={{
