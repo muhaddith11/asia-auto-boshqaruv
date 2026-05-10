@@ -344,24 +344,26 @@ export default function PartsContent() {
                     <div className="space-y-2">
                         <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Kategoriya</label>
                         <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-indigo-500 transition-all">
-                          <select 
-                            value={formData.kat} 
-                            onChange={(e) => setFormData({...formData, kat: e.target.value})} 
+                          <select
+                            value={formData.kat}
+                            onChange={(e) => setFormData({...formData, kat: e.target.value})}
                             className="bg-transparent border-none outline-none flex-1 text-white text-[14px] font-semibold appearance-none cursor-pointer"
+                            style={{ colorScheme: 'dark' }}
                           >
-                            {['Motor', 'Xodovoy', 'Elektr', 'Kuzov', 'Boshqa'].map(k => <option key={k} value={k}>{k}</option>)}
+                            {['Motor', 'Xodovoy', 'Elektr', 'Kuzov', 'Boshqa'].map(k => <option key={k} value={k} style={{ background: '#1e212b', color: 'white' }}>{k}</option>)}
                           </select>
                         </div>
                     </div>
                     <div className="space-y-2">
                         <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Birligi</label>
                         <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-indigo-500 transition-all">
-                          <select 
-                            value={formData.bir} 
-                            onChange={(e) => setFormData({...formData, bir: e.target.value})} 
+                          <select
+                            value={formData.bir}
+                            onChange={(e) => setFormData({...formData, bir: e.target.value})}
                             className="bg-transparent border-none outline-none flex-1 text-white text-[14px] font-semibold appearance-none cursor-pointer"
+                            style={{ colorScheme: 'dark' }}
                           >
-                            {['dona', 'litr', 'komplekt', 'metr', 'kg'].map(b => <option key={b} value={b}>{b}</option>)}
+                            {['dona', 'litr', 'komplekt', 'metr', 'kg'].map(b => <option key={b} value={b} style={{ background: '#1e212b', color: 'white' }}>{b}</option>)}
                           </select>
                         </div>
                     </div>
@@ -372,20 +374,22 @@ export default function PartsContent() {
                     <div className="space-y-2">
                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Kelish narxi (so'm) *</label>
                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-red-500/50 transition-all">
-                        <input 
-                          type="number" required value={formData.sebestoimost} 
-                          onChange={(e) => setFormData({...formData, sebestoimost: parseInt(e.target.value) || 0})} 
-                          className="bg-transparent border-none outline-none flex-1 text-red-400 text-[16px] font-black"
+                        <input
+                          type="number" required value={formData.sebestoimost || ''}
+                          onChange={(e) => setFormData({...formData, sebestoimost: parseInt(e.target.value) || 0})}
+                          placeholder="0"
+                          className="bg-transparent border-none outline-none flex-1 text-red-400 text-[16px] font-black placeholder:text-red-900"
                         />
                        </div>
                     </div>
                     <div className="space-y-2">
                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Sotish narxi (so'm) *</label>
                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-emerald-500/50 transition-all">
-                        <input 
-                          type="number" required value={formData.narx} 
-                          onChange={(e) => setFormData({...formData, narx: parseInt(e.target.value) || 0})} 
-                          className="bg-transparent border-none outline-none flex-1 text-emerald-400 text-[16px] font-black"
+                        <input
+                          type="number" required value={formData.narx || ''}
+                          onChange={(e) => setFormData({...formData, narx: parseInt(e.target.value) || 0})}
+                          placeholder="0"
+                          className="bg-transparent border-none outline-none flex-1 text-emerald-400 text-[16px] font-black placeholder:text-emerald-900"
                         />
                        </div>
                     </div>

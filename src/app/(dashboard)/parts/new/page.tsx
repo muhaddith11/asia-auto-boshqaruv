@@ -118,10 +118,11 @@ export default function AddPartPage() {
             <label className="block text-[13px] font-bold text-slate-500 mb-1 pl-1">O'lchov birligi</label>
             <div className="relative group">
               <CheckCircle2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-              <select 
+              <select
                 value={formData.bir}
                 onChange={e => setFormData({...formData, bir: e.target.value})}
                 className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-12 pr-10 py-4 outline-none focus:border-blue-500/50 text-white text-[15px] font-medium transition-all appearance-none cursor-pointer"
+                style={{ colorScheme: 'dark' }}
               >
                 <option value="dona">Dona</option>
                 <option value="litr">Litr</option>
