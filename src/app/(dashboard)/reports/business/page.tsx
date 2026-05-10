@@ -68,7 +68,12 @@ export default function BusinessReportPage() {
           _rawDate: raw,
           _category: op.category || (op.source === 'buyurtma' ? 'Buyurtma' : 'Operatsiya'),
           _izoh: op.comment || '',
-          _mijoz: op.source === 'buyurtma' ? (buyurtmalar.find(b => Number(b.id) === Number(op.order_id || op.orderId))?.ism || '') : '',
+          _mijoz: (() => {
+            if (op.source !== 'buyurtma') return '';
+            const idFromComment = op.comment ? Number((op.comment.match(/Buyurtma #(\d+)/) || [])[1]) : null;
+            const orderId = Number(op.order_id || op.orderId || idFromComment);
+            return buyurtmalar.find(b => Number(b.id) === orderId)?.ism || '';
+          })(),
           _amount: Number(op.amount) || 0,
           _method: (op.method || '').toUpperCase(),
           _positive: op.type === 'income',
@@ -79,7 +84,11 @@ export default function BusinessReportPage() {
       buyurtmalar.forEach((b: any) => {
         if (b.holat !== 'tulangan') return;
         // Dublikatni tekshirish (String/Number farqini yo'qotish uchun Number() ishlatamiz)
-        const hasOperation = ishxonaOperatsiyalar.some(op => Number(op.order_id || op.orderId) === Number(b.id));
+        const hasOperation = ishxonaOperatsiyalar.some(op => {
+          const idFromComment = op.comment ? Number((op.comment.match(/Buyurtma #(\d+)/) || [])[1]) : null;
+          const opOrderId = Number(op.order_id || op.orderId || idFromComment);
+          return opOrderId === Number(b.id);
+        });
         if (hasOperation) return;
 
         const raw = b.createdAt || b.created_at || b.sana || '';
