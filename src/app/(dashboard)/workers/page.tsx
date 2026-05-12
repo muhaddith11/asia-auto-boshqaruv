@@ -192,10 +192,8 @@ export default function WorkersPage() {
                 const ishxonaXarajat = ishxonaOperatsiyalar
                   .filter(op => op.type === 'expense' && op.category !== 'Aylanmadan tashqari')
                   .reduce((s, op) => s + op.amount, 0);
-                // Jami to'langan ish haqlari
-                const jami_maosh = maoshTarixi.reduce((s, m) => s + (m.summa || 0), 0);
 
-                const sofFoyda = Math.max(0, orderProfit - ishxonaXarajat - jami_maosh);
+                const sofFoyda = Math.max(0, orderProfit - ishxonaXarajat);
 
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
