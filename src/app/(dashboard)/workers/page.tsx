@@ -47,7 +47,7 @@ const S = {
 };
 
 export default function WorkersPage() {
-  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar, tashqariOperatsiyalar } = useStore();
+  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({ search: '' });
   const [appliedFilters, setAppliedFilters] = useState({ search: '' });
@@ -188,17 +188,14 @@ export default function WorkersPage() {
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => sum + Math.max(0, Number(b.pribil) || 0), 0);
 
-                // Ishxona xarajatlari (ishxona + tashqari chiqimlar)
+                // Faqat ishxona xarajatlari (tashqari operatsiyalar kirmaydi)
                 const ishxonaXarajat = ishxonaOperatsiyalar
-                  .filter(op => op.type === 'expense')
-                  .reduce((s, op) => s + op.amount, 0);
-                const tashqariXarajat = tashqariOperatsiyalar
                   .filter(op => op.type === 'expense')
                   .reduce((s, op) => s + op.amount, 0);
                 // Jami to'langan ish haqlari
                 const jami_maosh = maoshTarixi.reduce((s, m) => s + (m.summa || 0), 0);
 
-                const sofFoyda = Math.max(0, orderProfit - ishxonaXarajat - tashqariXarajat - jami_maosh);
+                const sofFoyda = Math.max(0, orderProfit - ishxonaXarajat - jami_maosh);
 
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
