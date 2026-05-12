@@ -188,9 +188,9 @@ export default function WorkersPage() {
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => sum + Math.max(0, Number(b.pribil) || 0), 0);
 
-                // Faqat ishxona xarajatlari (tashqari operatsiyalar kirmaydi)
+                // Ishxona xarajatlari — "Aylanmadan tashqari" kategoriyasi kirmaydi
                 const ishxonaXarajat = ishxonaOperatsiyalar
-                  .filter(op => op.type === 'expense')
+                  .filter(op => op.type === 'expense' && op.category !== 'Aylanmadan tashqari')
                   .reduce((s, op) => s + op.amount, 0);
                 // Jami to'langan ish haqlari
                 const jami_maosh = maoshTarixi.reduce((s, m) => s + (m.summa || 0), 0);
