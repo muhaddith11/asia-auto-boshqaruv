@@ -272,10 +272,11 @@ export const useStore = create<AutoServisStore>()(
           counters: { ...state.counters, xizmat: state.counters.xizmat + 1 }
         }));
 
-        // Map to DB schema
+        // Map to DB schema — save in proper case to keep DB consistent
+        const toPC = (s: string) => s.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         const parts = x.mashina.split(' ');
-        const brand = parts[0] || 'UMUMIY';
-        const model = parts.slice(1).join(' ') || '';
+        const brand = x.mashina === 'UMUMIY' ? 'UMUMIY' : toPC(parts[0] || 'UMUMIY');
+        const model = x.mashina === 'UMUMIY' ? '' : toPC(parts.slice(1).join(' '));
 
         const apiData = {
           name: x.nom,
@@ -321,13 +322,14 @@ export const useStore = create<AutoServisStore>()(
           if (data.nom !== undefined) apiData.name = data.nom;
           if (data.narx !== undefined) apiData.price = data.narx;
           if (data.mashina !== undefined) {
+            const toPC2 = (s: string) => s.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
             if (data.mashina === 'UMUMIY') {
               apiData.brand = 'UMUMIY';
               apiData.car_model = '';
             } else {
               const mParts = data.mashina.split(' ');
-              apiData.brand = mParts[0] || 'UMUMIY';
-              apiData.car_model = mParts.slice(1).join(' ') || '';
+              apiData.brand = toPC2(mParts[0] || 'UMUMIY');
+              apiData.car_model = toPC2(mParts.slice(1).join(' ') || '');
             }
           }
           if (data.stavka !== undefined) apiData.stavka = data.stavka;
