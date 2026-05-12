@@ -336,12 +336,15 @@ export const useStore = create<AutoServisStore>()(
             const result = await updateService(id, apiData);
             if (!result || result.error) throw new Error("Xizmatni yangilashda xatolik");
             // sync store with actual DB values
+            const updatedMashina = result.brand === 'UMUMIY' || result.brand === 'Umumiy' || !result.brand
+              ? 'UMUMIY'
+              : `${result.brand} ${result.car_model || ''}`.trim().toUpperCase();
             set((state) => ({
               xizmatlar: state.xizmatlar.map((x) => String(x.id) === String(id) ? {
                 ...x,
                 nom: result.name ?? x.nom,
                 narx: result.price ?? x.narx,
-                mashina: result.car_model ?? x.mashina,
+                mashina: updatedMashina,
                 stavka: result.stavka ?? x.stavka,
               } : x)
             }));
