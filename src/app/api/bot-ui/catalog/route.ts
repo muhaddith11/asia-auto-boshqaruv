@@ -19,20 +19,23 @@ export async function GET() {
 
     if (carsError) throw carsError;
 
-    // 2. Fetch all services (fetching in chunks to overcome the 1000 row limit)
-    const [srv1, srv2, srv3] = await Promise.all([
-      supabase.from('services_list').select('brand, car_model, name, price').range(0, 999),
-      supabase.from('services_list').select('brand, car_model, name, price').range(1000, 1999),
-      supabase.from('services_list').select('brand, car_model, name, price').range(2000, 2999)
-    ]);
-
-    const services = [
-      ...(srv1.data || []),
-      ...(srv2.data || []),
-      ...(srv3.data || [])
-    ];
-
-    if (srv1.error) throw srv1.error;
+    // 2. Fetch ALL services in pages until exhausted
+    const services: any[] = [];
+    let page = 0;
+    const PAGE = 1000;
+    while (true) {
+      const { data: chunk, error: chunkErr } = await supabase
+        .from('services_list')
+        .select('brand, car_model, name, price')
+        .order('id', { ascending: true })
+        .range(page * PAGE, (page + 1) * PAGE - 1);
+      if (chunkErr) throw chunkErr;
+      if (!chunk || chunk.length === 0) break;
+      services.push(...chunk);
+      if (chunk.length < PAGE) break;
+      page++;
+      if (page > 20) break; // safety cap at 20k services
+    }
 
     function toProperCase(str: string) {
       if (!str) return '';
@@ -70,16 +73,14 @@ export async function GET() {
       if (!normalizedCatalog[b]) normalizedCatalog[b] = {};
       if (!normalizedCatalog[b][m]) normalizedCatalog[b][m] = [];
 
-      // Check for duplicates before pushing
-      const isDuplicate = normalizedCatalog[b][m].some((existing: any) => 
+      // Upsert by name — latest row (highest id, sorted asc) wins
+      const existingIdx = normalizedCatalog[b][m].findIndex((existing: any) =>
         existing.name.trim().toUpperCase() === s.name.trim().toUpperCase()
       );
-
-      if (!isDuplicate) {
-        normalizedCatalog[b][m].push({
-          name: s.name,
-          price: s.price
-        });
+      if (existingIdx >= 0) {
+        normalizedCatalog[b][m][existingIdx] = { name: s.name, price: s.price };
+      } else {
+        normalizedCatalog[b][m].push({ name: s.name, price: s.price });
       }
       brandsSet.add(b);
     });
