@@ -10,11 +10,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     
     // Map fields to database schema
     const dbBody: any = {};
-    if (body.name) dbBody.name = body.name;
-    if (body.price !== undefined) dbBody.price = body.price;
-    if (body.brand) dbBody.brand = body.brand;
-    if (body.car_model) dbBody.car_model = body.car_model;
-    if (body.stavka !== undefined) dbBody.stavka = body.stavka;
+    if (body.name !== undefined) dbBody.name = body.name;
+    if (body.price !== undefined) dbBody.price = Number(body.price);
+    if (body.brand !== undefined) dbBody.brand = body.brand;
+    if (body.car_model !== undefined) dbBody.car_model = body.car_model;
+    if (body.stavka !== undefined) dbBody.stavka = Number(body.stavka);
+
+    if (Object.keys(dbBody).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from('services_list')
@@ -24,6 +28,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data) return NextResponse.json({ error: 'Service not found' }, { status: 404 });
     return NextResponse.json(data);
   } catch (err: any) {
     return NextResponse.json({ error: 'Invalid request: ' + err.message }, { status: 400 });

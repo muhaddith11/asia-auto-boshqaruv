@@ -326,6 +326,16 @@ export const useStore = create<AutoServisStore>()(
           if (Object.keys(apiData).length > 0) {
             const result = await updateService(id, apiData);
             if (!result || result.error) throw new Error("Xizmatni yangilashda xatolik");
+            // sync store with actual DB values
+            set((state) => ({
+              xizmatlar: state.xizmatlar.map((x) => String(x.id) === String(id) ? {
+                ...x,
+                nom: result.name ?? x.nom,
+                narx: result.price ?? x.narx,
+                mashina: result.car_model ?? x.mashina,
+                stavka: result.stavka ?? x.stavka,
+              } : x)
+            }));
           }
           console.log("✅ Xizmat o'zgarishi saqlandi:", id);
         } catch (err: any) {
