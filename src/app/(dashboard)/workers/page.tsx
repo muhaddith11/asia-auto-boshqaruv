@@ -188,12 +188,25 @@ export default function WorkersPage() {
                   .filter(b => b.holat === 'tulangan')
                   .reduce((sum, b) => sum + Math.max(0, Number(b.pribil) || 0), 0);
 
+                // Faqat 2026-05-12 dan boshlab ishxona xarajatlari ayiriladi
+                const startDate = new Date('2026-05-12');
+                const ishxonaXarajat = ishxonaOperatsiyalar
+                  .filter(op => {
+                    const opDate = new Date(op.createdAt || op.date || 0);
+                    return op.type === 'expense'
+                      && op.category !== 'Aylanmadan tashqari'
+                      && opDate >= startDate;
+                  })
+                  .reduce((s, op) => s + op.amount, 0);
+
+                const sofFoyda = Math.max(0, orderProfit - ishxonaXarajat);
+
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
-                  const parentShare = parent ? orderProfit * (parent.foiz / 100) : 0;
+                  const parentShare = parent ? sofFoyda * (parent.foiz / 100) : 0;
                   totalDue = parentShare * (x.foiz / 100);
                 } else {
-                  totalDue = orderProfit * (x.foiz / 100);
+                  totalDue = sofFoyda * (x.foiz / 100);
                 }
               } else {
                 // 🛠️ ODDIY XODIMLAR UCHUN HISOB-KITOB
