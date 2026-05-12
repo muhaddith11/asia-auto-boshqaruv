@@ -320,7 +320,16 @@ export const useStore = create<AutoServisStore>()(
           const apiData: any = {};
           if (data.nom !== undefined) apiData.name = data.nom;
           if (data.narx !== undefined) apiData.price = data.narx;
-          if (data.mashina !== undefined) apiData.car_model = data.mashina;
+          if (data.mashina !== undefined) {
+            if (data.mashina === 'UMUMIY') {
+              apiData.brand = 'UMUMIY';
+              apiData.car_model = '';
+            } else {
+              const mParts = data.mashina.split(' ');
+              apiData.brand = mParts[0] || 'UMUMIY';
+              apiData.car_model = mParts.slice(1).join(' ') || '';
+            }
+          }
           if (data.stavka !== undefined) apiData.stavka = data.stavka;
 
           if (Object.keys(apiData).length > 0) {

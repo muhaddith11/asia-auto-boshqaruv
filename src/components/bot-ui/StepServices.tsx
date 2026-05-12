@@ -14,7 +14,15 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
   const [customName, setCustomName] = useState('');
   const [customPrice, setCustomPrice] = useState('');
   
-  const availableServices = catalog?.catalog[store.brand]?.[store.model] || [];
+  const umumiyServices = catalog?.catalog?.['Umumiy']?.['Umumiy'] || [];
+  const carServices = catalog?.catalog[store.brand]?.[store.model] || [];
+  // merge, deduplicate by name
+  const seen = new Set<string>();
+  const availableServices = [...umumiyServices, ...carServices].filter(s => {
+    if (seen.has(s.name)) return false;
+    seen.add(s.name);
+    return true;
+  });
   
   const handleToggleStandard = (svc: any) => {
     const exists = store.services.findIndex(s => s.name === svc.name);
