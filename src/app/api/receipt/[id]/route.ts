@@ -42,10 +42,7 @@ export async function GET(
     const price = Number(p.narx || p.price || 0);
     return `
     <div class="item">
-      <div>
-        <span class="item-name">${p.nom || p.name || ''}</span>
-        <div class="item-sub">${price.toLocaleString('ru-RU')} × ${qty}</div>
-      </div>
+      <span class="item-name">${p.nom || p.name || ''}</span>
       <span class="item-price">${(price * qty).toLocaleString('ru-RU')}</span>
     </div>`;
   }).join('');

@@ -167,16 +167,11 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                     const qty   = p.qty || p.quantity || 1;
                     const price = Number(p.narx || p.price || 0);
                     return (
-                      <div key={i} style={{ padding: '5px 12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111', flex: 1 }}>{p.nom || p.name}</span>
-                          <span style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 12, fontWeight: 700, color: '#111', whiteSpace: 'nowrap' }}>
-                            {(price * qty).toLocaleString()}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: 10, color: '#d97706', marginTop: 1 }}>
-                          {price.toLocaleString()} × {qty}
-                        </div>
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 12px', gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#111', flex: 1 }}>{p.nom || p.name}</span>
+                        <span style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 12, fontWeight: 700, color: '#111', whiteSpace: 'nowrap' }}>
+                          {(price * qty).toLocaleString()}
+                        </span>
                       </div>
                     );
                   })}
