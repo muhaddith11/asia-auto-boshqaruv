@@ -324,7 +324,7 @@ def print_receipt(order):
         draw_dashed_line(dc, y)
         y += 16
 
-        thanks = "XARID UCHUN RAHMAT!"
+        thanks = "TASHRIFINGIZ UCHUN RAHMAT!"
         dc.SelectObject(font_footer)
         dc.SetBkMode(win32con.TRANSPARENT)
         tw4 = dc.GetTextExtent(thanks)[0]
@@ -332,9 +332,10 @@ def print_receipt(order):
         y += 40
 
         contacts = [
-            "Tel: +998 90 570 88 88",
-            "Qo'qon shahar Ubay Oripov 12",
-            "@AsiaAutoService"
+            "+998 90 570 88 88",
+            "Qo'qon sh., Ubay Oripov 12",
+            "09:00-20:00",
+            "@asia_auto_service"
         ]
         for c in contacts:
             dc.SelectObject(font_contact)
