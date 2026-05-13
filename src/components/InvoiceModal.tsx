@@ -184,10 +184,10 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
               </>
             )}
 
-            {/* ── SUBTOTALS ── */}
-            {(paid > 0 || debt > 0) && (
+            {/* ── SUBTOTALS — faqat qisman to'langan bo'lsa ── */}
+            {paid > 0 && (
               <div style={{ padding: '6px 12px', borderBottom: '1px solid #e5e7eb' }}>
-                {srvSum > 0 && (
+                {srvSum > 0 && zap > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#666', fontFamily: "'JetBrains Mono','Courier New',monospace", padding: '1px 0' }}>
                     <span>Xizmatlar</span><span>{srvSum.toLocaleString()} UZS</span>
                   </div>
