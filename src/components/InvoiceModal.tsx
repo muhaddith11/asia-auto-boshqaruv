@@ -58,18 +58,20 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[4px] animate-in fade-in duration-300">
       <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
 
-        {/* Modal Header */}
-        <div className="bg-[#f8fafc] px-8 py-5 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-              <Printer size={20} />
+        {/* Modal Header — xuddi chek logosi */}
+        <div className="bg-white border-b border-slate-200 flex items-center justify-between px-6 py-4">
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <div style={{ lineHeight: 1 }}>
+              <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: '0.04em' }}>ASIA </span>
+              <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: '0.04em', color: '#e11d2a' }}>AUTO</span>
             </div>
-            <div>
-              <h3 className="font-black text-slate-800 text-[15px] uppercase tracking-tight">Kvitansiya / Check</h3>
-              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Buyurtma #{order.id}</p>
-            </div>
+            <div style={{
+              fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 11,
+              letterSpacing: '0.25em', borderTop: '2px solid #111', borderBottom: '2px solid #111',
+              padding: '1px 0', marginTop: 2,
+            }}>SERVICE</div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400 hover:text-slate-800">
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-800 ml-4">
             <X size={22} />
           </button>
         </div>
