@@ -10,234 +10,6 @@ interface InvoiceModalProps {
   onClose: () => void;
 }
 
-const receiptStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
-
-  .r-wrap {
-    font-family: 'Inter', sans-serif;
-    background: #fff;
-    width: 302px;
-    padding: 0;
-    color: #111;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
-  .r-header {
-    background: #000;
-    color: #fff;
-    text-align: center;
-    padding: 14px 12px 12px;
-  }
-
-  .r-logo {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .r-logo span {
-    color: #e11d2a;
-  }
-
-  .r-tagline {
-    font-family: 'Inter', sans-serif;
-    font-size: 8px;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-top: 3px;
-  }
-
-  .r-block {
-    padding: 10px 12px;
-    border-bottom: 1px dashed #ddd;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-  }
-
-  .r-block-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 2px 0;
-  }
-
-  .r-block-label {
-    color: #888;
-    font-weight: 400;
-    white-space: nowrap;
-    margin-right: 6px;
-    min-width: 70px;
-  }
-
-  .r-block-value {
-    color: #111;
-    font-weight: 600;
-    text-align: right;
-    word-break: break-word;
-  }
-
-  .r-section-h {
-    background: #111;
-    color: #fff;
-    font-family: 'Oswald', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 5px 12px;
-  }
-
-  .r-items {
-    padding: 4px 0;
-    border-bottom: 1px dashed #ddd;
-  }
-
-  .r-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 5px 12px;
-    gap: 8px;
-  }
-
-  .r-item-name {
-    font-size: 11px;
-    font-weight: 600;
-    color: #111;
-    flex: 1;
-    line-height: 1.3;
-  }
-
-  .r-item-sub {
-    font-size: 9px;
-    color: #999;
-    font-weight: 400;
-    margin-top: 1px;
-  }
-
-  .r-item-price {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    color: #111;
-    white-space: nowrap;
-  }
-
-  .r-subtotals {
-    padding: 6px 12px 4px;
-    border-bottom: 1px dashed #ddd;
-  }
-
-  .r-subtotal-row {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 2px 0;
-    color: #555;
-  }
-
-  .r-subtotal-row.paid {
-    color: #16a34a;
-    font-weight: 700;
-  }
-
-  .r-subtotal-row.debt {
-    color: #dc2626;
-    font-weight: 700;
-  }
-
-  .r-total {
-    background: #111;
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 12px;
-  }
-
-  .r-total-label {
-    font-family: 'Oswald', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #aaa;
-  }
-
-  .r-total-amount {
-    font-family: 'Oswald', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
-
-  .r-total-amount span {
-    font-size: 12px;
-    font-weight: 400;
-    color: #aaa;
-    margin-left: 3px;
-  }
-
-  .r-footer {
-    text-align: center;
-    padding: 10px 12px 12px;
-    border-top: 1px dashed #ddd;
-    margin-top: 2px;
-  }
-
-  .r-footer-thanks {
-    font-family: 'Oswald', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 6px;
-    color: #111;
-  }
-
-  .r-footer-info {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: #888;
-    line-height: 1.7;
-  }
-
-  .r-divider {
-    border: none;
-    border-top: 1px dashed #ddd;
-    margin: 0;
-  }
-
-  @media print {
-    @page {
-      size: 80mm auto;
-      margin: 0;
-    }
-    body * { visibility: hidden !important; }
-    #receipt-printable, #receipt-printable * { visibility: visible !important; }
-    #receipt-printable {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 80mm !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    .r-wrap {
-      width: 100% !important;
-      box-shadow: none !important;
-    }
-  }
-`;
-
 export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const updateBuyurtma = useStore((state) => state.updateBuyurtma);
@@ -255,12 +27,32 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
     }
   };
 
-  const servicesTotal = (order.final || 0) - (order.zap || 0);
-  const zapsTotal = order.zap || 0;
-  const paid = order.paid || 0;
-  const debt = (order.final || 0) - paid;
+  const paid   = order.paid  || 0;
+  const final  = order.final || 0;
+  const zap    = order.zap   || 0;
+  const debt   = final - paid;
+  const srvSum = final - zap;
 
   const printTime = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+
+  /* ── shared cell style ── */
+  const cell: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    padding: '3px 0',
+    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontSize: 11,
+  };
+  const lbl: React.CSSProperties  = { color: '#888', fontWeight: 400, minWidth: 80 };
+  const val: React.CSSProperties  = { color: '#111', fontWeight: 600, textAlign: 'right' };
+  const secH: React.CSSProperties = {
+    background: '#111', color: '#fff',
+    fontFamily: "'Arial Black', Arial, sans-serif",
+    fontWeight: 900, fontSize: 12,
+    letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+    padding: '6px 12px',
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[4px] animate-in fade-in duration-300">
@@ -282,143 +74,182 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           </button>
         </div>
 
-        {/* Scrollable Receipt Preview */}
+        {/* Receipt Preview */}
         <div className="flex-1 overflow-y-auto p-8 bg-slate-100 flex justify-center">
-          <style dangerouslySetInnerHTML={{ __html: receiptStyles }} />
+
+          {/* ── Google Fonts ── */}
+          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+          <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');`}</style>
 
           <div
-            id="receipt-printable"
             ref={printRef}
-            style={{ background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}
+            style={{
+              background: '#fff',
+              width: 300,
+              fontFamily: 'Arial, sans-serif',
+              color: '#111',
+              boxShadow: '0 4px 32px rgba(0,0,0,0.13)',
+              borderRadius: 6,
+              overflow: 'hidden',
+            }}
           >
-            <div className="r-wrap">
 
-              {/* Header */}
-              <div className="r-header">
-                <div className="r-logo">ASIA <span>AUTO</span> SERVICE</div>
-                <div className="r-tagline">Sifatli xizmat — xavfsiz yo&apos;l garovi!</div>
+            {/* ── LOGO HEADER ── */}
+            <div style={{ textAlign: 'center', padding: '18px 12px 10px', borderBottom: '1px solid #e5e7eb' }}>
+              <div style={{ lineHeight: 1 }}>
+                <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 30, letterSpacing: '0.04em' }}>
+                  ASIA{' '}
+                </span>
+                <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 30, letterSpacing: '0.04em', color: '#e11d2a' }}>
+                  AUTO
+                </span>
               </div>
-
-              {/* Meta info */}
-              <div className="r-block">
-                <div className="r-block-row">
-                  <span className="r-block-label">Buyurtma #</span>
-                  <span className="r-block-value">{order.id}</span>
-                </div>
-                <div className="r-block-row">
-                  <span className="r-block-label">Sana</span>
-                  <span className="r-block-value">{order.sana} {printTime}</span>
-                </div>
-                <div className="r-block-row">
-                  <span className="r-block-label">Mijoz</span>
-                  <span className="r-block-value">{order.ism}</span>
-                </div>
-                {order.tel && (
-                  <div className="r-block-row">
-                    <span className="r-block-label">Tel</span>
-                    <span className="r-block-value">{order.tel}</span>
-                  </div>
-                )}
-                <div className="r-block-row">
-                  <span className="r-block-label">Mashina</span>
-                  <span className="r-block-value">{order.mashina}</span>
-                </div>
-                {order.raqam && (
-                  <div className="r-block-row">
-                    <span className="r-block-label">Raqam</span>
-                    <span className="r-block-value" style={{ fontWeight: 700 }}>{order.raqam}</span>
-                  </div>
-                )}
+              <div style={{
+                fontFamily: "'Arial Black', Arial, sans-serif",
+                fontWeight: 900, fontSize: 14,
+                letterSpacing: '0.25em', textTransform: 'uppercase',
+                borderTop: '2px solid #111', borderBottom: '2px solid #111',
+                padding: '1px 0', marginTop: 2,
+              }}>
+                SERVICE
               </div>
+              <div style={{
+                fontFamily: 'Arial, sans-serif', fontSize: 9,
+                fontStyle: 'italic', color: '#888', letterSpacing: '0.06em',
+                marginTop: 6, textTransform: 'uppercase',
+              }}>
+                Sifatli xizmat — xavfsiz yo&apos;l garovi!
+              </div>
+            </div>
 
-              {/* Services section */}
-              {order.services && order.services.length > 0 && (
-                <>
-                  <div className="r-section-h">Xizmatlar</div>
-                  <div className="r-items">
-                    {order.services.map((s, i) => (
-                      <div key={i} className="r-item">
-                        <div>
-                          <div className="r-item-name">{s.nom || s.name}</div>
-                          <div className="r-item-sub">Usta xizmati</div>
+            {/* ── META INFO ── */}
+            <div style={{ padding: '8px 12px', borderBottom: '1px solid #e5e7eb' }}>
+              {[
+                ['BUYURTMA', `#${order.id}`],
+                ['SANA',     `${order.sana} ${printTime}`],
+                ['MIJOZ',    order.ism],
+                ...(order.tel ? [['TEL', order.tel]] : []),
+                ['MASHINA',  order.mashina],
+                ...(order.raqam ? [['RAQAM', order.raqam]] : []),
+              ].map(([k, v]) => (
+                <div key={k} style={cell}>
+                  <span style={lbl}>{k}</span>
+                  <span style={val}>{v}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* ── XIZMATLAR ── */}
+            {order.services && order.services.length > 0 && (
+              <>
+                <div style={secH}>Ko&apos;rsatilgan xizmatlar</div>
+                <div style={{ padding: '4px 0', borderBottom: '1px solid #e5e7eb' }}>
+                  {order.services.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 12px', gap: 8 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#111', flex: 1 }}>{s.nom || s.name}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 12, fontWeight: 700, color: '#111', whiteSpace: 'nowrap' }}>
+                        {Number(s.narx || s.price || 0).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* ── EHTIYOT QISMLAR ── */}
+            {order.zaps && order.zaps.length > 0 && (
+              <>
+                <div style={secH}>Ehtiyot qismlar</div>
+                <div style={{ padding: '4px 0', borderBottom: '1px solid #e5e7eb' }}>
+                  {order.zaps.map((p, i) => {
+                    const qty   = p.qty || p.quantity || 1;
+                    const price = Number(p.narx || p.price || 0);
+                    return (
+                      <div key={i} style={{ padding: '5px 12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111', flex: 1 }}>{p.nom || p.name}</span>
+                          <span style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 12, fontWeight: 700, color: '#111', whiteSpace: 'nowrap' }}>
+                            {(price * qty).toLocaleString()}
+                          </span>
                         </div>
-                        <div className="r-item-price">{Number(s.narx || s.price || 0).toLocaleString()}</div>
+                        <div style={{ fontSize: 10, color: '#d97706', marginTop: 1 }}>
+                          {price.toLocaleString()} × {qty}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </>
-              )}
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
-              {/* Parts section */}
-              {order.zaps && order.zaps.length > 0 && (
-                <>
-                  <div className="r-section-h">Ehtiyot qismlar</div>
-                  <div className="r-items">
-                    {order.zaps.map((p, i) => {
-                      const qty = p.qty || p.quantity || 1;
-                      const price = Number(p.narx || p.price || 0);
-                      return (
-                        <div key={i} className="r-item">
-                          <div>
-                            <div className="r-item-name">{p.nom || p.name}</div>
-                            <div className="r-item-sub">{price.toLocaleString()} × {qty}</div>
-                          </div>
-                          <div className="r-item-price">{(price * qty).toLocaleString()}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-
-              {/* Subtotals */}
-              <div className="r-subtotals">
-                {order.services && order.services.length > 0 && (
-                  <div className="r-subtotal-row">
-                    <span>Xizmatlar jami</span>
-                    <span>{servicesTotal.toLocaleString()} UZS</span>
+            {/* ── SUBTOTALS ── */}
+            {(paid > 0 || debt > 0) && (
+              <div style={{ padding: '6px 12px', borderBottom: '1px solid #e5e7eb' }}>
+                {srvSum > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#666', fontFamily: "'JetBrains Mono','Courier New',monospace", padding: '1px 0' }}>
+                    <span>Xizmatlar</span><span>{srvSum.toLocaleString()} UZS</span>
                   </div>
                 )}
-                {zapsTotal > 0 && (
-                  <div className="r-subtotal-row">
-                    <span>Zapchastlar jami</span>
-                    <span>{zapsTotal.toLocaleString()} UZS</span>
+                {zap > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#666', fontFamily: "'JetBrains Mono','Courier New',monospace", padding: '1px 0' }}>
+                    <span>Zapchastlar</span><span>{zap.toLocaleString()} UZS</span>
                   </div>
                 )}
                 {paid > 0 && (
-                  <div className="r-subtotal-row paid">
-                    <span>To&apos;langan</span>
-                    <span>{paid.toLocaleString()} UZS</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontWeight: 700, color: '#16a34a', fontFamily: "'JetBrains Mono','Courier New',monospace", padding: '1px 0' }}>
+                    <span>To&apos;langan</span><span>{paid.toLocaleString()} UZS</span>
                   </div>
                 )}
                 {debt > 0 && (
-                  <div className="r-subtotal-row debt">
-                    <span>Qolgan qarz</span>
-                    <span>{debt.toLocaleString()} UZS</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontWeight: 700, color: '#dc2626', fontFamily: "'JetBrains Mono','Courier New',monospace", padding: '1px 0' }}>
+                    <span>Qolgan qarz</span><span>{debt.toLocaleString()} UZS</span>
                   </div>
                 )}
               </div>
+            )}
 
-              {/* Total bar */}
-              <div className="r-total">
-                <div className="r-total-label">Jami summa</div>
-                <div className="r-total-amount">
-                  {(order.final || 0).toLocaleString()}
-                  <span>UZS</span>
-                </div>
+            {/* ── JAMI BAR ── */}
+            <div style={{
+              background: '#111', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 12px',
+            }}>
+              <span style={{ fontFamily: "'Arial Black',Arial,sans-serif", fontWeight: 900, fontSize: 16, letterSpacing: '0.04em', color: '#ccc' }}>
+                JAMI
+              </span>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontFamily: "'Arial Black',Arial,sans-serif", fontWeight: 900, fontSize: 24, letterSpacing: '0.01em' }}>
+                  {final.toLocaleString()}
+                </span>
+                <span style={{ fontSize: 11, color: '#aaa', marginLeft: 4 }}>uzs</span>
               </div>
-
-              {/* Footer */}
-              <div className="r-footer">
-                <div className="r-footer-thanks">Xarid uchun rahmat!</div>
-                <div className="r-footer-info">
-                  Qo&apos;qon sh. Ubay Oripov 12<br />
-                  +998 90 570 88 88<br />
-                  @AsiaAutoService
-                </div>
-              </div>
-
             </div>
+
+            {/* ── FOOTER ── */}
+            <div style={{
+              borderTop: '1.5px dashed #ccc',
+              textAlign: 'center',
+              padding: '12px 12px 14px',
+            }}>
+              <div style={{ fontFamily: "'Arial Black',Arial,sans-serif", fontWeight: 900, fontSize: 13, letterSpacing: '0.04em', marginBottom: 8 }}>
+                TASHRIFINGIZ UCHUN RAHMAT!
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 10, color: '#d97706', lineHeight: 1.8 }}>
+                +998 90 570 88 88<br />
+                Qo&apos;qon sh., Ubay Oripov 12<br />
+                09:00–20:00
+              </div>
+              <div style={{
+                display: 'inline-block', marginTop: 8,
+                border: '1px solid #ccc', borderRadius: 4,
+                padding: '2px 10px',
+                fontFamily: "'JetBrains Mono','Courier New',monospace",
+                fontSize: 10, color: '#555',
+              }}>
+                @asia_auto_service
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -439,6 +270,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             <Share2 size={22} />
           </button>
         </div>
+
       </div>
     </div>
   );
