@@ -2,7 +2,6 @@ import time
 import requests
 import json
 import win32print
-import win32ui
 import os
 from datetime import datetime
 
@@ -39,10 +38,71 @@ def fetch_workers():
         log_message(f"Workers xatosi: {e}")
 
 def fmt(n):
-    return f"{int(n):,}".replace(",", " ")
+    try:
+        return f"{int(n):,}".replace(",", " ")
+    except:
+        return "0"
+
+# ─── ESC/POS buyruqlari ───────────────────────
+INIT        = b"\x1b\x40"           # Printer initialize
+CUT         = b"\x1d\x56\x41\x05"  # Partial cut + feed
+LF          = b"\x0a"               # Line feed
+CENTER      = b"\x1b\x61\x01"      # Markazga
+LEFT        = b"\x1b\x61\x00"      # Chapga
+BOLD_ON     = b"\x1b\x45\x01"      # Bold yoqish
+BOLD_OFF    = b"\x1b\x45\x00"      # Bold o'chirish
+DOUBLE_ON   = b"\x1b\x21\x30"      # 2x katta (bold + double height+width)
+DOUBLE_OFF  = b"\x1b\x21\x00"      # Normal o'lcham
+BIG_ON      = b"\x1d\x21\x11"      # Double height+width
+BIG_OFF     = b"\x1d\x21\x00"      # Normal
+INVERT_ON   = b"\x1d\x42\x01"      # Qora fon, oq matn
+INVERT_OFF  = b"\x1d\x42\x00"      # Normal
+
+def enc(text):
+    """Matnni printerga mos encodingga o'tkazish"""
+    return text.encode("cp1251", errors="replace")
+
+def line(text="", bold=False, center=False, double=False, invert=False, big=False):
+    """Bir qator uchun ESC/POS bytes"""
+    b = b""
+    if center:   b += CENTER
+    else:        b += LEFT
+    if invert:   b += INVERT_ON
+    if double:   b += DOUBLE_ON
+    elif big:    b += BIG_ON
+    elif bold:   b += BOLD_ON
+    b += enc(text) + LF
+    if invert:   b += INVERT_OFF
+    if double:   b += DOUBLE_OFF
+    elif big:    b += BIG_OFF
+    elif bold:   b += BOLD_OFF
+    return b
+
+def row(left_text, right_text, width=42):
+    """Chap va o'ng tekislangan qator"""
+    left_text  = str(left_text)
+    right_text = str(right_text)
+    gap = width - len(left_text) - len(right_text)
+    if gap < 1: gap = 1
+    full = left_text + " " * gap + right_text
+    return LEFT + enc(full) + LF
+
+def separator(char="-", width=42):
+    return LEFT + enc(char * width) + LF
+
+def send_to_printer(data: bytes):
+    """Bytlarni to'g'ridan-to'g'ri printerga yuborish"""
+    hp = win32print.OpenPrinter(PRINTER_NAME)
+    try:
+        hj = win32print.StartDocPrinter(hp, 1, ("Chek", None, "RAW"))
+        win32print.StartPagePrinter(hp)
+        win32print.WritePrinter(hp, data)
+        win32print.EndPagePrinter(hp)
+        win32print.EndDocPrinter(hp)
+    finally:
+        win32print.ClosePrinter(hp)
 
 def print_receipt(order):
-    dc = None
     try:
         now = datetime.now().strftime("%d.%m.%Y %H:%M")
 
@@ -67,165 +127,87 @@ def print_receipt(order):
         paid  = int(order.get("paid",  0) or 0)
         debt  = final - paid
 
-        # ── DC yaratish ──
-        dc = win32ui.CreateDC()
-        dc.CreatePrinterDC(PRINTER_NAME)
-        dc.StartDoc(f"Chek #{order['id']}")
-        dc.StartPage()
-
-        # ── Fontlar ──
-        f_big    = win32ui.CreateFont({"name": "Arial", "height": 46, "weight": 900})
-        f_bold   = win32ui.CreateFont({"name": "Arial", "height": 30, "weight": 700})
-        f_normal = win32ui.CreateFont({"name": "Courier New", "height": 26, "weight": 400})
-        f_mono   = win32ui.CreateFont({"name": "Courier New", "height": 26, "weight": 700})
-        f_small  = win32ui.CreateFont({"name": "Courier New", "height": 22, "weight": 400})
-        f_total  = win32ui.CreateFont({"name": "Arial", "height": 54, "weight": 900})
-
-        y = 20
+        buf = b""
+        buf += INIT
 
         # ══ HEADER ══
-        dc.SelectObject(f_big)
-        dc.TextOut(60, y, "ASIA AUTO SERVICE")
-        y += 54
-
-        dc.SelectObject(f_small)
-        dc.TextOut(40, y, "Sifatli xizmat -- xavfsiz yo'l garovi!")
-        y += 30
-
-        dc.SelectObject(f_normal)
-        dc.TextOut(0, y, "- " * 28)
-        y += 30
+        buf += CENTER
+        buf += DOUBLE_ON
+        buf += enc("ASIA AUTO SERVICE") + LF
+        buf += DOUBLE_OFF
+        buf += CENTER + enc("Sifatli xizmat -- xavfsiz yo'l garovi!") + LF
+        buf += LF
 
         # ══ META ══
-        dc.SelectObject(f_normal)
-        dc.TextOut(0, y, f"Buyurtma : #{order['id']}")
-        y += 30
-        dc.TextOut(0, y, f"Sana     : {now}")
-        y += 30
-        dc.TextOut(0, y, f"Mijoz    : {str(order.get('ism', ''))[:22]}")
-        y += 30
-        dc.TextOut(0, y, f"Mashina  : {str(order.get('mashina', ''))[:22]}")
-        y += 30
+        buf += LEFT
+        buf += separator()
+        buf += row("Buyurtma :", f"#{order['id']}")
+        buf += row("Sana     :", now)
+        buf += row("Mijoz    :", str(order.get("ism", ""))[:20])
+        buf += row("Mashina  :", str(order.get("mashina", ""))[:20])
         if order.get("raqam"):
-            dc.TextOut(0, y, f"Raqam    : {order['raqam']}")
-            y += 30
+            buf += row("Raqam    :", str(order["raqam"]))
         if worker_str and worker_str != "-":
-            dc.TextOut(0, y, f"Xodim    : {worker_str[:22]}")
-            y += 30
-
-        dc.TextOut(0, y, "- " * 28)
-        y += 30
+            buf += row("Xodim    :", worker_str[:20])
+        buf += separator()
 
         # ══ XIZMATLAR ══
         if services:
-            dc.SelectObject(f_bold)
-            dc.TextOut(0, y, "KO'RSATILGAN XIZMATLAR:")
-            y += 38
-
-            dc.SelectObject(f_normal)
+            buf += line("KO'RSATILGAN XIZMATLAR:", invert=True)
+            buf += LF
             for s in services:
                 nom  = str(s.get("nom", "Xizmat"))[:26]
                 narx = fmt(s.get("narx", 0))
-                # Nom chap, narx ong
-                dc.TextOut(10, y, nom)
-                dc.SelectObject(f_mono)
-                nw = dc.GetTextExtent(narx)[0]
-                dc.TextOut(540 - nw, y, narx)
-                dc.SelectObject(f_normal)
-                y += 32
-
-            y += 6
+                buf += row(nom, narx)
+            buf += LF
 
         # ══ ZAPCHASTLAR ══
         if zaps:
-            dc.SelectObject(f_bold)
-            dc.TextOut(0, y, "EHTIYOT QISMLAR:")
-            y += 38
-
-            dc.SelectObject(f_normal)
+            buf += line("EHTIYOT QISMLAR:", invert=True)
+            buf += LF
             for z in zaps:
                 nom  = str(z.get("nom", "Zapchast"))[:26]
                 narx = fmt(int(z.get("narx", 0)) * int(z.get("qty", 1)))
-                dc.TextOut(10, y, nom)
-                dc.SelectObject(f_mono)
-                nw = dc.GetTextExtent(narx)[0]
-                dc.TextOut(540 - nw, y, narx)
-                dc.SelectObject(f_normal)
-                y += 32
+                buf += row(nom, narx)
+            buf += LF
 
-            y += 6
-
-        dc.SelectObject(f_normal)
-        dc.TextOut(0, y, "- " * 28)
-        y += 30
+        buf += separator()
 
         # ══ SUBTOTALLAR ══
         if paid > 0:
-            dc.SelectObject(f_normal)
-            dc.TextOut(0, y, f"To'langan  : {fmt(paid)} UZS")
-            y += 30
+            buf += row("To'langan  :", fmt(paid) + " UZS")
             if debt > 0:
-                dc.TextOut(0, y, f"Qolgan qarz: {fmt(debt)} UZS")
-                y += 30
-            y += 6
+                buf += BOLD_ON + row("Qolgan qarz:", fmt(debt) + " UZS") + BOLD_OFF
+            buf += LF
 
         # ══ JAMI ══
-        dc.SelectObject(f_bold)
-        dc.TextOut(0, y, "JAMI SUMMA:")
-        y += 38
+        buf += CENTER
+        buf += BOLD_ON + enc("JAMI SUMMA:") + LF + BOLD_OFF
+        buf += BIG_ON
+        buf += enc(fmt(final) + " UZS") + LF
+        buf += BIG_OFF
+        buf += LF
 
-        dc.SelectObject(f_total)
-        total_str = fmt(final) + " UZS"
-        tw = dc.GetTextExtent(total_str)[0]
-        dc.TextOut((560 - tw) // 2, y, total_str)
-        y += 70
-
-        dc.SelectObject(f_normal)
-        dc.TextOut(0, y, "- " * 28)
-        y += 30
+        buf += separator()
 
         # ══ FOOTER ══
-        dc.SelectObject(f_bold)
-        fw = dc.GetTextExtent("TASHRIFINGIZ UCHUN RAHMAT!")[0]
-        dc.TextOut((560 - fw) // 2, y, "TASHRIFINGIZ UCHUN RAHMAT!")
-        y += 40
+        buf += CENTER
+        buf += BOLD_ON + enc("TASHRIFINGIZ UCHUN RAHMAT!") + LF + BOLD_OFF
+        buf += enc("+998 90 570 88 88") + LF
+        buf += enc("Qo'qon sh., Ubay Oripov 12") + LF
+        buf += enc("@asia_auto_service") + LF
+        buf += LF + LF + LF
 
-        dc.SelectObject(f_small)
-        for line in ["+998 90 570 88 88", "Qo'qon sh., Ubay Oripov 12", "@asia_auto_service"]:
-            lw = dc.GetTextExtent(line)[0]
-            dc.TextOut((560 - lw) // 2, y, line)
-            y += 28
+        # ══ KES ══
+        buf += CUT
 
-        # Qogoz surilishi
-        y += 250
-        dc.SelectObject(f_small)
-        dc.TextOut(0, y, " ")
-
-        dc.EndPage()
-        dc.EndDoc()
-
-        # Kesish
-        try:
-            hp = win32print.OpenPrinter(PRINTER_NAME)
-            win32print.StartDocPrinter(hp, 1, ("cut", None, "RAW"))
-            win32print.StartPagePrinter(hp)
-            win32print.WritePrinter(hp, b"\x1d\x56\x01")
-            win32print.EndPagePrinter(hp)
-            win32print.EndDocPrinter(hp)
-            win32print.ClosePrinter(hp)
-        except:
-            pass
-
+        send_to_printer(buf)
         log_message(f"✅ Chek chiqarildi! ID: {order['id']}")
         return True
 
     except Exception as e:
         log_message(f"❌ Print xatosi (ID:{order.get('id')}): {e}")
         return False
-    finally:
-        if dc:
-            try: dc.DeleteDC()
-            except: pass
 
 def get_pending():
     try:
@@ -256,7 +238,7 @@ def mark_printed(order_id):
 
 def main():
     log_message("=" * 48)
-    log_message("Print Agent ishga tushdi (win32print v3)")
+    log_message("Print Agent ishga tushdi (ESC/POS v4)")
     log_message(f"Printer: {PRINTER_NAME}")
     log_message("=" * 48)
     fetch_workers()
