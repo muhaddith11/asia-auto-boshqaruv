@@ -241,7 +241,7 @@ export async function GET(
     <div class="footer-contacts">
       +998 90 570 88 88<br>
       Qo'qon sh., Ubay Oripov 10<br>
-      09:00–20:00
+      Shanba-Payshanba | 9:00 dan 20:00 gacha
     </div>
     <div class="footer-handle">Instagram &amp; Telegram:<br>@asia_auto_service</div>
   </div>

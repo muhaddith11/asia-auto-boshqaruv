@@ -234,7 +234,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
               <div style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 10, color: '#d97706', lineHeight: 1.8 }}>
                 +998 90 570 88 88<br />
                 Qo&apos;qon sh., Ubay Oripov 10<br />
-                09:00–20:00
+                Shanba-Payshanba | 9:00 dan 20:00 gacha
               </div>
               <div style={{
                 display: 'inline-block', marginTop: 8,
