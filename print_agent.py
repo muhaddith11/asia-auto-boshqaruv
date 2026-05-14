@@ -3,8 +3,6 @@ import requests
 import subprocess
 import os
 import glob
-import tempfile
-import win32api
 from datetime import datetime
 
 # --- SOZLAMALAR ---
@@ -52,18 +50,15 @@ def cleanup_old_pdfs():
             pass
 
 def print_receipt(order_id):
-    """Chrome headless orqali PDF yaratib, printerga yuborish"""
+    """Chrome/Edge headless orqali HTML ni to'g'ridan-to'g'ri printerga yuborish"""
     if not BROWSER:
         log_message("XATO: Chrome yoki Edge topilmadi!")
         return False
 
     url = f"{RECEIPT_BASE}/{order_id}"
 
-    # Har safar yangi unique fayl nomi
-    pdf_path = os.path.join(BASE_DIR, f"tmp_chek_{order_id}_{int(time.time())}.pdf")
-
     try:
-        # 1. Chrome headless → PDF
+        # HTML → to'g'ridan-to'g'ri printer (PDF orqali emas)
         cmd = [
             BROWSER,
             "--headless=new",
@@ -72,44 +67,74 @@ def print_receipt(order_id):
             "--disable-extensions",
             "--disable-dev-shm-usage",
             "--run-all-compositor-stages-before-draw",
+            f"--print-to-printer={PRINTER_NAME}",
+            "--no-pdf-header-footer",
+            url
+        ]
+        result = subprocess.run(cmd, timeout=30, capture_output=True)
+        stderr = result.stderr.decode(errors='ignore')
+
+        # Muvaffaqiyat tekshiruvi
+        if result.returncode == 0 or "Printing" in stderr or "printed" in stderr.lower():
+            log_message(f"Chek chiqarildi! ID: {order_id}")
+            return True
+
+        # Agar to'g'ridan-to'g'ri ishlamasa — PDF orqali urinish
+        log_message(f"To'g'ridan-to'g'ri print ishlamadi, PDF orqali urinilmoqda...")
+        return print_via_pdf(order_id, url)
+
+    except subprocess.TimeoutExpired:
+        log_message(f"Chrome timeout (ID:{order_id}), PDF orqali urinilmoqda...")
+        return print_via_pdf(order_id, url)
+    except Exception as e:
+        log_message(f"Print xatosi (ID:{order_id}): {e}")
+        return False
+
+
+def print_via_pdf(order_id, url):
+    """Fallback: PDF yaratib PowerShell orqali printerga yuborish"""
+    pdf_path = os.path.join(BASE_DIR, f"tmp_chek_{order_id}_{int(time.time())}.pdf")
+    try:
+        # 1. Chrome → PDF
+        pdf_cmd = [
+            BROWSER,
+            "--headless=new",
+            "--disable-gpu",
+            "--no-sandbox",
+            "--disable-extensions",
             "--no-pdf-header-footer",
             "--print-to-pdf-no-header",
             f"--print-to-pdf={pdf_path}",
             url
         ]
-        result = subprocess.run(cmd, timeout=30, capture_output=True)
+        subprocess.run(pdf_cmd, timeout=30, capture_output=True)
 
         if not os.path.exists(pdf_path):
-            log_message(f"PDF yaratilmadi (ID:{order_id}). Chrome: {result.stderr.decode(errors='ignore')[-300:]}")
+            log_message(f"PDF ham yaratilmadi (ID:{order_id})")
             return False
 
-        log_message(f"PDF tayyor: {os.path.basename(pdf_path)}")
+        log_message(f"PDF tayyor, PowerShell orqali chiqarilmoqda...")
 
-        # 2. PDF → Printer (silent printto)
-        win32api.ShellExecute(
-            0,
-            "printto",
-            pdf_path,
-            f'"{PRINTER_NAME}"',
-            BASE_DIR,
-            0
+        # 2. PowerShell orqali printer ga yuborish
+        ps_cmd = (
+            f'$pdf = "{pdf_path}"; '
+            f'$p = New-Object -ComObject WScript.Shell; '
+            f'Start-Process -FilePath $pdf -ArgumentList \'/pt\',\'"{PRINTER_NAME}"\' -Wait'
+        )
+        subprocess.run(
+            ["powershell", "-Command", ps_cmd],
+            timeout=20, capture_output=True
         )
 
-        # Printerga yuborilishini kut
-        time.sleep(8)
-
-        log_message(f"Chek chiqarildi! ID: {order_id}")
+        time.sleep(5)
+        log_message(f"Chek chiqarildi (PDF)! ID: {order_id}")
         return True
 
-    except subprocess.TimeoutExpired:
-        log_message(f"Chrome timeout (ID:{order_id})")
-        return False
     except Exception as e:
-        log_message(f"Print xatosi (ID:{order_id}): {e}")
+        log_message(f"PDF print xatosi (ID:{order_id}): {e}")
         return False
     finally:
-        # Faylni o'chirishga urinish (band bo'lsa — keyingi cleanup da o'chadi)
-        time.sleep(3)
+        time.sleep(4)
         try:
             if os.path.exists(pdf_path):
                 os.remove(pdf_path)
