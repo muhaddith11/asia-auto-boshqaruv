@@ -209,7 +209,7 @@ export async function GET(
     <div class="meta-row"><span class="meta-label">BUYURTMA</span><span class="meta-val">#${order.id}</span></div>
     <div class="meta-row"><span class="meta-label">SANA</span><span class="meta-val">${now}</span></div>
     <div class="meta-row"><span class="meta-label">MIJOZ</span><span class="meta-val">${order.ism || ''}</span></div>
-    ${order.raqam ? `<div class="meta-row"><span class="meta-label">RAQAM</span><span class="meta-val">${order.raqam}</span></div>` : ''}
+    ${order.raqam ? `<div class="meta-row"><span class="meta-label">RAQAM</span><span class="meta-val">${String(order.raqam).toUpperCase()}</span></div>` : ''}
     <div class="meta-row"><span class="meta-label">MASHINA</span><span class="meta-val">${order.mashina || ''}</span></div>
   </div>
 
@@ -240,10 +240,10 @@ export async function GET(
     <div class="footer-thanks">TASHRIFINGIZ UCHUN RAHMAT!</div>
     <div class="footer-contacts">
       +998 90 570 88 88<br>
-      Qo'qon sh., Ubay Oripov 12<br>
+      Qo'qon sh., Ubay Oripov 10<br>
       09:00–20:00
     </div>
-    <div class="footer-handle">@asia_auto_service</div>
+    <div class="footer-handle">Instagram &amp; Telegram: @asia_auto_service</div>
   </div>
 
   <script>window.onload = function(){ window.print(); }</script>

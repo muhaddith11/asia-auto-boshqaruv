@@ -1,7 +1,7 @@
 # Asia Auto - Print Agent Task Scheduler Setup
 
 $TaskName   = "AsiaAuto-PrintAgent"
-$PythonPath = "C:\Users\nout.plus\AppData\Local\Programs\Python\Python311\python.exe"
+$PythonPath = "C:\Users\nout.plus\AppData\Local\Programs\Python\Python311\pythonw.exe"
 $ScriptPath = "C:\Users\nout.plus\OneDrive\Desktop\Projects made by AI\Asia Auto Service\boshqaruv\print_agent.py"
 $WorkDir    = "C:\Users\nout.plus\OneDrive\Desktop\Projects made by AI\Asia Auto Service\boshqaruv"
 
@@ -55,7 +55,7 @@ if ($Task) {
     Write-Host "Holat: $($Task.State)" -ForegroundColor White
 }
 
-$PythonProc = Get-Process -Name "python" -ErrorAction SilentlyContinue
+$PythonProc = Get-Process -Name "pythonw" -ErrorAction SilentlyContinue
 if ($PythonProc) {
     Write-Host "Python ishlayapti! PID: $($PythonProc.Id)" -ForegroundColor Green
 } else {

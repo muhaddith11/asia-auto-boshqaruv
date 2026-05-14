@@ -132,7 +132,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 ['MIJOZ',    order.ism],
                 ...(order.tel ? [['TEL', order.tel]] : []),
                 ['MASHINA',  order.mashina],
-                ...(order.raqam ? [['RAQAM', order.raqam]] : []),
+                ...(order.raqam ? [['RAQAM', String(order.raqam).toUpperCase()]] : []),
               ].map(([k, v]) => (
                 <div key={k} style={cell}>
                   <span style={lbl}>{k}</span>
@@ -233,7 +233,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
               </div>
               <div style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 10, color: '#d97706', lineHeight: 1.8 }}>
                 +998 90 570 88 88<br />
-                Qo&apos;qon sh., Ubay Oripov 12<br />
+                Qo&apos;qon sh., Ubay Oripov 10<br />
                 09:00–20:00
               </div>
               <div style={{
@@ -243,7 +243,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 fontFamily: "'JetBrains Mono','Courier New',monospace",
                 fontSize: 10, color: '#555',
               }}>
-                @asia_auto_service
+                Instagram &amp; Telegram: @asia_auto_service
               </div>
             </div>
 
