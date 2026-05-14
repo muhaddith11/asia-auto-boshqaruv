@@ -269,7 +269,8 @@ def print_receipt(order):
         y = p.text_center(y, "TASHRIFINGIZ UCHUN RAHMAT!", pt=12, bold=True)
         y = p.text_center(y, "+998 90 570 88 88", pt=9)
         y = p.text_center(y, "Qo'qon sh., Ubay Oripov 10", pt=9)
-        y = p.text_center(y, "Instagram & Telegram: @asia_auto_service", pt=9)
+        y = p.text_center(y, "Instagram & Telegram:", pt=9)
+        y = p.text_center(y, "@asia_auto_service", pt=9)
         y += p.px(20)
 
         p.end()

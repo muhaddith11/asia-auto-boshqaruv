@@ -243,7 +243,7 @@ export async function GET(
       Qo'qon sh., Ubay Oripov 10<br>
       09:00–20:00
     </div>
-    <div class="footer-handle">Instagram &amp; Telegram: @asia_auto_service</div>
+    <div class="footer-handle">Instagram &amp; Telegram:<br>@asia_auto_service</div>
   </div>
 
   <script>window.onload = function(){ window.print(); }</script>

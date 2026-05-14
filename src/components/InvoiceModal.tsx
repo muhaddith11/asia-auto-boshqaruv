@@ -243,7 +243,8 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 fontFamily: "'JetBrains Mono','Courier New',monospace",
                 fontSize: 10, color: '#555',
               }}>
-                Instagram &amp; Telegram: @asia_auto_service
+                Instagram &amp; Telegram:<br />
+                @asia_auto_service
               </div>
             </div>
 
