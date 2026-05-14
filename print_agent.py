@@ -2,22 +2,22 @@ import time
 import requests
 import subprocess
 import os
-import sys
+import glob
+import tempfile
+import win32api
 from datetime import datetime
 
 # --- SOZLAMALAR ---
 PRINTER_NAME  = "XP-80"
 SUPABASE_URL  = "https://fwktbleovtkxxpsccqqr.supabase.co"
 SUPABASE_KEY  = "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
-RECEIPT_BASE  = "https://asia-auto-boshqaruv.vercel.app/api/receipt"  # Vercel URL
+RECEIPT_BASE  = "https://asia-auto-boshqaruv.vercel.app/api/receipt"
 
 CHECK_INTERVAL = 5
-LAST_ORDER_ID  = 0
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "print_agent_log.txt")
 
-# Chrome yoki Edge yo'lini topish
 CHROME_PATHS = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
@@ -43,101 +43,90 @@ def log_message(message):
     except:
         pass
 
-def print_receipt_chrome(order_id):
-    """Chrome headless orqali chekni printerga yuborish"""
+def cleanup_old_pdfs():
+    """Eski temp PDF fayllarini o'chirish"""
+    for f in glob.glob(os.path.join(BASE_DIR, "tmp_chek_*.pdf")):
+        try:
+            os.remove(f)
+        except:
+            pass
+
+def print_receipt(order_id):
+    """Chrome headless orqali PDF yaratib, printerga yuborish"""
     if not BROWSER:
         log_message("XATO: Chrome yoki Edge topilmadi!")
         return False
 
     url = f"{RECEIPT_BASE}/{order_id}"
-    cmd = [
-        BROWSER,
-        "--headless=new",
-        "--disable-gpu",
-        "--no-sandbox",
-        "--disable-extensions",
-        "--disable-dev-shm-usage",
-        f"--print-to-pdf-no-header",
-        f"--kiosk-printing",
-        f"--printer={PRINTER_NAME}",
-        "--print-to-pdf=/dev/null",  # headless print trigger
-        url
-    ]
 
-    # Yangi Chrome headless print usuli
-    cmd2 = [
-        BROWSER,
-        "--headless=new",
-        "--disable-gpu",
-        "--no-sandbox",
-        "--run-all-compositor-stages-before-draw",
-        "--disable-extensions",
-        f"--print-to-printer={PRINTER_NAME}",
-        url
-    ]
+    # Har safar yangi unique fayl nomi
+    pdf_path = os.path.join(BASE_DIR, f"tmp_chek_{order_id}_{int(time.time())}.pdf")
 
     try:
-        # PDF ga chiqarish usuli (barqarorroq)
-        pdf_path = os.path.join(BASE_DIR, f"temp_receipt_{order_id}.pdf")
-        pdf_cmd = [
+        # 1. Chrome headless → PDF
+        cmd = [
             BROWSER,
             "--headless=new",
             "--disable-gpu",
             "--no-sandbox",
             "--disable-extensions",
-            "--print-to-pdf=" + pdf_path,
-            "--print-to-pdf-no-header",
+            "--disable-dev-shm-usage",
+            "--run-all-compositor-stages-before-draw",
             "--no-pdf-header-footer",
+            "--print-to-pdf-no-header",
+            f"--print-to-pdf={pdf_path}",
             url
         ]
-        result = subprocess.run(pdf_cmd, timeout=30, capture_output=True)
+        result = subprocess.run(cmd, timeout=30, capture_output=True)
 
-        if os.path.exists(pdf_path):
-            # PDF ni printer ga yuborish
-            print_pdf(pdf_path)
-            os.remove(pdf_path)
-            log_message(f"Chek chiqarildi! ID: {order_id}")
-            return True
-        else:
-            log_message(f"PDF yaratilmadi. Chrome output: {result.stderr.decode(errors='ignore')[:200]}")
+        if not os.path.exists(pdf_path):
+            log_message(f"PDF yaratilmadi (ID:{order_id}). Chrome: {result.stderr.decode(errors='ignore')[-300:]}")
             return False
 
+        log_message(f"PDF tayyor: {os.path.basename(pdf_path)}")
+
+        # 2. PDF → Printer (silent printto)
+        win32api.ShellExecute(
+            0,
+            "printto",
+            pdf_path,
+            f'"{PRINTER_NAME}"',
+            BASE_DIR,
+            0
+        )
+
+        # Printerga yuborilishini kut
+        time.sleep(8)
+
+        log_message(f"Chek chiqarildi! ID: {order_id}")
+        return True
+
     except subprocess.TimeoutExpired:
-        log_message(f"Chrome timeout (ID: {order_id})")
+        log_message(f"Chrome timeout (ID:{order_id})")
         return False
     except Exception as e:
-        log_message(f"Chrome xatosi (ID: {order_id}): {e}")
+        log_message(f"Print xatosi (ID:{order_id}): {e}")
         return False
-
-def print_pdf(pdf_path):
-    """PDF ni standart printer orqali chiqarish"""
-    try:
-        # Windows built-in PDF print
-        import win32api
-        win32api.ShellExecute(0, "print", pdf_path, f'/d:"{PRINTER_NAME}"', ".", 0)
-        time.sleep(3)  # Printerga yuborilishini kutish
-    except ImportError:
-        # win32api yo'q bo'lsa — Acrobat yoki Edge orqali
+    finally:
+        # Faylni o'chirishga urinish (band bo'lsa — keyingi cleanup da o'chadi)
+        time.sleep(3)
         try:
-            subprocess.run([
-                "powershell", "-Command",
-                f'Start-Process -FilePath "{pdf_path}" -Verb Print -Wait'
-            ], timeout=15)
-        except Exception as e:
-            log_message(f"PDF print xatosi: {e}")
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+        except:
+            pass
 
 def get_orders_to_print():
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json"
     }
-    url_pending = f"{SUPABASE_URL}/rest/v1/orders?print_status=eq.pending&order=id.asc"
+    url = f"{SUPABASE_URL}/rest/v1/orders?print_status=eq.pending&order=id.asc"
     try:
-        res = requests.get(url_pending, headers=headers, timeout=10)
+        res = requests.get(url, headers=headers, timeout=10)
         return res.json() if res.status_code == 200 else []
     except Exception as e:
-        log_message(f"Baza bilan ulanishda xato: {e}")
+        log_message(f"Baza xatosi: {e}")
         return []
 
 def mark_as_printed(order_id):
@@ -150,40 +139,59 @@ def mark_as_printed(order_id):
     try:
         r = requests.patch(url, headers=headers, json={"print_status": "printed"}, timeout=10)
         if r.status_code not in (200, 204):
-            log_message(f"Status yangilashda xatolik: {r.status_code}")
+            log_message(f"Status xatosi: {r.status_code}")
     except Exception as e:
-        log_message(f"Status yangilashda xato: {e}")
+        log_message(f"Status yangilash xatosi: {e}")
 
 def main():
-    global LAST_ORDER_ID
     log_message("=" * 50)
-    log_message("Chrome Print Agent ishga tushdi")
+    log_message("Print Agent ishga tushdi")
     log_message(f"Printer : {PRINTER_NAME}")
     log_message(f"Browser : {BROWSER or 'TOPILMADI!'}")
-    log_message(f"URL base: {RECEIPT_BASE}")
     log_message("=" * 50)
 
     if not BROWSER:
-        log_message("XATO: Chrome/Edge o'rnatilmagan. Agent to'xtadi.")
+        log_message("XATO: Chrome/Edge o'rnatilmagan!")
         return
+
+    # Eski temp fayllarni tozalash
+    cleanup_old_pdfs()
+    log_message("Eski temp fayllar tozalandi")
+
+    # Hozircha pending bo'lib qolgan buyurtmani ham printed deb belgilash
+    # (agar agent uzoq vaqt o'chiq bo'lsa)
+    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/orders?print_status=eq.pending&order=id.asc",
+            headers=headers, timeout=10
+        )
+        pending = res.json() if res.status_code == 200 else []
+        log_message(f"Kutayotgan buyurtmalar: {len(pending)} ta")
+    except:
+        pass
 
     counter = 0
     while True:
         try:
+            # Har 60 tsiklda eski temp fayllarni tozala
+            if counter % 60 == 0:
+                cleanup_old_pdfs()
+
             to_print = get_orders_to_print()
             for order in to_print:
                 if order.get('print_status') == 'printed':
                     continue
                 log_message(f"Chop etilmoqda... ID: {order['id']}")
-                if print_receipt_chrome(order['id']):
+                if print_receipt(order['id']):
                     mark_as_printed(order['id'])
 
             counter += 1
-            if counter >= 12:
+            if counter % 12 == 0:
                 log_message(f"Agent ishlayapti... {datetime.now().strftime('%H:%M:%S')}")
-                counter = 0
 
             time.sleep(CHECK_INTERVAL)
+
         except Exception as e:
             log_message(f"Loop xatosi: {e}")
             time.sleep(CHECK_INTERVAL)
