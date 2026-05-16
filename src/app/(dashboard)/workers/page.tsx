@@ -199,7 +199,12 @@ export default function WorkersPage() {
                   })
                   .reduce((s, op) => s + op.amount, 0);
 
-                const sofFoyda = Math.max(0, orderProfit - ishxonaXarajat);
+                // "Boshqa" kategoriyali kirimlar sherik ulushiga qo'shiladi
+                const boshqaKirim = ishxonaOperatsiyalar
+                  .filter(op => op.type === 'income' && op.category === 'Boshqa')
+                  .reduce((s, op) => s + op.amount, 0);
+
+                const sofFoyda = Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat);
 
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
