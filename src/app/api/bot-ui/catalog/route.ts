@@ -67,6 +67,9 @@ export async function GET() {
 
     // Process services first (as they contain the actual data)
     services?.forEach((s: any) => {
+      // "UMUMIY" brandli xizmatlar botda ko'rsatilmaydi
+      if (!s.brand || s.brand.toUpperCase() === 'UMUMIY') return;
+
       const b = toProperCase(s.brand || 'Boshqa');
       const m = toProperCase(s.car_model || 'Umumiy');
       
@@ -87,6 +90,9 @@ export async function GET() {
 
     // Add brands/models from cars_list if they didn't have services yet
     cars?.forEach((c: any) => {
+      // "UMUMIY" brandli mashinalar botda ko'rsatilmaydi
+      if (!c.brand || c.brand.toUpperCase() === 'UMUMIY') return;
+
       const b = toProperCase(c.brand);
       const m = toProperCase(c.name);
       brandsSet.add(b);
