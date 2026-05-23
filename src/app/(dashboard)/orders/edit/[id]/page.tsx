@@ -41,7 +41,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   const router = useRouter();
   const {
     buyurtmalar, mijozlar, xodimlar, xizmatlar, zapchastlar, mashinalar,
-    updateBuyurtma, updateMijoz, addMashina
+    updateBuyurtma, updateMijoz, addMashina, loadInitialData
   } = useStore();
 
   const [mounted, setMounted] = useState(false);
@@ -51,6 +51,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     setMounted(true);
+    loadInitialData();
     const order = buyurtmalar.find(b => b.id === orderId);
     if (order) {
       setForm({
@@ -302,6 +303,11 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                       setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNom: '', customNarx: s?.narx?.toString() || '' } : x));
                     }}>
                       <option value="">{a.customNom ? `[Maxsus] ${a.customNom}` : '— Tanlang —'}</option>
+                      {/* Always show the currently assigned service even if filtered out */}
+                      {a.serviceId && !filteredXizmatlar.some(s => String(s.id) === String(a.serviceId)) && (() => {
+                        const cur = xizmatlar.find(x => String(x.id) === String(a.serviceId));
+                        return cur ? <option key={`cur-${cur.id}`} value={cur.id}>{cur.nom} — {cur.narx.toLocaleString()} so'm</option> : null;
+                      })()}
                       {filteredXizmatlar.map(s => (
                         <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>
                       ))}
