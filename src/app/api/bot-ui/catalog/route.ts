@@ -37,27 +37,39 @@ export async function GET() {
       if (page > 20) break; // safety cap at 20k services
     }
 
+    // Known brand names with special casing (acronyms, hyphens, etc.)
+    const BRAND_ALIASES: Record<string, string> = {
+      'bmw': 'BMW',
+      'byd': 'BYD',
+      'gwm': 'GWM',
+      'mg': 'MG',
+      'mercedes-benz': 'Mercedes-Benz',
+    };
+
     function toProperCase(str: string) {
       if (!str) return '';
-      
+
       // Homoglyph normalization: replace Cyrillic lookalikes with Latin equivalents
       // This is crucial for brands like Chevrolet (Latin 'e' vs Cyrillic 'е')
       const homoglyphs: Record<string, string> = {
         'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x',
         'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X'
       };
-      
+
       let clean = str.replace(/[еаосрхЕАОСРХ]/g, m => homoglyphs[m] || m);
-      
+
       // Fix common typo: 'Chevolet' -> 'Chevrolet'
       clean = clean.replace(/Chevolet/gi, 'Chevrolet');
 
-      
       // Aggressive cleanup: remove non-breaking spaces and other weird whitespace
-      clean = clean.replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ').trim();
-      
+      clean = clean.replace(/[  ᠎ -​  　﻿]/g, ' ').trim();
+
       if (!clean) return '';
-      return clean.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      const result = clean.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+      // Apply brand alias for known acronym/special-casing brands
+      const alias = BRAND_ALIASES[result.toLowerCase()];
+      return alias || result;
     }
 
 

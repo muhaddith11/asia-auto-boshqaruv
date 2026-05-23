@@ -4,21 +4,24 @@ import json
 import win32print
 import win32ui
 import win32con
+import win32gui
 import os
 import sys
 import msvcrt
+from PIL import Image
 from datetime import datetime
 
-PRINTER_NAME = "XP-80"
-SUPABASE_URL = "https://fwktbleovtkxxpsccqqr.supabase.co"
-SUPABASE_KEY = "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
+PRINTER_NAME   = "XP-80"
+SUPABASE_URL   = "https://fwktbleovtkxxpsccqqr.supabase.co"
+SUPABASE_KEY   = "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
 CHECK_INTERVAL = 5
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_FILE = os.path.join(BASE_DIR, "print_agent_log.txt")
-WORKERS_MAP = {}
+BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
+LOG_FILE       = os.path.join(BASE_DIR, "print_agent_log.txt")
+LOGO_FILE      = os.path.join(BASE_DIR, "logo.png")
+WORKERS_MAP    = {}
 
 def log_message(msg):
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ts   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{ts}] {msg}"
     print(line)
     try:
@@ -26,6 +29,16 @@ def log_message(msg):
             f.write(line + "\n")
     except:
         pass
+
+def acquire_lock():
+    lock_path = os.path.join(BASE_DIR, "print_agent.lock")
+    try:
+        lf = open(lock_path, "w")
+        msvcrt.locking(lf.fileno(), msvcrt.LK_NBLCK, 1)
+        return lf
+    except (IOError, OSError):
+        log_message("Agent allaqachon ishlayapti!")
+        sys.exit(0)
 
 def fetch_workers():
     global WORKERS_MAP
@@ -41,20 +54,6 @@ def fetch_workers():
     except Exception as e:
         log_message(f"Workers xatosi: {e}")
 
-def send_cut():
-    """ESC/POS kesish buyrug'ini yuborish"""
-    try:
-        CUT = b"\x1d\x56\x41\x05"  # Partial cut + feed
-        hp = win32print.OpenPrinter(PRINTER_NAME)
-        hj = win32print.StartDocPrinter(hp, 1, ("Cut", None, "RAW"))
-        win32print.StartPagePrinter(hp)
-        win32print.WritePrinter(hp, CUT)
-        win32print.EndPagePrinter(hp)
-        win32print.EndDocPrinter(hp)
-        win32print.ClosePrinter(hp)
-    except Exception as e:
-        log_message(f"Cut xatosi: {e}")
-
 def fmt(n):
     try:
         return f"{int(n):,}".replace(",", " ")
@@ -64,49 +63,69 @@ def fmt(n):
 def rgb(r, g, b):
     return r | (g << 8) | (b << 16)
 
-def get_printer_dc_info():
-    """Printer DC parametrlarini olish"""
-    hdc = win32ui.CreateDC()
-    hdc.CreatePrinterDC(PRINTER_NAME)
-    dpi_x  = hdc.GetDeviceCaps(win32con.LOGPIXELSX)
-    dpi_y  = hdc.GetDeviceCaps(win32con.LOGPIXELSY)
-    phys_w = hdc.GetDeviceCaps(win32con.PHYSICALWIDTH)
-    phys_h = hdc.GetDeviceCaps(win32con.PHYSICALHEIGHT)
-    pr_w   = hdc.GetDeviceCaps(win32con.HORZRES)
-    pr_h   = hdc.GetDeviceCaps(win32con.VERTRES)
-    off_x  = hdc.GetDeviceCaps(win32con.PHYSICALOFFSETX)
-    off_y  = hdc.GetDeviceCaps(win32con.PHYSICALOFFSETY)
-    hdc.DeleteDC()
-    info = {
-        "dpi_x": dpi_x, "dpi_y": dpi_y,
-        "phys_w": phys_w, "phys_h": phys_h,
-        "pr_w": pr_w, "pr_h": pr_h,
-        "off_x": off_x, "off_y": off_y,
-    }
-    log_message(f"Printer DC: DPI={dpi_x}x{dpi_y} Printable={pr_w}x{pr_h} Physical={phys_w}x{phys_h} Offset={off_x},{off_y}")
-    return info
+# ── Logo → ESC/POS bitmap ─────────────────────────────
+def logo_to_escpos(path, print_width=400):
+    try:
+        src = Image.open(path)
+        bg  = Image.new("RGB", src.size, (255, 255, 255))
+        if src.mode in ("RGBA", "LA", "P"):
+            src = src.convert("RGBA")
+            bg.paste(src, mask=src.split()[3])
+        else:
+            bg.paste(src.convert("RGB"))
+        if bg.width != print_width:
+            ratio = print_width / bg.width
+            bg    = bg.resize((print_width, max(1, int(bg.height * ratio))), Image.LANCZOS)
+        bw = bg.convert("L").point(lambda p: 0 if p < 128 else 255, "1")
+        w  = bw.width
+        if w % 8 != 0:
+            pad = Image.new("1", ((w + 7) // 8 * 8, bw.height), 1)
+            pad.paste(bw, (0, 0))
+            bw  = pad
+            w   = bw.width
+        width_bytes = w // 8
+        height      = bw.height
+        buf = b"\x1d\x76\x30\x00" + bytes([width_bytes & 0xFF, (width_bytes >> 8) & 0xFF,
+                                            height & 0xFF, (height >> 8) & 0xFF])
+        px  = bw.load()
+        for y in range(height):
+            for x in range(0, w, 8):
+                byte = 0
+                for bit in range(8):
+                    if px[x + bit, y] == 0:
+                        byte |= (0x80 >> bit)
+                buf += bytes([byte])
+        return buf
+    except Exception as e:
+        log_message(f"Logo xatosi: {e}")
+        return b""
 
-def pt_to_px(points, dpi):
-    """Point o'lchamini printer pikselga o'tkazish"""
-    return -int(dpi * points / 72)
+def send_raw(data: bytes):
+    hp = win32print.OpenPrinter(PRINTER_NAME)
+    try:
+        win32print.StartDocPrinter(hp, 1, ("Cut", None, "RAW"))
+        win32print.StartPagePrinter(hp)
+        win32print.WritePrinter(hp, data)
+        win32print.EndPagePrinter(hp)
+        win32print.EndDocPrinter(hp)
+    finally:
+        win32print.ClosePrinter(hp)
+
+# ── GDI Printer ──────────────────────────────────────
+def pt_to_px(pt, dpi):
+    return -int(dpi * pt / 72)
 
 class Printer:
-    """GDI printer wrapper"""
     def __init__(self):
-        info = get_printer_dc_info()
-        self.dpi_x  = info["dpi_x"]
-        self.dpi_y  = info["dpi_y"]
-        self.width  = info["pr_w"]   # Chop etiladigan maydon kengligi (piksel)
-        self.height = info["pr_h"]
-        self.off_x  = info["off_x"]
-        self.off_y  = info["off_y"]
-        self.hdc    = win32ui.CreateDC()
+        self.hdc = win32ui.CreateDC()
         self.hdc.CreatePrinterDC(PRINTER_NAME)
+        self.dpi   = self.hdc.GetDeviceCaps(win32con.LOGPIXELSY)
+        self.width = self.hdc.GetDeviceCaps(win32con.HORZRES)
         self.hdc.SetBkMode(win32con.TRANSPARENT)
         self.hdc.SetTextColor(rgb(0, 0, 0))
 
-    def start(self, doc_name="Chek"):
-        self.hdc.StartDoc(doc_name)
+    def start(self, name="Chek"):
+        self.hdc.StartDoc(name)
         self.hdc.StartPage()
 
     def end(self):
@@ -114,40 +133,22 @@ class Printer:
         self.hdc.EndDoc()
         self.hdc.DeleteDC()
 
-    def font(self, pt=10, bold=False, name="Courier New"):
-        weight = win32con.FW_BOLD if bold else win32con.FW_NORMAL
-        h = pt_to_px(pt, self.dpi_y)
-        return win32ui.CreateFont({
-            "name": name,
-            "height": h,
-            "weight": weight,
-            "charset": win32con.RUSSIAN_CHARSET,
-        })
-
     def px(self, pt):
-        """pt dan px"""
-        return int(self.dpi_y * pt / 72)
+        return int(self.dpi * pt / 72)
 
-    def text(self, x, y, text, pt=10, bold=False):
-        f = self.font(pt=pt, bold=bold)
-        self.hdc.SelectObject(f)
-        self.hdc.TextOut(x, y, text)
-        return y + self.px(pt) + self.px(2)
+    def font(self, pt=10, bold=False):
+        return win32ui.CreateFont({
+            "name":    "Segoe UI",
+            "height":  pt_to_px(pt, self.dpi),
+            "weight":  win32con.FW_BOLD if bold else win32con.FW_NORMAL,
+            "charset": win32con.DEFAULT_CHARSET,   # emoji uchun
+        })
 
     def text_center(self, y, text, pt=10, bold=False):
         f = self.font(pt=pt, bold=bold)
         self.hdc.SelectObject(f)
         w, _ = self.hdc.GetTextExtent(text)
-        x = max(0, (self.width - w) // 2)
-        self.hdc.TextOut(x, y, text)
-        return y + self.px(pt) + self.px(2)
-
-    def text_right(self, y, text, pt=10, bold=False):
-        f = self.font(pt=pt, bold=bold)
-        self.hdc.SelectObject(f)
-        w, _ = self.hdc.GetTextExtent(text)
-        x = self.width - w
-        self.hdc.TextOut(x, y, text)
+        self.hdc.TextOut(max(0, (self.width - w) // 2), y, text)
         return y + self.px(pt) + self.px(2)
 
     def row(self, y, left_text, right_text, pt=9, bold=False):
@@ -158,37 +159,74 @@ class Printer:
         self.hdc.TextOut(self.width - rw, y, str(right_text))
         return y + self.px(pt) + self.px(2)
 
-    def sep(self, y, char="-", pt=9):
+    def sep(self, y, pt=8):
         f = self.font(pt=pt)
         self.hdc.SelectObject(f)
-        cw, _ = self.hdc.GetTextExtent(char)
-        count = max(1, self.width // max(1, cw))
-        self.hdc.TextOut(0, y, char * count)
+        cw, _ = self.hdc.GetTextExtent("-")
+        count  = max(1, self.width // max(1, cw))
+        self.hdc.TextOut(0, y, "-" * count)
         return y + self.px(pt) + self.px(2)
 
+    def draw_logo(self, y):
+        """Logo rasmini GDI orqali chizish (bitta job ichida)"""
+        try:
+            img = Image.open(LOGO_FILE)
+            # Shaffoflikni oq fonga o'zgartirish
+            if img.mode in ("RGBA", "LA", "P"):
+                bg = Image.new("RGB", img.size, (255, 255, 255))
+                src = img.convert("RGBA")
+                bg.paste(src, mask=src.split()[3])
+                img = bg
+            else:
+                img = img.convert("RGB")
+            # Printer kengligi bo'yicha o'lchamni moslash
+            new_h = max(1, int(img.height * self.width / img.width))
+            img = img.resize((self.width, new_h), Image.LANCZOS)
+            # Vaqtincha BMP fayl saqlash
+            tmp_path = os.path.join(BASE_DIR, "_logo_print.bmp")
+            img.save(tmp_path, "BMP")
+            # GDI orqali chizish
+            IMAGE_BITMAP   = 0
+            LR_LOADFROMFILE = 0x00000010
+            hbmp = win32gui.LoadImage(0, tmp_path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+            hdc_handle = self.hdc.GetSafeHdc()
+            mem_dc = win32gui.CreateCompatibleDC(hdc_handle)
+            old_bmp = win32gui.SelectObject(mem_dc, hbmp)
+            win32gui.StretchBlt(
+                hdc_handle, 0, y, self.width, new_h,
+                mem_dc, 0, 0, self.width, new_h,
+                win32con.SRCCOPY
+            )
+            win32gui.SelectObject(mem_dc, old_bmp)
+            win32gui.DeleteDC(mem_dc)
+            win32gui.DeleteObject(hbmp)
+            try: os.unlink(tmp_path)
+            except: pass
+            return y + new_h
+        except Exception as e:
+            log_message(f"Logo GDI xatosi: {e}")
+            return y
+
     def header_bar(self, y, text, pt=10):
-        """Qora fon, oq matn sarlavha"""
-        f = self.font(pt=pt, bold=True)
+        f     = self.font(pt=pt, bold=True)
         self.hdc.SelectObject(f)
         bar_h = self.px(pt) + self.px(4)
-        # Qora to'rtburchak
         brush = win32ui.CreateBrush(win32con.BS_SOLID, rgb(0, 0, 0), 0)
         pen   = win32ui.CreatePen(win32con.PS_NULL, 0, rgb(0, 0, 0))
-        old_b = self.hdc.SelectObject(brush)
-        old_p = self.hdc.SelectObject(pen)
+        ob    = self.hdc.SelectObject(brush)
+        op    = self.hdc.SelectObject(pen)
         self.hdc.Rectangle((0, y, self.width, y + bar_h))
-        self.hdc.SelectObject(old_b)
-        self.hdc.SelectObject(old_p)
-        # Oq matn
+        self.hdc.SelectObject(ob)
+        self.hdc.SelectObject(op)
         self.hdc.SetTextColor(rgb(255, 255, 255))
-        self.hdc.SetBkMode(win32con.TRANSPARENT)
         self.hdc.TextOut(4, y + self.px(2), text)
         self.hdc.SetTextColor(rgb(0, 0, 0))
         return y + bar_h + self.px(2)
 
+# ── Chek ──────────────────────────────────────────────
 def print_receipt(order):
     try:
-        now = datetime.now().strftime("%d.%m.%Y %H:%M")
+        now      = datetime.now().strftime("%d.%m.%Y %H:%M")
         services = order.get("services", [])
         if isinstance(services, str):
             try: services = json.loads(services)
@@ -209,63 +247,59 @@ def print_receipt(order):
         paid  = int(order.get("paid",  0) or 0)
         debt  = final - paid
 
+        # ══ Hammasi bitta GDI job: logo + matn ══
         p = Printer()
         p.start("Chek")
         y = 0
 
-        # ══ HEADER ══
-        y = p.text_center(y, "ASIA AUTO SERVICE", pt=18, bold=True)
-        y = p.text_center(y, "Sifatli xizmat -- xavfsiz yo'l garovi!", pt=8)
+        # Logo tepada
+        y = p.draw_logo(y)
         y += p.px(4)
 
-        # ══ META ══
-        y = p.sep(y)
-        y = p.row(y, "Buyurtma :", f"#{order['id']}")
-        y = p.row(y, "Sana     :", now)
-        y = p.row(y, "Mijoz    :", str(order.get("ism", ""))[:28])
-        y = p.row(y, "Mashina  :", str(order.get("mashina", ""))[:28])
+        y = p.text_center(y, "Sifatli xizmat -- xavfsiz yo'l garovi!", pt=8)
+        y += p.px(3)
+        y  = p.sep(y)
+        y  = p.row(y, "Buyurtma :", f"#{order['id']}")
+        y  = p.row(y, "Sana     :", now)
+        y  = p.row(y, "Mijoz    :", str(order.get("ism", ""))[:28])
+        y  = p.row(y, "Mashina  :", str(order.get("mashina", ""))[:28])
         if order.get("raqam"):
             y = p.row(y, "Raqam    :", str(order["raqam"]).upper())
         if worker_str:
             y = p.row(y, "Xodim    :", worker_str[:28])
         y = p.sep(y)
 
-        # ══ XIZMATLAR ══
         if services:
             y = p.header_bar(y, "KO'RSATILGAN XIZMATLAR:")
             y += p.px(2)
             for s in services:
-                nom  = str(s.get("nom", "Xizmat"))[:30]
-                narx = fmt(s.get("narx", 0))
+                nom  = str(s.get("nom", s.get("name", "Xizmat")))[:32]
+                narx = fmt(s.get("narx", s.get("price", 0)))
                 y = p.row(y, nom, narx)
-            y += p.px(4)
+            y += p.px(3)
 
-        # ══ ZAPCHASTLAR ══
         if zaps:
             y = p.header_bar(y, "EHTIYOT QISMLAR:")
             y += p.px(2)
             for z in zaps:
-                nom  = str(z.get("nom", "Zapchast"))[:30]
-                narx = fmt(int(z.get("narx", 0)) * int(z.get("qty", 1)))
+                nom  = str(z.get("nom", z.get("name", "Zapchast")))[:32]
+                narx = fmt(int(z.get("narx", z.get("price", 0))) * int(z.get("qty", 1)))
                 y = p.row(y, nom, narx)
-            y += p.px(4)
+            y += p.px(3)
 
         y = p.sep(y)
 
-        # ══ SUBTOTALLAR ══
         if paid > 0:
             y = p.row(y, "To'langan  :", fmt(paid) + " UZS")
             if debt > 0:
                 y = p.row(y, "Qolgan qarz:", fmt(debt) + " UZS", bold=True)
-            y += p.px(4)
+            y += p.px(3)
 
-        # ══ JAMI ══
         y = p.text_center(y, "JAMI SUMMA:", pt=13, bold=True)
         y = p.text_center(y, fmt(final) + " UZS", pt=20, bold=True)
         y += p.px(4)
         y = p.sep(y)
 
-        # ══ FOOTER ══
         y = p.text_center(y, "TASHRIFINGIZ UCHUN RAHMAT!", pt=12, bold=True)
         y = p.text_center(y, "+998 90 570 88 88", pt=9)
         y = p.text_center(y, "Qo'qon sh., Ubay Oripov 10", pt=9)
@@ -275,36 +309,19 @@ def print_receipt(order):
         y += p.px(20)
 
         p.end()
+
+        # ══ Faqat CUT — ESC/POS ══
         time.sleep(0.3)
-        send_cut()
-        log_message(f"✅ Chek chiqarildi! ID: {order['id']}")
+        send_raw(b"\x1d\x56\x41\x05")
+
+        log_message(f"Chek chiqarildi! ID: {order['id']}")
         return True
 
     except Exception as e:
-        log_message(f"❌ Print xatosi (ID:{order.get('id')}): {e}")
+        log_message(f"Print xatosi (ID:{order.get('id')}): {e}")
         import traceback
         log_message(traceback.format_exc())
         return False
-
-def test_print():
-    """DPI diagnostika + test chek"""
-    try:
-        p = Printer()
-        log_message(f"Printer kengligi: {p.width}px, DPI: {p.dpi_x}x{p.dpi_y}")
-        p.start("Test")
-        y = 0
-        y = p.text_center(y, "--- TEST ---", pt=14, bold=True)
-        y = p.text_center(y, "Asia Auto Service", pt=11)
-        y = p.text_center(y, "Printer ishlayapti!", pt=10)
-        y += p.px(10)
-        p.end()
-        time.sleep(0.3)
-        send_cut()
-        log_message("✅ Test chek yuborildi!")
-    except Exception as e:
-        log_message(f"❌ Test xatosi: {e}")
-        import traceback
-        log_message(traceback.format_exc())
 
 def get_pending():
     try:
@@ -333,25 +350,13 @@ def mark_printed(order_id):
     except Exception as e:
         log_message(f"Mark xatosi: {e}")
 
-def acquire_lock():
-    """Faqat bitta instance ishlashini ta'minlash"""
-    lock_path = os.path.join(BASE_DIR, "print_agent.lock")
-    try:
-        lock_file = open(lock_path, "w")
-        msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
-        return lock_file
-    except (IOError, OSError):
-        log_message("❌ Agent allaqachon ishlayapti! Ikkinchi instance yopildi.")
-        sys.exit(0)
-
 def main():
     lock = acquire_lock()
     log_message("=" * 48)
-    log_message("Print Agent ishga tushdi (GDI v7)")
+    log_message("Print Agent ishga tushdi (GDI+Emoji v9)")
     log_message(f"Printer: {PRINTER_NAME}")
     log_message("=" * 48)
     fetch_workers()
-    test_print()
 
     counter = 0
     while True:

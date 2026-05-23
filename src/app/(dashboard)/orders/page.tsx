@@ -52,7 +52,7 @@ const S = {
 
 export default function OrdersPage() {
   const router = useRouter();
-  const { buyurtmalar, deleteBuyurtma } = useStore();
+  const { buyurtmalar, deleteBuyurtma, loadInitialData } = useStore();
   const [mounted, setMounted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Buyurtma | null>(null);
   const [paymentOrder, setPaymentOrder] = useState<Buyurtma | null>(null);
@@ -69,7 +69,11 @@ export default function OrdersPage() {
   });
   const [applied, setApplied] = useState({ tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '' });
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    loadInitialData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (!mounted) return null;
 
   const filtered = [...buyurtmalar]
