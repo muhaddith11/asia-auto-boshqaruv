@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import PhoneInput from '@/components/PhoneInput';
 import { normalizePhone } from '@/lib/phone';
+import { normalize } from '@/store/useStore';
 
 const STATUS_TABS = [
   { key: 'yaratildi', label: 'Yaratildi', color: '#64748b' },
@@ -114,6 +115,20 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   };
 
   const getServiceNarx = (serviceId: string | number) => xizmatlar.find(x => String(x.id) === String(serviceId))?.narx || 0;
+
+  // Filter services by selected car (same logic as new order page)
+  const filteredXizmatlar = useMemo(() => {
+    const selectedCar = normalize(form?.mashina || '');
+    return xizmatlar.filter(s => {
+      const serviceCar = normalize(s.mashina || 'UMUMIY');
+      if (serviceCar === 'UMUMIY') return true;
+      if (!selectedCar) return true;
+      if (serviceCar === selectedCar) return true;
+      if (selectedCar.includes(serviceCar)) return true;
+      if (serviceCar.includes(selectedCar)) return true;
+      return false;
+    });
+  }, [xizmatlar, form?.mashina]);
   const getPartNarx = (partId: string | number) => zapchastlar.find(x => String(x.id) === String(partId))?.narx || 0;
 
   // ── Calculations ─────────────────────────────────────────────
@@ -287,7 +302,9 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                       setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNom: '', customNarx: s?.narx?.toString() || '' } : x));
                     }}>
                       <option value="">{a.customNom ? `[Maxsus] ${a.customNom}` : '— Tanlang —'}</option>
-                      {xizmatlar.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
+                      {filteredXizmatlar.map(s => (
+                        <option key={s.id} value={s.id}>{s.nom} — {s.narx.toLocaleString()} so'm</option>
+                      ))}
                     </select>
                   </div>
                   <div>
