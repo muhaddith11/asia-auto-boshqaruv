@@ -47,7 +47,7 @@ const S = {
 };
 
 export default function WorkersPage() {
-  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar } = useStore();
+  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar, sherikOylikIds, setSherikOylik } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({ search: '' });
   const [appliedFilters, setAppliedFilters] = useState({ search: '' });
@@ -204,7 +204,12 @@ export default function WorkersPage() {
                   .filter(op => op.type === 'income' && op.category === 'Boshqa')
                   .reduce((s, op) => s + op.amount, 0);
 
-                const sofFoyda = Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat);
+                // Sherikdan ayiriladigan ishchilar oyligi (korxona tomonidan belgilangan)
+                const sherikOylikXarajat = maoshTarixi
+                  .filter(m => sherikOylikIds.includes(Number(m.xodimId)))
+                  .reduce((s, m) => s + (m.summa || 0), 0);
+
+                const sofFoyda = Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);
 
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
@@ -232,6 +237,7 @@ export default function WorkersPage() {
               };
 
               const parentPartner = x.parentId ? xodimlar.find(xp => xp.id === x.parentId) : null;
+              const isSherikOylik = sherikOylikIds.includes(Number(x.id));
 
               return (
                 <div key={x.id} className={`${isPartner ? 'bg-[#151225] border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.05)]' : 'bg-[#0b1220] border-[#16202b]'} border rounded-2xl p-4 flex flex-col justify-between transition-all hover:translate-y-[-2px]`}>
@@ -240,8 +246,11 @@ export default function WorkersPage() {
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg ${isPartner ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'} border flex items-center justify-center font-black`}>{x.ism.charAt(0).toUpperCase()}</div>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <div className="text-white font-bold uppercase">{x.ism}</div>
+                          {isSherikOylik && (
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 tracking-widest">Korxona oylik</span>
+                          )}
                           {x.telegram && (
                             <div className="flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 mt-0.5">
                               <Send size={8} /> {x.telegram}
@@ -292,7 +301,19 @@ export default function WorkersPage() {
                         Tarix
                       </button>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                      {/* Sherikdan oylik ayirish toggle */}
+                      <button
+                        title={isSherikOylik ? "Sherikdan ayirilmoqda — o'chirish uchun bosing" : "Sherikdan ayirilsin — yoqish uchun bosing"}
+                        onClick={() => setSherikOylik(Number(x.id), !isSherikOylik)}
+                        className={`px-3 py-2 rounded-lg font-bold text-[11px] border transition-all ${
+                          isSherikOylik
+                            ? 'bg-orange-500/20 border-orange-500/40 text-orange-400 hover:bg-orange-500/30'
+                            : 'bg-surface2 border-border text-slate-500 hover:bg-surface3'
+                        }`}
+                      >
+                        {isSherikOylik ? '💼 Sherikdan ✓' : '💼 Sherikdan'}
+                      </button>
                       <button onClick={() => openModal(x)} className="px-3 py-2 bg-surface2 hover:bg-surface3 border border-border text-slate-300 rounded-lg font-bold text-[12px]">Tahrirlash</button>
                       <button onClick={() => setDeleteConfirm({ isOpen: true, id: x.id })} className="px-3 py-2 bg-[#2b0f14] border border-red-500/20 text-red-500 rounded-lg font-bold text-[12px]">O'chirish</button>
                     </div>

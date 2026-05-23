@@ -81,6 +81,10 @@ interface AutoServisStore {
   addMashina: (m: string) => void;
   resetKassa: () => void;
   loadInitialData: () => Promise<void>;
+
+  // Sherik foydadan ayiriladigan ishchilar (maoshi sherik ulushidan chiqadi)
+  sherikOylikIds: number[];
+  setSherikOylik: (id: number, value: boolean) => void;
 }
 
 const defaultMashinalar: string[] = [];
@@ -100,6 +104,7 @@ export const useStore = create<AutoServisStore>()(
       mashinalar: defaultMashinalar,
       kassa: { naqd: 0, karta: 0 },
       counters: { mijoz: 1, xodim: 1, xizmat: 10, zap: 10, buyurtma: 1, cash: 1, maosh: 1, purchase: 1 },
+      sherikOylikIds: [],
 
       addMijoz: async (m) => {
         const tempId = -Date.now();
@@ -599,6 +604,14 @@ export const useStore = create<AutoServisStore>()(
           console.error("❌ Mashina saqlashda xatolik:", err);
         }
       },
+      setSherikOylik: (id, value) => {
+        set((state) => ({
+          sherikOylikIds: value
+            ? [...new Set([...state.sherikOylikIds, id])]
+            : state.sherikOylikIds.filter(x => x !== id)
+        }));
+      },
+
       resetKassa: async () => {
         const nextKassa = { naqd: 0, karta: 0 };
         set({
@@ -698,6 +711,7 @@ export const useStore = create<AutoServisStore>()(
       // This prevents stale localStorage from overwriting correct DB values.
       partialize: (state) => ({
         counters: state.counters,
+        sherikOylikIds: state.sherikOylikIds,
       }),
     }
   )

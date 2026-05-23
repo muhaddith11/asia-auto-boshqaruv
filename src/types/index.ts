@@ -30,6 +30,7 @@ export interface Xodim {
   telegram?: string;
   status: 'aktiv' | 'noaktiv';
   createdAt?: string;
+  sherikOylik?: boolean; // Oylik sherik foydadan ayirilsinmi?
 }
 
 export interface Xizmat {
