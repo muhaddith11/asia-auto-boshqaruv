@@ -47,7 +47,7 @@ const S = {
 };
 
 export default function WorkersPage() {
-  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar, sherikOylikIds, setSherikOylik } = useStore();
+  const { xodimlar, addXodim, updateXodim, deleteXodim, buyurtmalar, maoshTarixi, ishxonaOperatsiyalar } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({ search: '' });
   const [appliedFilters, setAppliedFilters] = useState({ search: '' });
@@ -63,7 +63,7 @@ export default function WorkersPage() {
     tel: '',
     mutax: '',
     foiz: 40,
-    role: 'xodim' as 'xodim' | 'sherik',
+    role: 'xodim' as 'xodim' | 'sherik' | 'korxona',
     shareType: 'total' as 'total' | 'sub',
     parentId: undefined as number | undefined,
     telegram: ''
@@ -92,7 +92,7 @@ export default function WorkersPage() {
       setEditingWorker(null);
       setFormData({
         ism: '', tel: '', mutax: '', foiz: 40,
-        role: 'xodim', shareType: 'total', parentId: undefined,
+        role: 'xodim' as 'xodim' | 'sherik' | 'korxona', shareType: 'total', parentId: undefined,
         telegram: ''
       });
     }
@@ -178,7 +178,8 @@ export default function WorkersPage() {
         ) : (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredWorkers.map((x) => {
-              const isPartner = x.role === 'sherik';
+              const isPartner  = x.role === 'sherik';
+              const isKorxona  = x.role === 'korxona';
 
               let totalDue = 0;
               if (isPartner) {
@@ -204,9 +205,12 @@ export default function WorkersPage() {
                   .filter(op => op.type === 'income' && op.category === 'Boshqa')
                   .reduce((s, op) => s + op.amount, 0);
 
-                // Sherikdan ayiriladigan ishchilar oyligi (korxona tomonidan belgilangan)
+                // "Korxona xodimi" rolidagi ishchilar oyligi sherik foydadan ayiriladi
+                const korxonaIds = xodimlar
+                  .filter(w => w.role === 'korxona')
+                  .map(w => Number(w.id));
                 const sherikOylikXarajat = maoshTarixi
-                  .filter(m => sherikOylikIds.includes(Number(m.xodimId)))
+                  .filter(m => korxonaIds.includes(Number(m.xodimId)))
                   .reduce((s, m) => s + (m.summa || 0), 0);
 
                 const sofFoyda = Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);
@@ -237,7 +241,6 @@ export default function WorkersPage() {
               };
 
               const parentPartner = x.parentId ? xodimlar.find(xp => xp.id === x.parentId) : null;
-              const isSherikOylik = sherikOylikIds.includes(Number(x.id));
 
               return (
                 <div key={x.id} className={`${isPartner ? 'bg-[#151225] border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.05)]' : 'bg-[#0b1220] border-[#16202b]'} border rounded-2xl p-4 flex flex-col justify-between transition-all hover:translate-y-[-2px]`}>
@@ -248,8 +251,8 @@ export default function WorkersPage() {
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <div className="text-white font-bold uppercase">{x.ism}</div>
-                          {isSherikOylik && (
-                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 tracking-widest">Korxona oylik</span>
+                          {isKorxona && (
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 tracking-widest">Korxona xodimi</span>
                           )}
                           {x.telegram && (
                             <div className="flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 mt-0.5">
@@ -261,7 +264,7 @@ export default function WorkersPage() {
                             )}
                           </div>
                           <div className="text-[12px] text-slate-400">
-                            {x.mutax || (isPartner ? 'Sarmoyador' : 'Usta')} •
+                            {x.mutax || (isPartner ? 'Sarmoyador' : isKorxona ? 'Korxona xodimi' : 'Usta')} •
                             <span className={isPartner ? 'text-indigo-400 ml-1 font-bold' : 'ml-1'}>
                               {x.shareType === 'sub' && parentPartner
                                 ? `${x.foiz}% (${parentPartner.ism} ulushidan)`
@@ -302,18 +305,6 @@ export default function WorkersPage() {
                       </button>
                     </div>
                     <div className="flex gap-2 items-center">
-                      {/* Sherikdan oylik ayirish toggle */}
-                      <button
-                        title={isSherikOylik ? "Sherikdan ayirilmoqda — o'chirish uchun bosing" : "Sherikdan ayirilsin — yoqish uchun bosing"}
-                        onClick={() => setSherikOylik(Number(x.id), !isSherikOylik)}
-                        className={`px-3 py-2 rounded-lg font-bold text-[11px] border transition-all ${
-                          isSherikOylik
-                            ? 'bg-orange-500/20 border-orange-500/40 text-orange-400 hover:bg-orange-500/30'
-                            : 'bg-surface2 border-border text-slate-500 hover:bg-surface3'
-                        }`}
-                      >
-                        {isSherikOylik ? '💼 Sherikdan ✓' : '💼 Sherikdan'}
-                      </button>
                       <button onClick={() => openModal(x)} className="px-3 py-2 bg-surface2 hover:bg-surface3 border border-border text-slate-300 rounded-lg font-bold text-[12px]">Tahrirlash</button>
                       <button onClick={() => setDeleteConfirm({ isOpen: true, id: x.id })} className="px-3 py-2 bg-[#2b0f14] border border-red-500/20 text-red-500 rounded-lg font-bold text-[12px]">O'chirish</button>
                     </div>
@@ -400,10 +391,11 @@ export default function WorkersPage() {
                   >
                     <option value="xodim">Xodim (Usta)</option>
                     <option value="sherik">Sherik (Boshliq)</option>
+                    <option value="korxona">Korxona xodimi (oylik sherikdan)</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label style={S.label}>{formData.role === 'sherik' ? 'Ulush (%) *' : 'Komissiya (%) *'}</label>
+                  <label style={S.label}>{formData.role === 'sherik' ? 'Ulush (%) *' : formData.role === 'korxona' ? 'Stavka (%)' : 'Komissiya (%) *'}</label>
                   <div className="relative group">
                     <Percent size={16} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${formData.role === 'sherik' ? 'text-indigo-500' : 'text-emerald-500'}`} />
                     <input
@@ -414,6 +406,12 @@ export default function WorkersPage() {
                   </div>
                 </div>
               </div>
+
+              {formData.role === 'korxona' && (
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3 text-[12px] text-orange-400">
+                  💼 Bu xodimning oyligi sherik foydasi hisoblanishidan <strong>ayiriladi</strong>.
+                </div>
+              )}
 
               {formData.role === 'sherik' && (
                 <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">

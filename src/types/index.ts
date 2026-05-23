@@ -22,7 +22,7 @@ export interface Xodim {
   tel?: string;
   mutax?: string;
   foiz: number; // Commission percentage or share percentage
-  role?: 'xodim' | 'sherik';
+  role?: 'xodim' | 'sherik' | 'korxona';
   shareType?: 'total' | 'sub'; // total profit vs sub-share
   parentId?: number; // for sub-share partners
   login?: string;
