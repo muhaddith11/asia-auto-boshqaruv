@@ -1,6 +1,6 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import React, { useState, useEffect, useMemo, use } from 'react';
+import React, { useState, useEffect, useMemo, useRef, use } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import {
@@ -48,11 +48,20 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   const [form, setForm] = useState<any>(null);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [partRows, setPartRows] = useState<any[]>([]);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
     loadInitialData();
+  }, []);
+
+  useEffect(() => {
+    // Faqat bir marta yuklash — o'zgartirishlarni qayta yozmasligi uchun
+    if (initializedRef.current) return;
     const order = buyurtmalar.find(b => b.id === orderId);
+    if (!order || xizmatlar.length === 0) return;
+    initializedRef.current = true;
+
     if (order) {
       setForm({
         ism: order.ism,
@@ -105,7 +114,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         };
       }));
     }
-  }, [orderId, buyurtmalar, xizmatlar, zapchastlar]);
+  }, [orderId, buyurtmalar, xizmatlar, zapchastlar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter services by selected car — must be BEFORE early return (Rules of Hooks)
   const filteredXizmatlar = useMemo(() => {
