@@ -241,7 +241,8 @@ export async function GET(
     <div class="footer-contacts">
       +998 90 570 88 88<br>
       Qo'qon sh., Ubay Oripov 10<br>
-      Shanba-Payshanba | 9:00 dan 20:00 gacha
+      Dushanba-Shanba | 9:00 dan 20:00 gacha<br>
+      Karta: 5614 6821 1966 0704
     </div>
     <div class="footer-handle">Instagram &amp; Telegram:<br>@asia_auto_service</div>
   </div>
