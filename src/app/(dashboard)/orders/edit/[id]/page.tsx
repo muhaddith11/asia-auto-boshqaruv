@@ -48,6 +48,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   const [form, setForm] = useState<any>(null);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [partRows, setPartRows] = useState<any[]>([]);
+  const [mijozSearch, setMijozSearch] = useState('');
+  const [showMijozList, setShowMijozList] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -248,9 +250,55 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
             <div style={{ ...S.cardBody, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
+              {/* ── Mijoz tanlash ── */}
+              <div style={{ position: 'relative' }}>
                 <label style={S.label}>Ism Familiya *</label>
-                <input style={S.input} value={form.ism} onChange={e => setForm({ ...form, ism: e.target.value })} />
+                <input
+                  style={S.input}
+                  value={showMijozList ? mijozSearch : form.ism}
+                  placeholder="Mijozni qidiring yoki tanlang..."
+                  onFocus={() => { setShowMijozList(true); setMijozSearch(''); }}
+                  onBlur={() => setTimeout(() => setShowMijozList(false), 150)}
+                  onChange={e => {
+                    setMijozSearch(e.target.value);
+                    setForm({ ...form, ism: e.target.value });
+                  }}
+                />
+                {showMijozList && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                    background: 'var(--surface)', border: '1px solid var(--border)',
+                    borderRadius: 10, marginTop: 4, maxHeight: 220, overflowY: 'auto',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                  }}>
+                    {mijozlar
+                      .filter(m => !mijozSearch || m.ism.toLowerCase().includes(mijozSearch.toLowerCase()))
+                      .slice(0, 30)
+                      .map(m => (
+                        <div
+                          key={m.id}
+                          onMouseDown={() => {
+                            setForm({ ...form, ism: m.ism, tel: m.tel || form.tel });
+                            setMijozSearch('');
+                            setShowMijozList(false);
+                          }}
+                          style={{
+                            padding: '10px 14px', cursor: 'pointer', fontSize: 13,
+                            borderBottom: '1px solid var(--border)',
+                            transition: 'background 0.15s',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <span style={{ fontWeight: 600, color: 'var(--text)' }}>{m.ism}</span>
+                          {m.tel && <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 8 }}>{m.tel}</span>}
+                        </div>
+                      ))}
+                    {mijozlar.filter(m => !mijozSearch || m.ism.toLowerCase().includes(mijozSearch.toLowerCase())).length === 0 && (
+                      <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text3)' }}>Mijoz topilmadi</div>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label style={S.label}>Mashina *</label>
