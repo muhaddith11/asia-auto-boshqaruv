@@ -237,6 +237,10 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
               <div>
                 <label style={S.label}>Mashina *</label>
                 <select style={S.select} value={form.mashina} onChange={e => setForm({ ...form, mashina: e.target.value })}>
+                  {/* Always include the order's current car even if not in mashinalar list */}
+                  {form.mashina && !mashinalar.includes(form.mashina) && (
+                    <option value={form.mashina}>{form.mashina}</option>
+                  )}
                   {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
