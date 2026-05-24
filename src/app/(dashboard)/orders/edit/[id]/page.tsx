@@ -68,13 +68,27 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       });
 
       // Load assignments from services
+      // Match service: 1) by ID, 2) by name+car, 3) by name only (fallback)
+      const orderCarNorm = normalize(order.mashina || '');
       setAssignments(order.services.map((s, idx) => {
-        const catalogService = xizmatlar.find(x => String(x.id) === String(s.id) || x.nom === (s.nom || s.name));
+        const sName = s.nom || s.name || '';
+        // 1. Exact ID match
+        let catalogService = s.id ? xizmatlar.find(x => String(x.id) === String(s.id)) : null;
+        if (!catalogService && sName) {
+          // 2. Name + car model match (prefer same car or UMUMIY)
+          catalogService = xizmatlar.find(x => {
+            if (x.nom !== sName) return false;
+            const xCar = normalize(x.mashina || 'UMUMIY');
+            return xCar === 'UMUMIY' || xCar === orderCarNorm || orderCarNorm.includes(xCar) || xCar.includes(orderCarNorm);
+          });
+          // 3. Name-only fallback
+          if (!catalogService) catalogService = xizmatlar.find(x => x.nom === sName);
+        }
         return {
           id: idx,
           workerId: s.workerId?.toString() || '',
           serviceId: catalogService?.id?.toString() || '',
-          customNom: catalogService ? '' : (s.nom || s.name),
+          customNom: catalogService ? '' : sName,
           customNarx: s.narx?.toString() || s.price?.toString() || ''
         };
       }));
