@@ -59,16 +59,28 @@ export default function ClientReportsPage() {
       if (m.ism && b.ism && m.ism.trim().toLowerCase() === b.ism.trim().toLowerCase()) return true;
       return false;
     });
-    const totalSpent = orders.reduce((sum, b) => sum + (b.final || 0), 0);
-    const totalProfit = orders.reduce((sum, b) => sum + (b.pribil || 0), 0);
+
+    // Faqat "tulangan" buyurtmalar foydaga kiradi
+    const paidOrders   = orders.filter(b => b.holat === 'tulangan');
+    const unpaidOrders = orders.filter(b => b.holat !== 'tulangan' && b.holat !== 'bekor qilingan');
+
+    const totalSpent    = paidOrders.reduce((sum, b) => sum + (b.final || 0), 0);
+    const totalProfit   = paidOrders.reduce((sum, b) => sum + (b.pribil || 0), 0);
     const servicesCount = orders.reduce((sum, b) => sum + b.services.length, 0);
+
+    // Qarzdorlik: to'lanmagan buyurtmalarning (final - paid) yig'indisi
+    const qarzdorlik = unpaidOrders.reduce((sum, b) => {
+      const qarz = (b.final || 0) - (b.paid || 0);
+      return sum + (qarz > 0 ? qarz : 0);
+    }, 0);
 
     return {
       ...m,
       totalSpent,
       totalProfit,
       servicesCount,
-      lastSeen: orders.length > 0 ? orders.sort((a,b) => b.sana.localeCompare(a.sana))[0].sana : '—'
+      qarzdorlik,
+      lastSeen: orders.length > 0 ? orders.sort((a, b) => b.sana.localeCompare(a.sana))[0].sana : '—'
     };
   });
 
