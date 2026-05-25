@@ -2,29 +2,26 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import { 
-  Package, 
-  Search, 
-  BarChart, 
-  TrendingUp, 
-  Calendar,
-  History,
-  ShoppingCart
-} from 'lucide-react';
+import { Package, Search, History } from 'lucide-react';
+import PageLayout from '@/components/layout/PageLayout';
+
+const SEL: React.CSSProperties = {
+  background: '#1a1c24',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 8,
+  padding: '8px 12px',
+  fontSize: 12,
+  color: 'white',
+  outline: 'none',
+  cursor: 'pointer',
+};
 
 export default function PartReportsPage() {
   const { zapchastlar, buyurtmalar, mashinalar } = useStore();
   const [mounted, setMounted] = useState(false);
-  const [filters, setFilters] = useState({
-    search:  '',
-    mashina: '',
-    period:  'month',
-  });
+  const [filters, setFilters] = useState({ search: '', mashina: '', period: 'month' });
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
 
   // ── Davr filtri ─────────────────────────────────────────────────────────────
@@ -45,108 +42,113 @@ export default function PartReportsPage() {
     let usageCount = 0;
     let totalGeneratedIncome = 0;
     buyurtmalar.forEach(b => {
-      if (!matchesPeriod(b.sana)) return; // Davr filtri
+      if (!matchesPeriod(b.sana)) return;
       b.zaps.forEach((bp: any) => {
         if (bp.id === p.id) {
-          usageCount += bp.qty;
+          usageCount           += bp.qty;
           totalGeneratedIncome += (bp.narx * bp.qty);
         }
       });
     });
-
-    return {
-      ...p,
-      usageCount,
-      totalGeneratedIncome,
-      profitPerItem: p.narx - (p.sebestoimost || 0)
-    };
+    return { ...p, usageCount, totalGeneratedIncome, profitPerItem: p.narx - (p.sebestoimost || 0) };
   });
 
   const filtered = partStats.filter(p => {
     const matchesSearch = p.nom.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesCar = !filters.mashina || p.mashina === filters.mashina;
+    const matchesCar    = !filters.mashina || p.mashina === filters.mashina;
     return matchesSearch && matchesCar;
-  });
+  }).sort((a, b) => b.usageCount - a.usageCount);
+
+  const opt: React.CSSProperties = { background: '#1a1c24', color: 'white' };
 
   return (
-    <div className="flex-1 flex flex-col bg-background h-screen overflow-hidden">
-      <header className="h-[70px] bg-surface flex items-center justify-between px-8 shrink-0 text-white sticky top-0 z-40">
-        <h2 className="text-slate-400 font-bold text-[13px] uppercase tracking-widest flex items-center gap-2">
-          <History size={18} className="text-green-500" /> Zapchastlar hisoboti
-        </h2>
-        
-        <div className="flex items-center gap-3">
-          <select
-            value={filters.period}
-            onChange={e => setFilters({...filters, period: e.target.value})}
-            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-[11px] font-black text-white focus:border-green-500 outline-none transition-all"
-          >
-            <option value="all">Barcha vaqt</option>
-            <option value="today">Bugun</option>
-            <option value="month">Shu oy</option>
-            <option value="year">Shu yil</option>
-          </select>
-          <select
-            value={filters.mashina}
-            onChange={(e) => setFilters({...filters, mashina: e.target.value})}
-            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-[11px] font-black uppercase tracking-tighter text-white focus:border-green-500 outline-none transition-all"
-          >
-            <option value="">Barchasi (Mashina)</option>
-            <option value="Umumiy">Umumiy</option>
-            {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder="Zapchast nomi..."
-              value={filters.search}
-              onChange={(e) => setFilters({...filters, search: e.target.value})}
-              className="bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-[13px] focus:border-green-500 outline-none w-64 transition-all placeholder:text-slate-600"
-            />
-          </div>
-        </div>
-      </header>
+    <PageLayout title="Zapchastlar hisoboti" subtitle="Davr bo'yicha zapchastlar sarfi va foyda tahlili">
 
-      <div className="flex-1 overflow-y-auto p-8">
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-           <table className="w-full text-left text-[14px]">
-              <thead className="bg-slate-50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
-                 <tr>
-                    <th className="px-6 py-4">Mahsulot</th>
-                    <th className="px-6 py-4">Mashina</th>
-                    <th className="px-6 py-4 text-center">Ishlatilgan</th>
-                    <th className="px-6 py-4 text-right">Mavjud (Balance)</th>
-                    <th className="px-6 py-4 text-right">Summa (Sotuv)</th>
-                    <th className="px-6 py-4 text-right">Taxminiy Foyda</th>
-                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                 {filtered.sort((a,b) => b.usageCount - a.usageCount).map((p) => (
-                   <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-6 py-4">
-                         <div className="flex flex-col">
-                            <span className="font-bold text-slate-800">{p.nom}</span>
-                            <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{p.bir}</span>
-                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                         <span className="text-[11px] font-black uppercase tracking-tighter text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded bg-slate-50">{p.mashina}</span>
-                      </td>
-                      <td className="px-6 py-4 text-center font-black text-blue-600">{p.usageCount} {p.bir}</td>
-                      <td className="px-6 py-4 text-right">
-                         <span className={`font-black ${p.balance <= 5 ? 'text-red-500' : 'text-slate-800'}`}>{p.balance} {p.bir}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-slate-900">{p.totalGeneratedIncome.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-right font-black text-green-600">
-                         {(p.profitPerItem * p.usageCount).toLocaleString()}
-                      </td>
-                   </tr>
-                 ))}
-              </tbody>
-           </table>
+      {/* ── FILTRLAR ── */}
+      <div
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px', marginBottom: 20 }}
+        className="flex flex-wrap items-center gap-3"
+      >
+        {/* Davr */}
+        <select value={filters.period} onChange={e => setFilters({ ...filters, period: e.target.value })} style={SEL}>
+          <option style={opt} value="all">Barcha vaqt</option>
+          <option style={opt} value="today">Bugun</option>
+          <option style={opt} value="month">Shu oy</option>
+          <option style={opt} value="year">Shu yil</option>
+        </select>
+
+        {/* Mashina */}
+        <select value={filters.mashina} onChange={e => setFilters({ ...filters, mashina: e.target.value })} style={SEL}>
+          <option style={opt} value="">Barchasi (Mashina)</option>
+          <option style={opt} value="Umumiy">Umumiy</option>
+          {mashinalar.map(m => <option key={m} style={opt} value={m}>{m}</option>)}
+        </select>
+
+        {/* Qidiruv */}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
+          <input
+            type="text"
+            placeholder="Zapchast nomi..."
+            value={filters.search}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
+            style={{ ...SEL, paddingLeft: 34, width: '100%' }}
+          />
         </div>
+
+        <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>
+          {filtered.length} ta mahsulot
+        </span>
       </div>
-    </div>
+
+      {/* ── JADVAL ── */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+        <table className="w-full text-left text-[12px] whitespace-nowrap">
+          <thead style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
+            <tr>
+              {['Mahsulot', 'Mashina', 'Ishlatilgan', 'Mavjud (Balance)', 'Summa (Sotuv)', 'Taxminiy Foyda'].map(h => (
+                <th key={h} style={{ padding: '12px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+                  className={h !== 'Mahsulot' && h !== 'Mashina' ? 'text-right' : ''}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: 48, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>
+                  Ma'lumot topilmadi
+                </td>
+              </tr>
+            ) : filtered.map((p, idx) => (
+              <tr key={p.id} style={{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                <td style={{ padding: '12px 20px' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: 13 }}>{p.nom}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', marginTop: 2 }}>{p.bir}</div>
+                </td>
+                <td style={{ padding: '12px 20px' }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text3)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 5, textTransform: 'uppercase' }}>
+                    {p.mashina}
+                  </span>
+                </td>
+                <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 800, color: p.usageCount > 0 ? '#3b82f6' : 'var(--text3)' }}>
+                  {p.usageCount} {p.bir}
+                </td>
+                <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 800, color: p.balance <= 0 ? '#f43f5e' : p.balance <= 5 ? '#f97316' : 'var(--text)' }}>
+                  {p.balance} {p.bir}
+                </td>
+                <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 700, color: 'var(--text)' }}>
+                  {p.totalGeneratedIncome.toLocaleString()}
+                </td>
+                <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 800, color: p.profitPerItem * p.usageCount > 0 ? '#10b981' : 'var(--text3)' }}>
+                  {(p.profitPerItem * p.usageCount).toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </PageLayout>
   );
 }
