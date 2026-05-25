@@ -168,6 +168,13 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
     return sum + (base * foiz / 100);
   }, 0);
 
+  // Chegirma usta ulushiga ham proporsional ta'sir qiladi
+  // Misol: 1mln xizmat, 500k chegirma → usta 500k dan hisoblaydi (50% kamayadi)
+  const chegirmaRatio = servicesTotal > 0
+    ? Math.max(0, servicesTotal - (form.chegirma || 0)) / servicesTotal
+    : 1;
+  const zarplataAdjusted = Math.round(zarplataTotal * chegirmaRatio);
+
   const partsTotal = partRows.reduce((sum, r) => {
     if (!r.partId && !r.customNom) return sum;
     const base = r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId);
@@ -218,9 +225,9 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       zap: partsTotal,
       total: subTotal,
       final: finalTotal,
-      zarplata: zarplataTotal,
-      // pribil = faqat xizmatlardan foyda (zapchast va sebestoimost kiritilmaydi)
-      pribil: Math.max(0, servicesTotal - zarplataTotal - (form.chegirma || 0))
+      zarplata: zarplataAdjusted,
+      // pribil = chegirmadan keyingi xizmat summasi − ustalar maoshi
+      pribil: Math.max(0, servicesTotal - (form.chegirma || 0) - zarplataAdjusted)
     });
 
     router.push('/orders');

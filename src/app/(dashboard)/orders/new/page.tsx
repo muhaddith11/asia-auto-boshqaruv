@@ -175,8 +175,14 @@ export default function NewOrderPage() {
     const p = zapchastlar.find(x => x.id === Number(r.partId));
     return sum + (p?.sebestoimost || 0) * (r.qty || 1);
   }, 0);
-  // pribil = faqat xizmatlardan foyda (zapchast kiritilmaydi)
-  const netProfit = Math.max(0, servicesTotal - zarplataTotal - (form.chegirma || 0));
+  // Chegirma usta ulushiga ham proporsional ta'sir qiladi
+  // Misol: 1mln xizmat, 500k chegirma → usta 500k dan hisoblaydi
+  const chegirmaRatio = servicesTotal > 0
+    ? Math.max(0, servicesTotal - (form.chegirma || 0)) / servicesTotal
+    : 1;
+  const zarplataAdjusted = Math.round(zarplataTotal * chegirmaRatio);
+  // pribil = chegirmadan keyingi xizmat summasi − ustalar maoshi
+  const netProfit = Math.max(0, servicesTotal - (form.chegirma || 0) - zarplataAdjusted);
 
   // ── Save ─────────────────────────────────────────────────────
   const handleSave = () => {
@@ -218,7 +224,7 @@ export default function NewOrderPage() {
       zap: partsTotal,
       total: subTotal,
       final: finalTotal,
-      zarplata: zarplataTotal,
+      zarplata: zarplataAdjusted,
       pribil: netProfit,
       print_status: 'pending'
     };
@@ -566,7 +572,7 @@ export default function NewOrderPage() {
                 display: 'flex', justifyContent: 'space-between', fontSize: 13,
               }}>
                 <span style={{ color: 'var(--text3)' }}>Ustalar maoshi:</span>
-                <span style={{ fontWeight: 700, color: '#f43f5e' }}>{Math.round(zarplataTotal).toLocaleString()} so'm</span>
+                <span style={{ fontWeight: 700, color: '#f43f5e' }}>{zarplataAdjusted.toLocaleString()} so'm</span>
                 <span style={{ color: 'var(--text3)' }}>Xizmatlar summasi:</span>
                 <span style={{ fontWeight: 700, color: '#06b6d4' }}>{servicesTotal.toLocaleString()} so'm</span>
               </div>
@@ -682,7 +688,7 @@ export default function NewOrderPage() {
                 {[
                   { label: 'Xizmatlar summasi', val: servicesTotal, color: '#06b6d4' },
                   { label: 'Zapchastlar summasi', val: partsTotal, color: '#10b981' },
-                  { label: 'Ustalar maoshi', val: Math.round(zarplataTotal), color: '#f43f5e' },
+                  { label: 'Ustalar maoshi', val: zarplataAdjusted, color: '#f43f5e' },
                   { label: 'Chegirma', val: form.chegirma || 0, color: '#f97316' },
                 ].map((item, i) => (
                   <div key={i} style={{
