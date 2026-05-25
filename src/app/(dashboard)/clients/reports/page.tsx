@@ -53,11 +53,26 @@ export default function ClientReportsPage() {
 
   if (!mounted) return null;
 
+  // Davr filtri uchun sana yordamchisi
+  const now = new Date();
+  const todayStr      = now.toISOString().split('T')[0];
+  const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const yearStartStr  = `${now.getFullYear()}-01-01`;
+
+  const matchesPeriod = (sana: string) => {
+    if (appliedFilters.period === 'all')   return true;
+    if (appliedFilters.period === 'today') return sana === todayStr;
+    if (appliedFilters.period === 'month') return sana >= monthStartStr;
+    if (appliedFilters.period === 'year')  return sana >= yearStartStr;
+    return true;
+  };
+
   const clientStats = mijozlar.map(m => {
     const orders = buyurtmalar.filter(b => {
-      if (m.tel && b.tel && m.tel.trim() === b.tel.trim()) return true;
-      if (m.ism && b.ism && m.ism.trim().toLowerCase() === b.ism.trim().toLowerCase()) return true;
-      return false;
+      const telMatch = m.tel && b.tel && m.tel.trim() === b.tel.trim();
+      const ismMatch = m.ism && b.ism && m.ism.trim().toLowerCase() === b.ism.trim().toLowerCase();
+      if (!telMatch && !ismMatch) return false;
+      return matchesPeriod(b.sana);
     });
 
     // Faqat "tulangan" buyurtmalar foydaga kiradi

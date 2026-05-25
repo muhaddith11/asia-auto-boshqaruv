@@ -16,9 +16,9 @@ export default function PartReportsPage() {
   const { zapchastlar, buyurtmalar, mashinalar } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({
-    search: '',
+    search:  '',
     mashina: '',
-    period: 'all'
+    period:  'month',
   });
 
   useEffect(() => {
@@ -27,11 +27,25 @@ export default function PartReportsPage() {
 
   if (!mounted) return null;
 
+  // ── Davr filtri ─────────────────────────────────────────────────────────────
+  const now           = new Date();
+  const todayStr      = now.toISOString().split('T')[0];
+  const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const yearStartStr  = `${now.getFullYear()}-01-01`;
+
+  const matchesPeriod = (sana: string) => {
+    if (filters.period === 'all')   return true;
+    if (filters.period === 'today') return sana === todayStr;
+    if (filters.period === 'month') return sana >= monthStartStr;
+    if (filters.period === 'year')  return sana >= yearStartStr;
+    return true;
+  };
+
   const partStats = zapchastlar.map(p => {
-    // Collect usage across all orders
     let usageCount = 0;
     let totalGeneratedIncome = 0;
     buyurtmalar.forEach(b => {
+      if (!matchesPeriod(b.sana)) return; // Davr filtri
       b.zaps.forEach((bp: any) => {
         if (bp.id === p.id) {
           usageCount += bp.qty;
@@ -61,8 +75,18 @@ export default function PartReportsPage() {
           <History size={18} className="text-green-500" /> Zapchastlar hisoboti
         </h2>
         
-        <div className="flex items-center gap-4">
-          <select 
+        <div className="flex items-center gap-3">
+          <select
+            value={filters.period}
+            onChange={e => setFilters({...filters, period: e.target.value})}
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-[11px] font-black text-white focus:border-green-500 outline-none transition-all"
+          >
+            <option value="all">Barcha vaqt</option>
+            <option value="today">Bugun</option>
+            <option value="month">Shu oy</option>
+            <option value="year">Shu yil</option>
+          </select>
+          <select
             value={filters.mashina}
             onChange={(e) => setFilters({...filters, mashina: e.target.value})}
             className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-[11px] font-black uppercase tracking-tighter text-white focus:border-green-500 outline-none transition-all"
@@ -73,9 +97,9 @@ export default function PartReportsPage() {
           </select>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Zapchast nomi..." 
+            <input
+              type="text"
+              placeholder="Zapchast nomi..."
               value={filters.search}
               onChange={(e) => setFilters({...filters, search: e.target.value})}
               className="bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-[13px] focus:border-green-500 outline-none w-64 transition-all placeholder:text-slate-600"
