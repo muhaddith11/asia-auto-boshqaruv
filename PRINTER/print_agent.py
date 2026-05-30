@@ -86,157 +86,160 @@ def get_logo_escpos(max_width=400):
         return None
 
 
+def e(text):
+    return text.encode('utf-8', errors='replace')
+
+def L(text='', bold=False, center=False, big=False, invert=False):
+    """Bir qator ESC/POS"""
+    cmd = bytearray()
+    cmd += b'\x1b\x61\x01' if center else b'\x1b\x61\x00'
+    if bold:   cmd += b'\x1b\x45\x01'
+    if big:    cmd += b'\x1d\x21\x11'
+    if invert: cmd += b'\x1d\x42\x01'
+    cmd += e(text) + b'\n'
+    if invert: cmd += b'\x1d\x42\x00'
+    if big:    cmd += b'\x1d\x21\x00'
+    if bold:   cmd += b'\x1b\x45\x00'
+    return bytes(cmd)
+
+def row2(left, right, width=42):
+    left_s  = str(left)
+    right_s = str(right)
+    spaces  = max(1, width - len(left_s) - len(right_s))
+    return e(left_s + ' ' * spaces + right_s) + b'\n'
+
+def section_header(text):
+    """Qora fon, oq matn (invert)"""
+    padded = f' {text} '
+    return (b'\x1d\x42\x01' + b'\x1b\x45\x01' +
+            e(padded) + b'\n' +
+            b'\x1b\x45\x00' + b'\x1d\x42\x00')
+
+def divider(char='-', count=42):
+    return e(char * count) + b'\n'
+
+def get_worker_name(worker_id):
+    """Worker nomini Supabaseden oladi"""
+    if not worker_id:
+        return None
+    try:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+        }
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/workers?id=eq.{worker_id}&select=ism",
+            headers=headers, timeout=5
+        )
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                return data[0].get('ism', '')
+    except:
+        pass
+    return None
+
+
 def print_receipt(order):
-    """Buyurtmani boyitilgan ko'rinishda chop etadi"""
-    dc = None
+    """Buyurtmani ESC/POS orqali chop etadi"""
     try:
         now = datetime.now().strftime("%d.%m.%Y %H:%M")
-        
-        # Printer uchun Device Context (DC) yaratish
-        dc = win32ui.CreateDC()
-        dc.CreatePrinterDC(PRINTER_NAME)
-        
-        # Chop etishni boshlash
-        dc.StartDoc(f"Buyurtma #{order['id']}")
-        dc.StartPage()
-        
-        # Fontlar
-        font_header = win32ui.CreateFont({"name": "Arial", "height": 42, "weight": 900})
-        font_slogan = win32ui.CreateFont({"name": "Arial", "height": 24, "weight": 400, "italic": 1})
-        font_normal = win32ui.CreateFont({"name": "Courier New", "height": 28, "weight": 400})
-        font_bold = win32ui.CreateFont({"name": "Arial", "height": 30, "weight": 700})
-        
-        y = 10
 
-        # ── LOGO ── (ESC/POS orqali to'g'ridan printerga yuboriladi)
+        # Xodim nomini aniqlaymiz
+        services = order.get('services', [])
+        if isinstance(services, str):
+            services = json.loads(services)
+        zaps = order.get('zaps', [])
+        if isinstance(zaps, str):
+            zaps = json.loads(zaps)
+
+        worker_name = None
+        if services:
+            wid = services[0].get('workerId')
+            if wid:
+                worker_name = get_worker_name(wid)
+
+        data = bytearray()
+        data += b'\x1b\x40'      # Reset
+        data += b'\x1b\x74\x12'  # UTF-8
+
+        # ── LOGO ──
         logo_data = get_logo_escpos(max_width=400)
         if logo_data:
-            try:
-                hprinter = win32print.OpenPrinter(PRINTER_NAME)
-                try:
-                    hjob = win32print.StartDocPrinter(hprinter, 1, ("Logo", None, "RAW"))
-                    win32print.StartPagePrinter(hprinter)
-                    # Markazga o'rnatish
-                    win32print.WritePrinter(hprinter, b'\x1b\x61\x01')  # ESC a 1 = center
-                    win32print.WritePrinter(hprinter, logo_data)
-                    win32print.WritePrinter(hprinter, b'\n\n')
-                    win32print.WritePrinter(hprinter, b'\x1b\x61\x00')  # ESC a 0 = left
-                    win32print.EndPagePrinter(hprinter)
-                    win32print.EndDocPrinter(hprinter)
-                finally:
-                    win32print.ClosePrinter(hprinter)
-                y += 80  # Logo uchun joy
-            except Exception as e:
-                log_message(f"Logo chop etishda xato: {e}")
-                # Logo chiqmasa matn bilan davom etamiz
-                dc.SelectObject(font_header)
-                dc.TextOut(40, y, "ASIA AUTO SERVICE")
-                y += 50
+            data += b'\x1b\x61\x01'
+            data += logo_data
+            data += b'\n'
         else:
-            dc.SelectObject(font_header)
-            dc.TextOut(40, y, "ASIA AUTO SERVICE")
-            y += 50
+            data += L("ASIA AUTO SERVICE", bold=True, center=True, big=True)
+            data += L("SERVICE", center=True)
 
-        dc.SelectObject(font_slogan)
-        dc.TextOut(20, y, "Sifatli xizmat — xavfsiz yo'l garovi!")
-        y += 40
-        
-        dc.SelectObject(font_normal)
-        dc.TextOut(0, y, "--------------------------------")
-        y += 30
-        
-        # Buyurtma ma'lumotlari
-        dc.TextOut(0, y, f"BUYURTMA: #{order['id']}")
-        y += 35
-        dc.TextOut(0, y, f"SANA: {now}")
-        y += 35
-        dc.TextOut(0, y, f"MIJOZ: {str(order.get('ism', ''))[:20]}")
-        y += 35
-        dc.TextOut(0, y, f"MASHINA: {str(order.get('mashina', ''))[:20]}")
-        y += 35
-        dc.TextOut(0, y, f"RAQAM: {order.get('raqam', '')}")
-        y += 40
-        dc.TextOut(0, y, "--------------------------------")
-        y += 35
-        
-        # Xizmatlar
-        dc.SelectObject(font_bold)
-        dc.TextOut(0, y, "KO'RSATILGAN XIZMATLAR:")
-        y += 40
-        dc.SelectObject(font_normal)
-        
-        services = order.get('services', [])
-        if isinstance(services, str): services = json.loads(services)
-        for s in (services or []):
-            nom = s.get('nom', 'Xizmat')[:22]
-            narx = f"{int(s.get('narx', 0)):,}".replace(',', ' ')
-            dc.TextOut(10, y, f"{nom}")
-            dc.TextOut(350, y, f"{narx}")
-            y += 35
-            
-        zaps = order.get('zaps', [])
-        if isinstance(zaps, str): zaps = json.loads(zaps)
+        data += L("Sifatli xizmat -- xavfsiz yo'l garovi!", center=True)
+        data += divider('- ', 21)
+
+        # ── MA'LUMOTLAR ──
+        data += row2("Buyurtma :", f"#{order['id']}")
+        data += row2("Sana      :", now)
+        data += row2("Mijoz     :", str(order.get('ism', ''))[:20])
+        data += row2("Mashina   :", str(order.get('mashina', ''))[:20])
+        if order.get('raqam'):
+            data += row2("Raqam     :", order.get('raqam', ''))
+        if worker_name:
+            data += row2("Xodim     :", str(worker_name)[:20])
+        data += b'\n'
+
+        # ── XIZMATLAR ──
+        if services:
+            data += section_header("KO'RSATILGAN XIZMATLAR:")
+            for s in services:
+                nom  = str(s.get('nom', 'Xizmat'))
+                narx = f"{int(s.get('narx', 0)):,}".replace(',', ' ')
+                # Emoji ajratib olinadi (printer ko'tarolmasligi mumkin)
+                nom_clean = ''.join(c for c in nom if ord(c) < 0x4000)[:28]
+                data += row2(f"  {nom_clean}", narx)
+
+        # ── ZAPCHASTLAR ──
         if zaps:
-            y += 10
-            dc.SelectObject(font_bold)
-            dc.TextOut(0, y, "EHTIYOT QISMLAR:")
-            y += 40
-            dc.SelectObject(font_normal)
+            data += section_header("EHTIYOT QISMLAR:")
             for z in zaps:
-                nom = z.get('nom', 'Zapchast')[:22]
+                nom  = str(z.get('nom', 'Zapchast'))[:26]
                 narx = f"{int(z.get('narx', 0)) * int(z.get('qty', 1)):,}".replace(',', ' ')
-                dc.TextOut(10, y, f"{nom}")
-                dc.TextOut(350, y, f"{narx}")
-                y += 35
-        
-        y += 20
-        dc.TextOut(0, y, "--------------------------------")
-        y += 40
-        
-        # Jami
-        dc.SelectObject(font_header)
-        dc.TextOut(0, y, f"JAMI: {int(order.get('final', 0)):,} UZS".replace(',', ' '))
-        y += 85
-        
-        # Footer
-        dc.SelectObject(font_bold)
-        dc.TextOut(60, y, "XARID UCHUN RAHMAT!")
-        y += 45
-        dc.SelectObject(font_normal)
-        dc.TextOut(0, y, "Tel: +998 90 570 88 88")
-        y += 35
-        dc.TextOut(0, y, "Qo'qon shahar Ubay Oripov 12")
-        
-        y += 250 # Qog'oz surilishi
-        
-        dc.EndPage()
-        dc.EndDoc()
-        
-        # Kesish
+                data += row2(f"  {nom}", narx)
+
+        # ── JAMI ──
+        data += b'\n'
+        jami = f"{int(order.get('final', 0)):,} UZS".replace(',', ' ')
+        data += L("JAMI SUMMA:", bold=True, center=True)
+        data += L(jami, bold=True, center=True, big=True)
+        data += b'\n'
+
+        # ── FOOTER ──
+        data += divider('- ', 21)
+        data += L("TASHRIFINGIZ UCHUN RAHMAT!", bold=True, center=True)
+        data += L("+998 90 570 88 88", center=True)
+        data += L("Qo'qon sh., Ubay Oripov 10", center=True)
+        data += L("Dushanba-Shanba | 9:00 dan 20:00 gacha", center=True)
+        data += L("Karta: 5614 6821 1966 0704", center=True)
+        data += L("Instagram & Telegram:", center=True)
+        data += L("@asia_auto_service", center=True)
+        data += b'\n\n\n\n'
+        data += b'\x1d\x56\x01'  # Partial cut
+
+        # ── PRINTERGA YUBORISH ──
+        hprinter = win32print.OpenPrinter(PRINTER_NAME)
         try:
-            hprinter = win32print.OpenPrinter(PRINTER_NAME)
-            try:
-                hjob = win32print.StartDocPrinter(hprinter, 1, ("Cut", None, "RAW"))
-                win32print.StartPagePrinter(hprinter)
-                win32print.WritePrinter(hprinter, b"\x1d\x56\x01")
-                win32print.EndPagePrinter(hprinter)
-                win32print.EndDocPrinter(hprinter)
-            finally:
-                win32print.ClosePrinter(hprinter)
-        except: 
-            pass
+            hjob = win32print.StartDocPrinter(hprinter, 1, (f"Chek #{order['id']}", None, "RAW"))
+            win32print.StartPagePrinter(hprinter)
+            win32print.WritePrinter(hprinter, bytes(data))
+            win32print.EndPagePrinter(hprinter)
+            win32print.EndDocPrinter(hprinter)
+        finally:
+            win32print.ClosePrinter(hprinter)
 
         log_message(f"Chek chiqarildi! ID: {order['id']}")
         return True
     except Exception as e:
         log_message(f"Chop etishda xato (ID: {order.get('id')}): {e}")
         return False
-    finally:
-        if dc:
-            try:
-                dc.DeleteDC()
-            except:
-                pass
 
 def get_orders_to_print():
     """Chop etilishi kerak bo'lgan buyurtmalarni oladi"""
