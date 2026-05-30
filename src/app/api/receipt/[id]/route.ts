@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +10,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  let logoBase64 = '';
+  try {
+    const buf = fs.readFileSync(path.join(process.cwd(), 'public', 'logo-receipt.png'));
+    logoBase64 = `data:image/png;base64,${buf.toString('base64')}`;
+  } catch { /* logo topilmasa matn ko'rinishida qoladi */ }
+
   const { data: order, error } = await supabase
     .from('orders')
     .select('*')
@@ -199,8 +208,10 @@ export async function GET(
 
   <!-- LOGO -->
   <div class="r-header">
-    <div class="logo-line">ASIA <span class="logo-red">AUTO</span></div>
-    <div class="logo-service">SERVICE</div>
+    ${logoBase64
+      ? `<img style="max-width:180px;height:auto;display:block;margin:0 auto 2px;" src="${logoBase64}" alt="Asia Auto Service" />`
+      : `<div class="logo-line">ASIA <span class="logo-red">AUTO</span></div><div class="logo-service">SERVICE</div>`
+    }
     <div class="tagline">Sifatli xizmat — xavfsiz yo'l garovi!</div>
   </div>
 

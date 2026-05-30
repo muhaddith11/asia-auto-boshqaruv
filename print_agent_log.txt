@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 [2026-04-28 17:08:49] Oxirgi buyurtma ID: 87
 [2026-04-28 17:08:52] Pending buyurtmalar topildi: 1 ta
 [2026-04-28 17:08:52] Saytdan chop etish buyrug'i keldi! ID: 87
@@ -6119,3 +6120,86 @@
 [2026-05-09 21:14:19] Agent ishlayapti... 21:14:19
 [2026-05-09 21:15:50] Agent ishlayapti... 21:15:50
 [2026-05-09 21:17:22] Agent ishlayapti... 21:17:22
+=======
+[2026-05-30 18:19:00] Ishlayapti... 18:19
+[2026-05-30 18:20:20] Ishlayapti... 18:20
+[2026-05-30 18:20:47] Chop etilmoqda... ID: 535
+[2026-05-30 18:20:47] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 18:20:48] Chek chiqarildi! ID: 535
+[2026-05-30 18:20:58] Chop etilmoqda... ID: 536
+[2026-05-30 18:20:58] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 18:20:58] Chek chiqarildi! ID: 536
+[2026-05-30 18:21:49] Ishlayapti... 18:21
+[2026-05-30 18:23:12] Ishlayapti... 18:23
+[2026-05-30 18:24:36] Ishlayapti... 18:24
+[2026-05-30 18:25:55] Ishlayapti... 18:25
+[2026-05-30 18:27:17] Ishlayapti... 18:27
+[2026-05-30 18:27:24] Chop etilmoqda... ID: 537
+[2026-05-30 18:27:24] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 18:27:24] Chek chiqarildi! ID: 537
+[2026-05-30 18:28:41] Ishlayapti... 18:28
+[2026-05-30 18:30:06] Ishlayapti... 18:30
+[2026-05-30 18:31:20] Ishlayapti... 18:31
+[2026-05-30 18:32:36] Ishlayapti... 18:32
+[2026-05-30 18:33:54] Ishlayapti... 18:33
+[2026-05-30 18:35:06] Ishlayapti... 18:35
+[2026-05-30 18:36:28] Ishlayapti... 18:36
+[2026-05-30 18:37:41] Ishlayapti... 18:37
+[2026-05-30 18:39:02] Ishlayapti... 18:39
+[2026-05-30 18:40:18] Ishlayapti... 18:40
+[2026-05-30 18:41:30] Ishlayapti... 18:41
+[2026-05-30 18:42:53] Ishlayapti... 18:42
+[2026-05-30 18:44:14] Ishlayapti... 18:44
+[2026-05-30 18:45:28] Ishlayapti... 18:45
+[2026-05-30 18:46:42] Ishlayapti... 18:46
+[2026-05-30 18:47:55] Ishlayapti... 18:47
+[2026-05-30 18:49:08] Ishlayapti... 18:49
+[2026-05-30 18:50:27] Ishlayapti... 18:50
+[2026-05-30 18:51:40] Ishlayapti... 18:51
+[2026-05-30 18:52:56] Ishlayapti... 18:52
+[2026-05-30 18:54:10] Ishlayapti... 18:54
+[2026-05-30 18:55:24] Ishlayapti... 18:55
+[2026-05-30 18:56:37] Ishlayapti... 18:56
+[2026-05-30 18:57:50] Ishlayapti... 18:57
+[2026-05-30 18:58:33] Chop etilmoqda... ID: 538
+[2026-05-30 18:58:33] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 18:58:33] Chek chiqarildi! ID: 538
+[2026-05-30 18:59:06] Ishlayapti... 18:59
+[2026-05-30 19:00:23] Ishlayapti... 19:00
+[2026-05-30 19:01:44] Ishlayapti... 19:01
+[2026-05-30 19:02:56] Ishlayapti... 19:02
+[2026-05-30 19:04:09] Ishlayapti... 19:04
+[2026-05-30 19:05:22] Ishlayapti... 19:05
+[2026-05-30 19:06:35] Ishlayapti... 19:06
+[2026-05-30 19:07:47] Ishlayapti... 19:07
+[2026-05-30 19:08:59] Ishlayapti... 19:08
+[2026-05-30 19:10:12] Ishlayapti... 19:10
+[2026-05-30 19:11:26] Ishlayapti... 19:11
+[2026-05-30 19:12:39] Ishlayapti... 19:12
+[2026-05-30 19:13:52] Ishlayapti... 19:13
+[2026-05-30 19:15:05] Ishlayapti... 19:15
+[2026-05-30 19:16:17] Ishlayapti... 19:16
+[2026-05-30 19:17:30] Ishlayapti... 19:17
+[2026-05-30 19:18:42] Ishlayapti... 19:18
+[2026-05-30 19:19:00] Chop etilmoqda... ID: 538
+[2026-05-30 19:19:00] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 19:19:01] Chek chiqarildi! ID: 538
+[2026-05-30 19:19:57] Ishlayapti... 19:19
+[2026-05-30 19:21:12] Ishlayapti... 19:21
+[2026-05-30 19:21:50] Chop etilmoqda... ID: 539
+[2026-05-30 19:21:51] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 19:21:51] Chek chiqarildi! ID: 539
+[2026-05-30 19:22:44] Ishlayapti... 19:22
+[2026-05-30 19:24:01] Ishlayapti... 19:24
+[2026-05-30 19:25:15] Ishlayapti... 19:25
+>>>>>>> Stashed changes
+[2026-05-30 19:29:10] Ishlayapti... 19:29
+[2026-05-30 19:30:24] Ishlayapti... 19:30
+[2026-05-30 19:31:38] Ishlayapti... 19:31
+[2026-05-30 19:32:52] Ishlayapti... 19:32
+[2026-05-30 19:34:07] Ishlayapti... 19:34
+[2026-05-30 19:35:20] Ishlayapti... 19:35
+[2026-05-30 19:35:33] Chop etilmoqda... ID: 539
+[2026-05-30 19:35:33] Logo GDI xatosi: [Errno 2] No such file or directory: 'C:\\Users\\nout.plus\\OneDrive\\Desktop\\Projects made by AI\\Asia Auto Service\\boshqaruv\\logo.png'
+[2026-05-30 19:35:33] Chek chiqarildi! ID: 539
+[2026-05-30 19:36:34] Ishlayapti... 19:36
