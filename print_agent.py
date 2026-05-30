@@ -17,7 +17,7 @@ SUPABASE_KEY   = "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
 CHECK_INTERVAL = 5
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE       = os.path.join(BASE_DIR, "print_agent_log.txt")
-LOGO_FILE      = os.path.join(BASE_DIR, "logo.png")
+LOGO_FILE      = os.path.join(BASE_DIR, "public", "logo-receipt.png")
 WORKERS_MAP    = {}
 
 def log_message(msg):
