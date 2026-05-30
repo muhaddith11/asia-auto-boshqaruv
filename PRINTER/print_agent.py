@@ -4,7 +4,14 @@ import json
 import win32print
 import win32ui
 import os
+import struct
 from datetime import datetime, timedelta
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 # --- SOZLAMALAR ---
 PRINTER_NAME = "XP-80" # Windowsdagi printer nomi
@@ -29,6 +36,56 @@ def log_message(message):
     except:
         pass
 
+def get_logo_escpos(max_width=400):
+    """logo-receipt.png ni ESC/POS raster formatiga o'giradi"""
+    if not PIL_AVAILABLE:
+        return None
+    logo_path = os.path.join(os.path.dirname(BASE_DIR), 'public', 'logo-receipt.png')
+    if not os.path.exists(logo_path):
+        # Hostingerdagi yo'l
+        logo_path = os.path.join(BASE_DIR, '..', 'public', 'logo-receipt.png')
+    if not os.path.exists(logo_path):
+        return None
+    try:
+        img = Image.open(logo_path).convert('L')  # Grayscale
+        # O'lchamni kamaytirish
+        ratio = max_width / img.width
+        new_h = int(img.height * ratio)
+        img = img.resize((max_width, new_h), Image.LANCZOS)
+        # 1-bit (oq/qora)
+        img = img.point(lambda x: 0 if x < 200 else 255, '1')
+        img = img.convert('1')
+
+        w, h = img.size
+        # ESC/POS: GS v 0 command (raster image)
+        bytes_per_row = (w + 7) // 8
+        xL = bytes_per_row & 0xFF
+        xH = (bytes_per_row >> 8) & 0xFF
+        yL = h & 0xFF
+        yH = (h >> 8) & 0xFF
+
+        data = bytearray()
+        data += b'\x1d\x76\x30\x00'  # GS v 0, normal size
+        data += bytes([xL, xH, yL, yH])
+
+        pixels = img.load()
+        for y in range(h):
+            for bx in range(bytes_per_row):
+                byte = 0
+                for bit in range(8):
+                    px = bx * 8 + bit
+                    if px < w:
+                        # PIL '1' mode: 0=black, 255=white
+                        if pixels[px, y] == 0:
+                            byte |= (0x80 >> bit)
+                data.append(byte)
+
+        return bytes(data)
+    except Exception as e:
+        log_message(f"Logo ESC/POS xatosi: {e}")
+        return None
+
+
 def print_receipt(order):
     """Buyurtmani boyitilgan ko'rinishda chop etadi"""
     dc = None
@@ -50,12 +107,36 @@ def print_receipt(order):
         font_bold = win32ui.CreateFont({"name": "Arial", "height": 30, "weight": 700})
         
         y = 10
-        
-        # Sarlavha va Slogan
-        dc.SelectObject(font_header)
-        dc.TextOut(40, y, "ASIA AUTO SERVICE")
-        y += 50
-        
+
+        # ── LOGO ── (ESC/POS orqali to'g'ridan printerga yuboriladi)
+        logo_data = get_logo_escpos(max_width=400)
+        if logo_data:
+            try:
+                hprinter = win32print.OpenPrinter(PRINTER_NAME)
+                try:
+                    hjob = win32print.StartDocPrinter(hprinter, 1, ("Logo", None, "RAW"))
+                    win32print.StartPagePrinter(hprinter)
+                    # Markazga o'rnatish
+                    win32print.WritePrinter(hprinter, b'\x1b\x61\x01')  # ESC a 1 = center
+                    win32print.WritePrinter(hprinter, logo_data)
+                    win32print.WritePrinter(hprinter, b'\n\n')
+                    win32print.WritePrinter(hprinter, b'\x1b\x61\x00')  # ESC a 0 = left
+                    win32print.EndPagePrinter(hprinter)
+                    win32print.EndDocPrinter(hprinter)
+                finally:
+                    win32print.ClosePrinter(hprinter)
+                y += 80  # Logo uchun joy
+            except Exception as e:
+                log_message(f"Logo chop etishda xato: {e}")
+                # Logo chiqmasa matn bilan davom etamiz
+                dc.SelectObject(font_header)
+                dc.TextOut(40, y, "ASIA AUTO SERVICE")
+                y += 50
+        else:
+            dc.SelectObject(font_header)
+            dc.TextOut(40, y, "ASIA AUTO SERVICE")
+            y += 50
+
         dc.SelectObject(font_slogan)
         dc.TextOut(20, y, "Sifatli xizmat — xavfsiz yo'l garovi!")
         y += 40
