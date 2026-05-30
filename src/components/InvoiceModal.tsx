@@ -61,15 +61,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
         {/* Modal Header — xuddi chek logosi */}
         <div className="bg-white border-b border-slate-200 flex items-center justify-between px-6 py-4">
           <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ lineHeight: 1 }}>
-              <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: '0.04em' }}>ASIA </span>
-              <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: '0.04em', color: '#e11d2a' }}>AUTO</span>
-            </div>
-            <div style={{
-              fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 11,
-              letterSpacing: '0.25em', borderTop: '2px solid #111', borderBottom: '2px solid #111',
-              padding: '1px 0', marginTop: 2,
-            }}>SERVICE</div>
+            <img src="/logo-receipt.png" alt="Asia Auto Service" style={{ maxWidth: 160, height: 'auto', display: 'block', margin: '0 auto' }} />
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-800 ml-4">
             <X size={22} />
@@ -98,23 +90,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
 
             {/* ── LOGO HEADER ── */}
             <div style={{ textAlign: 'center', padding: '18px 12px 10px', borderBottom: '1px solid #e5e7eb' }}>
-              <div style={{ lineHeight: 1 }}>
-                <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 30, letterSpacing: '0.04em' }}>
-                  ASIA{' '}
-                </span>
-                <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 30, letterSpacing: '0.04em', color: '#e11d2a' }}>
-                  AUTO
-                </span>
-              </div>
-              <div style={{
-                fontFamily: "'Arial Black', Arial, sans-serif",
-                fontWeight: 900, fontSize: 14,
-                letterSpacing: '0.25em', textTransform: 'uppercase',
-                borderTop: '2px solid #111', borderBottom: '2px solid #111',
-                padding: '1px 0', marginTop: 2,
-              }}>
-                SERVICE
-              </div>
+              <img src="/logo-receipt.png" alt="Asia Auto Service" style={{ maxWidth: 180, height: 'auto', display: 'block', margin: '0 auto' }} />
               <div style={{
                 fontFamily: 'Arial, sans-serif', fontSize: 9,
                 fontStyle: 'italic', color: '#888', letterSpacing: '0.06em',
