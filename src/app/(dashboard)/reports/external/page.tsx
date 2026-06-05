@@ -24,8 +24,10 @@ export default function ExternalOperationsPage() {
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
-    type: 'all', // all, income, expense
-    category: 'all'
+    type: 'all',
+    category: 'all',
+    dateFrom: '',
+    dateTo: '',
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
   const [resetConfirm, setResetConfirm] = useState(false);
@@ -42,10 +44,10 @@ export default function ExternalOperationsPage() {
     const matchesSearch = op.category.toLowerCase().includes(sTerm) || (op.comment && op.comment.toLowerCase().includes(sTerm));
     const matchesType = filters.type === 'all' || op.type === filters.type;
     const matchesCat = filters.category === 'all' || op.category === filters.category;
-    
-    // Specifically handle "Aylanmadan tashqari" if that's what's intended for this page
-    // Or just show everything that isn't connected to a direct order purchase/system
-    return matchesSearch && matchesType && matchesCat;
+    const opDate = (op as any).date || (op as any).sana || '';
+    const matchesFrom = !filters.dateFrom || opDate >= filters.dateFrom;
+    const matchesTo   = !filters.dateTo   || opDate <= filters.dateTo;
+    return matchesSearch && matchesType && matchesCat && matchesFrom && matchesTo;
   });
 
   const sortedOps = [...filteredOps].sort((a, b) => {
@@ -92,7 +94,35 @@ export default function ExternalOperationsPage() {
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
           </div>
 
-          <button 
+          {/* Sana dan */}
+          <input
+            type="date"
+            value={filters.dateFrom}
+            onChange={e => setFilters({...filters, dateFrom: e.target.value})}
+            className="bg-surface2 border border-border rounded-xl px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500"
+            title="Dan"
+          />
+          <span className="text-slate-500 text-[12px]">—</span>
+          {/* Sana gacha */}
+          <input
+            type="date"
+            value={filters.dateTo}
+            onChange={e => setFilters({...filters, dateTo: e.target.value})}
+            className="bg-surface2 border border-border rounded-xl px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500"
+            title="Gacha"
+          />
+          {/* Filtrni tozalash */}
+          {(filters.dateFrom || filters.dateTo || filters.search || filters.type !== 'all') && (
+            <button
+              onClick={() => setFilters({ search: '', type: 'all', category: 'all', dateFrom: '', dateTo: '' })}
+              className="bg-surface2 border border-border text-slate-400 hover:text-white px-3 py-2.5 rounded-xl text-[12px] transition-all"
+              title="Filtrni tozalash"
+            >
+              <RotateCcw size={14} />
+            </button>
+          )}
+
+          <button
             onClick={() => setResetConfirm(true)}
             className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
           >
