@@ -88,102 +88,127 @@ export default function ExternalOperationsPage() {
   const totalIncome = filteredOps.filter(op => op.type === 'income').reduce((s, op) => s + op.amount, 0);
   const totalExpense = filteredOps.filter(op => op.type === 'expense').reduce((s, op) => s + op.amount, 0);
 
+  const inputSt: React.CSSProperties = {
+    background: '#121721',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 8,
+    padding: '8px 12px',
+    fontSize: 12,
+    color: 'white',
+    outline: 'none',
+    width: '100%',
+  };
+  const lbl: React.CSSProperties = {
+    display: 'block', fontSize: 10, fontWeight: 800,
+    color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase',
+  };
+
   return (
     <PageLayout
       title="Aylanmadan tashqari operatsiyalar"
       subtitle="Barcha tashqi kirim va chiqimlar, operatsion xarajatlar va daromadlar."
       headerActions={
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Tezkor filtr tugmalari */}
-          {[
-            { key: 'today',     label: 'Bugun' },
-            { key: 'week',      label: 'Bu hafta' },
-            { key: 'month',     label: 'Bu oy' },
-            { key: 'lastmonth', label: "O'tgan oy" },
-          ].map(q => (
-            <button
-              key={q.key}
-              onClick={() => {
-                if (activeQuick === q.key) {
-                  setActiveQuick('');
-                  setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }));
-                } else {
-                  applyQuick(q.key);
-                }
-              }}
-              className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-all active:scale-95 ${
-                activeQuick === q.key
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'bg-surface2 border-border text-slate-400 hover:text-white hover:border-slate-500'
-              }`}
+        <button
+          onClick={() => setResetConfirm(true)}
+          className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+        >
+          <RotateCcw size={16} /> Hisobni tozalash
+        </button>
+      }
+      filterPanel={
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, alignItems: 'flex-end' }}>
+          {/* Qidiruv */}
+          <div>
+            <label style={lbl}>Qidiruv</label>
+            <div style={{ ...inputSt, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px' }}>
+              <Search size={14} color="var(--text3)" />
+              <input
+                type="text"
+                placeholder="Kategoriya, izoh..."
+                value={filters.search}
+                onChange={e => setFilters({ ...filters, search: e.target.value })}
+                style={{ background: 'none', border: 'none', outline: 'none', color: 'white', fontSize: 12, width: '100%', padding: '8px 0' }}
+              />
+            </div>
+          </div>
+
+          {/* Turi */}
+          <div>
+            <label style={lbl}>Turi</label>
+            <select
+              value={filters.type}
+              onChange={e => setFilters({ ...filters, type: e.target.value })}
+              style={inputSt}
             >
-              {q.label}
-            </button>
-          ))}
+              <option value="all">Barchasi</option>
+              <option value="income">Kirim</option>
+              <option value="expense">Chiqim</option>
+            </select>
+          </div>
 
-          <div className="w-px h-6 bg-border mx-1" />
-
-          <div className="flex items-center bg-surface2 border border-border rounded-xl px-3 py-2 gap-2">
-            <Search size={16} className="text-slate-500" />
+          {/* Muddat dan */}
+          <div>
+            <label style={lbl}>Muddat (Dan)</label>
             <input
-              type="text"
-              placeholder="Qidiruv..."
-              value={filters.search}
-              onChange={(e) => setFilters({...filters, search: e.target.value})}
-              className="bg-transparent border-none outline-none text-white text-[13px] w-[160px]"
+              type="date"
+              value={filters.dateFrom}
+              onChange={e => { setActiveQuick(''); setFilters({ ...filters, dateFrom: e.target.value }); }}
+              style={inputSt}
             />
           </div>
 
-          <div className="relative">
-            <select
-              value={filters.type}
-              onChange={(e) => setFilters({...filters, type: e.target.value})}
-              className="bg-surface2 border border-border rounded-xl px-4 py-2.5 text-[12px] font-bold text-white outline-none focus:border-indigo-500 appearance-none pr-10"
-            >
-              <option value="all">Barcha turlar</option>
-              <option value="income">Kirimlar</option>
-              <option value="expense">Chiqimlar</option>
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
+          {/* Muddat gacha */}
+          <div>
+            <label style={lbl}>Muddat (Gacha)</label>
+            <input
+              type="date"
+              value={filters.dateTo}
+              onChange={e => { setActiveQuick(''); setFilters({ ...filters, dateTo: e.target.value }); }}
+              style={inputSt}
+            />
           </div>
 
-          {/* Sana dan */}
-          <input
-            type="date"
-            value={filters.dateFrom}
-            onChange={e => { setActiveQuick(''); setFilters({...filters, dateFrom: e.target.value}); }}
-            className="bg-surface2 border border-border rounded-xl px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500"
-            title="Dan"
-          />
-          <span className="text-slate-500 text-[12px]">—</span>
-          {/* Sana gacha */}
-          <input
-            type="date"
-            value={filters.dateTo}
-            onChange={e => { setActiveQuick(''); setFilters({...filters, dateTo: e.target.value}); }}
-            className="bg-surface2 border border-border rounded-xl px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500"
-            title="Gacha"
-          />
-          {/* Filtrni tozalash */}
-          {(filters.dateFrom || filters.dateTo || filters.search || filters.type !== 'all') && (
-            <button
-              onClick={() => { setActiveQuick(''); setFilters({ search: '', type: 'all', category: 'all', dateFrom: '', dateTo: '' }); }}
-              className="bg-surface2 border border-border text-slate-400 hover:text-white px-3 py-2.5 rounded-xl text-[12px] transition-all"
-              title="Filtrni tozalash"
-            >
-              <RotateCcw size={14} />
-            </button>
-          )}
-
-          <button
-            onClick={() => setResetConfirm(true)}
-            className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-          >
-            <RotateCcw size={16} /> Hisobni tozalash
-          </button>
+          {/* Tezkor tugmalar */}
+          <div>
+            <label style={lbl}>Tezkor</label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[
+                { key: 'today',     label: 'Bugun' },
+                { key: 'week',      label: 'Hafta' },
+                { key: 'month',     label: 'Oy' },
+                { key: 'lastmonth', label: "O'tgan" },
+              ].map(q => (
+                <button
+                  key={q.key}
+                  onClick={() => {
+                    if (activeQuick === q.key) {
+                      setActiveQuick('');
+                      setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }));
+                    } else {
+                      applyQuick(q.key);
+                    }
+                  }}
+                  style={{
+                    padding: '8px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700,
+                    cursor: 'pointer', border: 'none', transition: 'all 0.15s',
+                    background: activeQuick === q.key ? '#4f46e5' : 'var(--surface2)',
+                    color: activeQuick === q.key ? '#fff' : 'var(--text2)',
+                  }}
+                >
+                  {q.label}
+                </button>
+              ))}
+              <button
+                onClick={() => { setActiveQuick(''); setFilters({ search: '', type: 'all', category: 'all', dateFrom: '', dateTo: '' }); }}
+                style={{ padding: '8px 10px', borderRadius: 8, background: 'var(--surface2)', border: 'none', cursor: 'pointer' }}
+                title="Tozalash"
+              >
+                <RotateCcw size={14} color="var(--text3)" />
+              </button>
+            </div>
+          </div>
         </div>
       }
-      filterPanel={null}
     >
       <div className="flex-1 flex flex-col gap-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
