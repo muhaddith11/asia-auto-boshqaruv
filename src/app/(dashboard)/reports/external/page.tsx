@@ -32,10 +32,34 @@ export default function ExternalOperationsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
   const [resetConfirm, setResetConfirm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeQuick, setActiveQuick] = useState('');
   const ITEMS_PER_PAGE = 30;
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setCurrentPage(1); }, [filters]);
+
+  function applyQuick(key: string) {
+    const now = new Date();
+    let from = '', to = '';
+    if (key === 'today') {
+      from = to = now.toISOString().slice(0, 10);
+    } else if (key === 'week') {
+      const day = now.getDay() || 7;
+      const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+      from = mon.toISOString().slice(0, 10);
+      to   = now.toISOString().slice(0, 10);
+    } else if (key === 'month') {
+      from = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+      to   = now.toISOString().slice(0, 10);
+    } else if (key === 'lastmonth') {
+      const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const last = new Date(now.getFullYear(), now.getMonth(), 0);
+      from = d.toISOString().slice(0, 10);
+      to   = last.toISOString().slice(0, 10);
+    }
+    setActiveQuick(key);
+    setFilters(f => ({ ...f, dateFrom: from, dateTo: to }));
+  }
 
   if (!mounted) return null;
 
@@ -69,20 +93,49 @@ export default function ExternalOperationsPage() {
       title="Aylanmadan tashqari operatsiyalar"
       subtitle="Barcha tashqi kirim va chiqimlar, operatsion xarajatlar va daromadlar."
       headerActions={
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Tezkor filtr tugmalari */}
+          {[
+            { key: 'today',     label: 'Bugun' },
+            { key: 'week',      label: 'Bu hafta' },
+            { key: 'month',     label: 'Bu oy' },
+            { key: 'lastmonth', label: "O'tgan oy" },
+          ].map(q => (
+            <button
+              key={q.key}
+              onClick={() => {
+                if (activeQuick === q.key) {
+                  setActiveQuick('');
+                  setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }));
+                } else {
+                  applyQuick(q.key);
+                }
+              }}
+              className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-all active:scale-95 ${
+                activeQuick === q.key
+                  ? 'bg-indigo-600 border-indigo-500 text-white'
+                  : 'bg-surface2 border-border text-slate-400 hover:text-white hover:border-slate-500'
+              }`}
+            >
+              {q.label}
+            </button>
+          ))}
+
+          <div className="w-px h-6 bg-border mx-1" />
+
           <div className="flex items-center bg-surface2 border border-border rounded-xl px-3 py-2 gap-2">
             <Search size={16} className="text-slate-500" />
-            <input 
+            <input
               type="text"
               placeholder="Qidiruv..."
               value={filters.search}
               onChange={(e) => setFilters({...filters, search: e.target.value})}
-              className="bg-transparent border-none outline-none text-white text-[13px] w-[200px]"
+              className="bg-transparent border-none outline-none text-white text-[13px] w-[160px]"
             />
           </div>
-          
+
           <div className="relative">
-            <select 
+            <select
               value={filters.type}
               onChange={(e) => setFilters({...filters, type: e.target.value})}
               className="bg-surface2 border border-border rounded-xl px-4 py-2.5 text-[12px] font-bold text-white outline-none focus:border-indigo-500 appearance-none pr-10"
@@ -98,7 +151,7 @@ export default function ExternalOperationsPage() {
           <input
             type="date"
             value={filters.dateFrom}
-            onChange={e => setFilters({...filters, dateFrom: e.target.value})}
+            onChange={e => { setActiveQuick(''); setFilters({...filters, dateFrom: e.target.value}); }}
             className="bg-surface2 border border-border rounded-xl px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500"
             title="Dan"
           />
@@ -107,14 +160,14 @@ export default function ExternalOperationsPage() {
           <input
             type="date"
             value={filters.dateTo}
-            onChange={e => setFilters({...filters, dateTo: e.target.value})}
+            onChange={e => { setActiveQuick(''); setFilters({...filters, dateTo: e.target.value}); }}
             className="bg-surface2 border border-border rounded-xl px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500"
             title="Gacha"
           />
           {/* Filtrni tozalash */}
           {(filters.dateFrom || filters.dateTo || filters.search || filters.type !== 'all') && (
             <button
-              onClick={() => setFilters({ search: '', type: 'all', category: 'all', dateFrom: '', dateTo: '' })}
+              onClick={() => { setActiveQuick(''); setFilters({ search: '', type: 'all', category: 'all', dateFrom: '', dateTo: '' }); }}
               className="bg-surface2 border border-border text-slate-400 hover:text-white px-3 py-2.5 rounded-xl text-[12px] transition-all"
               title="Filtrni tozalash"
             >
