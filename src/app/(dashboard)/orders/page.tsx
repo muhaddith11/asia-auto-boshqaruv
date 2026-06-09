@@ -592,7 +592,7 @@ export default function OrdersPage() {
 
               {/* Sahifa ma'lumoti */}
               <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 8 }}>
-                {currentPage} / {totalPages} · {filtered.length} ta
+                {currentPage} / {totalPages}
               </span>
             </div>
           );
