@@ -542,54 +542,61 @@ export default function OrdersPage() {
         )}
 
         {/* ── PAGINATION ── */}
-        {filtered.length > ITEMS_PER_PAGE && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 8, marginTop: 24, paddingBottom: 20
-          }}>
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              style={{
-                padding: '8px 16px', borderRadius: 8, background: 'var(--surface)',
-                border: '1px solid var(--border)', color: 'var(--text2)',
-                fontSize: 12, fontWeight: 600, cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                opacity: currentPage === 1 ? 0.5 : 1
-              }}
-            >
-              Oldingi
-            </button>
-            
-            {Array.from({ length: Math.ceil(filtered.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                style={{
-                  width: 36, height: 36, borderRadius: 8,
-                  background: currentPage === page ? 'var(--accent)' : 'var(--surface)',
-                  border: '1px solid' + (currentPage === page ? 'var(--accent)' : 'var(--border)'),
-                  color: currentPage === page ? 'white' : 'var(--text2)',
-                  fontSize: 12, fontWeight: 700, cursor: 'pointer'
-                }}
-              >
-                {page}
-              </button>
-            ))}
+        {filtered.length > ITEMS_PER_PAGE && (() => {
+          const btnSt = (active: boolean, disabled = false): React.CSSProperties => ({
+            minWidth: 36, height: 36, padding: '0 10px', borderRadius: 8,
+            background: active ? 'var(--accent)' : 'var(--surface)',
+            border: '1px solid ' + (active ? 'var(--accent)' : 'var(--border)'),
+            color: active ? 'white' : 'var(--text2)',
+            fontSize: 12, fontWeight: 700,
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.4 : 1,
+            userSelect: 'none' as const,
+          });
 
-            <button
-              onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / ITEMS_PER_PAGE), p + 1))}
-              disabled={currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE)}
-              style={{
-                padding: '8px 16px', borderRadius: 8, background: 'var(--surface)',
-                border: '1px solid var(--border)', color: 'var(--text2)',
-                fontSize: 12, fontWeight: 600, cursor: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 'not-allowed' : 'pointer',
-                opacity: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 0.5 : 1
-              }}
-            >
-              Keyingi
-            </button>
-          </div>
-        )}
+          // Ko'rsatiladigan betlar ro'yxati (ellipsis = -1)
+          const pages: (number | -1)[] = [];
+          const delta = 2; // joriy bet atrofida nechta
+          const left  = currentPage - delta;
+          const right = currentPage + delta;
+
+          for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+              pages.push(i);
+            } else if (pages[pages.length - 1] !== -1) {
+              pages.push(-1); // ellipsis
+            }
+          }
+
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 24, paddingBottom: 20 }}>
+              {/* Oldingi */}
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ ...btnSt(false, currentPage === 1), padding: '0 14px' }}>
+                ←
+              </button>
+
+              {pages.map((p, idx) =>
+                p === -1 ? (
+                  <span key={`e${idx}`} style={{ color: 'var(--text3)', fontSize: 13, padding: '0 4px', userSelect: 'none' }}>…</span>
+                ) : (
+                  <button key={p} onClick={() => setCurrentPage(p)} style={btnSt(p === currentPage)}>
+                    {p}
+                  </button>
+                )
+              )}
+
+              {/* Keyingi */}
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ ...btnSt(false, currentPage === totalPages), padding: '0 14px' }}>
+                →
+              </button>
+
+              {/* Sahifa ma'lumoti */}
+              <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 8 }}>
+                {currentPage} / {totalPages} · {filtered.length} ta
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {selectedOrder && (
