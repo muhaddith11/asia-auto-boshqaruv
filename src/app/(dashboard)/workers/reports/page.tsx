@@ -52,23 +52,30 @@ export default function WorkerReportsPage() {
   // ── Har bir xodim uchun statistika ──────────────────────────────────────────
   const workerStats = xodimlar.map(x => {
     let totalServicesAmount = 0;
+    let totalEarned         = 0;
     let servicesPerformed   = 0;
 
     buyurtmalar.forEach(b => {
-      // Faqat to'langan buyurtmalar + davr filtri
       if (b.holat !== 'tulangan') return;
       if (!matchesPeriod(b.sana)) return;
+
+      const srv = (b as any).srv || b.services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);
+      const zap = (b as any).zap || 0;
+      const final = (b as any).final ?? (b as any).total ?? 0;
+      const ratio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
 
       b.services.forEach((s: any) => {
         if (Number(s.workerId) === Number(x.id)) {
           totalServicesAmount += (s.narx || 0);
-          servicesPerformed   += 1;
+          const rawZ = s.zarplata ?? Math.round(((s.narx || 0) * (x.foiz || 0)) / 100);
+          totalEarned += Math.round(rawZ * ratio);
+          servicesPerformed += 1;
         }
       });
     });
 
-    const earned      = Math.round(totalServicesAmount * (x.foiz || 0) / 100);
-    const avgCheck    = servicesPerformed > 0
+    const earned   = totalEarned;
+    const avgCheck = servicesPerformed > 0
       ? Math.round(totalServicesAmount / servicesPerformed)
       : 0;
 

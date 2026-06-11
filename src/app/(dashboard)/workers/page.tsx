@@ -224,12 +224,18 @@ export default function WorkersPage() {
                 }
               } else {
                 // 🛠️ ODDIY XODIMLAR UCHUN HISOB-KITOB
-                const workerServices = buyurtmalar.flatMap(b => (
-                  b.services
+                totalDue = buyurtmalar.reduce((total, b) => {
+                  const srv = (b as any).srv || b.services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);
+                  const zap = (b as any).zap || 0;
+                  const final = (b as any).final ?? (b as any).total ?? 0;
+                  const ratio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
+                  return total + b.services
                     .filter(s => s.workerId === x.id)
-                    .map(s => ({ ...s, orderId: b.id, orderDate: b.sana }))
-                ));
-                totalDue = workerServices.reduce((sum, s) => sum + (s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100)), 0);
+                    .reduce((sum, s) => {
+                      const raw = s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100);
+                      return sum + Math.round(raw * ratio);
+                    }, 0);
+                }, 0);
               }
 
               const totalPaid = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id)).reduce((s, m) => s + (m.summa || 0), 0);

@@ -41,9 +41,16 @@ export default function WorkerHistoryModal({ worker, onClose }: Props) {
 
   const ishlar: IshRow[] = [];
   for (const b of buyurtmalar) {
+    // Chegirma nisbatini buyurtma darajasida hisoblash
+    const srv = (b as any).srv || (b.services || []).reduce((s: number, x: any) => s + (x.narx || 0), 0);
+    const zap = (b as any).zap || 0;
+    const final = (b as any).final ?? (b as any).total ?? 0;
+    const discountRatio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
+
     for (const s of (b.services || [])) {
       if (Number(s.workerId) === Number(worker.id)) {
-        const topgan = s.zarplata ?? Math.round(((s.narx || 0) * (worker.foiz || 0)) / 100);
+        const rawZarplata = s.zarplata ?? Math.round(((s.narx || 0) * (worker.foiz || 0)) / 100);
+        const topgan = Math.round(rawZarplata * discountRatio);
         ishlar.push({
           orderId: b.id,
           sana: b.sana || b.createdAt || '',
