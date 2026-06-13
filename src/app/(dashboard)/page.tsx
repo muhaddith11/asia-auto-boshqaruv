@@ -16,7 +16,7 @@ export default function Dashboard() {
   if (!mounted) return null;
 
   const activeOrders = buyurtmalar.filter(o => o.holat !== 'tulangan' && o.holat !== 'bekor qilingan');
-  const recentOrders = [...buyurtmalar].reverse().slice(0, 6);
+  const recentOrders = [...buyurtmalar].sort((a, b) => b.id - a.id).slice(0, 6);
 
   const stats = [
     { title: 'Jami Buyurtmalar', value: buyurtmalar.length, icon: ClipboardList, color: 'var(--cyan)', path: '/orders' },
