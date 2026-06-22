@@ -511,7 +511,6 @@ export const useStore = create<AutoServisStore>()(
       },
       addTashqariOperatsiya: async (op) => {
         const tempId = -Date.now();
-        // Always set source='external' so split filter works correctly in Hisobot
         set((state) => ({
           tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: tempId, source: 'external', createdAt: new Date().toISOString() }],
           counters: { ...state.counters, cash: state.counters.cash + 1 }
@@ -522,7 +521,12 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Tashqari operatsiya saqlandi");
         } catch (err: any) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
-          alert("XATOLIK: Operatsiya bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          // Rollback optimistic update
+          set((state) => ({
+            tashqariOperatsiyalar: state.tashqariOperatsiyalar.filter(o => o.id !== tempId),
+            counters: { ...state.counters, cash: state.counters.cash - 1 }
+          }));
+          throw err; // Caller handles kassa rollback
         }
       },
       addIshxonaOperatsiya: async (op) => {
@@ -544,14 +548,19 @@ export const useStore = create<AutoServisStore>()(
           };
           const created = await createOperation(apiData);
           if (!created || (created as any).error) throw new Error((created as any).error || "Server xatosi");
-          
+
           set((state) => ({
             ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.map(o => o.id === tempId ? { ...o, id: created.id } : o)
           }));
           console.log("✅ Ishxona operatsiyasi saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Operatsiya saqlashda xatolik:", err);
-          alert("XATOLIK: Amaliyot bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          // Rollback optimistic update
+          set((state) => ({
+            ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.filter(o => o.id !== tempId),
+            counters: { ...state.counters, cash: state.counters.cash - 1 }
+          }));
+          throw err; // Caller handles kassa rollback
         }
       },
       deleteIshxonaOperatsiya: async (id) => {

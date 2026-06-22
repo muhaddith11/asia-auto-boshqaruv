@@ -48,7 +48,7 @@ const S = {
 
 export default function CashModal({ type, onClose }: CashModalProps) {
   const { updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh, buyurtmalar, updateBuyurtma } = useStore();
-  
+
   const [formData, setFormData] = useState({
     amount: '',
     method: 'naqd' as 'naqd' | 'karta',
@@ -59,6 +59,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
     customCategory: '',
     orderId: ''
   });
+  const [saving, setSaving] = useState(false);
 
   const categories = type === 'income' ? CATEGORIES_INCOME : CATEGORIES_EXPENSE;
 
@@ -66,87 +67,82 @@ export default function CashModal({ type, onClose }: CashModalProps) {
   const clientDiscount = (formData.category === "Buyurtma bo'yicha to'lov" && selectedClient) ? (selectedClient.skidka || 0) : 0;
   const discountedAmount = formData.amount ? Math.round(parseInt(formData.amount) * (1 - (clientDiscount / 100))) : 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     const amount = parseInt(formData.amount);
     if (isNaN(amount) || amount <= 0) return;
 
-    const finalCategory = formData.category === "🆕 Yangi kategoriya qo'shish" 
-      ? formData.customCategory 
+    const finalCategory = formData.category === "🆕 Yangi kategoriya qo'shish"
+      ? formData.customCategory
       : formData.category;
 
-    if (formData.category === "Ish xaqi" || (formData.category === "🆕 Yangi kategoriya qo'shish" && formData.customCategory === "Ish xaqi")) {
-      const worker = xodimlar.find(x => x.ism === formData.source);
-      addMaosh({
-        sana: new Date().toISOString().split('T')[0],
-        davr: new Date().toISOString().substring(0, 7),
-        xodimId: worker?.id || 0,
-        summa: amount,
-        method: formData.method,
-        izoh: formData.comment || "Maosh to'lovi"
-      });
-    } else if (formData.category === "Buyurtma bo'yicha to'lov") {
-      // Logic for Task 2: Expense linked to Order
-      const targetOrder = buyurtmalar.find(b => String(b.id) === formData.orderId);
-      if (!targetOrder) {
-        alert("XATO: Bunday ID dagi buyurtma topilmadi!");
-        return;
-      }
+    setSaving(true);
+    try {
+      if (formData.category === "Ish xaqi" || (formData.category === "🆕 Yangi kategoriya qo'shish" && formData.customCategory === "Ish xaqi")) {
+        // addMaosh o'zi ichida kassani boshqaradi va rollback qiladi
+        const worker = xodimlar.find(x => x.ism === formData.source);
+        await addMaosh({
+          sana: new Date().toISOString().split('T')[0],
+          davr: new Date().toISOString().substring(0, 7),
+          xodimId: worker?.id || 0,
+          summa: amount,
+          method: formData.method,
+          izoh: formData.comment || "Maosh to'lovi"
+        });
 
-      // Add as a "virtual" part to the order
-      const newZap = {
-        id: -Date.now(),
-        nom: `Xarajat: ${formData.comment || 'Qo\'shimcha'}`,
-        qty: 1,
-        narx: discountedAmount,
-        sebestoimost: amount,
-        bir: 'dona',
-        kat: 'Xarajat'
-      };
+      } else if (formData.category === "Buyurtma bo'yicha to'lov") {
+        const targetOrder = buyurtmalar.find(b => String(b.id) === formData.orderId);
+        if (!targetOrder) {
+          alert("XATO: Bunday ID dagi buyurtma topilmadi!");
+          return;
+        }
+        const newZap = {
+          id: -Date.now(),
+          nom: `Xarajat: ${formData.comment || 'Qo\'shimcha'}`,
+          qty: 1, narx: discountedAmount, sebestoimost: amount, bir: 'dona', kat: 'Xarajat'
+        };
+        updateBuyurtma(targetOrder.id, {
+          zaps: [...(targetOrder.zaps || []), newZap] as any,
+          zap: (targetOrder.zap || 0) + discountedAmount,
+          total: (targetOrder.total || 0) + discountedAmount,
+          final: (targetOrder.final || 0) + discountedAmount
+        });
+        const op = {
+          date: new Date().toISOString().split('T')[0],
+          type: 'expense', method: formData.method, amount,
+          category: finalCategory,
+          comment: `${formData.comment} (Buyurtma #${formData.orderId})`,
+          source: formData.source || 'manual', orderId: formData.orderId
+        };
+        // Avval operatsiyani saqlash, keyin kassani yangilash
+        await addIshxonaOperatsiya(op as any);
+        updateKassa(formData.method, amount, 'sub');
 
-      const updatedZaps = [...(targetOrder.zaps || []), newZap];
-      const addedToZap = discountedAmount;
-      
-      updateBuyurtma(targetOrder.id, {
-        zaps: updatedZaps as any,
-        zap: (targetOrder.zap || 0) + addedToZap,
-        total: (targetOrder.total || 0) + addedToZap,
-        final: (targetOrder.final || 0) + addedToZap
-      });
-
-      // Also record the expense in Kassa
-      updateKassa(formData.method, amount, 'sub');
-      const op = {
-        date: new Date().toISOString().split('T')[0],
-        type: 'expense',
-        method: formData.method,
-        amount: amount,
-        category: finalCategory,
-        comment: `${formData.comment} (Buyurtma #${formData.orderId})`,
-        source: formData.source || 'manual',
-        orderId: formData.orderId
-      };
-      addIshxonaOperatsiya(op as any);
-    } else {
-      updateKassa(formData.method, amount, type === 'income' ? 'add' : 'sub');
-      const op = {
-        date: new Date().toISOString().split('T')[0],
-        type: type,
-        method: formData.method,
-        amount: amount,
-        category: finalCategory,
-        comment: formData.comment,
-        source: formData.source || 'manual'
-      };
-
-      if (finalCategory === 'Aylanmadan tashqari') {
-        addTashqariOperatsiya(op as any);
       } else {
-        addIshxonaOperatsiya(op as any);
+        const op = {
+          date: new Date().toISOString().split('T')[0],
+          type: type, method: formData.method, amount,
+          category: finalCategory,
+          comment: formData.comment,
+          source: formData.source || 'manual'
+        };
+        // Avval operatsiyani bazaga saqlash
+        if (finalCategory === 'Aylanmadan tashqari') {
+          await addTashqariOperatsiya(op as any);
+        } else {
+          await addIshxonaOperatsiya(op as any);
+        }
+        // Operatsiya muvaffaqiyatli saqlangandan KEYIN kassani yangilash
+        updateKassa(formData.method, amount, type === 'income' ? 'add' : 'sub');
       }
+
+      onClose();
+    } catch (err: any) {
+      alert("XATOLIK: Amaliyot bazada saqlanmadi!\nKassa o'zgartirilmadi.\nSabab: " + (err.message || "Ulanish xatosi"));
+    } finally {
+      setSaving(false);
     }
-    
-    onClose();
   };
 
   return (
@@ -320,12 +316,13 @@ export default function CashModal({ type, onClose }: CashModalProps) {
             >
               Bekor qilish
             </button>
-            <button 
+            <button
               type="submit"
-              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98] border-none cursor-pointer flex items-center justify-center gap-3"
+              disabled={saving}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98] border-none cursor-pointer flex items-center justify-center gap-3"
             >
               <Save size={18} />
-              Saqlash
+              {saving ? 'Saqlanmoqda...' : 'Saqlash'}
             </button>
           </div>
         </form>
