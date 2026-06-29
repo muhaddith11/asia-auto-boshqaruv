@@ -25,7 +25,18 @@ export async function POST(req: NextRequest) {
 
     const chatId = body.message.chat.id;
     const text = body.message.text;
-    
+
+    // /id buyrug'i — joriy chat (guruh) ID sini qaytaradi (TELEGRAM_GROUP_ID uchun)
+    if (text && /^\/(id|groupid|chatid)(@\w+)?$/.test(text.trim())) {
+      const chatType = body.message.chat.type || 'private';
+      const title = body.message.chat.title || '';
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: `🆔 Chat ID: ${chatId}\n📂 Turi: ${chatType}${title ? `\n📌 Nomi: ${title}` : ''}\n\nGuruh bo'lsa, shu ID ni TELEGRAM_GROUP_ID ga qo'ying.`,
+      });
+      return NextResponse.json({ ok: true });
+    }
+
     // Detect host for dynamic URLs
     const host = req.headers.get('host') || 'asiaautoservice.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
