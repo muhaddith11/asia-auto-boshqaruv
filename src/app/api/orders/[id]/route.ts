@@ -10,20 +10,56 @@ const tgToken = process.env.TELEGRAM_BOT_TOKEN;
 const tgGroupId = process.env.TELEGRAM_GROUP_ID; // guruh chat ID (-100...) yoki @username
 const tgBot = tgToken ? new Telegraf(tgToken) : null;
 
-// Buyurtma tayyor bo'lganda guruhga chiroyli xabar yuborish
+const fmtSum = (n: any) => Number(n || 0).toLocaleString('ru-RU');
+
+// jsonb ustun massiv yoki string ko'rinishda kelishi mumkin — har ikkisini qo'llab-quvvatlaymiz
+function asArray(v: any): any[] {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string') {
+    try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
+  }
+  return [];
+}
+
+// Buyurtma tayyor bo'lganda guruhga chiroyli, mijozga atalgan xabar
 async function notifyOrderReady(order: any) {
   if (!tgBot || !tgGroupId || !order) return;
   try {
     const mashina = order.mashina || 'Avtomobil';
     const raqam = order.raqam ? String(order.raqam).toUpperCase() : '—';
-    const summa = Number(order.final || order.total || 0).toLocaleString('ru-RU');
 
-    const message =
-      `✅ Buyurtma tayyor!\n` +
-      `🚗 ${mashina}  •  🔢 ${raqam}\n` +
-      `💰 ${summa} so'm — mashina topshirishga tayyor (#${order.id})`;
+    const services = asArray(order.services);
+    const parts = asArray(order.zaps);
 
-    await tgBot.telegram.sendMessage(tgGroupId, message);
+    const lines: string[] = [
+      `🔔 Hurmatli mijoz!`,
+      `🚗 Sizning «${mashina}» mashinangiz tayyor ✅`,
+      `🔢 Davlat raqami: ${raqam}`,
+    ];
+
+    if (services.length) {
+      lines.push('', '🛠 Xizmatlar:');
+      services.forEach((s: any) => {
+        const nom = s.nom || s.name || 'Xizmat';
+        const narx = s.narx ?? s.price ?? 0;
+        lines.push(`   • ${nom} — ${fmtSum(narx)} so'm`);
+      });
+    }
+
+    if (parts.length) {
+      lines.push('', '🔧 Ehtiyot qismlar:');
+      parts.forEach((p: any) => {
+        const nom = p.nom || p.name || 'Ehtiyot qism';
+        const qty = Number(p.qty ?? p.quantity ?? 1);
+        const narx = Number(p.narx ?? p.price ?? 0);
+        lines.push(`   • ${nom} ×${qty} — ${fmtSum(narx * qty)} so'm`);
+      });
+    }
+
+    const jami = order.final ?? order.total ?? 0;
+    lines.push('', `💰 Jami: ${fmtSum(jami)} so'm`, '', `🙏 Tashrifingiz uchun rahmat! — AsiaAutoService`);
+
+    await tgBot.telegram.sendMessage(tgGroupId, lines.join('\n'));
   } catch (err) {
     console.error('Telegram guruhga xabar yuborishda xatolik:', err);
   }
