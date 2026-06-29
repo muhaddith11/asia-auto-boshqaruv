@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, User, LogIn, ShieldCheck } from 'lucide-react';
+import { findAccount } from '@/lib/auth';
 
 export default function LoginPage() {
   const [login, setLogin] = useState('');
@@ -12,14 +13,16 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", login);
     setLoading(true);
     setError('');
 
-    // Login logic
-    if (login === 'asiaauto' && password === 'salom123') {
-      document.cookie = `auth_session=active; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      console.log("Login success");
+    // Akkauntni rol bilan tekshirish
+    const account = findAccount(login, password);
+    if (account) {
+      const maxAge = 60 * 60 * 24 * 7;
+      document.cookie = `auth_session=active; path=/; max-age=${maxAge}; SameSite=Lax`;
+      document.cookie = `auth_role=${account.role}; path=/; max-age=${maxAge}; SameSite=Lax`;
+      document.cookie = `auth_name=${encodeURIComponent(account.ism)}; path=/; max-age=${maxAge}; SameSite=Lax`;
       window.location.href = '/'; // Kuchliroq o'tish usuli
     } else {
       setError('Login yoki parol noto\'g\'ri!');

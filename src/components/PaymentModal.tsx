@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -87,7 +88,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
       await loadInitialData();
       onClose();
     } catch (err: any) {
-      alert('XATOLIK: ' + (err.message || 'Noma\'lum xato'));
+      toast.error('XATOLIK: ' + (err.message || 'Noma\'lum xato'));
     } finally {
       setLoading(false);
     }

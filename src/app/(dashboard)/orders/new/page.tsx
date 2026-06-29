@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStore, normalize } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
@@ -128,7 +129,7 @@ export default function NewOrderPage() {
       setNewCar({ brand: '', model: '' });
       setIsAddingMashina(false);
     } else {
-      alert("Brend va Modelni kiriting!");
+      toast.error("Brend va Modelni kiriting!");
     }
   };
 
@@ -187,7 +188,7 @@ export default function NewOrderPage() {
   // ── Save ─────────────────────────────────────────────────────
   const handleSave = () => {
     if (!form.ism || !form.mashina || !form.raqam) {
-      alert('Ism, mashina va davlat raqamini kiriting!');
+      toast.error('Ism, mashina va davlat raqamini kiriting!');
       return;
     }
 

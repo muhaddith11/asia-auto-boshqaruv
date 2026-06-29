@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,7 @@ export default function AddServicePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nom || !formData.narx) {
-      alert('Xizmat nomi va narxini kiriting!');
+      toast.error('Xizmat nomi va narxini kiriting!');
       return;
     }
 

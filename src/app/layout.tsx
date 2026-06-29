@@ -31,6 +31,7 @@ export const viewport = {
 };
 
 import DataLoader from "@/components/DataLoader";
+import { Toaster } from "react-hot-toast";
 
 export default function RootLayout({
   children,
@@ -43,6 +44,21 @@ export default function RootLayout({
         <DataLoader />
         {children}
         <PWAAux />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#151921',
+              color: '#f1f5f9',
+              border: '1px solid rgba(255,255,255,0.08)',
+              fontSize: '13px',
+              fontWeight: 600,
+            },
+            success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+            error: { iconTheme: { primary: '#f43f5e', secondary: '#fff' }, duration: 6000 },
+          }}
+        />
       </body>
     </html>
   );

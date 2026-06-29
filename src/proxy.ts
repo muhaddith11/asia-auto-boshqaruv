@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { canAccess, type Role, type Section } from '@/lib/auth';
+
+// Yo'l prefiksini bo'limga moslash (rol tekshiruvi uchun)
+function sectionForPath(pathname: string): Section | null {
+  if (pathname.startsWith('/reports/audit')) return 'audit';
+  if (pathname.startsWith('/reports')) return 'reports';
+  if (pathname.startsWith('/workers')) return 'workers';
+  if (pathname.startsWith('/clients/reminders')) return 'reminders';
+  if (pathname.startsWith('/backup')) return 'backup';
+  return null; // qolgan sahifalar barcha tizimga kirganlar uchun ochiq
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -35,6 +46,18 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
+  }
+
+  // Rol bo'yicha sahifa himoyasi
+  const section = sectionForPath(normalizedPath);
+  if (section) {
+    const role = request.cookies.get('auth_role')?.value as Role | undefined;
+    if (!canAccess(role ?? null, section)) {
+      // Ruxsat yo'q — bosh sahifaga qaytaramiz
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();

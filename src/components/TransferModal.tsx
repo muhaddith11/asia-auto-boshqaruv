@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { X, ArrowRightLeft, CreditCard, Banknote } from 'lucide-react';
@@ -20,7 +21,7 @@ export default function TransferModal({ onClose }: TransferModalProps) {
     e.preventDefault();
     const amount = parseInt(formData.amount);
     if (isNaN(amount) || amount <= 0 || amount > kassa[formData.from]) {
-      alert('Mablag\' yetarli emas yoki noto\'g\'ri summa!');
+      toast.error('Mablag\' yetarli emas yoki noto\'g\'ri summa!');
       return;
     }
 

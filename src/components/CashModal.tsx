@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { 
@@ -94,7 +95,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
       } else if (formData.category === "Buyurtma bo'yicha to'lov") {
         const targetOrder = buyurtmalar.find(b => String(b.id) === formData.orderId);
         if (!targetOrder) {
-          alert("XATO: Bunday ID dagi buyurtma topilmadi!");
+          toast.error("XATO: Bunday ID dagi buyurtma topilmadi!");
           return;
         }
         const newZap = {
@@ -139,7 +140,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
 
       onClose();
     } catch (err: any) {
-      alert("XATOLIK: Amaliyot bazada saqlanmadi!\nKassa o'zgartirilmadi.\nSabab: " + (err.message || "Ulanish xatosi"));
+      toast.error("XATOLIK: Amaliyot bazada saqlanmadi!\nKassa o'zgartirilmadi.\nSabab: " + (err.message || "Ulanish xatosi"));
     } finally {
       setSaving(false);
     }

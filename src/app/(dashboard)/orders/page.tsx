@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -16,6 +17,8 @@ import HistoryModal from '@/components/HistoryModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { Buyurtma } from '@/types';
 import { sendSMS, getStatusMessage } from '@/services/smsService';
+import { exportToCSV } from '@/lib/export';
+import { FileSpreadsheet } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
   yaratildi:              { label: 'Yaratildi',             bg: 'rgba(100,116,139,0.15)', color: '#94a3b8' },
@@ -65,9 +68,9 @@ export default function OrdersPage() {
 
   // Filter state
   const [f, setF] = useState({
-    tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '',
+    tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '', from: '', to: '',
   });
-  const [applied, setApplied] = useState({ tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '' });
+  const [applied, setApplied] = useState({ tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '', from: '', to: '' });
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +88,13 @@ export default function OrdersPage() {
     if (applied.raqam  && !b.raqam.toLowerCase().includes(applied.raqam.toLowerCase())) return false;
     if (applied.vin    && !b.vin?.toLowerCase().includes(applied.vin.toLowerCase()))  return false;
     if (applied.status && b.holat !== applied.status)                         return false;
+    // Sana bo'yicha filtr (YYYY-MM-DD)
+    if (applied.from || applied.to) {
+      const raw = b.createdAt || b.sana || '';
+      const d = raw ? new Date(raw).toISOString().split('T')[0] : '';
+      if (applied.from && d < applied.from) return false;
+      if (applied.to && d > applied.to) return false;
+    }
     return true;
   });
 
@@ -96,10 +106,30 @@ export default function OrdersPage() {
     setCurrentPage(1);
   };
   const resetFilters = () => {
-    const empty = { tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '' };
+    const empty = { tel: '', ism: '', mashina: '', raqam: '', vin: '', status: '', from: '', to: '' };
     setF(empty);
     setApplied(empty);
     setCurrentPage(1);
+  };
+
+  const handleExport = () => {
+    if (filtered.length === 0) { toast.error('Eksport uchun ma\'lumot yo\'q'); return; }
+    exportToCSV('buyurtmalar', filtered, [
+      { key: 'id', label: 'ID' },
+      { key: 'ism', label: 'Mijoz' },
+      { key: 'tel', label: 'Telefon' },
+      { key: 'mashina', label: 'Mashina' },
+      { key: 'raqam', label: 'Raqam' },
+      { key: 'holat', label: 'Holat' },
+      { key: 'srv', label: 'Xizmatlar' },
+      { key: 'zap', label: 'Zapchast' },
+      { key: 'final', label: "To'lov" },
+      { key: 'paid', label: "To'langan" },
+      { key: 'zarplata', label: 'Maosh' },
+      { key: 'pribil', label: 'Foyda' },
+      { key: 'sana', label: 'Sana', format: (b) => (b.createdAt || b.sana || '').split('T')[0] },
+    ]);
+    toast.success(`${filtered.length} ta buyurtma eksport qilindi`);
   };
 
   const fmtDate = (iso?: string) => {
@@ -118,14 +148,14 @@ export default function OrdersPage() {
   };
 
   const handleSendSMS = async (b: Buyurtma) => {
-    if (!b.tel) return alert('Telefon raqami kiritilmagan!');
+    if (!b.tel) return toast.error('Telefon raqami kiritilmagan!');
     setIsSendingSms(b.id.toString());
     try {
       const msg = getStatusMessage(b.holat, b.id.toString(), b.mashina);
       await sendSMS(b.tel, msg);
-      alert('SMS muvaffaqiyatli yuborildi!');
+      toast.success('SMS muvaffaqiyatli yuborildi!');
     } catch (err) {
-      alert('SMS yuborishda xatolik yuz berdi!');
+      toast.error('SMS yuborishda xatolik yuz berdi!');
     } finally {
       setIsSendingSms(null);
     }
@@ -163,6 +193,14 @@ export default function OrdersPage() {
               <option key={k} value={k}>{v.label}</option>
             ))}
           </select>
+          <button onClick={handleExport} style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            background: 'rgba(16,185,129,0.12)', color: '#10b981',
+            border: '1px solid rgba(16,185,129,0.25)',
+            borderRadius: 9, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+          }}>
+            <FileSpreadsheet size={14} /> Excel
+          </button>
           <Link href="/orders/new" style={{
             display: 'flex', alignItems: 'center', gap: 7,
             background: 'var(--accent)', color: 'white',
@@ -233,8 +271,8 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Row 2: VIN + Status + Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto auto', gap: 12, alignItems: 'flex-end' }}>
+        {/* Row 2: VIN + Status + Sana + Buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto auto', gap: 12, alignItems: 'flex-end' }}>
           <div>
             <label style={S.label}>VIN kod</label>
             <div style={{ position: 'relative' }}>
@@ -246,7 +284,7 @@ export default function OrdersPage() {
             </div>
           </div>
           <div>
-            <label style={S.label}>Buyurtma statusii</label>
+            <label style={S.label}>Buyurtma statusi</label>
             <select
               style={{ ...S.input, cursor: 'pointer' }}
               value={f.status}
@@ -258,7 +296,16 @@ export default function OrdersPage() {
               ))}
             </select>
           </div>
-          <div />
+          <div>
+            <label style={S.label}>Sana (dan)</label>
+            <input style={{ ...S.input, cursor: 'pointer' }} type="date"
+              value={f.from} onChange={e => setF({ ...f, from: e.target.value })} />
+          </div>
+          <div>
+            <label style={S.label}>Sana (gacha)</label>
+            <input style={{ ...S.input, cursor: 'pointer' }} type="date"
+              value={f.to} onChange={e => setF({ ...f, to: e.target.value })} />
+          </div>
           <button
             onClick={applyFilters}
             style={{

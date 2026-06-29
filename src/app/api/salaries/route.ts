@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,13 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await logAudit({
+      req: request,
+      action: 'salary',
+      entity: 'salary',
+      entityId: data?.id,
+      details: { worker_id: cleanBody.worker_id, amount: cleanBody.amount, method: cleanBody.method },
+    });
     return NextResponse.json(data);
   } catch (err) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });

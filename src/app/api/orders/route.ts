@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
+import { logAudit } from '@/lib/audit';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -41,11 +42,36 @@ function mapAppToDB(body: any) {
   return b;
 }
 
-export async function GET() {
-  const { data, error } = await supabase.from('orders').select('*').order('id', { ascending: false });
+export async function GET(request: NextRequest) {
+  const sp = request.nextUrl.searchParams;
+  const from = sp.get('from');
+  const to = sp.get('to');
+  const pageParam = sp.get('page');
+  const limit = Math.min(200, Math.max(1, parseInt(sp.get('limit') || '50', 10)));
+
+  let query = supabase.from('orders').select('*', { count: 'exact' }).order('id', { ascending: false });
+  if (from) query = query.gte('sana', from);
+  if (to) query = query.lte('sana', to);
+
+  // page berilsa — serverside pagination (yangi rejim, { data, total, ... })
+  if (pageParam) {
+    const page = Math.max(1, parseInt(pageParam, 10));
+    const fromIdx = (page - 1) * limit;
+    const { data, error, count } = await query.range(fromIdx, fromIdx + limit - 1);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({
+      data: (data ?? []).map(mapRowToApp),
+      total: count ?? 0,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil((count ?? 0) / limit)),
+    });
+  }
+
+  // page berilmasa — eski xulq: massiv qaytaramiz (store bilan mos)
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const mapped = (data ?? []).map(mapRowToApp);
-  return NextResponse.json(mapped);
+  return NextResponse.json((data ?? []).map(mapRowToApp));
 }
 
 export async function POST(request: NextRequest) {
@@ -73,6 +99,17 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     const created = (data && data[0]) ?? null;
+
+    // Audit log
+    if (created) {
+      await logAudit({
+        req: request,
+        action: 'create',
+        entity: 'order',
+        entityId: created.id,
+        details: { ism: created.ism, mashina: created.mashina, total: created.total, final: created.final },
+      });
+    }
 
     // Send Telegram Notification to Admin
     if (created && bot && adminId) {

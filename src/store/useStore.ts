@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import toast from 'react-hot-toast';
 import {
   Mijoz, Xodim, Xizmat, Zapchast, Buyurtma,
   MaoshTarixi, TashqariOperatsiya, Kassa, Counters, ZapPurchase
@@ -123,7 +124,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Mijoz bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Mijozni saqlashda xatolik:", err);
-          alert("XATOLIK: Mijoz bazada saqlanmadi! \nSabab: " + (err.message || "Server bilan aloqa yo'q"));
+          toast.error("XATOLIK: Mijoz bazada saqlanmadi! \nSabab: " + (err.message || "Server bilan aloqa yo'q"));
           // Optionally revert
           set((state) => ({
             mijozlar: state.mijozlar.filter((mm) => mm.id !== tempId),
@@ -143,7 +144,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Mijoz o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Mijozni yangilashda xatolik:", err);
-          alert("XATOLIK: Mijoz ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Mijoz ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
         }
       },
       deleteMijoz: (id) => {
@@ -183,7 +184,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Xodim bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Xodim qo'shishda xatolik:", err);
-          alert("XATOLIK: Xodim bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xodim bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
           set((state) => ({
             xodimlar: state.xodimlar.filter(xx => xx.id !== tempId),
             counters: { ...get().counters, xodim: get().counters.xodim - 1 }
@@ -200,7 +201,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Xodim o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Xodimni yangilashda xatolik:", err);
-          alert("XATOLIK: Xodim ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xodim ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
           if (original) {
             set((state) => ({ xodimlar: state.xodimlar.map(x => x.id === id ? original : x) }));
           }
@@ -261,7 +262,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Maosh bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Maosh saqlashda xatolik:", err);
-          alert("XATOLIK: Maosh bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          toast.error("XATOLIK: Maosh bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
           // Revert
           set((state) => ({
             maoshTarixi: state.maoshTarixi.filter(mm => mm.id !== tempId),
@@ -309,7 +310,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Xizmat bazaga saqlandi:", createdItem.id);
         } catch (err: any) {
           console.error("❌ Xizmat qo'shishda xatolik:", err);
-          alert("XATOLIK: Xizmat bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xizmat bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
           set((state) => ({
             xizmatlar: state.xizmatlar.filter(s => s.id !== tempId),
             counters: { ...get().counters, xizmat: get().counters.xizmat - 1 }
@@ -359,7 +360,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Xizmat o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Xizmatni yangilashda xatolik:", err);
-          alert("XATOLIK: Xizmat bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xizmat bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
           if (original) {
             set((state) => ({ xizmatlar: state.xizmatlar.map(x => x.id === id ? original : x) }));
           }
@@ -386,7 +387,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Zapchast bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Zapchast qo'shishda xatolik:", err);
-          alert("XATOLIK: Zapchast bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Zapchast bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
           set((state) => ({
             zapchastlar: state.zapchastlar.filter(zz => zz.id !== tempId),
             counters: { ...get().counters, zap: get().counters.zap - 1 }
@@ -402,7 +403,7 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Zapchast o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Zapchastni yangilashda xatolik:", err);
-          alert("XATOLIK: Zapchast ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Zapchast ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
           if (original) {
             set((state) => ({ zapchastlar: state.zapchastlar.map(z => z.id === id ? original : z) }));
           }
@@ -431,10 +432,12 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Buyurtma bazaga saqlandi:", created.id);
         }).catch((err) => {
           console.error("❌ Buyurtmani saqlashda xatolik:", err);
-          alert("XATOLIK: Buyurtma bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          toast.error("XATOLIK: Buyurtma bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
         });
       },
       updateBuyurtma: async (id, data) => {
+        // Rollback uchun asl holatni saqlaymiz
+        const original = get().buyurtmalar.find(b => Number(b.id) === Number(id));
         // Optimistic update
         set((state) => ({
           buyurtmalar: state.buyurtmalar.map((b) => Number(b.id) === Number(id) ? { ...b, ...data } : b)
@@ -448,8 +451,13 @@ export const useStore = create<AutoServisStore>()(
           console.log("✅ Buyurtma bazada yangilandi:", id);
         } catch (err: any) {
           console.error("❌ Buyurtmani bazada yangilashda xatolik:", err);
-          alert("DIQQAT: Ma'lumot bazada saqlanmadi! \nSabab: " + (err.message || "Ulanish xatosi"));
-          // Revert logic could go here if needed, but for now we need the alert
+          toast.error("Ma'lumot bazada saqlanmadi: " + (err.message || "Ulanish xatosi"));
+          // Optimistik o'zgarishni ortga qaytaramiz
+          if (original) {
+            set((state) => ({
+              buyurtmalar: state.buyurtmalar.map((b) => Number(b.id) === Number(id) ? original : b)
+            }));
+          }
         }
       },
       deleteBuyurtma: (id) => {

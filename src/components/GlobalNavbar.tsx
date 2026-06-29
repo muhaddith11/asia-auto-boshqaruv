@@ -1,15 +1,19 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw, Menu } from 'lucide-react';
+import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw, Menu, LogOut } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import CashModal from '@/components/CashModal';
 import TransferModal from '@/components/TransferModal';
+import { useRole, logout } from '@/lib/useRole';
+import { ROLE_LABEL } from '@/lib/auth';
 
 export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const { kassa } = useStore();
+  const { role } = useRole();
   const [mounted, setMounted] = useState(false);
   const [cashModal, setCashModal] = useState<{ open: boolean; type: 'income' | 'expense' }>({ open: false, type: 'income' });
   const [transferOpen, setTransferOpen] = useState(false);
@@ -141,7 +145,7 @@ export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => vo
             onClick={async () => {
               const store = useStore.getState();
               await store.loadInitialData();
-              alert('Ma\'lumotlar yangilandi!');
+              toast.success('Ma\'lumotlar yangilandi!');
             }}
             style={{
               background: 'rgba(234,179,8,0.12)', color: '#eab308',
@@ -151,6 +155,29 @@ export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => vo
             }}
           >
             <RefreshCcw size={14} /> Yangilash
+          </button>
+
+          {/* Rol belgisi + Chiqish */}
+          {mounted && role && (
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+              background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: 8, padding: '5px 10px', textTransform: 'uppercase', letterSpacing: '0.04em',
+            }}>
+              {ROLE_LABEL[role]}
+            </span>
+          )}
+          <button
+            onClick={() => { if (confirm('Tizimdan chiqasizmi?')) logout(); }}
+            title="Chiqish"
+            style={{
+              background: 'rgba(244,63,94,0.1)', color: 'var(--red)',
+              border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
+              padding: '7px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            <LogOut size={14} />
           </button>
         </div>
       </header>

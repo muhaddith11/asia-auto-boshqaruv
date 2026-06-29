@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -89,6 +90,16 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No data returned from update" }, { status: 404 });
     }
 
+    // To'lov holatiga o'tgan bo'lsa alohida belgilaymiz
+    const isPayment = dbBody.holat === 'tulangan' || dbBody.paid !== undefined;
+    await logAudit({
+      req: request,
+      action: isPayment ? 'payment' : 'update',
+      entity: 'order',
+      entityId: id,
+      details: { changes: dbBody },
+    });
+
     return NextResponse.json(mapRowToApp(data[0]));
 
   } catch (err: any) {
@@ -103,7 +114,15 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     const id = Number(idStr);
     const { data, error } = await supabase.from('orders').delete().eq('id', id).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true, deleted: mapRowToApp((data && data[0]) ?? null) });
+    const deleted = (data && data[0]) ?? null;
+    await logAudit({
+      req: request,
+      action: 'delete',
+      entity: 'order',
+      entityId: id,
+      details: deleted ? { ism: deleted.ism, mashina: deleted.mashina, final: deleted.final } : undefined,
+    });
+    return NextResponse.json({ success: true, deleted: mapRowToApp(deleted) });
   } catch (err) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }

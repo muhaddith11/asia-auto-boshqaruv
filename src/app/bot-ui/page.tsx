@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 
 import { useState, useEffect, useRef } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
@@ -110,13 +111,13 @@ export default function BotUIPage() {
           webAppRef.current?.close();
         });
       } else {
-        alert(successMsg);
+        toast.success(successMsg);
       }
 
     } catch (error: any) {
       console.error(error);
       const errMsg = error.message || 'Xatolik yuz berdi. Qaytadan urinib ko\'ring.';
-      alert("XATOLIK: " + errMsg);
+      toast.error("XATOLIK: " + errMsg);
     } finally {
       setIsSubmitting(false);
     }

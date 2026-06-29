@@ -3,28 +3,33 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  ClipboardList, 
-  Users, 
-  Wrench, 
-  UserCog, 
-  BarChart3, 
-  ChevronDown, 
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  Wrench,
+  UserCog,
+  BarChart3,
+  ChevronDown,
   Package,
   CreditCard,
-  Zap
+  Zap,
+  Database
 } from 'lucide-react';
+import { useRole } from '@/lib/useRole';
+import type { Section } from '@/lib/auth';
 
 interface NavItem {
   title: string;
   href: string;
+  section?: Section; // subitem darajasidagi ruxsat
 }
 interface NavGroup {
   id: string;
   title: string;
   icon: React.ReactNode;
   color: string;
+  section: Section;  // guruh uchun ruxsat bo'limi
   subItems: NavItem[];
 }
 
@@ -34,6 +39,7 @@ const navGroups: NavGroup[] = [
     title: 'Buyurtmalar',
     icon: <ClipboardList size={16} />,
     color: '#6366f1', // Indigo
+    section: 'orders',
     subItems: [
       { title: 'Yangi buyurtma', href: '/orders/new' },
       { title: 'Barcha buyurtmalar', href: '/orders' }
@@ -44,6 +50,7 @@ const navGroups: NavGroup[] = [
     title: 'Xizmatlar',
     icon: <Wrench size={16} />,
     color: '#6366f1', // Indigo
+    section: 'services',
     subItems: [
       { title: 'Xizmat qo\'shish', href: '/services?add=true' },
       { title: 'Xizmatlar ro\'yxati', href: '/services' }
@@ -54,10 +61,12 @@ const navGroups: NavGroup[] = [
     title: 'Mijozlar',
     icon: <Users size={16} />,
     color: '#6366f1', // Indigo
+    section: 'clients',
     subItems: [
       { title: 'Mijoz qo\'shish', href: '/clients?add=true' },
       { title: 'Mijozlar ro\'yxati', href: '/clients' },
-      { title: 'Mijozlar hisoboti', href: '/clients/reports' }
+      { title: 'Mijozlar hisoboti', href: '/clients/reports' },
+      { title: 'Eslatmalar', href: '/clients/reminders', section: 'reminders' }
     ]
   },
   {
@@ -65,6 +74,7 @@ const navGroups: NavGroup[] = [
     title: 'Zapchastlar',
     icon: <Package size={16} />,
     color: '#6366f1', // Indigo
+    section: 'parts',
     subItems: [
       { title: 'Zapchast qo\'shish', href: '/parts?add=true' },
       { title: 'Zapchastlar ro\'yxati', href: '/parts' },
@@ -76,6 +86,7 @@ const navGroups: NavGroup[] = [
     title: 'Xodimlar',
     icon: <UserCog size={16} />,
     color: '#6366f1', // Indigo
+    section: 'workers',
     subItems: [
       { title: 'Xodim qo\'shish', href: '/workers/new' },
       { title: 'Xodimlar ro\'yxati', href: '/workers' },
@@ -87,9 +98,21 @@ const navGroups: NavGroup[] = [
     title: 'Hisobotlar',
     icon: <BarChart3 size={16} />,
     color: '#6366f1', // Indigo
+    section: 'reports',
     subItems: [
       { title: 'Ishxona bo\'yicha', href: '/reports/business' },
-      { title: 'Aylanmadan tashqari', href: '/reports/external' }
+      { title: 'Aylanmadan tashqari', href: '/reports/external' },
+      { title: 'Audit jurnali', href: '/reports/audit', section: 'audit' }
+    ]
+  },
+  {
+    id: 'system',
+    title: 'Boshqaruv',
+    icon: <Database size={16} />,
+    color: '#6366f1', // Indigo
+    section: 'backup',
+    subItems: [
+      { title: 'Zaxira va eksport', href: '/backup', section: 'backup' }
     ]
   }
 ];
@@ -101,6 +124,17 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
   const pathname = usePathname();
+  const { can, ready } = useRole();
+
+  // Rolga ko'ra ko'rinadigan guruhlar va subitemlar
+  const visibleGroups = navGroups
+    .filter(g => !ready || can(g.section))
+    .map(g => ({
+      ...g,
+      subItems: g.subItems.filter(s => !s.section || !ready || can(s.section)),
+    }))
+    .filter(g => g.subItems.length > 0);
+
   const [openGroups, setOpenGroups] = useState<string[]>(['orders']);
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
@@ -202,7 +236,7 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
 
         {/* Grouped Nav */}
         <div style={{ marginTop: 8 }}>
-          {navGroups.map((group) => {
+          {visibleGroups.map((group) => {
             const isOpen = openGroups.includes(group.id);
             const hasActive = group.subItems.some(s => s.href === pathname);
 

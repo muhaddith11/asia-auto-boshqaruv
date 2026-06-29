@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
@@ -27,7 +28,7 @@ export default function AddPartPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nom || !formData.narx || !formData.sebestoimost) {
-      alert('Barcha asosiy maydonlarni to\'ldiring!');
+      toast.error('Barcha asosiy maydonlarni to\'ldiring!');
       return;
     }
 

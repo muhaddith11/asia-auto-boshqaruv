@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import PhoneInput from '@/components/PhoneInput';
 import { useStore } from '@/store/useStore';
@@ -26,7 +27,7 @@ export default function AddWorkerPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.ism || formData.foiz === undefined || formData.foiz === null) {
-      alert('Ism va ulush foizini kiriting!');
+      toast.error('Ism va ulush foizini kiriting!');
       return;
     }
 

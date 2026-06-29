@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
@@ -26,7 +27,7 @@ export default function AddClientPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.ism || !formData.tel) {
-      alert('Ism va telefon raqamini kiriting!');
+      toast.error('Ism va telefon raqamini kiriting!');
       return;
     }
 

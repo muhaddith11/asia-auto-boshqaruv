@@ -1,4 +1,5 @@
 'use client';
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { X, Send, Phone, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-react';
 import PhoneInput from '@/components/PhoneInput';
@@ -16,7 +17,7 @@ export default function SMSModal({ order, onClose }: SMSModalProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSend = async () => {
-    if (!phoneNumber) return alert('Telefon raqamini kiriting!');
+    if (!phoneNumber) return toast.error('Telefon raqamini kiriting!');
     
     setLoading(true);
     try {
@@ -24,10 +25,10 @@ export default function SMSModal({ order, onClose }: SMSModalProps) {
       const msg = `${getStatusMessage(order.holat, order.id.toString(), order.mashina)}\n\nBajarilgan ishlar:\n${servicesInfo}\n\nIsh yakunlandi. Jami: ${order.final.toLocaleString()} so'm.`;
       
       await sendSMS(phoneNumber, msg);
-      alert('SMS muvaffaqiyatli yuborildi!');
+      toast.success('SMS muvaffaqiyatli yuborildi!');
       onClose();
     } catch (err) {
-      alert('SMS yuborishda xatolik yuz berdi!');
+      toast.error('SMS yuborishda xatolik yuz berdi!');
     } finally {
       setLoading(false);
     }
