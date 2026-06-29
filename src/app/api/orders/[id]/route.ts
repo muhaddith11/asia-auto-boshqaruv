@@ -8,6 +8,7 @@ export const revalidate = 0;
 
 const tgToken = process.env.TELEGRAM_BOT_TOKEN;
 const tgGroupId = process.env.TELEGRAM_GROUP_ID; // guruh chat ID (-100...) yoki @username
+const tgThreadId = process.env.TELEGRAM_GROUP_THREAD_ID; // ixtiyoriy: guruh ichidagi mavzu (topic) ID
 const tgBot = tgToken ? new Telegraf(tgToken) : null;
 
 const fmtSum = (n: any) => Number(n || 0).toLocaleString('ru-RU');
@@ -59,7 +60,9 @@ async function notifyOrderReady(order: any) {
     const jami = order.final ?? order.total ?? 0;
     lines.push('', `💰 Jami: ${fmtSum(jami)} so'm`, '', `🙏 Tashrifingiz uchun rahmat! — AsiaAutoService`);
 
-    await tgBot.telegram.sendMessage(tgGroupId, lines.join('\n'));
+    // Mavzu (topic) ID berilgan bo'lsa — shu mavzuga yuboramiz
+    const extra = tgThreadId ? { message_thread_id: Number(tgThreadId) } : undefined;
+    await tgBot.telegram.sendMessage(tgGroupId, lines.join('\n'), extra);
   } catch (err) {
     console.error('Telegram guruhga xabar yuborishda xatolik:', err);
   }
