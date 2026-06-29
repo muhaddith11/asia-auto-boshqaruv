@@ -90,6 +90,16 @@ async function handleUpdate(update: any) {
     const { chat, text, contact } = update.message;
     const chatId = chat.id.toString();
 
+    // /id buyrug'i — joriy chat (guruh) ID sini qaytaradi (TELEGRAM_GROUP_ID uchun)
+    if (text && /^\/(id|groupid|chatid)(@\w+)?$/.test(String(text).trim())) {
+      const title = chat.title || '';
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: `🆔 Chat ID: ${chatId}\n📂 Turi: ${chat.type || 'private'}${title ? `\n📌 Nomi: ${title}` : ''}\n\nGuruh bo'lsa, shu ID ni TELEGRAM_GROUP_ID ga qo'ying.`,
+      });
+      return;
+    }
+
     // 1. Check if the worker is ALREADY recognized by Telegram ID
     const { data: workerById, error: idError } = await supabase
       .from('workers')
