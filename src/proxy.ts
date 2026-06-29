@@ -51,8 +51,10 @@ export function proxy(request: NextRequest) {
   // Rol bo'yicha sahifa himoyasi
   const section = sectionForPath(normalizedPath);
   if (section) {
-    const role = request.cookies.get('auth_role')?.value as Role | undefined;
-    if (!canAccess(role ?? null, section)) {
+    // Bu yerga yetganda auth_session bor (yuqorida tekshirildi).
+    // Rol cookie'si bo'lmasa — eski egasi sessiyasi deb hisoblaymiz.
+    const role = (request.cookies.get('auth_role')?.value as Role) || 'egasi';
+    if (!canAccess(role, section)) {
       // Ruxsat yo'q — bosh sahifaga qaytaramiz
       const url = request.nextUrl.clone();
       url.pathname = '/';

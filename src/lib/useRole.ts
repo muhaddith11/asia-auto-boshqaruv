@@ -18,8 +18,16 @@ export function useRole() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const r = readCookie('auth_role') as Role | null;
-    setRole(r && ['egasi', 'sherik', 'xodim'].includes(r) ? r : null);
+    const r = readCookie('auth_role');
+    const session = readCookie('auth_session');
+    if (r && ['egasi', 'sherik', 'xodim'].includes(r)) {
+      setRole(r as Role);
+    } else if (session) {
+      // Eski sessiya (rol cookie'siz) = egasi. Yangidan login qilganda to'g'ri rol o'rnatiladi.
+      setRole('egasi');
+    } else {
+      setRole(null);
+    }
     setReady(true);
   }, []);
 
