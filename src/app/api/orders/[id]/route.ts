@@ -7,8 +7,10 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-const tgGroupId = process.env.TELEGRAM_GROUP_ID; // guruh chat ID (-100...) yoki @username
-const tgThreadId = process.env.TELEGRAM_GROUP_THREAD_ID; // ixtiyoriy: guruh ichidagi mavzu (topic) ID
+// Guruh va mavzu ID lari (maxfiy emas) — default qiymat sifatida yozildi.
+// Kerak bo'lsa env orqali bekor qilish mumkin (env ustun turadi).
+const tgGroupId = process.env.TELEGRAM_GROUP_ID || '-1002849413077';
+const tgThreadId = process.env.TELEGRAM_GROUP_THREAD_ID || '1737';
 const tgBot = tgToken ? new Telegraf(tgToken) : null;
 
 const fmtSum = (n: any) => Number(n || 0).toLocaleString('ru-RU');
