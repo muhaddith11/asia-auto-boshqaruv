@@ -1,9 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
+import { Telegraf } from 'telegraf';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+const tgGroupId = process.env.TELEGRAM_GROUP_ID; // guruh chat ID (-100...) yoki @username
+const tgBot = tgToken ? new Telegraf(tgToken) : null;
+
+// Buyurtma tayyor bo'lganda guruhga chiroyli xabar yuborish
+async function notifyOrderReady(order: any) {
+  if (!tgBot || !tgGroupId || !order) return;
+  try {
+    const mashina = order.mashina || 'Avtomobil';
+    const raqam = order.raqam ? String(order.raqam).toUpperCase() : '—';
+    const summa = Number(order.final || order.total || 0).toLocaleString('ru-RU');
+
+    const message =
+      `✅ Buyurtma tayyor!\n` +
+      `🚗 ${mashina}  •  🔢 ${raqam}\n` +
+      `💰 ${summa} so'm — mashina topshirishga tayyor (#${order.id})`;
+
+    await tgBot.telegram.sendMessage(tgGroupId, message);
+  } catch (err) {
+    console.error('Telegram guruhga xabar yuborishda xatolik:', err);
+  }
+}
 
 function mapRowToApp(row: any) {
   if (!row) return row;
@@ -74,6 +98,13 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
     }
 
+    // "Tayyor" xabarini faqat birinchi marta 'tulanmagan' ga o'tganda yuborish uchun
+    // avvalgi holatni bilib olamiz (takror xabar oldini olish).
+    let prevHolat: string | undefined;
+    if (dbBody.holat === 'tulanmagan') {
+      const { data: cur } = await supabase.from('orders').select('holat').eq('id', id).single();
+      prevHolat = cur?.holat;
+    }
 
     const { data, error, status: sbStatus } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     
@@ -97,6 +128,11 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       entityId: id,
       details: { changes: dbBody },
     });
+
+    // Buyurtma yangi 'tulanmagan' (tayyor) holatiga o'tdi → guruhga xabar
+    if (dbBody.holat === 'tulanmagan' && prevHolat !== 'tulanmagan') {
+      await notifyOrderReady(data[0]);
+    }
 
     return NextResponse.json(mapRowToApp(data[0]));
 
