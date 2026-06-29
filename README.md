@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Asia Auto Service — Boshqaruv tizimi
 
-## Getting Started
+Avtoservis uchun boshqaruv tizimi: mijozlar (CRM), buyurtmalar, xizmatlar, zapchastlar
+ombori, xodimlar va maosh, kassa/moliya, hisobotlar, audit jurnali hamda Telegram bot
+orqali buyurtma qabul qilish.
 
-First, run the development server:
+## Texnologiyalar
+
+- **Next.js 16** (App Router, Turbopack) + **React 19**
+- **Supabase** (PostgreSQL) — ma'lumotlar bazasi
+- **Zustand** — holat boshqaruvi (client-side store)
+- **Telegraf** — Telegram bot
+- **Eskiz.uz** — SMS yuborish
+- **react-hot-toast** — bildirishnomalar
+
+## O'rnatish
 
 ```bash
+# 1. Paketlarni o'rnatish
+npm install
+
+# 2. .env faylini sozlash (.env.example dan nusxa oling)
+cp .env.example .env
+#  → ichini o'z qiymatlaringiz bilan to'ldiring
+
+# 3. Ma'lumotlar bazasini tayyorlash
+#  Supabase SQL Editor'da db/ papkadagi skriptlarni ishga tushiring,
+#  jumladan: db/audit_log.sql (audit jurnali jadvali)
+
+# 4. Dasturni ishga tushirish
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Skriptlar
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Buyruq | Vazifasi |
+|--------|----------|
+| `npm run dev` | Lokal server (development) |
+| `npm run build` | Production build |
+| `npm run start` | Production serverni ishga tushirish |
+| `npm run lint` | ESLint tekshiruvi |
+| `npm run bot:poll` | Telegram bot pollerini ishga tushirish |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Rollar (kirish huquqlari)
 
-## Learn More
+Tizimda 3 rol bor (`src/lib/auth.ts` da sozlanadi):
 
-To learn more about Next.js, take a look at the following resources:
+| Rol | Huquqlar |
+|------|----------|
+| **egasi** | Hamma bo'lim (audit, zaxira, xodimlar, hisobotlar) |
+| **sherik** | Buyurtma, mijoz, xizmat, zapchast, hisobot, eslatma |
+| **xodim** | Faqat operatsion bo'limlar (moliyasiz) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> ⚠️ Akkaunt parollari hozircha `src/lib/auth.ts` ichida. Ishlatishdan oldin
+> ularni o'zgartiring. To'liq xavfsiz auth (parol hash + server session) — keyingi bosqich.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Loyiha tuzilishi
 
-## Deploy on Vercel
+```
+src/
+  app/
+    (dashboard)/      # Himoyalangan panel sahifalari
+    api/              # Backend route'lar (Supabase bilan ishlaydi)
+    bot-ui/           # Telegram Web App (mijoz uchun)
+  components/         # UI komponentlar
+  lib/                # auth, audit, export, normalize, phone yordamchilari
+  services/           # smsService, predictionService
+  store/              # Zustand store (useStore)
+  types/              # TypeScript tiplar
+db/                   # SQL sxema fayllari
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Eslatma
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`AGENTS.md` ga e'tibor bering — bu loyiha Next.js'ning o'zgartirilgan versiyasidan
+foydalanadi (masalan, `middleware.ts` o'rniga `proxy.ts`). Kod yozishdan oldin
+`node_modules/next/dist/docs/` dagi tegishli qo'llanmani o'qing.

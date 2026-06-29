@@ -74,7 +74,6 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
     }
 
-    console.log("DEBUG: Updating order", id, dbBody);
 
     const { data, error, status: sbStatus } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     
@@ -83,7 +82,6 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: error.message, details: error.details }, { status: 500 });
     }
     
-    console.log("✅ Supabase Response Data:", data);
 
     if (!data || data.length === 0) {
       console.error("⚠️ No data returned from update. Possible RLS issue or wrong ID:", id);

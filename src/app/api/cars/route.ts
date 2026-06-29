@@ -3,7 +3,6 @@ import supabase from '@/lib/supabaseClient';
 
 export async function GET() {
   try {
-    console.log('🚗 API_CARS: Mashinalarni bazadan olish boshlandi...');
     const { data, error } = await supabase
       .from('cars_list')
       .select('*')
@@ -16,7 +15,6 @@ export async function GET() {
       throw error;
     }
     
-    console.log(`✅ API_CARS: Muvaffaqiyatli! ${data?.length || 0} ta mashina topildi.`);
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('❌ API_CARS: Server xatosi:', error.message);

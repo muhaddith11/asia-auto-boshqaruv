@@ -46,7 +46,6 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Adding worker, body:", body);
     const dbBody = mapAppToDB(body);
     
     // Explicitly insert only allowed columns to be double safe

@@ -63,9 +63,6 @@ export async function POST(req: NextRequest) {
 
     // ── Dev rejimi (token yo'q bo'lsa faqat log) ─────────────────────────────
     if (!process.env.ESKIZ_EMAIL || !process.env.ESKIZ_PASSWORD) {
-      console.log(`[SMS-DEV] Yuborilmadi (ESKIZ_EMAIL/PASSWORD topilmadi)`);
-      console.log(`  Raqam  : ${eskizPhone}`);
-      console.log(`  Xabar  : ${message}`);
       return NextResponse.json({ success: true, dev: true });
     }
 
@@ -80,7 +77,6 @@ export async function POST(req: NextRequest) {
       data  = await doSend(token, eskizPhone, message);
     }
 
-    console.log(`[SMS] ${eskizPhone} → ${data.status || JSON.stringify(data)}`);
     return NextResponse.json({ success: true, data });
 
   } catch (error: any) {

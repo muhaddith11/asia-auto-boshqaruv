@@ -1,81 +1,13 @@
 'use client';
 import toast from 'react-hot-toast';
-import React, { useState, useEffect, useMemo } from 'react';
-import { useStore, normalize } from '@/store/useStore';
+import React, { useState, useEffect } from 'react';
+import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
-import {
-  Plus,
-  Trash2,
-  Wrench,
-  Package,
-  User,
-  CheckCircle2,
-  Save
-} from 'lucide-react';
-import PhoneInput from '@/components/PhoneInput';
-import { normalizePhone } from '@/lib/phone';
-
-const STATUS_TABS = [
-  { key: 'yaratildi', label: 'Yaratildi', color: '#64748b' },
-  { key: 'tamirlanmoqda', label: 'Tamirlanmoqda', color: '#6366f1' },
-  { key: 'ehtiyot qism kutilyapti', label: 'Ehtiyot qism kutilyapti', color: '#06b6d4' },
-  { key: 'tulanmagan', label: "To'lanmagan", color: '#f97316' },
-  { key: 'tulangan', label: "To'langan", color: '#10b981' },
-  { key: 'bekor qilingan', label: 'Bekor qilingan', color: '#f43f5e' },
-];
-
-/* ── styles ── */
-const S = {
-  label: {
-    display: 'block',
-    fontSize: 11,
-    fontWeight: 700,
-    color: 'var(--text3)',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.08em',
-    marginBottom: 6,
-  } as React.CSSProperties,
-  input: {
-    width: '100%',
-    background: 'var(--surface2)',
-    border: '1px solid var(--border)',
-    borderRadius: 10,
-    padding: '10px 14px',
-    fontSize: 13,
-    color: 'var(--text)',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  } as React.CSSProperties,
-  select: {
-    width: '100%',
-    background: 'var(--surface2)',
-    border: '1px solid var(--border)',
-    borderRadius: 10,
-    padding: '10px 14px',
-    fontSize: 13,
-    color: 'var(--text)',
-    outline: 'none',
-    cursor: 'pointer',
-  } as React.CSSProperties,
-  card: {
-    background: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: 14,
-    overflow: 'hidden' as const,
-    marginBottom: 20,
-  } as React.CSSProperties,
-  cardHeader: {
-    padding: '14px 20px',
-    borderBottom: '1px solid var(--border)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    background: 'rgba(255,255,255,0.02)',
-  } as React.CSSProperties,
-  cardBody: {
-    padding: 24,
-  } as React.CSSProperties,
-};
+import { OrderForm, Assignment, PartRow } from './_components/formStyles';
+import ClientSection from './_components/ClientSection';
+import ServicesSection from './_components/ServicesSection';
+import PartsSection from './_components/PartsSection';
+import SummarySection from './_components/SummarySection';
 
 export default function NewOrderPage() {
   const router = useRouter();
@@ -87,7 +19,7 @@ export default function NewOrderPage() {
   const [mounted, setMounted] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<OrderForm>({
     ism: 'Kunlik Mijoz',
     tel: '',
     mashina: '',
@@ -95,16 +27,16 @@ export default function NewOrderPage() {
     yil: '',
     vin: '',
     muammo: '',
-    holat: 'yaratildi' as string,
+    holat: 'yaratildi',
     chegirma: 0,
     chegirmaFoiz: 0,
   });
 
-  const [assignments, setAssignments] = useState<any[]>([
+  const [assignments, setAssignments] = useState<Assignment[]>([
     { id: Date.now(), workerId: '', serviceId: '', customNarx: '' }
   ]);
 
-  const [partRows, setPartRows] = useState<any[]>([
+  const [partRows, setPartRows] = useState<PartRow[]>([
     { id: Date.now(), partId: '', qty: 1 }
   ]);
 
@@ -113,33 +45,9 @@ export default function NewOrderPage() {
     loadInitialData(); // Ensure fresh data on page load
   }, []);
 
-  const [isAddingMashina, setIsAddingMashina] = useState(false);
-  const [newCar, setNewCar] = useState({ brand: '', model: '' });
-
-  const handleAddMashina = () => {
-    if (newCar.brand.trim() && newCar.model.trim()) {
-      const brand = newCar.brand.trim().toUpperCase();
-      const model = newCar.model.trim().toUpperCase();
-      const fullName = `${brand} ${model}`;
-      
-      if (!mashinalar.includes(fullName)) {
-        addMashina(fullName);
-      }
-      setForm(prev => ({ ...prev, mashina: fullName }));
-      setNewCar({ brand: '', model: '' });
-      setIsAddingMashina(false);
-    } else {
-      toast.error("Brend va Modelni kiriting!");
-    }
-  };
-
   if (!mounted) return null;
 
   // ── Helpers ─────────────────────────────────────────────────
-  const formatRaqam = (val: string) => {
-    return val.replace(/\s/g, '').toUpperCase();
-  };
-
   const getServiceNarx = (serviceId: string | number) => {
     const s = xizmatlar.find(x => String(x.id) === String(serviceId));
     return s?.narx || 0;
@@ -171,11 +79,6 @@ export default function NewOrderPage() {
 
   const subTotal = servicesTotal + partsTotal;
   const finalTotal = Math.max(0, subTotal - (form.chegirma || 0));
-  const partsCost = partRows.reduce((sum, r) => {
-    if (!r.partId) return sum;
-    const p = zapchastlar.find(x => x.id === Number(r.partId));
-    return sum + (p?.sebestoimost || 0) * (r.qty || 1);
-  }, 0);
   // Chegirma usta ulushiga ham proporsional ta'sir qiladi
   // Misol: 1mln xizmat, 500k chegirma → usta 500k dan hisoblaydi
   const chegirmaRatio = servicesTotal > 0
@@ -255,512 +158,46 @@ export default function NewOrderPage() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
 
-          {/* SECTION 1: Asosiy ma'lumotlar */}
-          <div style={S.card}>
-            <div style={S.cardHeader}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <User size={16} color="var(--accent)" />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  Asosiy ma'lumotlar
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {isAddingMashina ? (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <input
-                      style={{ ...S.input, width: 130, padding: '6px 10px' }}
-                      placeholder="BREND (MASALAN: BMW)"
-                      value={newCar.brand}
-                      onChange={e => setNewCar({ ...newCar, brand: e.target.value.toUpperCase() })}
-                      autoFocus
-                    />
-                    <input
-                      style={{ ...S.input, width: 130, padding: '6px 10px' }}
-                      placeholder="MODEL (MASALAN: X5)"
-                      value={newCar.model}
-                      onChange={e => setNewCar({ ...newCar, model: e.target.value.toUpperCase() })}
-                    />
-                    <button
-                      onClick={handleAddMashina}
-                      style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: 6, padding: '6px 12px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
-                    >SAQLASH</button>
-                    <button
-                      onClick={() => setIsAddingMashina(false)}
-                      style={{ background: 'var(--surface2)', color: 'var(--text3)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
-                    >X</button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsAddingMashina(true)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)',
-                      border: '1px solid rgba(99, 102, 241, 0.25)', borderRadius: 8,
-                      padding: '6px 12px', fontSize: 11, fontWeight: 800, cursor: 'pointer',
-                      textTransform: 'uppercase', letterSpacing: '0.05em'
-                    }}
-                  >
-                    <Plus size={13} /> Mashina qo'shish
-                  </button>
-                )}
-              </div>
-            </div>
-            <div style={{ ...S.cardBody, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <label style={S.label}>Mijoz *</label>
-                <select
-                  style={S.select}
-                  onChange={e => {
-                    const val = e.target.value;
-                    if (val === 'retail') {
-                      setSelectedClientId(null);
-                      setForm({ ...form, ism: 'Kunlik Mijoz', tel: '' });
-                    } else {
-                      const id = parseInt(val);
-                      setSelectedClientId(id || null);
-                      const m = mijozlar.find(x => x.id === id);
-                      if (m) setForm({ ...form, ism: m.ism, tel: normalizePhone(m.tel || '') });
-                    }
-                  }}
-                >
-                  <option value="">— Mijozni tanlang —</option>
-                  <option value="retail">🛍️ KUNLIK MIJOZ</option>
-                  {mijozlar.map(m => <option key={m.id} value={m.id}>{m.ism}</option>)}
-                </select>
-              </div>
+          <ClientSection
+            form={form}
+            setForm={setForm}
+            mijozlar={mijozlar}
+            mashinalar={mashinalar}
+            xizmatlar={xizmatlar}
+            selectedClientId={selectedClientId}
+            setSelectedClientId={setSelectedClientId}
+            addMashina={addMashina}
+            assignments={assignments}
+            setAssignments={setAssignments}
+          />
 
-              <div>
-                <label style={S.label}>Mashina *</label>
-                <select
-                  style={S.select}
-                  value={form.mashina}
-                  onChange={e => {
-                    const newMashina = e.target.value;
-                    const normNew = normalize(newMashina);
-                    setForm({ ...form, mashina: newMashina });
-                    // Only reset if the new mashina is fundamentally different
-                    setAssignments(prev => prev.map(a => {
-                      if (!a.serviceId) return a;
-                      const s = xizmatlar.find(x => String(x.id) === String(a.serviceId));
-                      if (!s) return a;
-                      const serviceCar = normalize(s.mashina || 'UMUMIY');
-                      if (serviceCar === 'UMUMIY') return a;
-                      
-                      // If the new car still "contains" the service car or vice versa, don't reset
-                      if (normNew.includes(serviceCar) || serviceCar.includes(normNew)) return a;
-                      
-                      return { ...a, serviceId: '', customNarx: '' };
-                    }));
-                  }}
-                >
-                  <option value="">— Mashinani tanlang —</option>
-                  {mashinalar.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-              </div>
+          <ServicesSection
+            assignments={assignments}
+            setAssignments={setAssignments}
+            xodimlar={xodimlar}
+            xizmatlar={xizmatlar}
+            mashina={form.mashina}
+            zarplataAdjusted={zarplataAdjusted}
+            servicesTotal={servicesTotal}
+          />
 
-              <div>
-                <label style={S.label}>Probeg (KM)</label>
-                <input
-                  style={S.input} type="number" value={form.yil} placeholder="0"
-                  onChange={e => setForm({ ...form, yil: e.target.value })}
-                />
-              </div>
+          <PartsSection
+            partRows={partRows}
+            setPartRows={setPartRows}
+            zapchastlar={zapchastlar}
+            mashina={form.mashina}
+          />
 
-              <div>
-                <label style={S.label}>Telefon raqami</label>
-                <PhoneInput
-                  style={S.input}
-                  value={form.tel}
-                  onChange={(v) => setForm({ ...form, tel: v })}
-                  placeholder="+998"
-                />
-              </div>
-
-              <div>
-                <label style={S.label}>Davlat raqami *</label>
-                <input
-                  style={{ ...S.input, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}
-                  type="text"
-                  value={form.raqam}
-                  placeholder="01A000AA"
-                  onChange={e => setForm({ ...form, raqam: formatRaqam(e.target.value) })}
-                />
-              </div>
-
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={S.label}>VIN kod</label>
-                <input
-                  style={{ ...S.input, fontFamily: 'monospace', letterSpacing: '0.1em' }}
-                  type="text" value={form.vin} placeholder="VIN NOMER"
-                  onChange={e => setForm({ ...form, vin: e.target.value })}
-                />
-              </div>
-
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={S.label}>Muammo tavsifi</label>
-                <textarea
-                  style={{ ...S.input, minHeight: 90, resize: 'none' } as React.CSSProperties}
-                  value={form.muammo} placeholder="Muammoni batafsil yozing..."
-                  onChange={e => setForm({ ...form, muammo: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div style={{ padding: '0 24px 24px', display: 'flex', gap: 8 }}>
-              {STATUS_TABS.map(tab => {
-                const active = form.holat === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setForm({ ...form, holat: tab.key })}
-                    style={{
-                      flex: 1, padding: '9px 4px', borderRadius: 8, border: 'none',
-                      cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                      background: active ? tab.color : 'var(--surface2)',
-                      color: active ? 'white' : 'var(--text3)',
-                      transition: 'all 0.2s',
-                      boxShadow: active ? `0 4px 12px ${tab.color}40` : 'none',
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* SECTION 2: Ustalar va xizmatlar */}
-          <div style={S.card}>
-            <div style={S.cardHeader}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Wrench size={16} color="#06b6d4" />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  Ustalar va xizmatlar
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  const lastWorkerId = assignments[assignments.length - 1]?.workerId || '';
-                  setAssignments([...assignments, { id: Date.now(), workerId: lastWorkerId, serviceId: '', customNarx: '' }]);
-                }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(6,182,212,0.1)', color: '#06b6d4',
-                  border: '1px solid rgba(6,182,212,0.25)', borderRadius: 8,
-                  padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                }}
-              >
-                <Plus size={13} /> Usta/Xizmat qo'shish
-              </button>
-            </div>
-            <div style={S.cardBody}>
-              {assignments.map((a, idx) => {
-                const worker = xodimlar.find(x => x.id === Number(a.workerId));
-                const service = xizmatlar.find(x => x.id === Number(a.serviceId));
-                const narx = a.customNarx ? parseFloat(a.customNarx) : (service?.narx || 0);
-                const earned = Math.round(narx * (worker?.foiz || 0) / 100);
-
-                return (
-                  <div key={a.id} style={{
-                    background: 'var(--surface2)', border: '1px solid var(--border)',
-                    borderRadius: 10, marginBottom: 12, overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      padding: '12px 16px', background: 'rgba(255,255,255,0.02)',
-                      borderBottom: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'center', gap: 12,
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ ...S.label, marginBottom: 4 }}>Usta *</label>
-                        <select
-                          style={{ ...S.select, background: 'var(--surface3)' }}
-                          value={a.workerId}
-                          onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, workerId: e.target.value } : x))}
-                        >
-                          <option value="">— Ustani tanlang —</option>
-                          {xodimlar.map(x => <option key={x.id} value={x.id}>{x.ism} ({x.foiz}%)</option>)}
-                        </select>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ ...S.label, marginBottom: 4 }}>Xizmat *</label>
-                        <select
-                          style={{ ...S.select, background: 'var(--surface3)' }}
-                          value={a.serviceId}
-                          onChange={e => {
-                            const sId = e.target.value;
-                            const sObj = xizmatlar.find(x => String(x.id) === String(sId));
-                            setAssignments(assignments.map(x => x.id === a.id ? { ...x, serviceId: sId, customNarx: sObj ? sObj.narx.toString() : '' } : x));
-                          }}
-                        >
-                          <option value="">— Xizmatni tanlang —</option>
-                          {xizmatlar
-                            .filter(s => {
-                              const selectedCar = normalize(form.mashina);
-                              const serviceCar = normalize(s.mashina || 'UMUMIY');
-
-                              if (serviceCar === 'UMUMIY') return true;
-                              if (!selectedCar) return true; // Mashina tanlanmagan bo'lsa hamma xizmatni ko'rsatish
-
-                              // Flexible matching:
-                              // 1. Exact match
-                              if (serviceCar === selectedCar) return true;
-                              // 2. Service car is part of selected car (e.g. "CHEVROLET" matches "CHEVROLET NEXIA")
-                              if (selectedCar.includes(serviceCar)) return true;
-                              // 3. Selected car is part of service car (e.g. "NEXIA" matches "CHEVROLET NEXIA")
-                              if (serviceCar.includes(selectedCar)) return true;
-
-                              return false;
-                            })
-                            .map(s => (
-                              <option key={s.id} value={s.id}>
-                                {s.nom} {s.mashina !== 'UMUMIY' ? `(${s.mashina})` : ''} — {s.narx.toLocaleString()} so'm
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                      <div style={{ minWidth: 120 }}>
-                        <label style={{ ...S.label, marginBottom: 4 }}>Narxi</label>
-                        <input
-                          style={{ ...S.input, background: 'var(--surface3)', textAlign: 'right', fontWeight: 700 }}
-                          type="number"
-                          value={a.customNarx || (a.serviceId ? getServiceNarx(a.serviceId) : '')}
-                          placeholder="0"
-                          onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, customNarx: e.target.value } : x))}
-                        />
-                      </div>
-                      <button
-                        onClick={() => setAssignments(assignments.filter(x => x.id !== a.id))}
-                        style={{ padding: 8, background: 'rgba(244,63,94,0.1)', color: '#f43f5e', border: 'none', borderRadius: 8, cursor: 'pointer', marginTop: 20 }}
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-
-                    {a.workerId && a.serviceId && (
-                      <div style={{ padding: '10px 16px', display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                        <span style={{ color: 'var(--text3)' }}>
-                          {worker?.ism} — {worker?.foiz}% stavka
-                        </span>
-                        <span style={{ color: 'var(--text)', fontWeight: 700 }}>
-                          Maosh: <span style={{ color: '#10b981' }}>{earned.toLocaleString()} so'm</span>
-                          &nbsp;&nbsp;| Xizmat: <span style={{ color: '#06b6d4' }}>{narx.toLocaleString()} so'm</span>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              <button
-                onClick={() => {
-                  const lastWorkerId = assignments[assignments.length - 1]?.workerId || '';
-                  setAssignments([...assignments, { id: Date.now(), workerId: lastWorkerId, serviceId: '', customNarx: '' }]);
-                }}
-                style={{
-                  width: '100%', padding: '10px 0', marginTop: 4,
-                  border: '1px dashed var(--border)', borderRadius: 10,
-                  background: 'transparent', color: 'var(--text3)',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}
-              >
-                <Plus size={13} /> Xizmat qo'shish
-              </button>
-
-              <div style={{
-                marginTop: 16, padding: '12px 16px',
-                background: 'var(--surface2)', borderRadius: 10,
-                display: 'flex', justifyContent: 'space-between', fontSize: 13,
-              }}>
-                <span style={{ color: 'var(--text3)' }}>Ustalar maoshi:</span>
-                <span style={{ fontWeight: 700, color: '#f43f5e' }}>{zarplataAdjusted.toLocaleString()} so'm</span>
-                <span style={{ color: 'var(--text3)' }}>Xizmatlar summasi:</span>
-                <span style={{ fontWeight: 700, color: '#06b6d4' }}>{servicesTotal.toLocaleString()} so'm</span>
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION 3: Zapchastlar */}
-          <div style={S.card}>
-            <div style={S.cardHeader}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Package size={16} color="#10b981" />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  Zapchastlar
-                </span>
-              </div>
-              <button
-                onClick={() => setPartRows([...partRows, { id: Date.now(), partId: '', qty: 1 }])}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(16,185,129,0.1)', color: '#10b981',
-                  border: '1px solid rgba(16,185,129,0.25)', borderRadius: 8,
-                  padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                }}
-              >
-                <Plus size={13} /> Zapchast qo'shish
-              </button>
-            </div>
-            <div style={S.cardBody}>
-              {partRows.map((row, idx) => (
-                <div key={row.id} style={{
-                  display: 'grid', gridTemplateColumns: '1fr auto auto auto',
-                  gap: 12, alignItems: 'end', marginBottom: 12,
-                }}>
-                  <div>
-                    <label style={S.label}>Zapchast</label>
-                    <select
-                      style={S.select}
-                      value={row.partId}
-                      onChange={e => setPartRows(partRows.map(x => x.id === row.id ? { ...x, partId: e.target.value } : x))}
-                    >
-                      <option value="">— Zapchast tanlang —</option>
-                      {zapchastlar
-                        .filter(p => {
-                          const car = normalize(form.mashina);
-                          const partCar = normalize(p.mashina || 'UMUMIY');
-                          if (!car) return partCar === 'UMUMIY';
-                          return partCar === 'UMUMIY' || partCar === car;
-                        })
-                        .map(p => (
-                          <option key={p.id} value={p.id}>
-                            {p.nom} {p.mashina !== 'UMUMIY' ? `(${p.mashina})` : ''} (balans: {p.balance ?? '?'})
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div style={{ minWidth: 120 }}>
-                    {idx === 0 && <label style={S.label}>Narxi</label>}
-                    <div style={{
-                      ...S.input, display: 'flex', alignItems: 'center',
-                      justifyContent: 'flex-end', color: '#10b981', fontWeight: 700,
-                      background: 'var(--surface2)',
-                    }}>
-                      {row.partId ? Number(zapchastlar.find(z => Number(z.id) === Number(row.partId))?.narx || 0).toLocaleString() : '0'} so'm
-                    </div>
-                  </div>
-
-                  <div style={{ minWidth: 100 }}>
-                    {idx === 0 && <label style={S.label}>Miqdori</label>}
-                    <input
-                      style={{ ...S.input, textAlign: 'center', fontWeight: 700 }}
-                      type="number" min={1} value={row.qty}
-                      onChange={e => setPartRows(partRows.map(x => x.id === row.id ? { ...x, qty: Math.max(1, parseInt(e.target.value) || 1) } : x))}
-                    />
-                  </div>
-
-                  <div>
-                    {idx === 0 && <div style={{ height: 23 }} />}
-                    <button
-                      onClick={() => setPartRows(partRows.filter(x => x.id !== row.id))}
-                      style={{ padding: '10px 12px', background: 'rgba(244,63,94,0.1)', color: '#f43f5e', border: 'none', borderRadius: 10, cursor: 'pointer' }}
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              <button
-                onClick={() => setPartRows([...partRows, { id: Date.now(), partId: '', qty: 1 }])}
-                style={{
-                  width: '100%', padding: '10px 0', marginTop: 8,
-                  border: '1px dashed var(--border)', borderRadius: 10,
-                  background: 'transparent', color: 'var(--text3)',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}
-              >
-                <Plus size={13} /> Zapchast qo'shish
-              </button>
-            </div>
-          </div>
-
-          {/* SECTION 4: Yakun summasi */}
-          <div style={S.card}>
-            <div style={S.cardHeader}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Yakuniy summa
-              </span>
-            </div>
-            <div style={S.cardBody}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
-                {[
-                  { label: 'Xizmatlar summasi', val: servicesTotal, color: '#06b6d4' },
-                  { label: 'Zapchastlar summasi', val: partsTotal, color: '#10b981' },
-                  { label: 'Ustalar maoshi', val: zarplataAdjusted, color: '#f43f5e' },
-                  { label: 'Chegirma', val: form.chegirma || 0, color: '#f97316' },
-                ].map((item, i) => (
-                  <div key={i} style={{
-                    background: 'var(--surface2)', border: '1px solid var(--border)',
-                    borderRadius: 10, padding: '14px 16px',
-                  }}>
-                    <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6, fontWeight: 600 }}>{item.label}:</div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: item.color }}>
-                      {item.val.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text3)' }}>so'm</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                <div>
-                  <label style={S.label}>Chegirma foizda</label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      style={{ ...S.input, paddingRight: 36 }}
-                      type="number" min={0} max={100} value={form.chegirmaFoiz}
-                      onChange={e => {
-                        const p = parseInt(e.target.value) || 0;
-                        setForm({ ...form, chegirmaFoiz: p, chegirma: Math.round(subTotal * p / 100) });
-                      }}
-                    />
-                    <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#f97316', fontWeight: 700 }}>%</span>
-                  </div>
-                </div>
-                <div>
-                  <label style={S.label}>Chegirma summada</label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      style={{ ...S.input, paddingRight: 46 }}
-                      type="number" min={0} value={form.chegirma}
-                      onChange={e => {
-                        const s = parseInt(e.target.value) || 0;
-                        setForm({ ...form, chegirma: s, chegirmaFoiz: subTotal > 0 ? Math.round(s / subTotal * 100) : 0 });
-                      }}
-                    />
-                    <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)', fontWeight: 600, fontSize: 12 }}>so'm</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{
-                background: 'linear-gradient(135deg, var(--surface2), var(--surface3))',
-                border: '1px solid var(--border)', borderRadius: 12,
-                padding: '20px 24px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text2)' }}>Umumiy summa:</span>
-                <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.03em' }}>
-                  {finalTotal.toLocaleString()} <span style={{ fontSize: 16, fontWeight: 500 }}>so'm</span>
-                </span>
-              </div>
-
-              <button
-                onClick={handleSave}
-                style={{
-                  width: '100%', marginTop: 16, padding: '14px 0',
-                  background: 'linear-gradient(to right, #10b981, #059669)', color: 'white', border: 'none',
-                  borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  boxShadow: '0 10px 25px -5px rgba(16,185,129,0.3)',
-                }}
-              >
-                <CheckCircle2 size={18} /> Buyurtmani saqlash
-              </button>
-            </div>
-          </div>
+          <SummarySection
+            form={form}
+            setForm={setForm}
+            servicesTotal={servicesTotal}
+            partsTotal={partsTotal}
+            zarplataAdjusted={zarplataAdjusted}
+            subTotal={subTotal}
+            finalTotal={finalTotal}
+            onSave={handleSave}
+          />
 
         </div>
       </div>

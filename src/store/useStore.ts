@@ -17,22 +17,10 @@ import {
   getPurchases, createPurchase, createCar
 } from '@/lib/api';
 
-export const normalize = (str: string) => {
-  if (!str) return '';
-  const homoglyphs: Record<string, string> = {
-    'е': 'e', 'а': 'a', 'о': 'o', 'с': 'c', 'р': 'p', 'х': 'x', 'у': 'y', 'к': 'k', 'і': 'i', 'м': 'm', 'т': 't', 'в': 'v',
-    'Е': 'E', 'А': 'A', 'О': 'O', 'С': 'C', 'Р': 'P', 'Х': 'X', 'У': 'Y', 'К': 'K', 'І': 'I', 'М': 'M', 'Т': 'T', 'В': 'V',
-    'Н': 'H', 'Ь': '', 'ъ': ''
-  };
-  return str
-    .replace(/[еаосрхукімтвЕАОСРХУКІМТВНЬъ]/g, m => homoglyphs[m] || m)
-    .replace(/Chevolet/gi, 'Chevrolet')
-    .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
-    .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters like dots, commas, dashes for cleaner matching
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toUpperCase();
-};
+// normalize endi alohida modulda (kirill/lotin homoglif tuzatish)
+import { normalize } from '@/lib/normalize';
+// Eski importlar (@/store/useStore dan normalize) ishlashi uchun qayta eksport
+export { normalize };
 
 interface AutoServisStore {
   mijozlar: Mijoz[];
@@ -121,7 +109,6 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({
             mijozlar: state.mijozlar.map((mm) => Number(mm.id) === Number(tempId) ? created : mm)
           }));
-          console.log("✅ Mijoz bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Mijozni saqlashda xatolik:", err);
           toast.error("XATOLIK: Mijoz bazada saqlanmadi! \nSabab: " + (err.message || "Server bilan aloqa yo'q"));
@@ -141,7 +128,6 @@ export const useStore = create<AutoServisStore>()(
           if (!result || result.error) {
             throw new Error(result?.error || "Mijozni yangilashda xatolik");
           }
-          console.log("✅ Mijoz o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Mijozni yangilashda xatolik:", err);
           toast.error("XATOLIK: Mijoz ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -181,7 +167,6 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({
             xodimlar: state.xodimlar.map((xx) => Number(xx.id) === Number(tempId) ? created : xx)
           }));
-          console.log("✅ Xodim bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Xodim qo'shishda xatolik:", err);
           toast.error("XATOLIK: Xodim bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -198,7 +183,6 @@ export const useStore = create<AutoServisStore>()(
           const { izoh, ...apiData } = data as any;
           const result = await updateWorker(id, apiData);
           if (!result || result.error) throw new Error(result?.error || "Xodimni yangilashda xatolik");
-          console.log("✅ Xodim o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Xodimni yangilashda xatolik:", err);
           toast.error("XATOLIK: Xodim ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -259,7 +243,6 @@ export const useStore = create<AutoServisStore>()(
               createdAt: created.created_at
             } : mm)
           }));
-          console.log("✅ Maosh bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Maosh saqlashda xatolik:", err);
           toast.error("XATOLIK: Maosh bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
@@ -307,7 +290,6 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({
             xizmatlar: state.xizmatlar.map((s) => Number(s.id) === Number(tempId) ? mapped : s)
           }));
-          console.log("✅ Xizmat bazaga saqlandi:", createdItem.id);
         } catch (err: any) {
           console.error("❌ Xizmat qo'shishda xatolik:", err);
           toast.error("XATOLIK: Xizmat bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -357,7 +339,6 @@ export const useStore = create<AutoServisStore>()(
               } : x)
             }));
           }
-          console.log("✅ Xizmat o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Xizmatni yangilashda xatolik:", err);
           toast.error("XATOLIK: Xizmat bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -384,7 +365,6 @@ export const useStore = create<AutoServisStore>()(
           if (!created || (created as any).error) throw new Error((created as any).error || "Zapchastni saqlashda xatolik");
 
           set((state) => ({ zapchastlar: state.zapchastlar.map((zz) => Number(zz.id) === Number(tempId) ? created : zz) }));
-          console.log("✅ Zapchast bazaga saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Zapchast qo'shishda xatolik:", err);
           toast.error("XATOLIK: Zapchast bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -400,7 +380,6 @@ export const useStore = create<AutoServisStore>()(
         try {
           const result = await updatePart(id, data as any);
           if (!result || result.error) throw new Error(result?.error || "Zapchastni yangilashda xatolik");
-          console.log("✅ Zapchast o'zgarishi saqlandi:", id);
         } catch (err: any) {
           console.error("❌ Zapchastni yangilashda xatolik:", err);
           toast.error("XATOLIK: Zapchast ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
@@ -429,7 +408,6 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({
             buyurtmalar: state.buyurtmalar.map((bb) => String(bb.id) === String(tempId) ? created : bb)
           }));
-          console.log("✅ Buyurtma bazaga saqlandi:", created.id);
         }).catch((err) => {
           console.error("❌ Buyurtmani saqlashda xatolik:", err);
           toast.error("XATOLIK: Buyurtma bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
@@ -448,7 +426,6 @@ export const useStore = create<AutoServisStore>()(
           if (result && result.error) {
              throw new Error(result.error);
           }
-          console.log("✅ Buyurtma bazada yangilandi:", id);
         } catch (err: any) {
           console.error("❌ Buyurtmani bazada yangilashda xatolik:", err);
           toast.error("Ma'lumot bazada saqlanmadi: " + (err.message || "Ulanish xatosi"));
@@ -526,7 +503,6 @@ export const useStore = create<AutoServisStore>()(
 
         try {
           await createOperation({ ...op, source: 'external' });
-          console.log("✅ Tashqari operatsiya saqlandi");
         } catch (err: any) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
           // Rollback optimistic update
@@ -560,7 +536,6 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({
             ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.map(o => o.id === tempId ? { ...o, id: created.id } : o)
           }));
-          console.log("✅ Ishxona operatsiyasi saqlandi:", created.id);
         } catch (err: any) {
           console.error("❌ Operatsiya saqlashda xatolik:", err);
           // Rollback optimistic update
@@ -607,12 +582,14 @@ export const useStore = create<AutoServisStore>()(
         }
       },
       addMashina: async (m) => {
-        const parts = m.split(' ');
+        // Kanonik ko'rinishda saqlaymiz (kirill/lotin homoglif chalkashligi oldini olish)
+        const canonical = normalize(m);
+        const parts = canonical.split(' ');
         const brand = parts[0] || 'BOSHQA';
-        const name = parts.slice(1).join(' ') || m;
+        const name = parts.slice(1).join(' ') || canonical;
 
         set((state) => ({
-          mashinalar: [...state.mashinalar, m.toUpperCase()].sort()
+          mashinalar: Array.from(new Set([...state.mashinalar, canonical])).sort()
         }));
 
         try {
@@ -644,7 +621,6 @@ export const useStore = create<AutoServisStore>()(
         }
       },
       loadInitialData: async () => {
-        console.log('🔄 Store: Ma\'lumotlar yuklanmoqda...');
         try {
           // Use allSettled to prevent one failing API from blocking others
           const results = await Promise.allSettled([
@@ -715,7 +691,6 @@ export const useStore = create<AutoServisStore>()(
               return Array.from(uniqueMap.values()) as any[];
             })() : []
           }));
-          console.log(`✅ Store yuklandi: ${clients?.length || 0} mijoz, ${services?.length || 0} xizmat.`);
         } catch (err) {
           console.error('❌ Store: loadInitialData kutilmagan xato:', err);
         }
