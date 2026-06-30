@@ -1,5 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Eksport yordamchilari — CSV (Excel ochadi) va JSON yuklab olish.
+// Eksport yordamchilari — Excel (.xls) va JSON yuklab olish.
+// Excel/WPS to'g'ridan-to'g'ri ustunlarga bo'lib ochishi uchun CSV emas,
+// HTML-jadval (.xls) ishlatamiz — ajratuvchi muammosi umuman bo'lmaydi.
 // Hech qanday tashqi kutubxonaga bog'liq emas.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -10,15 +12,13 @@ export type Column<T> = {
   format?: (row: T) => string | number;
 };
 
-function csvCell(value: unknown): string {
+function escapeHtml(value: unknown): string {
   if (value === null || value === undefined) return '';
-  let s = String(value);
-  // Excel formula-injection himoyasi
-  if (/^[=+\-@]/.test(s)) s = "'" + s;
-  if (/[",\n;]/.test(s)) {
-    s = '"' + s.replace(/"/g, '""') + '"';
-  }
-  return s;
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function triggerDownload(blob: Blob, filename: string) {
@@ -39,25 +39,37 @@ function stamp(): string {
 }
 
 /**
- * Massivni CSV fayl sifatida yuklab oladi (UTF-8 BOM bilan — Excel kirill/lotinni
- * to'g'ri o'qishi uchun). Ajratuvchi `;` (O'zbekiston Excel'i uchun qulay).
+ * Massivni Excel (.xls) fayl sifatida yuklab oladi.
+ * HTML-jadval ko'rinishida — Excel/WPS ustunlarga to'g'ri bo'ladi, kirill/lotin
+ * UTF-8 da to'g'ri chiqadi, ajratuvchi (`;`/`,`) muammosi yo'q.
  */
 export function exportToCSV<T extends Record<string, any>>(
   filenameBase: string,
   rows: T[],
   columns: Column<T>[],
-  separator: ';' | ',' = ';',
 ) {
-  const header = columns.map(c => csvCell(c.label)).join(separator);
-  const body = rows.map(row =>
-    columns.map(c => {
-      const raw = c.format ? c.format(row) : (row as any)[c.key];
-      return csvCell(raw);
-    }).join(separator)
-  );
-  const csv = '﻿' + [header, ...body].join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  triggerDownload(blob, `${filenameBase}_${stamp()}.csv`);
+  const headRow = `<tr>${columns
+    .map(c => `<th style="background:#dbe5f1;border:1px solid #999;font-weight:bold;padding:4px">${escapeHtml(c.label)}</th>`)
+    .join('')}</tr>`;
+
+  const bodyRows = rows
+    .map(row => `<tr>${columns
+      .map(c => {
+        const raw = c.format ? c.format(row) : (row as any)[c.key];
+        return `<td style="border:1px solid #ccc;padding:3px">${escapeHtml(raw)}</td>`;
+      })
+      .join('')}</tr>`)
+    .join('');
+
+  const html =
+    `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head>` +
+    `<body><table border="1" style="border-collapse:collapse">${headRow}${bodyRows}</table></body></html>`;
+
+  // UTF-8 BOM — kirill/lotin to'g'ri o'qilishi uchun
+  const blob = new Blob([String.fromCharCode(0xFEFF) + html], {
+    type: 'application/vnd.ms-excel;charset=utf-8;',
+  });
+  triggerDownload(blob, `${filenameBase}_${stamp()}.xls`);
 }
 
 /** Ixtiyoriy obyektni JSON fayl sifatida yuklab oladi (zaxira nusxa). */

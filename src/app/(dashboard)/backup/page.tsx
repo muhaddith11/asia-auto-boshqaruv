@@ -50,7 +50,7 @@ export default function BackupPage() {
       { key: 'jami', label: 'Jami sarflagan' },
       { key: 'tashriflar', label: 'Tashriflar' },
     ]);
-    toast.success('Mijozlar CSV ga eksport qilindi');
+    toast.success('Mijozlar Excel ga eksport qilindi');
   };
 
   const exportOrders = () => {
@@ -68,7 +68,7 @@ export default function BackupPage() {
       { key: 'pribil', label: 'Foyda' },
       { key: 'sana', label: 'Sana' },
     ]);
-    toast.success('Buyurtmalar CSV ga eksport qilindi');
+    toast.success('Buyurtmalar Excel ga eksport qilindi');
   };
 
   const exportOperations = () => {
@@ -83,7 +83,7 @@ export default function BackupPage() {
       { key: 'comment', label: 'Izoh' },
       { key: 'source', label: 'Manba' },
     ]);
-    toast.success('Operatsiyalar CSV ga eksport qilindi');
+    toast.success('Operatsiyalar Excel ga eksport qilindi');
   };
 
   const exportCards: { label: string; count: number; onClick: () => void }[] = [
@@ -133,7 +133,7 @@ export default function BackupPage() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <FileSpreadsheet size={18} color="var(--accent)" />
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Excel (CSV) eksport</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Excel eksport</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
           {exportCards.map(c => (
