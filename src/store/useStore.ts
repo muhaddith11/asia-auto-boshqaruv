@@ -135,8 +135,10 @@ export const useStore = create<AutoServisStore>()(
       },
       deleteMijoz: (id) => {
         set((state) => ({ mijozlar: state.mijozlar.filter((m) => Number(m.id) != Number(id)) }));
-        deleteClient(id).catch(() => {
-          console.warn("API o'chirishda xatolik (Mijoz), lekin lokal o'chirish saqlab qolindi.");
+        deleteClient(id).catch((err) => {
+          console.error("❌ Mijozni o'chirishda xatolik:", err);
+          toast.error("Mijoz bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
+          get().loadInitialData();
         });
       },
 
@@ -193,8 +195,10 @@ export const useStore = create<AutoServisStore>()(
       },
       deleteXodim: (id) => {
         set((state) => ({ xodimlar: state.xodimlar.filter((x) => Number(x.id) != Number(id)) }));
-        deleteWorker(id).catch(() => {
-          console.warn("API o'chirishda xatolik (Xodim), lekin lokal o'chirish saqlab qolindi.");
+        deleteWorker(id).catch((err) => {
+          console.error("❌ Xodimni o'chirishda xatolik:", err);
+          toast.error("Xodim bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
+          get().loadInitialData();
         });
       },
 
@@ -351,7 +355,11 @@ export const useStore = create<AutoServisStore>()(
         set((state) => ({
           xizmatlar: state.xizmatlar.filter((x) => String(x.id) !== String(id))
         }));
-        deleteService(id).catch(() => { });
+        deleteService(id).catch((err) => {
+          console.error("❌ Xizmatni o'chirishda xatolik:", err);
+          toast.error("Xizmat bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
+          get().loadInitialData();
+        });
       },
 
       addZapchast: async (z) => {
@@ -390,8 +398,10 @@ export const useStore = create<AutoServisStore>()(
       },
       deleteZapchast: (id) => {
         set((state) => ({ zapchastlar: state.zapchastlar.filter((z) => Number(z.id) != Number(id)) }));
-        deletePart(id).catch(() => {
-          console.warn("API o'chirishda xatolik (Zapchast), lekin lokal o'chirish saqlab qolindi.");
+        deletePart(id).catch((err) => {
+          console.error("❌ Zapchastni o'chirishda xatolik:", err);
+          toast.error("Zapchast bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
+          get().loadInitialData();
         });
       },
 
@@ -439,8 +449,10 @@ export const useStore = create<AutoServisStore>()(
       },
       deleteBuyurtma: (id) => {
         set((state) => ({ buyurtmalar: state.buyurtmalar.filter((b) => Number(b.id) != Number(id)) }));
-        deleteOrder(id).catch(() => {
-          console.warn("API o'chirishda xatolik, lekin lokal o'chirish saqlab qolindi.");
+        deleteOrder(id).catch((err) => {
+          console.error("❌ Buyurtmani o'chirishda xatolik:", err);
+          toast.error("Buyurtma bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
+          get().loadInitialData();
         });
       },
 

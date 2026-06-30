@@ -3,8 +3,8 @@ import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { 
-  X, Banknote, CreditCard, ChevronDown, User, Hash, 
-  Tag, Briefcase, FileText, Plus, Save, Info, Wallet
+  X, Banknote, CreditCard, ChevronDown, User, Hash,
+  Tag, Briefcase, FileText, Plus, Save, Info
 } from 'lucide-react';
 
 interface CashModalProps {
@@ -31,12 +31,6 @@ const CATEGORIES_EXPENSE = [
   "🆕 Yangi kategoriya qo'shish"
 ];
 
-const OPERATION_TYPES = [
-  "Naqd (Kassa)",
-  "Plastik (Karta)",
-  "O'tkazma"
-];
-
 const S = {
   overlay: "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-[8px] animate-in fade-in duration-300",
   card: "relative bg-[#1a1c24] border border-[#2e323d] rounded-2xl w-full max-w-[420px] overflow-hidden shadow-[0_24px_64px_-12px_rgba(0,0,0,0.45)] animate-in zoom-in duration-200",
@@ -55,7 +49,6 @@ export default function CashModal({ type, onClose }: CashModalProps) {
     method: 'naqd' as 'naqd' | 'karta',
     category: type === 'income' ? CATEGORIES_INCOME[0] : CATEGORIES_EXPENSE[0],
     source: '',
-    opType: OPERATION_TYPES[0],
     comment: '',
     customCategory: '',
     orderId: ''
@@ -277,23 +270,6 @@ export default function CashModal({ type, onClose }: CashModalProps) {
             </div>
           )}
           
-
-          {/* Tip operatsii */}
-          <div className="space-y-1.5 px-1">
-            <label className={S.label}>Operatsiya turi *</label>
-            <div className="relative">
-              <select 
-                value={formData.opType}
-                onChange={(e) => setFormData({...formData, opType: e.target.value})}
-                className={S.select}
-              >
-                {OPERATION_TYPES.map(op => (
-                  <option key={op} value={op}>{op}</option>
-                ))}
-              </select>
-              <Wallet className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={18} />
-            </div>
-          </div>
 
           {/* Kommentariy */}
           <div className="space-y-1.5 px-1">
