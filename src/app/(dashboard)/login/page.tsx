@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, User, LogIn, ShieldCheck } from 'lucide-react';
-import { findAccount } from '@/lib/auth';
 
 export default function LoginPage() {
   const [login, setLogin] = useState('');
@@ -16,16 +15,22 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    // Akkauntni rol bilan tekshirish
-    const account = findAccount(login, password);
-    if (account) {
-      const maxAge = 60 * 60 * 24 * 7;
-      document.cookie = `auth_session=active; path=/; max-age=${maxAge}; SameSite=Lax`;
-      document.cookie = `auth_role=${account.role}; path=/; max-age=${maxAge}; SameSite=Lax`;
-      document.cookie = `auth_name=${encodeURIComponent(account.ism)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-      window.location.href = '/'; // Kuchliroq o'tish usuli
-    } else {
-      setError('Login yoki parol noto\'g\'ri!');
+    try {
+      // Parolni server tekshiradi; sessiya cookie'lari server javobida o'rnatiladi
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, parol: password }),
+      });
+      if (res.ok) {
+        window.location.href = '/'; // To'liq qayta yuklash — cookie'lar bilan
+      } else {
+        const j = await res.json().catch(() => ({}));
+        setError(j.error || 'Login yoki parol noto\'g\'ri!');
+        setLoading(false);
+      }
+    } catch {
+      setError('Server bilan bog\'lanishda xatolik!');
       setLoading(false);
     }
   };

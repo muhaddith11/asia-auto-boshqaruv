@@ -18,16 +18,10 @@ export function useRole() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Rol login paytida o'rnatiladigan auth_role cookie'dan o'qiladi (UI uchun).
+    // Haqiqiy xavfsizlik imzolangan auth_session orqali serverda (proxy) ta'minlanadi.
     const r = readCookie('auth_role');
-    const session = readCookie('auth_session');
-    if (r && ['egasi', 'sherik', 'xodim'].includes(r)) {
-      setRole(r as Role);
-    } else if (session) {
-      // Eski sessiya (rol cookie'siz) = egasi. Yangidan login qilganda to'g'ri rol o'rnatiladi.
-      setRole('egasi');
-    } else {
-      setRole(null);
-    }
+    setRole(r && ['egasi', 'sherik', 'xodim'].includes(r) ? (r as Role) : null);
     setReady(true);
   }, []);
 
@@ -38,8 +32,14 @@ export function useRole() {
   };
 }
 
-export function logout() {
-  document.cookie = 'auth_session=; path=/; max-age=0';
+export async function logout() {
+  try {
+    // httpOnly sessiya cookie'sini faqat server o'chira oladi
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // e'tiborsiz — baribir /login ga o'tamiz
+  }
+  // UI cookie'larini ham tozalaymiz
   document.cookie = 'auth_role=; path=/; max-age=0';
   document.cookie = 'auth_name=; path=/; max-age=0';
   window.location.href = '/login';
