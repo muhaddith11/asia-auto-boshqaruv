@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import { OrderForm, Assignment, PartRow } from './_components/formStyles';
+import { computeOrderTotals } from '@/lib/orderCalc';
 import ClientSection from './_components/ClientSection';
 import ServicesSection from './_components/ServicesSection';
 import PartsSection from './_components/PartsSection';
@@ -57,36 +58,21 @@ export default function NewOrderPage() {
     return p?.narx || 0;
   };
 
-  // ── Calculations ─────────────────────────────────────────────
-  const servicesTotal = assignments.reduce((sum, a) => {
-    if (!a.serviceId) return sum;
-    const base = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
-    return sum + (isNaN(base) ? 0 : base);
-  }, 0);
+  // ── Calculations (yagona pure modul orqali — natijalar avvalgidek) ──
+  // Xizmat qatorlari: narx (custom yoki katalog) + usta ulushi (usta yo'q bo'lsa 0%)
+  const serviceLines = assignments
+    .filter(a => a.serviceId)
+    .map(a => {
+      const base = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
+      const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
+      return { narx: isNaN(base) ? 0 : base, foiz: a.workerId ? (worker?.foiz || 0) : 0 };
+    });
+  const partLines = partRows
+    .filter(r => r.partId)
+    .map(r => ({ narx: getPartNarx(r.partId), qty: r.qty || 1 }));
 
-  const zarplataTotal = assignments.reduce((sum, a) => {
-    if (!a.workerId || !a.serviceId) return sum;
-    const worker = xodimlar.find(x => Number(x.id) === Number(a.workerId));
-    const foiz = worker?.foiz || 0;
-    const base = a.customNarx ? parseFloat(a.customNarx) : getServiceNarx(a.serviceId);
-    return sum + (isNaN(base) ? 0 : base * foiz / 100);
-  }, 0);
-
-  const partsTotal = partRows.reduce((sum, r) => {
-    if (!r.partId) return sum;
-    return sum + getPartNarx(r.partId) * (r.qty || 1);
-  }, 0);
-
-  const subTotal = servicesTotal + partsTotal;
-  const finalTotal = Math.max(0, subTotal - (form.chegirma || 0));
-  // Chegirma usta ulushiga ham proporsional ta'sir qiladi
-  // Misol: 1mln xizmat, 500k chegirma → usta 500k dan hisoblaydi
-  const chegirmaRatio = servicesTotal > 0
-    ? Math.max(0, servicesTotal - (form.chegirma || 0)) / servicesTotal
-    : 1;
-  const zarplataAdjusted = Math.round(zarplataTotal * chegirmaRatio);
-  // pribil = chegirmadan keyingi xizmat summasi − ustalar maoshi
-  const netProfit = Math.max(0, servicesTotal - (form.chegirma || 0) - zarplataAdjusted);
+  const { servicesTotal, partsTotal, subTotal, finalTotal, zarplataAdjusted, netProfit } =
+    computeOrderTotals(serviceLines, partLines, form.chegirma || 0);
 
   // ── Save ─────────────────────────────────────────────────────
   const handleSave = () => {
