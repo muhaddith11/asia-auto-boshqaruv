@@ -1,15 +1,18 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
-import { 
-  Filter, 
-  TrendingUp, 
-  Calendar, 
-  TrendingDown, 
-  Target, 
+import { exportToCSV } from '@/lib/export';
+import {
+  Filter,
+  TrendingUp,
+  Calendar,
+  TrendingDown,
+  Target,
   Wallet,
   Receipt,
-  Clock
+  Clock,
+  FileSpreadsheet
 } from 'lucide-react';
 
 /**
@@ -175,6 +178,20 @@ export default function BusinessReportPage() {
 
   useEffect(() => { setCurrentPage(1); }, [filtered]);
 
+  const handleExport = () => {
+    if (filtered.length === 0) { toast.error('Eksport uchun ma\'lumot yo\'q'); return; }
+    exportToCSV('ishxona_hisoboti', filtered, [
+      { key: '_displayDate', label: 'Sana' },
+      { key: '_positive', label: 'Turi', format: (r: any) => (r._positive ? 'Kirim' : 'Chiqim') },
+      { key: '_category', label: 'Kategoriya' },
+      { key: '_izoh', label: 'Izoh' },
+      { key: '_mijoz', label: 'Mijoz' },
+      { key: '_amount', label: 'Summa' },
+      { key: '_method', label: 'Usul' },
+    ]);
+    toast.success(`${filtered.length} ta amaliyot eksport qilindi`);
+  };
+
   if (!mounted) return null;
 
   const inputStyle: React.CSSProperties = {
@@ -192,9 +209,22 @@ export default function BusinessReportPage() {
     <div style={{ flex: 1, padding: '28px 28px 60px', background: 'var(--bg)', color: 'white', minHeight: '100vh' }}>
       
       {/* HEADER */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Hisobotlar</h1>
-        <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>Ishxona bo'yicha keng qamrovli moliya tahlili</p>
+      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Hisobotlar</h1>
+          <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>Ishxona bo'yicha keng qamrovli moliya tahlili</p>
+        </div>
+        <button
+          onClick={handleExport}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(16,185,129,0.12)', color: '#10b981',
+            border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10,
+            padding: '9px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+          }}
+        >
+          <FileSpreadsheet size={15} /> Excel
+        </button>
       </div>
 
       {/* FILTURLAR */}

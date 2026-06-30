@@ -1,21 +1,24 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 import PageLayout from '@/components/layout/PageLayout';
-import { 
-  Plus, 
-  ArrowDownCircle, 
-  ArrowUpCircle, 
-  Trash2, 
-  Search, 
+import { exportToCSV } from '@/lib/export';
+import {
+  Plus,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Trash2,
+  Search,
   ChevronDown,
   ChevronUp,
   Filter,
   BarChart3,
   Banknote,
   CreditCard,
-  RotateCcw
+  RotateCcw,
+  FileSpreadsheet
 } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 
@@ -85,6 +88,19 @@ export default function ExternalOperationsPage() {
 
   const uniqueCategories = Array.from(new Set(tashqariOperatsiyalar.map(op => op.category)));
 
+  const handleExport = () => {
+    if (sortedOps.length === 0) { toast.error('Eksport uchun ma\'lumot yo\'q'); return; }
+    exportToCSV('aylanmadan_tashqari', sortedOps as any[], [
+      { key: 'date', label: 'Sana', format: (op: any) => (op.date || op.sana || '') },
+      { key: 'type', label: 'Turi', format: (op: any) => (op.type === 'income' ? 'Kirim' : 'Chiqim') },
+      { key: 'category', label: 'Kategoriya' },
+      { key: 'comment', label: 'Izoh' },
+      { key: 'amount', label: 'Summa' },
+      { key: 'method', label: 'Usul' },
+    ]);
+    toast.success(`${sortedOps.length} ta operatsiya eksport qilindi`);
+  };
+
   const totalIncome = filteredOps.filter(op => op.type === 'income').reduce((s, op) => s + op.amount, 0);
   const totalExpense = filteredOps.filter(op => op.type === 'expense').reduce((s, op) => s + op.amount, 0);
 
@@ -108,12 +124,20 @@ export default function ExternalOperationsPage() {
       title="Aylanmadan tashqari operatsiyalar"
       subtitle="Barcha tashqi kirim va chiqimlar, operatsion xarajatlar va daromadlar."
       headerActions={
-        <button
-          onClick={() => setResetConfirm(true)}
-          className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-        >
-          <RotateCcw size={16} /> Hisobni tozalash
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExport}
+            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+          >
+            <FileSpreadsheet size={16} /> Excel
+          </button>
+          <button
+            onClick={() => setResetConfirm(true)}
+            className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+          >
+            <RotateCcw size={16} /> Hisobni tozalash
+          </button>
+        </div>
       }
       filterPanel={
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, alignItems: 'flex-end' }}>
