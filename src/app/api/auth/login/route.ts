@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Login yoki parol noto\'g\'ri' }, { status: 401 });
     }
 
-    const token = createSessionToken(account.role, account.ism);
+    const token = await createSessionToken(account.role, account.ism);
     const res = NextResponse.json({ ok: true, role: account.role, name: account.ism });
 
     // Imzolangan, soxtalashtirib bo'lmaydigan sessiya (httpOnly)

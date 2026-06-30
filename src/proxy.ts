@@ -24,7 +24,7 @@ function sectionForPath(pathname: string): Section | null {
   return null; // qolgan sahifalar barcha tizimga kirganlar uchun ochiq
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host');
 
@@ -38,7 +38,7 @@ export function proxy(request: NextRequest) {
   const normalizedPath = pathname.replace(/\/+/g, '/');
 
   // Imzolangan sessiyani tekshiramiz (soxta cookie o'tmaydi)
-  const session = verifySessionToken(request.cookies.get('auth_session')?.value);
+  const session = await verifySessionToken(request.cookies.get('auth_session')?.value);
 
   // ── API so'rovlari ──
   if (normalizedPath.startsWith('/api/')) {
