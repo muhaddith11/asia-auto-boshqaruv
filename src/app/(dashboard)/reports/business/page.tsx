@@ -122,6 +122,7 @@ export default function BusinessReportPage() {
 
       // 3. Maoshlar
       maoshTarixi.forEach((m: any) => {
+        if (m.method === 'shtraf') return; // Shtraf hisobotga tushmaydi
         const raw = m.createdAt || m.sana || '';
         let dStr = m.sana || '';
         let disp = m.sana || '';

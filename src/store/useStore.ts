@@ -46,6 +46,8 @@ interface AutoServisStore {
   deleteXodim: (id: number) => void;
 
   addMaosh: (m: Omit<MaoshTarixi, 'id' | 'createdAt'>) => void;
+  // Shtraf — xodim maoshidan ushlab qolinadi. Kassaga va hisobotga TEGMAYDI.
+  addShtraf: (data: { xodimId: number; summa: number; izoh?: string; sana: string }) => Promise<void>;
 
   addXizmat: (x: Omit<Xizmat, 'id'>) => void;
   updateXizmat: (id: number, data: Partial<Xizmat>) => void;
@@ -212,7 +214,7 @@ export const useStore = create<AutoServisStore>()(
           maoshTarixi: [{ ...m, id: tempId, createdAt: now }, ...state.maoshTarixi],
           kassa: {
             ...state.kassa,
-            [m.method]: state.kassa[m.method] - m.summa
+            [m.method]: state.kassa[m.method as 'naqd' | 'karta'] - m.summa
           }
         }));
 
@@ -231,7 +233,7 @@ export const useStore = create<AutoServisStore>()(
           // Sync Kassa with DB
           const nextKassa = {
             ...get().kassa,
-            [m.method]: get().kassa[m.method]
+            [m.method]: get().kassa[m.method as 'naqd' | 'karta']
           };
           await updateKassaState(nextKassa);
 
@@ -255,6 +257,51 @@ export const useStore = create<AutoServisStore>()(
             maoshTarixi: state.maoshTarixi.filter(mm => mm.id !== tempId),
             kassa: originalKassa
           }));
+        }
+      },
+
+      addShtraf: async ({ xodimId, summa, izoh, sana }) => {
+        // Jarima: xodim maoshidan ushlab qolinadi. Kassaga va hisobotga TEGMAYDI.
+        const tempId = -Date.now();
+        const now = new Date().toISOString();
+        const davr = (sana || now).substring(0, 7);
+        const comment = izoh || 'Shtraf';
+
+        // Optimistik: maoshTarixi ga qo'shamiz (method: 'shtraf')
+        set((state) => ({
+          maoshTarixi: [
+            { id: tempId, xodimId, summa, method: 'shtraf', sana, davr, izoh: comment, createdAt: now },
+            ...state.maoshTarixi,
+          ],
+        }));
+
+        try {
+          const created = await createSalary({
+            worker_id: xodimId,
+            amount: summa,
+            method: 'shtraf',
+            date: sana,
+            comment,
+          });
+          if (!created || created.error) throw new Error(created?.error || 'Shtraf saqlanmadi');
+
+          set((state) => ({
+            maoshTarixi: state.maoshTarixi.map(m => m.id === tempId ? {
+              id: created.id,
+              xodimId: created.worker_id,
+              summa: created.amount,
+              method: created.method,
+              sana: created.date,
+              davr,
+              izoh: created.comment,
+              createdAt: created.created_at,
+            } : m),
+          }));
+          toast.success("Shtraf qo'shildi");
+        } catch (err: any) {
+          console.error('❌ Shtraf saqlashda xatolik:', err);
+          toast.error('Shtraf bazada saqlanmadi: ' + (err.message || 'Server xatosi'));
+          set((state) => ({ maoshTarixi: state.maoshTarixi.filter(m => m.id !== tempId) }));
         }
       },
 

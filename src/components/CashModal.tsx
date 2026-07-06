@@ -23,6 +23,7 @@ const CATEGORIES_INCOME = [
 const CATEGORIES_EXPENSE = [
   "Buyurtma bo'yicha to'lov",
   "Ish xaqi",
+  "Shtraf",
   "Ishxona",
   "Aylanmadan tashqari",
   "Ta'minotchiga to'lov",
@@ -42,7 +43,7 @@ const S = {
 };
 
 export default function CashModal({ type, onClose }: CashModalProps) {
-  const { updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh, buyurtmalar, updateBuyurtma } = useStore();
+  const { updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh, addShtraf, buyurtmalar, updateBuyurtma } = useStore();
 
   const [formData, setFormData] = useState({
     amount: '',
@@ -84,6 +85,18 @@ export default function CashModal({ type, onClose }: CashModalProps) {
           method: formData.method,
           izoh: formData.comment || "Maosh to'lovi"
         });
+
+      } else if (formData.category === "Shtraf") {
+        // Shtraf: xodim maoshidan ushlab qolinadi. Kassaga va hisobotga TEGMAYDI.
+        const worker = xodimlar.find(x => x.ism === formData.source);
+        if (!worker) { toast.error("Xodimni tanlang!"); return; }
+        await addShtraf({
+          xodimId: worker.id,
+          summa: amount,
+          izoh: formData.comment || 'Shtraf',
+          sana: new Date().toISOString().split('T')[0],
+        });
+        // updateKassa YO'Q, operatsiya YO'Q — faqat maoshdan ayiriladi
 
       } else if (formData.category === "Buyurtma bo'yicha to'lov") {
         const targetOrder = buyurtmalar.find(b => String(b.id) === formData.orderId);
@@ -249,8 +262,8 @@ export default function CashModal({ type, onClose }: CashModalProps) {
                   <option value="">Tanlang...</option>
                   {formData.category === "Aylanmadan tashqari" ? (
                     <option value="Yahyo aka">👤 Yahyo aka</option>
-                  ) : formData.category === "Ish xaqi" ? (
-                    xodimlar.map(x => <option key={x.id} value={x.ism}>🛠️ {x.ism} - Sotrudnik</option>)
+                  ) : (formData.category === "Ish xaqi" || formData.category === "Shtraf") ? (
+                    xodimlar.map(x => <option key={x.id} value={x.ism}>🛠️ {x.ism}{formData.category === "Shtraf" ? " - Jarima" : " - Sotrudnik"}</option>)
                   ) : formData.category === "Buyurtma bo'yicha to'lov" ? (
                     <>
                       <option value="Kunlik mijoz">👤 Kunlik mijoz</option>

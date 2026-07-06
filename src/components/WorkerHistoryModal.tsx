@@ -26,7 +26,8 @@ export default function WorkerHistoryModal({ worker, onClose }: Props) {
     .slice()
     .sort((a, b) => new Date(b.sana).getTime() - new Date(a.sana).getTime());
 
-  const maoshJami = maoshHistory.reduce((s, m) => s + (m.summa || 0), 0);
+  const shtrafJami = maoshHistory.filter(m => m.method === 'shtraf').reduce((s, m) => s + (m.summa || 0), 0);
+  const tolanganJami = maoshHistory.filter(m => m.method !== 'shtraf').reduce((s, m) => s + (m.summa || 0), 0);
 
   // ── Tab 2: Bajarilgan ishlar ──
   // Xodim bajargan barcha xizmatlarni buyurtmalardan topamiz
@@ -155,16 +156,16 @@ export default function WorkerHistoryModal({ worker, onClose }: Props) {
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
                         <td style={tdStyle}>{fmtDate(m.sana)}</td>
-                        <td style={{ ...tdStyle, textAlign: 'right', color: '#34d399', fontWeight: 700 }}>
-                          {(m.summa || 0).toLocaleString()} UZS
+                        <td style={{ ...tdStyle, textAlign: 'right', color: m.method === 'shtraf' ? '#f87171' : '#34d399', fontWeight: 700 }}>
+                          {m.method === 'shtraf' ? '−' : ''}{(m.summa || 0).toLocaleString()} UZS
                         </td>
                         <td style={tdStyle}>
                           <span style={{
-                            background: m.method === 'karta' ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)',
-                            color: m.method === 'karta' ? '#60a5fa' : '#34d399',
+                            background: m.method === 'shtraf' ? 'rgba(244,63,94,0.15)' : m.method === 'karta' ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)',
+                            color: m.method === 'shtraf' ? '#fb7185' : m.method === 'karta' ? '#60a5fa' : '#34d399',
                             padding: '2px 8px', borderRadius: 20, fontSize: 10, fontWeight: 700
                           }}>
-                            {m.method === 'karta' ? 'Karta' : 'Naqd'}
+                            {m.method === 'shtraf' ? 'Shtraf' : m.method === 'karta' ? 'Karta' : 'Naqd'}
                           </span>
                         </td>
                         <td style={{ ...tdStyle, color: '#94a3b8' }}>{m.izoh || '—'}</td>
@@ -231,7 +232,9 @@ export default function WorkerHistoryModal({ worker, onClose }: Props) {
         <div className="px-6 py-4 border-t border-[#16202b] flex items-center justify-between shrink-0 bg-[#0b1420]">
           <div className="text-[12px] text-slate-500 font-bold">
             {activeTab === 'maosh' ? (
-              <>Jami to'langan: <span className="text-emerald-400 font-black">{maoshJami.toLocaleString()} UZS</span></>
+              <>Jami to'langan: <span className="text-emerald-400 font-black">{tolanganJami.toLocaleString()} UZS</span>
+                {shtrafJami > 0 && <> · Shtraf: <span className="text-red-400 font-black">−{shtrafJami.toLocaleString()} UZS</span></>}
+              </>
             ) : (
               <>Jami ishlab topgan: <span className="text-emerald-400 font-black">{ishlarJami.toLocaleString()} UZS</span> · {ishlar.length} ta xizmat</>
             )}

@@ -210,7 +210,7 @@ export default function WorkersPage() {
                   .filter(w => w.role === 'korxona')
                   .map(w => Number(w.id));
                 const sherikOylikXarajat = maoshTarixi
-                  .filter(m => korxonaIds.includes(Number(m.xodimId)))
+                  .filter(m => korxonaIds.includes(Number(m.xodimId)) && m.method !== 'shtraf')
                   .reduce((s, m) => s + (m.summa || 0), 0);
 
                 const sofFoyda = Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);
@@ -238,8 +238,11 @@ export default function WorkersPage() {
                 }, 0);
               }
 
-              const totalPaid = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id)).reduce((s, m) => s + (m.summa || 0), 0);
-              const unpaid = totalDue - totalPaid;
+              const workerMaosh = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id));
+              const totalPaid = workerMaosh.filter(m => m.method !== 'shtraf').reduce((s, m) => s + (m.summa || 0), 0);
+              const totalShtraf = workerMaosh.filter(m => m.method === 'shtraf').reduce((s, m) => s + (m.summa || 0), 0);
+              // Qoldiq: ishlab topgan − to'langan − shtraf
+              const unpaid = totalDue - totalPaid - totalShtraf;
 
               const fmtDate = (iso?: string) => {
                 if (!iso) return '—';

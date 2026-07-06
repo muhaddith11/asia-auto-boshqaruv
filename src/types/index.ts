@@ -107,7 +107,7 @@ export interface MaoshTarixi {
   summa: number;
   davr: string; // YYYY-MM
   sana: string;
-  method: 'naqd' | 'karta';
+  method: 'naqd' | 'karta' | 'shtraf'; // 'shtraf' — jarima (kassaga/hisobotга tegmaydi, faqat maoshdan ayiriladi)
   izoh?: string;
   createdAt: string;
 }
