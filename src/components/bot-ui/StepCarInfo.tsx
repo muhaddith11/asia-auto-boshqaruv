@@ -10,9 +10,10 @@ interface StepCarInfoProps {
 export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
   const store = useBotOrderStore();
   
-  const brands = catalog?.brands || [];
-  const models = store.brand && catalog?.catalog[store.brand] 
-    ? Object.keys(catalog.catalog[store.brand]) 
+  // Brend va modellarni A-Z tartibda ko'rsatamiz
+  const brands = (catalog?.brands || []).slice().sort((a: string, b: string) => a.localeCompare(b));
+  const models = store.brand && catalog?.catalog[store.brand]
+    ? Object.keys(catalog.catalog[store.brand]).sort((a: string, b: string) => a.localeCompare(b))
     : [];
 
   const isComplete = store.brand && store.model && store.probeg && store.plateNumber;
