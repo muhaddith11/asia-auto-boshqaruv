@@ -72,6 +72,8 @@ VALUES
 ('ID 4', 'Volkswagen'),
 ('ID 6', 'Volkswagen'),
 ('CADDY', 'Volkswagen'),
+('Tiguan', 'Volkswagen'),
+('Passat', 'Volkswagen'),
 ('LI 6', 'Li auto'),
 ('LI 7', 'Li auto'),
 ('LI 8', 'Li auto'),
@@ -125,5 +127,6 @@ VALUES
 ('Denza N9', 'Boshqa'),
 ('Lynk & Co 900', 'Boshqa'),
 ('Mazda 6', 'Boshqa'),
-('Dong Feng Aeolus', 'Boshqa')
+('Dong Feng Aeolus', 'Boshqa'),
+('Faw', 'Boshqa')
 ON CONFLICT (name) DO NOTHING;

@@ -101,10 +101,11 @@ async function buildCatalog() {
     if (!normalizedCatalog[b]) return;
     const models = Object.keys(normalizedCatalog[b]);
     const brandObj: any = {};
+    // Har bir model (mashina) ko'rinadi — xizmati bo'lmasa ham bo'sh ro'yxat bilan.
+    // Aks holda cars_list'ga yangi qo'shilgan, hali xizmati yo'q mashina botda chiqmaydi.
     models.forEach(m => {
-      if (normalizedCatalog[b][m]?.length > 0) brandObj[m] = normalizedCatalog[b][m];
+      brandObj[m] = normalizedCatalog[b][m] || [];
     });
-    if (Object.keys(brandObj).length === 0) models.forEach(m => (brandObj[m] = []));
     finalCatalog[b] = brandObj;
   });
 
