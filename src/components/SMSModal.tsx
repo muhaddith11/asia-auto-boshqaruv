@@ -5,7 +5,7 @@ import { X, Send, Phone, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-r
 import PhoneInput from '@/components/PhoneInput';
 import { normalizePhone } from '@/lib/phone';
 import { Buyurtma } from '@/types';
-import { sendSMS, getStatusMessage } from '@/services/smsService';
+import { sendSMS, getStatusMessage, notifyTelegramGroup } from '@/services/smsService';
 
 interface SMSModalProps {
   order: Buyurtma;
@@ -23,12 +23,29 @@ export default function SMSModal({ order, onClose }: SMSModalProps) {
     try {
       const servicesInfo = order.services.map(s => `- ${s.nom}`).join('\n');
       const msg = `${getStatusMessage(order.holat, order.id.toString(), order.mashina)}\n\nBajarilgan ishlar:\n${servicesInfo}\n\nIsh yakunlandi. Jami: ${order.final.toLocaleString()} so'm.`;
-      
-      await sendSMS(phoneNumber, msg);
-      toast.success('SMS muvaffaqiyatli yuborildi!');
-      onClose();
+
+      // Ham mijoz telefoniga SMS, ham Telegram guruhga "tayyor" xabari
+      const [smsRes, tgRes] = await Promise.allSettled([
+        sendSMS(phoneNumber, msg),
+        notifyTelegramGroup(order.id),
+      ]);
+
+      const smsOk = smsRes.status === 'fulfilled';
+      const tgOk = tgRes.status === 'fulfilled';
+
+      if (smsOk && tgOk) {
+        toast.success('SMS va Telegram guruhga yuborildi!');
+      } else if (smsOk) {
+        toast.success('SMS yuborildi (Telegram guruhga yuborilmadi)');
+      } else if (tgOk) {
+        toast.success('Telegram guruhga yuborildi (SMS yuborilmadi)');
+      } else {
+        toast.error('SMS va Telegram guruhga yuborishda xatolik!');
+      }
+
+      if (smsOk || tgOk) onClose();
     } catch (err) {
-      toast.error('SMS yuborishda xatolik yuz berdi!');
+      toast.error('Yuborishda xatolik yuz berdi!');
     } finally {
       setLoading(false);
     }

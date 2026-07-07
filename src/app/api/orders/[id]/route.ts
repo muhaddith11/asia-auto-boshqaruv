@@ -1,74 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
-import { Telegraf } from 'telegraf';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-// Guruh va mavzu ID lari (maxfiy emas) — default qiymat sifatida yozildi.
-// Kerak bo'lsa env orqali bekor qilish mumkin (env ustun turadi).
-const tgGroupId = process.env.TELEGRAM_GROUP_ID || '-1002849413077';
-const tgThreadId = process.env.TELEGRAM_GROUP_THREAD_ID || '1737';
-const tgBot = tgToken ? new Telegraf(tgToken) : null;
-
-const fmtSum = (n: any) => Number(n || 0).toLocaleString('ru-RU');
-
-// jsonb ustun massiv yoki string ko'rinishda kelishi mumkin — har ikkisini qo'llab-quvvatlaymiz
-function asArray(v: any): any[] {
-  if (Array.isArray(v)) return v;
-  if (typeof v === 'string') {
-    try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
-  }
-  return [];
-}
-
-// Buyurtma tayyor bo'lganda guruhga chiroyli, mijozga atalgan xabar
-async function notifyOrderReady(order: any) {
-  if (!tgBot || !tgGroupId || !order) return;
-  try {
-    const mashina = order.mashina || 'Avtomobil';
-    const raqam = order.raqam ? String(order.raqam).toUpperCase() : '—';
-
-    const services = asArray(order.services);
-    const parts = asArray(order.zaps);
-
-    const lines: string[] = [
-      `🔔 Hurmatli mijoz!`,
-      `🚗 Sizning «${mashina}» mashinangiz tayyor ✅`,
-      `🔢 Davlat raqami: ${raqam}`,
-    ];
-
-    if (services.length) {
-      lines.push('', '🛠 Xizmatlar:');
-      services.forEach((s: any) => {
-        const nom = s.nom || s.name || 'Xizmat';
-        const narx = s.narx ?? s.price ?? 0;
-        lines.push(`   • ${nom} — ${fmtSum(narx)} so'm`);
-      });
-    }
-
-    if (parts.length) {
-      lines.push('', '🔧 Ehtiyot qismlar:');
-      parts.forEach((p: any) => {
-        const nom = p.nom || p.name || 'Ehtiyot qism';
-        const qty = Number(p.qty ?? p.quantity ?? 1);
-        const narx = Number(p.narx ?? p.price ?? 0);
-        lines.push(`   • ${nom} ×${qty} — ${fmtSum(narx * qty)} so'm`);
-      });
-    }
-
-    const jami = order.final ?? order.total ?? 0;
-    lines.push('', `💰 Jami: ${fmtSum(jami)} so'm`, '', `🙏 Tashrifingiz uchun rahmat! — AsiaAutoService`);
-
-    // Mavzu (topic) ID berilgan bo'lsa — shu mavzuga yuboramiz
-    const extra = tgThreadId ? { message_thread_id: Number(tgThreadId) } : undefined;
-    await tgBot.telegram.sendMessage(tgGroupId, lines.join('\n'), extra);
-  } catch (err) {
-    console.error('Telegram guruhga xabar yuborishda xatolik:', err);
-  }
-}
 
 function mapRowToApp(row: any) {
   if (!row) return row;
@@ -139,14 +74,6 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
     }
 
-    // "Tayyor" xabarini faqat birinchi marta 'tulanmagan' ga o'tganda yuborish uchun
-    // avvalgi holatni bilib olamiz (takror xabar oldini olish).
-    let prevHolat: string | undefined;
-    if (dbBody.holat === 'tulanmagan') {
-      const { data: cur } = await supabase.from('orders').select('holat').eq('id', id).single();
-      prevHolat = cur?.holat;
-    }
-
     const { data, error, status: sbStatus } = await supabase.from('orders').update(dbBody).eq('id', id).select();
     
     if (error) {
@@ -170,10 +97,9 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       details: { changes: dbBody },
     });
 
-    // Buyurtma yangi 'tulanmagan' (tayyor) holatiga o'tdi → guruhga xabar
-    if (dbBody.holat === 'tulanmagan' && prevHolat !== 'tulanmagan') {
-      await notifyOrderReady(data[0]);
-    }
+    // Eslatma: Telegram guruhga "tayyor" xabari endi avtomatik yuborilmaydi.
+    // U faqat buyurtmalar sahifasidagi "SMS yuborish" tugmasi orqali
+    // (POST /api/orders/[id]/notify) qo'lda yuboriladi.
 
     return NextResponse.json(mapRowToApp(data[0]));
 

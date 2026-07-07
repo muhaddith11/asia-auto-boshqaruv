@@ -7,7 +7,7 @@ import supabase from '@/lib/supabaseClient';
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type AuditAction =
-  | 'create' | 'update' | 'delete' | 'payment' | 'transfer' | 'salary';
+  | 'create' | 'update' | 'delete' | 'payment' | 'transfer' | 'salary' | 'telegram_notify';
 
 interface LogParams {
   req?: NextRequest;

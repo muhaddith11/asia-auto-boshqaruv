@@ -16,6 +16,18 @@ export const sendSMS = async (phone: string, message: string) => {
   return res.json();
 };
 
+// Buyurtma "tayyor" xabarini Telegram guruhga yuborish
+export const notifyTelegramGroup = async (orderId: string | number) => {
+  const res = await fetch(`/api/orders/${orderId}/notify`, { method: 'POST' });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Telegram guruhga yuborishda xatolik');
+  }
+
+  return res.json();
+};
+
 export const getStatusMessage = (status: string, orderId: string, mashina: string) => {
   const templates: Record<string, string> = {
     'yaratildi':
