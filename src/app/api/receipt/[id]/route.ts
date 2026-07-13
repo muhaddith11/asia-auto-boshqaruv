@@ -43,12 +43,12 @@ export async function GET(
     </div>`).join('');
 
   const zapRows = zaps.map((p: any) => {
-    const qty   = Number(p.qty || p.quantity || 1);
+    // Narx miqdorga ko'paytirilmaydi
     const price = Number(p.narx || p.price || 0);
     return `
     <div class="item">
       <span class="item-name">${p.nom || p.name || ''}</span>
-      <span class="item-price">${(price * qty).toLocaleString('ru-RU')}</span>
+      <span class="item-price">${price.toLocaleString('ru-RU')}</span>
     </div>`;
   }).join('');
 

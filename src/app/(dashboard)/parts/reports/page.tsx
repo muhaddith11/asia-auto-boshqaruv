@@ -46,7 +46,8 @@ export default function PartReportsPage() {
       b.zaps.forEach((bp: any) => {
         if (bp.id === p.id) {
           usageCount           += bp.qty;
-          totalGeneratedIncome += (bp.narx * bp.qty);
+          // Narx miqdorga ko'paytirilmaydi
+          totalGeneratedIncome += Number(bp.narx || 0);
         }
       });
     });

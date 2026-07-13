@@ -211,7 +211,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
                       <span className="text-[12px] text-white font-bold">{z.nom}</span>
                       <span className="text-[10px] text-slate-500">{z.qty} {z.bir}</span>
                     </div>
-                    <span className="text-[11px] font-black text-amber-500">{(z.narx * z.qty).toLocaleString()} sum</span>
+                    <span className="text-[11px] font-black text-amber-500">{Number(z.narx).toLocaleString()} sum</span>
                   </div>
                 ))}
                 {order.zaps.length === 0 && <p className="text-[11px] text-slate-600 italic">Zapchastlar ishlatilmagan</p>}

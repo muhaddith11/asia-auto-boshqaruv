@@ -177,11 +177,12 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
     : 1;
   const zarplataAdjusted = Math.round(zarplataTotal * chegirmaRatio);
 
+  // Zapchast narxi miqdorga KO'PAYTIRILMAYDI (bot bilan izchil) — miqdor faqat ma'lumot uchun.
   const partsTotal = partRows.reduce((sum, r) => {
     if (!r.partId && !r.customNom) return sum;
     const base = r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId);
     const narx = isNaN(base) ? 0 : base;
-    return sum + narx * (r.qty || 1);
+    return sum + narx;
   }, 0);
 
   const subTotal = servicesTotal + partsTotal;
@@ -451,7 +452,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                     </select>
                   </div>
                   <div className="text-[13px] font-bold text-emerald-400 py-2.5 px-4 bg-white/5 rounded-xl text-right">
-                    {((r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId)) * r.qty).toLocaleString()} sum
+                    {(r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId)).toLocaleString()} sum
                   </div>
                   <input style={S.input} type="number" value={r.qty} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, qty: parseInt(e.target.value) || 1 } : x))} />
                   <button onClick={() => setPartRows(partRows.filter(x => x.id !== r.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">

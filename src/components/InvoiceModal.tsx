@@ -140,13 +140,13 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                 <div style={secH}>Ehtiyot qismlar</div>
                 <div style={{ padding: '4px 0', borderBottom: '1px solid #e5e7eb' }}>
                   {order.zaps.map((p, i) => {
-                    const qty   = p.qty || p.quantity || 1;
+                    // Narx miqdorga ko'paytirilmaydi
                     const price = Number(p.narx || p.price || 0);
                     return (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 12px', gap: 8 }}>
                         <span style={{ fontSize: 12, fontWeight: 600, color: '#111', flex: 1 }}>{p.nom || p.name}</span>
                         <span style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", fontSize: 12, fontWeight: 700, color: '#111', whiteSpace: 'nowrap' }}>
-                          {(price * qty).toLocaleString()}
+                          {price.toLocaleString()}
                         </span>
                       </div>
                     );

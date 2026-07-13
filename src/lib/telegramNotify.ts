@@ -49,7 +49,8 @@ export async function notifyOrderReady(order: any) {
         const nom = p.nom || p.name || 'Ehtiyot qism';
         const qty = Number(p.qty ?? p.quantity ?? 1);
         const narx = Number(p.narx ?? p.price ?? 0);
-        lines.push(`   • ${nom} ×${qty} — ${fmtSum(narx * qty)} so'm`);
+        // Narx miqdorga ko'paytirilmaydi — miqdor faqat ma'lumot uchun
+        lines.push(`   • ${nom} (${qty} dona) — ${fmtSum(narx)} so'm`);
       });
     }
 

@@ -52,9 +52,9 @@ export default function PartsContent() {
       const zaps = b.zaps || [];
       return sum + zaps.reduce((s: number, z: any) => {
         if (z.kassaga === true) return s;
+        // Narx miqdorga ko'paytirilmaydi
         const narx = Number(z.narx ?? z.price ?? 0);
-        const qty = Number(z.qty ?? z.quantity ?? 1);
-        return s + narx * qty;
+        return s + narx;
       }, 0);
     }, 0);
   }, [buyurtmalar]);

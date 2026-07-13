@@ -175,7 +175,7 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
                         <td className="px-6 py-5 text-[13px] text-slate-400 font-black text-center">
                            <span className="bg-black/40 px-3 py-1 rounded-lg border border-white/5">x{z.qty} {z.bir}</span>
                         </td>
-                        <td className="px-6 py-5 text-[14px] text-emerald-400 font-black text-right">{ (z.narx * z.qty).toLocaleString() } <span className="text-[10px] text-slate-600 uppercase">sum</span></td>
+                        <td className="px-6 py-5 text-[14px] text-emerald-400 font-black text-right">{ Number(z.narx).toLocaleString() } <span className="text-[10px] text-slate-600 uppercase">sum</span></td>
                       </tr>
                     ))}
                     {(!order.zaps || order.zaps.length === 0) && (

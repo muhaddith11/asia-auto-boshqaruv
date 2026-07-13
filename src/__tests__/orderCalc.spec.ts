@@ -23,15 +23,16 @@ describe('computeOrderTotals', () => {
     expect(t.netProfit).toBe(250000);
   });
 
-  it('zapchastlar to\'lovga qo\'shiladi, lekin foydaga ta\'sir qilmaydi', () => {
+  it('zapchastlar to\'lovga qo\'shiladi (narx miqdorga ko\'paytirilmaydi), foydaga ta\'sir qilmaydi', () => {
     const t = computeOrderTotals(
       [{ narx: 100000, foiz: 40 }],
       [{ narx: 45000, qty: 4 }, { narx: 20000, qty: 1 }],
       0,
     );
-    expect(t.partsTotal).toBe(200000);
-    expect(t.subTotal).toBe(300000);
-    expect(t.finalTotal).toBe(300000);
+    // Narx miqdorga ko'paytirilmaydi: 45000 + 20000 = 65000
+    expect(t.partsTotal).toBe(65000);
+    expect(t.subTotal).toBe(165000);
+    expect(t.finalTotal).toBe(165000);
     expect(t.zarplataAdjusted).toBe(40000);
     expect(t.netProfit).toBe(60000); // foyda faqat xizmatdan
   });
@@ -53,8 +54,9 @@ describe('computeOrderTotals', () => {
   it('faqat zapchast, xizmatsiz — chegirmaRatio 1, foyda 0', () => {
     const t = computeOrderTotals([], [{ narx: 50000, qty: 2 }], 10000);
     expect(t.servicesTotal).toBe(0);
-    expect(t.partsTotal).toBe(100000);
-    expect(t.finalTotal).toBe(90000);
+    // Narx miqdorga ko'paytirilmaydi: 50000
+    expect(t.partsTotal).toBe(50000);
+    expect(t.finalTotal).toBe(40000);
     expect(t.chegirmaRatio).toBe(1);
     expect(t.zarplataAdjusted).toBe(0);
     expect(t.netProfit).toBe(0);

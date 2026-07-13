@@ -45,8 +45,10 @@ export function computeOrderTotals(
     return sum + (isNaN(n) ? 0 : n * foiz / 100);
   }, 0);
 
+  // Zapchast narxi miqdorga KO'PAYTIRILMAYDI — narx qanday bo'lsa shundayligicha.
+  // Miqdor (qty) faqat ma'lumot uchun saqlanadi.
   const partsTotal = parts.reduce((sum, p) => {
-    return sum + (p.narx || 0) * (p.qty || 1);
+    return sum + (p.narx || 0);
   }, 0);
 
   const subTotal = servicesTotal + partsTotal;
