@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/store/useStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Search, Eye, Trash2, ClipboardList, Plus,
   Filter, RotateCcw, MoreVertical, Clock, Printer, Send,
@@ -55,6 +55,7 @@ const S = {
 
 export default function OrdersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { buyurtmalar, deleteBuyurtma, loadInitialData } = useStore();
   const [mounted, setMounted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Buyurtma | null>(null);
@@ -75,6 +76,12 @@ export default function OrdersPage() {
   useEffect(() => {
     setMounted(true);
     loadInitialData();
+    // Mijozlar hisobotidan "Barchasini ko'rish" orqali kelinsa — ism bo'yicha filtr qo'llanadi
+    const ismParam = searchParams.get('ism');
+    if (ismParam) {
+      setF(prev => ({ ...prev, ism: ismParam }));
+      setApplied(prev => ({ ...prev, ism: ismParam }));
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (!mounted) return null;

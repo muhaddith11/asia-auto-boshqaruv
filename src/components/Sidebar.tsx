@@ -65,8 +65,7 @@ const navGroups: NavGroup[] = [
     subItems: [
       { title: 'Mijoz qo\'shish', href: '/clients?add=true' },
       { title: 'Mijozlar ro\'yxati', href: '/clients' },
-      { title: 'Mijozlar hisoboti', href: '/clients/reports' },
-      { title: 'Eslatmalar', href: '/clients/reminders', section: 'reminders' }
+      { title: 'Mijozlar hisoboti', href: '/clients/reports' }
     ]
   },
   {

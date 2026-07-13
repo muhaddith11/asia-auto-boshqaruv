@@ -1,18 +1,20 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
-import { 
-  Users, 
-  Search, 
-  Target, 
-  TrendingUp, 
+import {
+  Users,
+  Search,
+  Target,
+  TrendingUp,
   Calendar,
   ChevronRight,
   User as UserIcon,
   Filter,
   RotateCcw,
-  ChevronDown
+  ChevronDown,
+  Car
 } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
 
@@ -38,6 +40,7 @@ const S = {
 };
 
 export default function ClientReportsPage() {
+  const router = useRouter();
   const { mijozlar, buyurtmalar } = useStore();
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({
@@ -82,6 +85,8 @@ export default function ClientReportsPage() {
     const totalSpent    = paidOrders.reduce((sum, b) => sum + (b.final || 0), 0);
     const totalProfit   = paidOrders.reduce((sum, b) => sum + (b.pribil || 0), 0);
     const servicesCount = orders.reduce((sum, b) => sum + b.services.length, 0);
+    // Nechta mashina qilingani — bekor qilinmagan buyurtmalar soni
+    const carsCount     = orders.filter(b => b.holat !== 'bekor qilingan').length;
 
     // Qarzdorlik: to'lanmagan buyurtmalarning (final - paid) yig'indisi
     const qarzdorlik = unpaidOrders.reduce((sum, b) => {
@@ -94,6 +99,7 @@ export default function ClientReportsPage() {
       totalSpent,
       totalProfit,
       servicesCount,
+      carsCount,
       qarzdorlik,
       lastSeen: orders.length > 0 ? orders.sort((a, b) => b.sana.localeCompare(a.sana))[0].sana : '—'
     };
@@ -193,14 +199,14 @@ export default function ClientReportsPage() {
                 <tr>
                   <th className="px-6 py-4">MIJOZ</th>
                   <th className="px-6 py-4">XIZMATLAR</th>
-                  <th className="px-6 py-4 text-right">JAMI XARAJKAT</th>
-                  <th className="px-6 py-4 text-right">BERGAN FOYDASI</th>
+                  <th className="px-6 py-4 text-center">MASHINALAR</th>
                   <th className="px-6 py-4 text-right">QARZDORLIK</th>
                   <th className="px-6 py-4 text-center">OXIRGI TASHRIF</th>
+                  <th className="px-6 py-4 text-center">BARCHA MASHINALAR</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filtered.sort((a,b) => b.totalSpent - a.totalSpent).map((c, idx) => (
+                {filtered.sort((a,b) => b.carsCount - a.carsCount).map((c, idx) => (
                   <tr key={c.id} className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]'} hover:bg-white/[0.02] transition-colors group`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -211,18 +217,22 @@ export default function ClientReportsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 font-black text-slate-400">{c.servicesCount} ta</td>
-                    <td className="px-6 py-4 text-right">
-                       <span className="font-bold text-slate-300">{c.totalSpent.toLocaleString()} <span className="text-[9px] text-slate-600">so'm</span></span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                       <span className="font-black text-emerald-500">{c.totalProfit.toLocaleString()} <span className="text-[9px] text-emerald-800">UZS</span></span>
-                    </td>
+                    <td className="px-6 py-4 text-center font-black text-slate-300">{c.carsCount} ta</td>
                     <td className="px-6 py-4 text-right">
                        <span className={`font-black ${c.qarzdorlik > 0 ? 'text-red-500' : 'text-slate-600'}`}>
                           {c.qarzdorlik.toLocaleString()}
                        </span>
                     </td>
                     <td className="px-6 py-4 text-center text-slate-500 font-medium">{c.lastSeen}</td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => router.push(`/orders?ism=${encodeURIComponent(c.ism)}`)}
+                        className="inline-flex items-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-bold py-2 px-4 rounded-lg text-[11px] transition-all active:scale-95"
+                        title={`${c.ism} — barcha mashinalari (buyurtmalari)`}
+                      >
+                        <Car size={14} /> Barchasini ko'rish
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
