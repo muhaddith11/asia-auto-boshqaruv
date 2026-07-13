@@ -40,12 +40,16 @@ export default function WorkerReportsPage() {
   const todayStr      = now.toISOString().split('T')[0];
   const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
   const yearStartStr  = `${now.getFullYear()}-01-01`;
+  // O'tkan oy boshi
+  const lastMonth        = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthStartStr = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`;
 
   const matchesPeriod = (sana: string) => {
-    if (period === 'all')   return true;
-    if (period === 'today') return sana === todayStr;
-    if (period === 'month') return sana >= monthStartStr;
-    if (period === 'year')  return sana >= yearStartStr;
+    if (period === 'all')       return true;
+    if (period === 'today')     return sana === todayStr;
+    if (period === 'month')     return sana >= monthStartStr;
+    if (period === 'lastmonth') return sana >= lastMonthStartStr && sana < monthStartStr;
+    if (period === 'year')      return sana >= yearStartStr;
     return true;
   };
 
@@ -125,6 +129,7 @@ export default function WorkerReportsPage() {
                 <option value="all">Barcha vaqt</option>
                 <option value="today">Bugun</option>
                 <option value="month">Shu oy</option>
+                <option value="lastmonth">O'tkan oy</option>
                 <option value="year">Shu yil</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
