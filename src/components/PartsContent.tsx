@@ -44,17 +44,17 @@ export default function PartsContent() {
   const searchParams = useSearchParams();
   const { zapchastlar, addZapchast, updateZapchast, deleteZapchast, mashinalar, buyurtmalar } = useStore();
 
-  // Kassaga tushmagan (galochka qo'yilmagan) zapchastlar puli — buyurtmalar bo'yicha yig'iladi.
-  // Bekor qilingan buyurtmalar hisobga olinmaydi.
+  // Kassaga tushmagan (galochka = "alohida" belgilangan) zapchastlar puli.
+  // Buyurtmalar bo'yicha yig'iladi. Bekor qilingan buyurtmalar hisobga olinmaydi.
   const kassagaTushmaganPul = useMemo(() => {
     return (buyurtmalar || []).reduce((sum, b: any) => {
       if (b.holat === 'bekor qilingan') return sum;
       const zaps = b.zaps || [];
       return sum + zaps.reduce((s: number, z: any) => {
-        if (z.kassaga === true) return s;
+        // Faqat "alohida" belgilangan zapchastlar kassaga tushmaydi
+        if (z.alohida !== true) return s;
         // Narx miqdorga ko'paytirilmaydi
-        const narx = Number(z.narx ?? z.price ?? 0);
-        return s + narx;
+        return s + Number(z.narx ?? z.price ?? 0);
       }, 0);
     }, 0);
   }, [buyurtmalar]);

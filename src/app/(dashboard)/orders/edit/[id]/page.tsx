@@ -108,8 +108,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
           customNom: catalogPart ? '' : (z.nom || z.name),
           customNarx: z.narx?.toString() || z.price?.toString() || '',
           qty: Number(z.qty || z.quantity || 1),
-          // Kassaga tushadimi — default false (belgilanmagan)
-          kassaga: z.kassaga === true
+          // Alohida (kassaga emas) — galochka. Default false = kassaga tushadi.
+          alohida: z.alohida === true
         };
       }));
     }
@@ -217,7 +217,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
           nom: p?.nom || r.customNom,
           narx: narx,
           qty: r.qty || 1,
-          kassaga: r.kassaga === true
+          alohida: r.alohida === true
         };
       });
 
@@ -419,8 +419,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
             </div>
             <div style={S.cardBody}>
               {partRows.length > 0 && (
-                <div className="grid grid-cols-[64px_1fr_120px_100px_40px] gap-4 mb-2 px-1">
-                  <span style={S.label} title="Belgilansa — bu zapchast puli kassaga tushadi">Kassaga</span>
+                <div className="grid grid-cols-[72px_1fr_120px_100px_40px] gap-4 mb-2 px-1">
+                  <span style={S.label} title="Belgilansa — bu zapchast puli kassaga tushmaydi, alohida yig'iladi">Alohida</span>
                   <span style={S.label}>Zapchast</span>
                   <span style={S.label} className="text-right">Summa</span>
                   <span style={S.label}>Soni</span>
@@ -428,21 +428,21 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                 </div>
               )}
               {partRows.map((r, idx) => (
-                <div key={idx} className="grid grid-cols-[64px_1fr_120px_100px_40px] gap-4 mb-4 items-center">
+                <div key={idx} className="grid grid-cols-[72px_1fr_120px_100px_40px] gap-4 mb-4 items-center">
                   <div className="flex justify-center">
                     <button
                       type="button"
-                      onClick={() => setPartRows(partRows.map(x => x.id === r.id ? { ...x, kassaga: !x.kassaga } : x))}
-                      title={r.kassaga ? 'Kassaga tushadi (bosib olib tashlang)' : "Kassaga tushmaydi (bosib belgilang)"}
+                      onClick={() => setPartRows(partRows.map(x => x.id === r.id ? { ...x, alohida: !x.alohida } : x))}
+                      title={r.alohida ? "Alohida: kassaga TUSHMAYDI (bosib bekor qiling)" : "Kassaga tushadi (bosib alohidaga o'tkazing)"}
                       style={{
                         width: 28, height: 28, borderRadius: 8, cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: `2px solid ${r.kassaga ? '#10b981' : 'var(--border)'}`,
-                        background: r.kassaga ? '#10b981' : 'transparent',
+                        border: `2px solid ${r.alohida ? '#f59e0b' : 'var(--border)'}`,
+                        background: r.alohida ? '#f59e0b' : 'transparent',
                         transition: 'all 0.15s',
                       }}
                     >
-                      {r.kassaga && <CheckCircle2 size={16} color="#fff" />}
+                      {r.alohida && <CheckCircle2 size={16} color="#fff" />}
                     </button>
                   </div>
                   <div>

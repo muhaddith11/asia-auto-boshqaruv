@@ -72,9 +72,9 @@ export interface OrderService extends Xizmat {
 export interface OrderZap extends Zapchast {
   qty: number;
   quantity?: number; // Legacy/Bot support
-  // true bo'lsa — ushbu zapchast puli kassaga tushadi.
-  // false/undefined (default) — kassaga tushmaydi, "zapchast puli" hisobiga yig'iladi.
-  kassaga?: boolean;
+  // true (galochka belgilangan) — puli KASSAGA TUSHMAYDI, "zapchast puli" hisobiga alohida yig'iladi.
+  // false/undefined (default) — puli KASSAGA tushadi.
+  alohida?: boolean;
 }
 
 export interface Buyurtma {

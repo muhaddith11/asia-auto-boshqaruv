@@ -36,6 +36,15 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
   // Remaining balance
   const remaining = Math.max(0, totalToPay - alreadyPaid);
 
+  // "Alohida" belgilangan zapchastlar puli — KASSAGA TUSHMAYDI (zapchast puli bo'limida yig'iladi).
+  // Narx miqdorga ko'paytirilmaydi.
+  const alohidaTotal = (order.zaps || []).reduce(
+    (s, z: any) => s + (z.alohida === true ? Number(z.narx ?? z.price ?? 0) : 0),
+    0
+  );
+  // Kassaga tushishi kerak bo'lgan summa (xizmatlar + alohida BELGILANMAGAN zapchastlar)
+  const kassaEligibleTotal = Math.max(0, totalToPay - alohidaTotal);
+
   // Amount being paid right now
   const [paidNow, setPaidNow] = useState<number>(remaining);
 
@@ -68,16 +77,21 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         throw new Error(result.error || `Server xatosi: ${res.status}`);
       }
 
-      // Kassani yangilash
-      if (paidNow > 0) {
-        await updateKassa(method, paidNow, 'add');
+      // Kassani yangilash — "alohida" zapchastlar puli kassaga tushmaydi.
+      // Kassa avval to'ladi (xizmat + oddiy zapchast), qolgan qism (alohida) pool'da qoladi.
+      const prevKassaPart = Math.min(alreadyPaid, kassaEligibleTotal);
+      const newKassaPart = Math.min(newPaidTotal, kassaEligibleTotal);
+      const kassaIncrementNow = Math.max(0, newKassaPart - prevKassaPart);
+
+      if (kassaIncrementNow > 0) {
+        await updateKassa(method, kassaIncrementNow, 'add');
         const op = {
           date: new Date().toISOString(), // To'liq vaqt (ISO format)
           type: 'income',
           method: method,
-          amount: paidNow,
+          amount: kassaIncrementNow,
           category: "Buyurtma to'lovi",
-          comment: `Buyurtma #${order.id} - ${order.ism}${isFullyPaid ? ' (To\'liq)' : ' (Qisman)'}${comment ? ' | ' + comment : ''}`,
+          comment: `Buyurtma #${order.id} - ${order.ism}${isFullyPaid ? ' (To\'liq)' : ' (Qisman)'}${alohidaTotal > 0 ? ` | Alohida zapchast: ${alohidaTotal.toLocaleString()}` : ''}${comment ? ' | ' + comment : ''}`,
           source: 'buyurtma',
           orderId: order.id
         };
@@ -170,6 +184,12 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
                   <div className="flex justify-between items-center text-[12px] text-red-400">
                     <span>Yangi chegirma</span>
                     <span className="font-black">-{discount.toLocaleString()} so'm</span>
+                  </div>
+                )}
+                {alohidaTotal > 0 && (
+                  <div className="flex justify-between items-center text-[12px] text-amber-400">
+                    <span>Shundan kassaga tushmaydi (alohida)</span>
+                    <span className="font-black">{alohidaTotal.toLocaleString()} so'm</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center pt-2 border-t border-white/10 mt-2">
