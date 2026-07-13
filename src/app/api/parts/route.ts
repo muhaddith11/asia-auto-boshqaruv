@@ -8,8 +8,8 @@ function mapAppToDB(body: any) {
   const b = { ...body } as any;
   // Standardized columns for comprehensive inventory management
   const allowed = [
-    'nom', 'narx', 'mashina', 'sebestoimost', 'balance', 
-    'bir', 'kat', 'supplier', 'min_qoldiq', 'artikul', 'soni', 'sotuv'
+    'nom', 'narx', 'mashina', 'sebestoimost', 'balance',
+    'bir', 'kat', 'supplier', 'min_qoldiq', 'artikul', 'soni', 'sotuv', 'source'
   ];
   const clean: any = {};
   allowed.forEach(key => {

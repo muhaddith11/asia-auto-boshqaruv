@@ -46,7 +46,9 @@ export async function POST(req: NextRequest) {
     const workerName = worker.ism;
 
     const servicesTotal = services?.reduce((sum: number, s: any) => sum + Number(s.price), 0) || 0;
-    const partsTotal = parts?.reduce((sum: number, p: any) => sum + (Number(p.price) * p.quantity), 0) || 0;
+    // Zapchast narxi miqdorga KO'PAYTIRILMAYDI — narx qanday kiritilgan bo'lsa, shundayligicha.
+    // Miqdor (quantity) faqat ma'lumot uchun saqlanadi.
+    const partsTotal = parts?.reduce((sum: number, p: any) => sum + Number(p.price), 0) || 0;
 
     // ── Process Services ──────────────────────────────────────────
     const orderServices = [];
@@ -79,11 +81,14 @@ export async function POST(req: NextRequest) {
       let pId = p.id;
       if (p.isCustom) {
         try {
+          // Botdan qo'lda kiritilgan zapchast — source='bot'.
+          // Bu zapchast bazaga tushadi, lekin botdagi tanlanadigan ro'yxatda ko'rinmaydi.
           const { data: newP } = await supabase.from('parts').insert({
             nom: p.name,
             narx: Number(p.price),
             balance: 0,
-            mashina: (brand || 'UMUMIY').toUpperCase()
+            mashina: (brand || 'UMUMIY').toUpperCase(),
+            source: 'bot'
           }).select('id').single();
           if (newP) pId = newP.id;
         } catch (e) { console.error("Part insert error:", e); }
@@ -100,12 +105,13 @@ export async function POST(req: NextRequest) {
     const partsStr = parts?.map((p: any) => `${p.name} (${p.quantity}x) - ${p.price}`).join(', ') || 'Zapchastlar yo\'q';
 
     // Calculate Parts Cost for accurate Profit
+    // Narx miqdorga ko'paytirilmagani uchun sebestoimost ham ko'paytirilmaydi (izchillik).
     let partsCostTotal = 0;
     for (const p of orderParts) {
       if (p.id) {
         const { data: dbPart } = await supabase.from('parts').select('sebestoimost').eq('id', p.id).maybeSingle();
         if (dbPart) {
-          partsCostTotal += (Number(dbPart.sebestoimost) || 0) * (p.qty || 1);
+          partsCostTotal += (Number(dbPart.sebestoimost) || 0);
         }
       }
     }
@@ -154,7 +160,7 @@ export async function POST(req: NextRequest) {
       : "Xizmat kiritilmagan";
 
     const zapList = parts?.length > 0
-      ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${(Number(p.price) * p.quantity).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${partsTotal.toLocaleString()} UZS\n`
+      ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${Number(p.price).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${partsTotal.toLocaleString()} UZS\n`
       : "";
 
     const baseReceipt = `📣 YANGI CHEK (Nusxa)

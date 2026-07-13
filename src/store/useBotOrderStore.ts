@@ -46,7 +46,8 @@ export const useBotOrderStore = create<BotOrderState>((set, get) => ({
   getTotalAmount: () => {
     const { services, parts } = get();
     const sTotal = services.reduce((sum, s) => sum + Number(s.price || 0), 0);
-    const pTotal = parts.reduce((sum, p) => sum + (Number(p.price || 0) * Number(p.quantity || 0)), 0);
+    // Zapchast narxi miqdorga ko'paytirilmaydi — narx qanday bo'lsa, shundayligicha qo'shiladi.
+    const pTotal = parts.reduce((sum, p) => sum + Number(p.price || 0), 0);
     return sTotal + pTotal;
   },
 

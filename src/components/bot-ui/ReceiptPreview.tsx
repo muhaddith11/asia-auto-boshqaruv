@@ -12,7 +12,8 @@ export default function ReceiptPreview({ onPrev, onSubmit, isSubmitting }: Recei
   const store = useBotOrderStore();
   
   const totalServices = store.services.reduce((sum, s) => sum + Number(s.price), 0);
-  const totalParts = store.parts.reduce((sum, p) => sum + (Number(p.price) * Number(p.quantity)), 0);
+  // Zapchast narxi miqdorga ko'paytirilmaydi
+  const totalParts = store.parts.reduce((sum, p) => sum + Number(p.price || 0), 0);
   const totalAmount = store.getTotalAmount();
 
   return (
@@ -76,9 +77,9 @@ export default function ReceiptPreview({ onPrev, onSubmit, isSubmitting }: Recei
               <div key={i} className="flex flex-col border-b border-gray-700/50 pb-3 last:border-0 last:pb-0">
                 <span className="text-gray-200 text-sm mb-1">{i + 1}. {p.name}</span>
                 <div className="flex justify-between items-center text-xs text-gray-400">
-                  <span>{p.quantity} dp × {Number(p.price || 0).toLocaleString()}</span>
+                  <span>{p.quantity} dona</span>
                   <span className="text-gray-300 font-mono text-sm">
-                    {(Number(p.quantity || 0) * Number(p.price || 0)).toLocaleString()} <span className="text-xs text-gray-500">UZS</span>
+                    {Number(p.price || 0).toLocaleString()} <span className="text-xs text-gray-500">UZS</span>
                   </span>
                 </div>
               </div>

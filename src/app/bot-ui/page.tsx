@@ -172,7 +172,7 @@ export default function BotUIPage() {
       <main>
         {step === 1 && <StepCarInfo catalog={catalogData} onNext={handleNext} />}
         {step === 2 && <StepServices catalog={catalogData} onNext={handleNext} onPrev={handlePrev} />}
-        {step === 3 && <StepParts onNext={handleNext} onPrev={handlePrev} />}
+        {step === 3 && <StepParts catalog={catalogData} onNext={handleNext} onPrev={handlePrev} />}
         {step === 4 && <ReceiptPreview onPrev={handlePrev} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
       </main>
     </div>

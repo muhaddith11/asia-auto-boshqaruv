@@ -45,8 +45,11 @@ async function buildCatalog() {
   // Biz 3330+ xizmat borligini bilamiz, 5 ta page parallel yuklaymiz
   const pageCount = 5;
 
-  const [carsResult, ...serviceChunks] = await Promise.all([
+  const [carsResult, partsResult, ...serviceChunks] = await Promise.all([
     supabase.from('cars_list').select('brand, name').range(0, 5000).order('brand', { ascending: true }),
+    // Botda faqat SAYTdan kiritilgan zapchastlar (source='site') ko'rinadi.
+    // Botdan qo'lda kiritilganlar (source='bot') ro'yxatga chiqmaydi.
+    supabase.from('parts').select('id, nom, narx, mashina').neq('source', 'bot').order('nom', { ascending: true }).range(0, 10000),
     ...Array.from({ length: pageCount }, (_, i) =>
       supabase.from('services_list')
         .select('brand, car_model, name, price')
@@ -108,11 +111,19 @@ async function buildCatalog() {
     finalCatalog[b] = brandObj;
   });
 
+  const partsList = (partsResult.data ?? []).map((p: any) => ({
+    id: p.id,
+    name: p.nom,
+    price: Number(p.narx) || 0,
+    mashina: p.mashina || 'UMUMIY',
+  }));
+
   return JSON.stringify({
-    version: 'v14_cached',
-    count: { raw_cars: cars.length, raw_services: services.length },
+    version: 'v15_cached',
+    count: { raw_cars: cars.length, raw_services: services.length, raw_parts: partsList.length },
     brands: finalBrands,
     catalog: finalCatalog,
+    parts: partsList,
   });
 }
 
