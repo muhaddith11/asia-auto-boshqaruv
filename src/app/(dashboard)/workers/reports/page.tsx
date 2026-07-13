@@ -27,7 +27,7 @@ const S = {
 };
 
 export default function WorkerReportsPage() {
-  const { xodimlar, buyurtmalar } = useStore();
+  const { xodimlar, buyurtmalar, maoshTarixi } = useStore();
   const [mounted, setMounted]   = useState(false);
   const [search,  setSearch]    = useState('');
   const [period,  setPeriod]    = useState('month');
@@ -52,39 +52,42 @@ export default function WorkerReportsPage() {
   // ── Har bir xodim uchun statistika ──────────────────────────────────────────
   const workerStats = xodimlar.map(x => {
     let totalServicesAmount = 0;
-    let totalEarned         = 0;
     let servicesPerformed   = 0;
+    // Nechta mashinaga (buyurtmaga) xizmat ko'rsatgani — takrorlanmas buyurtmalar
+    const orderIds = new Set<string>();
 
     buyurtmalar.forEach(b => {
       if (b.holat !== 'tulangan') return;
       if (!matchesPeriod(b.sana)) return;
 
-      const srv = (b as any).srv || b.services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);
-      const zap = (b as any).zap || 0;
-      const final = (b as any).final ?? (b as any).total ?? 0;
-      const ratio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
-
+      let participated = false;
       b.services.forEach((s: any) => {
         if (Number(s.workerId) === Number(x.id)) {
           totalServicesAmount += (s.narx || 0);
-          const rawZ = s.zarplata ?? Math.round(((s.narx || 0) * (x.foiz || 0)) / 100);
-          totalEarned += Math.round(rawZ * ratio);
           servicesPerformed += 1;
+          participated = true;
         }
       });
+      if (participated) orderIds.add(String(b.id));
     });
 
-    const earned   = totalEarned;
-    const avgCheck = servicesPerformed > 0
-      ? Math.round(totalServicesAmount / servicesPerformed)
-      : 0;
+    const carsServed = orderIds.size;
 
-    return { ...x, totalServicesAmount, servicesPerformed, earned, avgCheck };
+    // Berilgan (to'langan) maosh — maosh tarixidan. Shtraf (jarima) hisobga olinmaydi.
+    const paidSalary = (maoshTarixi || [])
+      .filter((m: any) =>
+        Number(m.xodimId) === Number(x.id) &&
+        m.method !== 'shtraf' &&
+        matchesPeriod((m.sana || '').slice(0, 10))
+      )
+      .reduce((s: number, m: any) => s + (Number(m.summa) || 0), 0);
+
+    return { ...x, totalServicesAmount, servicesPerformed, carsServed, paidSalary };
   });
 
   const filtered = workerStats.filter(w =>
     w.ism.toLowerCase().includes(search.toLowerCase())
-  ).sort((a, b) => b.earned - a.earned);
+  ).sort((a, b) => b.paidSalary - a.paidSalary);
 
   return (
     <PageLayout
@@ -138,10 +141,10 @@ export default function WorkerReportsPage() {
               <th className="px-6 py-4">Xodim</th>
               <th className="px-6 py-4">Mutaxassislik</th>
               <th className="px-6 py-4 text-center">Xizmatlar</th>
+              <th className="px-6 py-4 text-center">Mashinalar</th>
               <th className="px-6 py-4 text-right">Umumiy ish</th>
               <th className="px-6 py-4 text-right">Ulush (%)</th>
-              <th className="px-6 py-4 text-right">Zarplata</th>
-              <th className="px-6 py-4 text-right">O'rtacha chek</th>
+              <th className="px-6 py-4 text-right">Zarplata (berilgan)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -163,17 +166,15 @@ export default function WorkerReportsPage() {
                 </td>
                 <td className="px-6 py-4 text-slate-400 font-bold uppercase tracking-tight">{w.mutax || 'Usta'}</td>
                 <td className="px-6 py-4 text-center font-black text-slate-400">{w.servicesPerformed} ta</td>
+                <td className="px-6 py-4 text-center font-black text-slate-300">{w.carsServed} ta</td>
                 <td className="px-6 py-4 text-right font-bold text-slate-300">
                   {w.totalServicesAmount.toLocaleString()} <span className="text-[9px] text-slate-600">so'm</span>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <span className="text-slate-400 font-bold">{w.foiz}%</span>
                 </td>
-                <td className="px-6 py-4 text-right font-black text-blue-400">
-                  {w.earned.toLocaleString()} <span className="text-[9px] text-blue-800">so'm</span>
-                </td>
-                <td className="px-6 py-4 text-right font-bold text-slate-500">
-                  {w.avgCheck.toLocaleString()}
+                <td className="px-6 py-4 text-right font-black text-emerald-400">
+                  {w.paidSalary.toLocaleString()} <span className="text-[9px] text-emerald-800">so'm</span>
                 </td>
               </tr>
             ))}
