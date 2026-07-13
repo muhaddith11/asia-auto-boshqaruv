@@ -107,7 +107,9 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
           partId: catalogPart?.id?.toString() || '',
           customNom: catalogPart ? '' : (z.nom || z.name),
           customNarx: z.narx?.toString() || z.price?.toString() || '',
-          qty: Number(z.qty || z.quantity || 1)
+          qty: Number(z.qty || z.quantity || 1),
+          // Kassaga tushadimi — default false (belgilanmagan)
+          kassaga: z.kassaga === true
         };
       }));
     }
@@ -213,7 +215,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
           id: p?.id || null,
           nom: p?.nom || r.customNom,
           narx: narx,
-          qty: r.qty || 1
+          qty: r.qty || 1,
+          kassaga: r.kassaga === true
         };
       });
 
@@ -414,8 +417,33 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
               </button>
             </div>
             <div style={S.cardBody}>
+              {partRows.length > 0 && (
+                <div className="grid grid-cols-[64px_1fr_120px_100px_40px] gap-4 mb-2 px-1">
+                  <span style={S.label} title="Belgilansa — bu zapchast puli kassaga tushadi">Kassaga</span>
+                  <span style={S.label}>Zapchast</span>
+                  <span style={S.label} className="text-right">Summa</span>
+                  <span style={S.label}>Soni</span>
+                  <span></span>
+                </div>
+              )}
               {partRows.map((r, idx) => (
-                <div key={idx} className="grid grid-cols-[1fr_120px_100px_40px] gap-4 mb-4 items-end">
+                <div key={idx} className="grid grid-cols-[64px_1fr_120px_100px_40px] gap-4 mb-4 items-center">
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setPartRows(partRows.map(x => x.id === r.id ? { ...x, kassaga: !x.kassaga } : x))}
+                      title={r.kassaga ? 'Kassaga tushadi (bosib olib tashlang)' : "Kassaga tushmaydi (bosib belgilang)"}
+                      style={{
+                        width: 28, height: 28, borderRadius: 8, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: `2px solid ${r.kassaga ? '#10b981' : 'var(--border)'}`,
+                        background: r.kassaga ? '#10b981' : 'transparent',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {r.kassaga && <CheckCircle2 size={16} color="#fff" />}
+                    </button>
+                  </div>
                   <div>
                     <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, partId: e.target.value, customNom: '' } : x))}>
                       <option value="">{r.customNom ? `[Maxsus] ${r.customNom}` : '— Tanlang —'}</option>

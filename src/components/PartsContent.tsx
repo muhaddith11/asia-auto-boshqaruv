@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -42,7 +42,22 @@ const S = {
 export default function PartsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { zapchastlar, addZapchast, updateZapchast, deleteZapchast, mashinalar } = useStore();
+  const { zapchastlar, addZapchast, updateZapchast, deleteZapchast, mashinalar, buyurtmalar } = useStore();
+
+  // Kassaga tushmagan (galochka qo'yilmagan) zapchastlar puli — buyurtmalar bo'yicha yig'iladi.
+  // Bekor qilingan buyurtmalar hisobga olinmaydi.
+  const kassagaTushmaganPul = useMemo(() => {
+    return (buyurtmalar || []).reduce((sum, b: any) => {
+      if (b.holat === 'bekor qilingan') return sum;
+      const zaps = b.zaps || [];
+      return sum + zaps.reduce((s: number, z: any) => {
+        if (z.kassaga === true) return s;
+        const narx = Number(z.narx ?? z.price ?? 0);
+        const qty = Number(z.qty ?? z.quantity ?? 1);
+        return s + narx * qty;
+      }, 0);
+    }, 0);
+  }, [buyurtmalar]);
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
@@ -141,6 +156,22 @@ export default function PartsContent() {
         >
           <Plus size={16} /> Qo'shish
         </button>
+      </div>
+
+      {/* ── KASSAGA TUSHMAGAN ZAPCHAST PULI ── */}
+      <div className="mb-6 p-5 bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+            <Box size={20} className="text-amber-500" />
+          </div>
+          <div>
+            <div className="text-[11px] font-black text-amber-500/80 uppercase tracking-widest">Kassaga tushmagan zapchast puli</div>
+            <div className="text-[11px] text-slate-500 font-medium mt-0.5">Buyurtmalarda galochka qo'yilmagan zapchastlar yig'indisi</div>
+          </div>
+        </div>
+        <div className="text-[26px] font-black text-amber-400 tracking-tight">
+          {kassagaTushmaganPul.toLocaleString()} <span className="text-[12px] text-slate-500 uppercase">so'm</span>
+        </div>
       </div>
 
       {/* ── FILTERS PANEL ── */}
