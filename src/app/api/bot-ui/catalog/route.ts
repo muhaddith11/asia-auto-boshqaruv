@@ -49,7 +49,8 @@ async function buildCatalog() {
     supabase.from('cars_list').select('brand, name').range(0, 5000).order('brand', { ascending: true }),
     // Botda faqat SAYTdan kiritilgan zapchastlar (source='site') ko'rinadi.
     // Botdan qo'lda kiritilganlar (source='bot') ro'yxatga chiqmaydi.
-    supabase.from('parts').select('id, nom, narx, mashina').neq('source', 'bot').order('nom', { ascending: true }).range(0, 10000),
+    // Omborda qolmagan (balance <= 0) zapchastlar ham mijozga taklif qilinmaydi.
+    supabase.from('parts').select('id, nom, narx, mashina').neq('source', 'bot').gt('balance', 0).order('nom', { ascending: true }).range(0, 10000),
     ...Array.from({ length: pageCount }, (_, i) =>
       supabase.from('services_list')
         .select('brand, car_model, name, price')
