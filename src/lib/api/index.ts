@@ -3,6 +3,13 @@ import { Mijoz, Buyurtma, Xodim, Zapchast } from '@/types';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 async function handleJson(res: Response) {
+  // Sessiya tugagan/yo'q — foydalanuvchini login sahifasiga qaytaramiz.
+  // Aks holda sahifa ochiq turaveradi va har bir saqlash jim ravishda
+  // "Avtorizatsiya talab qilinadi" xatosi bilan yiqiladi.
+  if (res.status === 401 && typeof window !== 'undefined') {
+    window.location.href = '/login';
+    throw new Error('Sessiya muddati tugagan. Qaytadan tizimga kiring.');
+  }
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || errorData.message || `API error: ${res.status}`);
