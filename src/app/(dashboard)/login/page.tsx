@@ -41,10 +41,10 @@ export default function LoginPage() {
         {/* Logo Section */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center mb-6">
-            <img 
-              src="/logo-full.png?v=2" 
-              alt="Asia Auto Service" 
-              style={{ maxWidth: '280px', height: 'auto' }}
+            <img
+              src="/logo-login.png"
+              alt="Asia Auto Service"
+              style={{ width: '200px', height: 'auto' }}
             />
           </div>
           <p className="text-slate-500 font-medium tracking-wide">Boshqaruv tizimiga xush kelibsiz</p>
