@@ -225,12 +225,16 @@ export default function WorkersPage() {
               } else {
                 // 🛠️ ODDIY XODIMLAR UCHUN HISOB-KITOB
                 totalDue = buyurtmalar.reduce((total, b) => {
+                  // Usta ishni qilgach ulushi hisoblanadi — mijoz hali to'lamagan
+                  // bo'lsa ham. Faqat BEKOR QILINGAN buyurtma ulushi sanalmaydi.
+                  if (b.holat === 'bekor qilingan') return total;
+
                   const srv = (b as any).srv || b.services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);
                   const zap = (b as any).zap || 0;
                   const final = (b as any).final ?? (b as any).total ?? 0;
                   const ratio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
                   return total + b.services
-                    .filter(s => s.workerId === x.id)
+                    .filter(s => Number(s.workerId) === Number(x.id))
                     .reduce((sum, s) => {
                       const raw = s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100);
                       return sum + Math.round(raw * ratio);
