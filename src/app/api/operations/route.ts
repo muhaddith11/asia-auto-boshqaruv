@@ -29,9 +29,24 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  // ⚠️ MUHIM: Supabase bitta so'rovda ko'pi bilan 1000 qator qaytaradi.
+  // Operatsiyalar 1000 dan oshgani uchun eskilari tushib qolib, kassa va
+  // hisobotlar xato hisoblanardi. Barchasini 1000 talik bo'laklarda yuklaymiz.
+  const PAGE_SIZE = 1000;
+  const all: any[] = [];
+  for (let page = 0; page < 100; page++) {
+    let chunkQuery = supabase.from('operations').select('*').order('created_at', { ascending: false });
+    if (from) chunkQuery = chunkQuery.gte('date', from);
+    if (to) chunkQuery = chunkQuery.lte('date', to);
+
+    const { data, error } = await chunkQuery.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE_SIZE) break;
+  }
+
+  return NextResponse.json(all);
 }
 
 export async function POST(request: NextRequest) {

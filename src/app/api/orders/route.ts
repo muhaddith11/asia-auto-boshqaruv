@@ -69,9 +69,29 @@ export async function GET(request: NextRequest) {
   }
 
   // page berilmasa — eski xulq: massiv qaytaramiz (store bilan mos)
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json((data ?? []).map(mapRowToApp));
+  //
+  // ⚠️ MUHIM: Supabase bitta so'rovda ko'pi bilan 1000 qator qaytaradi.
+  // Ilgari bu yerda .range() yo'q edi va buyurtmalar id DESC bo'yicha
+  // saralangani uchun faqat eng yangi 1000 tasi kelardi — eski buyurtmalar
+  // tushib qolib, xodimlarning "ishlab topgan" puli va mijoz/moliya
+  // hisobotlari xato hisoblanardi (har yangi buyurtmada eskisi oynadan
+  // chiqib, qoldiq kamayib borardi).
+  // Shuning uchun barcha qatorlarni 1000 talik bo'laklarda yuklaymiz.
+  const PAGE_SIZE = 1000;
+  const all: any[] = [];
+  for (let page = 0; page < 100; page++) {
+    let chunkQuery = supabase.from('orders').select('*').order('id', { ascending: false });
+    if (from) chunkQuery = chunkQuery.gte('sana', from);
+    if (to) chunkQuery = chunkQuery.lte('sana', to);
+
+    const { data, error } = await chunkQuery.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE_SIZE) break;
+  }
+
+  return NextResponse.json(all.map(mapRowToApp));
 }
 
 export async function POST(request: NextRequest) {
