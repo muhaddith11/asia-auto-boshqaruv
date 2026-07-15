@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Search } from 'lucide-react';
+import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Search, Package, Plus, PackageSearch } from 'lucide-react';
 
 interface StepPartsProps {
   catalog: any;
@@ -83,35 +83,53 @@ export default function StepParts({ catalog, onNext, onPrev }: StepPartsProps) {
       </div>
 
       {/* Saytdagi zapchastlar ro'yxatidan tanlash */}
-      <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 mt-4">
-        <h3 className="text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider">Ro'yxatdan tanlash</h3>
+      <div className="bg-gradient-to-b from-gray-800/60 to-gray-800/30 rounded-2xl p-4 border border-gray-700/50 mt-4 shadow-lg shadow-black/10">
+        <h3 className="text-xs font-bold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+          <Package className="w-4 h-4 text-blue-400" /> Ro'yxatdan tanlash
+        </h3>
         <div className="relative mb-3">
-          <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Zapchast nomini qidiring..."
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-gray-900/80 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
             value={search}
             onChange={(e: any) => setSearch(e.target.value)}
           />
         </div>
 
         {sitePartsAll.length === 0 ? (
-          <p className="text-gray-600 text-xs text-center py-3">Saytda zapchast qo'shilmagan</p>
+          <div className="flex flex-col items-center py-6 text-center">
+            <PackageSearch className="w-8 h-8 text-gray-600 mb-2" />
+            <p className="text-gray-500 text-xs">Saytda zapchast qo'shilmagan</p>
+          </div>
         ) : (
-          <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+          <div className="max-h-64 overflow-y-auto space-y-2 pr-1 -mr-1">
             {filteredSiteParts.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleSelectSitePart(p)}
-                className="w-full flex items-center justify-between bg-gray-700/60 hover:bg-blue-600 text-gray-200 hover:text-white px-3 py-2.5 rounded-lg text-sm border border-gray-600 transition-all active:scale-[0.98] text-left"
+                className="w-full flex items-center gap-3 bg-gray-900/60 hover:bg-blue-600 active:scale-[0.98] text-left px-3 py-2.5 rounded-xl border border-gray-700/60 hover:border-blue-500 transition-all duration-150 group"
               >
-                <span className="font-medium truncate">{p.name}</span>
-                <span className="text-xs text-gray-300 shrink-0 ml-2">{Number(p.price).toLocaleString()} UZS +</span>
+                <div className="w-9 h-9 rounded-lg bg-blue-500/10 group-hover:bg-white/15 flex items-center justify-center shrink-0 transition-colors">
+                  <Package className="w-4 h-4 text-blue-400 group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-100 group-hover:text-white text-[13px] truncate">{p.name}</div>
+                  <div className="text-[11px] text-gray-500 group-hover:text-blue-100 mt-0.5 transition-colors">
+                    {Number(p.price).toLocaleString()} UZS
+                  </div>
+                </div>
+                <div className="w-7 h-7 rounded-full bg-blue-500/15 group-hover:bg-white/20 flex items-center justify-center shrink-0 transition-colors">
+                  <Plus className="w-4 h-4 text-blue-400 group-hover:text-white transition-colors" />
+                </div>
               </button>
             ))}
             {filteredSiteParts.length === 0 && (
-              <p className="text-gray-600 text-xs text-center py-3">Topilmadi</p>
+              <div className="flex flex-col items-center py-6 text-center">
+                <PackageSearch className="w-8 h-8 text-gray-600 mb-2" />
+                <p className="text-gray-500 text-xs">Topilmadi</p>
+              </div>
             )}
           </div>
         )}
