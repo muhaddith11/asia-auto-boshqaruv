@@ -33,6 +33,25 @@ function settledValue<T>(res: PromiseSettledResult<T>): T | null {
   return res.status === 'fulfilled' ? res.value : null;
 }
 
+// Buyurtmada ishlatilgan zapchastlar ombor balansini +sign*qty ga o'zgartiradi.
+// sign=1 — bekor qilinganda/o'chirilganda ombordan olingan miqdor qaytariladi.
+// sign=-1 — "bekor qilingan"dan qaytadan faollashtirilganda yana ayiriladi.
+function adjustPartsBalanceForOrder(
+  zaps: { id: number; qty?: number; quantity?: number }[] | undefined,
+  sign: 1 | -1,
+  zapchastlar: Zapchast[],
+  updateZapchast: (id: number, data: Partial<Zapchast>) => void,
+) {
+  (zaps || []).forEach((z) => {
+    const zapId = Number(z.id);
+    if (!zapId) return;
+    const current = zapchastlar.find(zz => Number(zz.id) === zapId);
+    if (!current) return;
+    const qty = Number(z.qty ?? z.quantity ?? 1) || 1;
+    updateZapchast(zapId, { balance: (current.balance || 0) + sign * qty });
+  });
+}
+
 interface AutoServisStore {
   mijozlar: Mijoz[];
   xodimlar: Xodim[];
@@ -485,6 +504,19 @@ export const useStore = create<AutoServisStore>()(
       updateBuyurtma: async (id, data) => {
         // Rollback uchun asl holatni saqlaymiz
         const original = get().buyurtmalar.find(b => Number(b.id) === Number(id));
+
+        // Holat "bekor qilingan"ga o'tsa — ombordan olingan zapchastlar qaytariladi;
+        // "bekor qilingan"dan chiqsa (qaytadan faollashtirilsa) — yana ayiriladi.
+        if (original && data.holat !== undefined && data.holat !== original.holat) {
+          const wasCancelled = original.holat === 'bekor qilingan';
+          const willBeCancelled = data.holat === 'bekor qilingan';
+          if (!wasCancelled && willBeCancelled) {
+            adjustPartsBalanceForOrder(original.zaps, 1, get().zapchastlar, get().updateZapchast);
+          } else if (wasCancelled && !willBeCancelled) {
+            adjustPartsBalanceForOrder(original.zaps, -1, get().zapchastlar, get().updateZapchast);
+          }
+        }
+
         // Optimistic update
         set((state) => ({
           buyurtmalar: state.buyurtmalar.map((b) => Number(b.id) === Number(id) ? { ...b, ...data } : b)
@@ -507,6 +539,15 @@ export const useStore = create<AutoServisStore>()(
         }
       },
       deleteBuyurtma: (id) => {
+        // Agar buyurtma hali "bekor qilingan" bo'lmasa — ombordan olingan
+        // zapchastlar o'chirishdan oldin balansga qaytariladi. Aks holda
+        // (allaqachon bekor qilingan bo'lsa) qaytarish bekor qilishda
+        // bo'lib o'tgan, shuning uchun bu yerda takror qaytarilmaydi.
+        const target = get().buyurtmalar.find(b => Number(b.id) === Number(id));
+        if (target && target.holat !== 'bekor qilingan') {
+          adjustPartsBalanceForOrder(target.zaps, 1, get().zapchastlar, get().updateZapchast);
+        }
+
         set((state) => ({ buyurtmalar: state.buyurtmalar.filter((b) => Number(b.id) != Number(id)) }));
         deleteOrder(id).catch((err) => {
           console.error("❌ Buyurtmani o'chirishda xatolik:", err);
