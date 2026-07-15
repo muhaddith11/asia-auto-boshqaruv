@@ -38,7 +38,8 @@ export default function AddPartPage() {
       sebestoimost: parseInt(formData.sebestoimost),
       narx: parseInt(formData.narx),
       bir: formData.bir,
-      kat: formData.kat
+      kat: formData.kat,
+      balance: 0
     });
 
     router.push('/parts');

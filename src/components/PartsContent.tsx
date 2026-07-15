@@ -74,7 +74,8 @@ export default function PartsContent() {
     sebestoimost: 0,
     narx: 0,
     bir: 'dona',
-    kat: 'Boshqa'
+    kat: 'Boshqa', // Forma ichida ko'rsatilmaydi, lekin filtr/tarix uchun standart qiymat sifatida yuboriladi
+    balance: 0
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: number | null}>({ isOpen: false, id: null });
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,7 +85,7 @@ export default function PartsContent() {
     setMounted(true);
     if (searchParams.get('add') === 'true') {
        setEditingPart(null);
-       setFormData({ nom: '', mashina: 'Umumiy', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa' });
+       setFormData({ nom: '', mashina: 'Umumiy', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa', balance: 0 });
        setIsModalOpen(true);
       // Clean up the URL
       const newUrl = window.location.pathname;
@@ -102,7 +103,8 @@ export default function PartsContent() {
       sebestoimost: part.sebestoimost || 0,
       narx: part.narx || 0,
       bir: part.bir || 'dona',
-      kat: part.kat || 'Boshqa'
+      kat: part.kat || 'Boshqa',
+      balance: part.balance || 0
     });
     setIsModalOpen(true);
   };
@@ -149,7 +151,7 @@ export default function PartsContent() {
         <button 
           onClick={() => {
             setEditingPart(null);
-            setFormData({ nom: '', mashina: 'UMUMIY', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa' });
+            setFormData({ nom: '', mashina: 'UMUMIY', sebestoimost: 0, narx: 0, bir: 'dona', kat: 'Boshqa', balance: 0 });
             setIsModalOpen(true);
           }}
           className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-emerald-900/20 active:scale-95 uppercase tracking-widest"
@@ -392,21 +394,8 @@ export default function PartsContent() {
                     </div>
                  </div>
 
-                 {/* Kat va Bir */}
+                 {/* Bir va Miqdor */}
                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Kategoriya</label>
-                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-indigo-500 transition-all">
-                          <select
-                            value={formData.kat}
-                            onChange={(e) => setFormData({...formData, kat: e.target.value})}
-                            className="bg-transparent border-none outline-none flex-1 text-white text-[14px] font-semibold appearance-none cursor-pointer"
-                            style={{ colorScheme: 'dark' }}
-                          >
-                            {['Motor', 'Xodovoy', 'Elektr', 'Kuzov', 'Boshqa'].map(k => <option key={k} value={k} style={{ background: '#1e212b', color: 'white' }}>{k}</option>)}
-                          </select>
-                        </div>
-                    </div>
                     <div className="space-y-2">
                         <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Birligi</label>
                         <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-indigo-500 transition-all">
@@ -418,6 +407,17 @@ export default function PartsContent() {
                           >
                             {['dona', 'litr', 'komplekt', 'metr', 'kg'].map(b => <option key={b} value={b} style={{ background: '#1e212b', color: 'white' }}>{b}</option>)}
                           </select>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Miqdor (omborda)</label>
+                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-indigo-500 transition-all">
+                          <input
+                            type="number" min={0} value={formData.balance || ''}
+                            onChange={(e) => setFormData({...formData, balance: parseInt(e.target.value) || 0})}
+                            placeholder="0"
+                            className="bg-transparent border-none outline-none flex-1 text-white text-[14px] font-semibold"
+                          />
                         </div>
                     </div>
                  </div>
