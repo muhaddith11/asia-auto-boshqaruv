@@ -6,7 +6,15 @@ async function handleJson(res: Response) {
   // Sessiya tugagan/yo'q — foydalanuvchini login sahifasiga qaytaramiz.
   // Aks holda sahifa ochiq turaveradi va har bir saqlash jim ravishda
   // "Avtorizatsiya talab qilinadi" xatosi bilan yiqiladi.
-  if (res.status === 401 && typeof window !== 'undefined') {
+  //
+  // ⚠️ Login sahifasida yo'naltirmaymiz! Login sahifasi (dashboard) guruhi
+  // ichida bo'lgani uchun u yerda ham API chaqiriladi va sessiyasiz 401
+  // qaytaradi — bu cheksiz qayta yuklanish halqasini hosil qiladi.
+  if (
+    res.status === 401 &&
+    typeof window !== 'undefined' &&
+    !window.location.pathname.startsWith('/login')
+  ) {
     window.location.href = '/login';
     throw new Error('Sessiya muddati tugagan. Qaytadan tizimga kiring.');
   }
