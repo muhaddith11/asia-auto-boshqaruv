@@ -14,13 +14,24 @@ import {
   getCars,
   getServices, createService, updateService, deleteService,
   getKassa, updateKassaState, getOperations, createOperation, deleteOperation, getSalaries, createSalary,
-  getPurchases, createPurchase, createCar
+  getPurchases, createPurchase, createCar,
+  type CarRow, type ServiceRow, type SalaryRow, type OperationRow
 } from '@/lib/api';
 
 // normalize endi alohida modulda (kirill/lotin homoglif tuzatish)
 import { normalize } from '@/lib/normalize';
 // Eski importlar (@/store/useStore dan normalize) ishlashi uchun qayta eksport
 export { normalize };
+
+// Server javobidagi xatolikni xavfsiz o'qish uchun (any'siz).
+function errMsg(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
+// Promise.allSettled natijasidan qiymatni xavfsiz chiqarib olish.
+function settledValue<T>(res: PromiseSettledResult<T>): T | null {
+  return res.status === 'fulfilled' ? res.value : null;
+}
 
 interface AutoServisStore {
   mijozlar: Mijoz[];
@@ -53,7 +64,7 @@ interface AutoServisStore {
   updateXizmat: (id: number, data: Partial<Xizmat>) => void;
   deleteXizmat: (id: number) => void;
 
-  addZapchast: (z: Omit<Zapchast, 'id' | 'balance'>) => void;
+  addZapchast: (z: Omit<Zapchast, 'id'>) => void; // z.balance — ombordagi boshlang'ich miqdor
   updateZapchast: (id: number, data: Partial<Zapchast>) => void;
   deleteZapchast: (id: number) => void;
 
@@ -104,16 +115,16 @@ export const useStore = create<AutoServisStore>()(
           counters: { ...state.counters, mijoz: state.counters.mijoz + 1 }
         }));
         try {
-          const created = await createClient(m as any);
-          if (!created || (created as any).error) {
-            throw new Error((created as any).error || "Mijozni saqlashda xatolik");
+          const created = await createClient(m);
+          if (!created || created.error) {
+            throw new Error(created?.error || "Mijozni saqlashda xatolik");
           }
           set((state) => ({
             mijozlar: state.mijozlar.map((mm) => Number(mm.id) === Number(tempId) ? created : mm)
           }));
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Mijozni saqlashda xatolik:", err);
-          toast.error("XATOLIK: Mijoz bazada saqlanmadi! \nSabab: " + (err.message || "Server bilan aloqa yo'q"));
+          toast.error("XATOLIK: Mijoz bazada saqlanmadi! \nSabab: " + errMsg(err, "Server bilan aloqa yo'q"));
           // Optionally revert
           set((state) => ({
             mijozlar: state.mijozlar.filter((mm) => mm.id !== tempId),
@@ -126,13 +137,13 @@ export const useStore = create<AutoServisStore>()(
           mijozlar: state.mijozlar.map((m) => Number(m.id) === Number(id) ? { ...m, ...data } : m)
         }));
         try {
-          const result = await updateClient(id, data as any);
+          const result = await updateClient(id, data);
           if (!result || result.error) {
             throw new Error(result?.error || "Mijozni yangilashda xatolik");
           }
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Mijozni yangilashda xatolik:", err);
-          toast.error("XATOLIK: Mijoz ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Mijoz ma'lumotlari bazada yangilanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
         }
       },
       deleteMijoz: (id) => {
@@ -160,20 +171,20 @@ export const useStore = create<AutoServisStore>()(
           foiz: Number(x.foiz) || 0,
           role: x.role || 'xodim',
           shareType: x.shareType || 'total',
-          status: 'aktiv',
-          parentId: x.parentId || null
+          status: 'aktiv' as const,
+          parentId: x.parentId || undefined
         };
 
         try {
-          const created = await createWorker(apiData as any);
-          if (!created || (created as any).error) throw new Error((created as any).error || "Xodimni saqlashda xatolik");
+          const created = await createWorker(apiData);
+          if (!created || created.error) throw new Error(created?.error || "Xodimni saqlashda xatolik");
 
           set((state) => ({
             xodimlar: state.xodimlar.map((xx) => Number(xx.id) === Number(tempId) ? created : xx)
           }));
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Xodim qo'shishda xatolik:", err);
-          toast.error("XATOLIK: Xodim bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xodim bazada saqlanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
           set((state) => ({
             xodimlar: state.xodimlar.filter(xx => xx.id !== tempId),
             counters: { ...get().counters, xodim: get().counters.xodim - 1 }
@@ -184,12 +195,13 @@ export const useStore = create<AutoServisStore>()(
         const original = get().xodimlar.find(x => x.id === id);
         set((state) => ({ xodimlar: state.xodimlar.map((x) => x.id === id ? { ...x, ...data } : x) }));
         try {
-          const { izoh, ...apiData } = data as any;
-          const result = await updateWorker(id, apiData);
+          // Eslatma: Xodim tipida 'izoh' maydoni yo'q — bu yerga hech qachon kelmaydi,
+          // lekin API ga faqat haqiqiy Xodim maydonlarini yuboramiz.
+          const result = await updateWorker(id, data);
           if (!result || result.error) throw new Error(result?.error || "Xodimni yangilashda xatolik");
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Xodimni yangilashda xatolik:", err);
-          toast.error("XATOLIK: Xodim ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xodim ma'lumotlari bazada yangilanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
           if (original) {
             set((state) => ({ xodimlar: state.xodimlar.map(x => x.id === id ? original : x) }));
           }
@@ -226,7 +238,7 @@ export const useStore = create<AutoServisStore>()(
             date: m.sana,
             comment: m.izoh || ''
           };
-          
+
           const created = await createSalary(apiData);
           if (!created || created.error) throw new Error(created?.error || "Maoshni saqlashda xatolik");
 
@@ -242,16 +254,16 @@ export const useStore = create<AutoServisStore>()(
               id: created.id,
               xodimId: created.worker_id,
               summa: created.amount,
-              method: created.method,
+              method: created.method as MaoshTarixi['method'],
               sana: created.date,
               davr: m.davr,
               izoh: created.comment,
               createdAt: created.created_at
             } : mm)
           }));
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Maosh saqlashda xatolik:", err);
-          toast.error("XATOLIK: Maosh bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          toast.error("XATOLIK: Maosh bazada saqlanmadi!\nSabab: " + errMsg(err, "Ulanish xatosi"));
           // Revert
           set((state) => ({
             maoshTarixi: state.maoshTarixi.filter(mm => mm.id !== tempId),
@@ -261,7 +273,7 @@ export const useStore = create<AutoServisStore>()(
       },
 
       addShtraf: async ({ xodimId, summa, izoh, sana }) => {
-        // Jarima: xodim maoshidan ushlab qolinadi. Kassaga va hisobotga TEGMAYDI.
+        // Jarima: xodim maoshidan ushlab qolinadi. Kassaga va hisobotга TEGMAYDI.
         const tempId = -Date.now();
         const now = new Date().toISOString();
         const davr = (sana || now).substring(0, 7);
@@ -290,7 +302,7 @@ export const useStore = create<AutoServisStore>()(
               id: created.id,
               xodimId: created.worker_id,
               summa: created.amount,
-              method: created.method,
+              method: created.method as MaoshTarixi['method'],
               sana: created.date,
               davr,
               izoh: created.comment,
@@ -298,9 +310,9 @@ export const useStore = create<AutoServisStore>()(
             } : m),
           }));
           toast.success("Shtraf qo'shildi");
-        } catch (err: any) {
+        } catch (err) {
           console.error('❌ Shtraf saqlashda xatolik:', err);
-          toast.error('Shtraf bazada saqlanmadi: ' + (err.message || 'Server xatosi'));
+          toast.error('Shtraf bazada saqlanmadi: ' + errMsg(err, 'Server xatosi'));
           set((state) => ({ maoshTarixi: state.maoshTarixi.filter(m => m.id !== tempId) }));
         }
       },
@@ -328,7 +340,7 @@ export const useStore = create<AutoServisStore>()(
 
         try {
           const created = await createService(apiData);
-          if (!created || (created as any).error) throw new Error("Server xizmatni qabul qilmadi");
+          if (!created || created.error) throw new Error("Server xizmatni qabul qilmadi");
 
           const createdItem = Array.isArray(created) ? created[0] : created;
           const mapped = {
@@ -341,9 +353,9 @@ export const useStore = create<AutoServisStore>()(
           set((state) => ({
             xizmatlar: state.xizmatlar.map((s) => Number(s.id) === Number(tempId) ? mapped : s)
           }));
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Xizmat qo'shishda xatolik:", err);
-          toast.error("XATOLIK: Xizmat bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xizmat bazada saqlanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
           set((state) => ({
             xizmatlar: state.xizmatlar.filter(s => s.id !== tempId),
             counters: { ...get().counters, xizmat: get().counters.xizmat - 1 }
@@ -357,7 +369,7 @@ export const useStore = create<AutoServisStore>()(
         }));
 
         try {
-          const apiData: any = {};
+          const apiData: Partial<ServiceRow> = {};
           if (data.nom !== undefined) apiData.name = data.nom;
           if (data.narx !== undefined) apiData.price = data.narx;
           if (data.mashina !== undefined) {
@@ -390,9 +402,9 @@ export const useStore = create<AutoServisStore>()(
               } : x)
             }));
           }
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Xizmatni yangilashda xatolik:", err);
-          toast.error("XATOLIK: Xizmat bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Xizmat bazada yangilanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
           if (original) {
             set((state) => ({ xizmatlar: state.xizmatlar.map(x => x.id === id ? original : x) }));
           }
@@ -412,17 +424,17 @@ export const useStore = create<AutoServisStore>()(
       addZapchast: async (z) => {
         const tempId = -Date.now();
         set((state) => ({
-          zapchastlar: [...state.zapchastlar, { ...z, id: tempId, balance: 0 }],
+          zapchastlar: [...state.zapchastlar, { ...z, id: tempId }],
           counters: { ...state.counters, zap: state.counters.zap + 1 }
         }));
         try {
-          const created = await createPart(z as any);
-          if (!created || (created as any).error) throw new Error((created as any).error || "Zapchastni saqlashda xatolik");
+          const created = await createPart(z);
+          if (!created || created.error) throw new Error(created?.error || "Zapchastni saqlashda xatolik");
 
           set((state) => ({ zapchastlar: state.zapchastlar.map((zz) => Number(zz.id) === Number(tempId) ? created : zz) }));
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Zapchast qo'shishda xatolik:", err);
-          toast.error("XATOLIK: Zapchast bazada saqlanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Zapchast bazada saqlanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
           set((state) => ({
             zapchastlar: state.zapchastlar.filter(zz => zz.id !== tempId),
             counters: { ...get().counters, zap: get().counters.zap - 1 }
@@ -433,11 +445,11 @@ export const useStore = create<AutoServisStore>()(
         const original = get().zapchastlar.find(z => z.id === id);
         set((state) => ({ zapchastlar: state.zapchastlar.map((z) => z.id === id ? { ...z, ...data } : z) }));
         try {
-          const result = await updatePart(id, data as any);
+          const result = await updatePart(id, data);
           if (!result || result.error) throw new Error(result?.error || "Zapchastni yangilashda xatolik");
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Zapchastni yangilashda xatolik:", err);
-          toast.error("XATOLIK: Zapchast ma'lumotlari bazada yangilanmadi! \nSabab: " + (err.message || "Server xatosi"));
+          toast.error("XATOLIK: Zapchast ma'lumotlari bazada yangilanmadi! \nSabab: " + errMsg(err, "Server xatosi"));
           if (original) {
             set((state) => ({ zapchastlar: state.zapchastlar.map(z => z.id === id ? original : z) }));
           }
@@ -458,16 +470,16 @@ export const useStore = create<AutoServisStore>()(
           buyurtmalar: [{ ...b, id: tempId }, ...state.buyurtmalar],
           counters: { ...state.counters, buyurtma: state.counters.buyurtma + 1 }
         }));
-        createOrder(b as any).then((created) => {
-          if (!created || (created as any).error) {
-            throw new Error((created as any).error || "Buyurtmani saqlashda server xatosi");
+        createOrder(b).then((created) => {
+          if (!created || created.error) {
+            throw new Error(created?.error || "Buyurtmani saqlashda server xatosi");
           }
           set((state) => ({
             buyurtmalar: state.buyurtmalar.map((bb) => String(bb.id) === String(tempId) ? created : bb)
           }));
         }).catch((err) => {
           console.error("❌ Buyurtmani saqlashda xatolik:", err);
-          toast.error("XATOLIK: Buyurtma bazada saqlanmadi!\nSabab: " + (err.message || "Ulanish xatosi"));
+          toast.error("XATOLIK: Buyurtma bazada saqlanmadi!\nSabab: " + errMsg(err, "Ulanish xatosi"));
         });
       },
       updateBuyurtma: async (id, data) => {
@@ -479,13 +491,13 @@ export const useStore = create<AutoServisStore>()(
         }));
 
         try {
-          const result = await updateOrder(id, data as any);
+          const result = await updateOrder(id, data);
           if (result && result.error) {
              throw new Error(result.error);
           }
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Buyurtmani bazada yangilashda xatolik:", err);
-          toast.error("Ma'lumot bazada saqlanmadi: " + (err.message || "Ulanish xatosi"));
+          toast.error("Ma'lumot bazada saqlanmadi: " + errMsg(err, "Ulanish xatosi"));
           // Optimistik o'zgarishni ortga qaytaramiz
           if (original) {
             set((state) => ({
@@ -562,7 +574,7 @@ export const useStore = create<AutoServisStore>()(
 
         try {
           await createOperation({ ...op, source: 'external' });
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
           // Rollback optimistic update
           set((state) => ({
@@ -590,12 +602,12 @@ export const useStore = create<AutoServisStore>()(
             source: op.source || 'manual'
           };
           const created = await createOperation(apiData);
-          if (!created || (created as any).error) throw new Error((created as any).error || "Server xatosi");
+          if (!created || created.error) throw new Error(created?.error || "Server xatosi");
 
           set((state) => ({
             ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.map(o => o.id === tempId ? { ...o, id: created.id } : o)
           }));
-        } catch (err: any) {
+        } catch (err) {
           console.error("❌ Operatsiya saqlashda xatolik:", err);
           // Rollback optimistic update
           set((state) => ({
@@ -685,38 +697,41 @@ export const useStore = create<AutoServisStore>()(
           const results = await Promise.allSettled([
             getClients(), getOrders(), getWorkers(), getParts(), getCars(),
             getServices(), getKassa(), getOperations(), getSalaries(), getPurchases()
-          ]);
+          ]) as [
+            PromiseSettledResult<Mijoz[]>, PromiseSettledResult<Buyurtma[]>, PromiseSettledResult<Xodim[]>,
+            PromiseSettledResult<Zapchast[]>, PromiseSettledResult<CarRow[]>, PromiseSettledResult<ServiceRow[]>,
+            PromiseSettledResult<Kassa>, PromiseSettledResult<OperationRow[]>, PromiseSettledResult<SalaryRow[]>,
+            PromiseSettledResult<ZapPurchase[]>
+          ];
 
           const [
             clientsRes, ordersRes, workersRes, partsRes, carsRes,
             servicesRes, kassaRes, opsRes, salariesRes, purchasesRes
           ] = results;
 
-          const getData = (res: any) => res.status === 'fulfilled' ? res.value : null;
-
-          const clients = getData(clientsRes);
-          const orders = getData(ordersRes);
-          const workers = getData(workersRes);
-          const parts = getData(partsRes);
-          const cars = getData(carsRes);
-          const services = getData(servicesRes);
-          const kassaResult = getData(kassaRes);
-          const ops = getData(opsRes);
-          const salaries = getData(salariesRes);
-          const purchases = getData(purchasesRes);
+          const clients = settledValue(clientsRes);
+          const orders = settledValue(ordersRes);
+          const workers = settledValue(workersRes);
+          const parts = settledValue(partsRes);
+          const cars = settledValue(carsRes);
+          const services = settledValue(servicesRes);
+          const kassaResult = settledValue(kassaRes);
+          const ops = settledValue(opsRes);
+          const salaries = settledValue(salariesRes);
+          const purchases = settledValue(purchasesRes);
 
           if (servicesRes.status === 'rejected') {
             console.error('❌ Xizmatlarni yuklashda xatolik:', servicesRes.reason);
           }
 
           const mashinalarList: string[] = cars && cars.length > 0
-            ? Array.from(new Set(cars.map((c: any) => normalize(`${c.brand} ${c.name}`)))).sort() as string[]
+            ? Array.from(new Set(cars.map((c) => normalize(`${c.brand} ${c.name}`)))).sort()
             : [];
 
           const finalKassa = kassaResult || { naqd: 0, karta: 0 };
           const allOps = ops || [];
-          const bizOps = allOps.filter((o: any) => o.source !== 'external');
-          const extOps = allOps.filter((o: any) => o.source === 'external');
+          const bizOps = allOps.filter((o) => o.source !== 'external');
+          const extOps = allOps.filter((o) => o.source === 'external');
 
           set((state) => ({
             ...state,
@@ -728,14 +743,14 @@ export const useStore = create<AutoServisStore>()(
             kassa: finalKassa,
             ishxonaOperatsiyalar: bizOps,
             tashqariOperatsiyalar: extOps,
-            maoshTarixi: salaries ? salaries.map((s: any) => ({
-              id: s.id, xodimId: s.worker_id, summa: s.amount, method: s.method,
+            maoshTarixi: salaries ? salaries.map((s) => ({
+              id: s.id, xodimId: s.worker_id, summa: s.amount, method: s.method as MaoshTarixi['method'],
               sana: s.date, izoh: s.comment, createdAt: s.created_at
             })) : [],
             purchases: purchases || [],
             xizmatlar: services ? (() => {
-              const uniqueMap = new Map();
-              services.forEach((s: any) => {
+              const uniqueMap = new Map<string, Xizmat>();
+              services.forEach((s) => {
                 const normName = normalize(s.name);
                 const normCar = normalize(s.brand === 'UMUMIY' || s.brand === 'Umumiy' || !s.brand ? 'UMUMIY' : `${s.brand} ${s.car_model || ''}`);
                 const key = `${normName}_${normCar}`;
@@ -747,7 +762,7 @@ export const useStore = create<AutoServisStore>()(
                   stavka: s.stavka
                 });
               });
-              return Array.from(uniqueMap.values()) as any[];
+              return Array.from(uniqueMap.values());
             })() : []
           }));
         } catch (err) {

@@ -108,7 +108,7 @@ export interface MaoshTarixi {
   id: number;
   xodimId: number;
   summa: number;
-  davr: string; // YYYY-MM
+  davr?: string; // YYYY-MM — faqat optimistik create/shtraf yo'lida beriladi, DB'da saqlanmaydi
   sana: string;
   method: 'naqd' | 'karta' | 'shtraf'; // 'shtraf' — jarima (kassaga/hisobotга tegmaydi, faqat maoshdan ayiriladi)
   izoh?: string;
@@ -138,7 +138,8 @@ export interface TashqariOperatsiya {
   order_id?: string | number;
   profit?: number;
   toMethod?: 'naqd' | 'karta'; // For transfers
-  createdAt: string;
+  createdAt?: string;
+  created_at?: string; // DB dan yuklanganda shu shaklda keladi (createdAt bilan bir xil)
 }
 
 export interface Kassa {
