@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import { Package, Search, History } from 'lucide-react';
+import { Package, Search, History, TrendingUp, Target } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
 
 const SEL: React.CSSProperties = {
@@ -43,6 +43,9 @@ export default function PartReportsPage() {
     let totalGeneratedIncome = 0;
     buyurtmalar.forEach(b => {
       if (!matchesPeriod(b.sana)) return;
+      // Bekor qilingan buyurtmada ishlatilgan zapchast aslida sotilmagan —
+      // hisobotga (soni/tushum/foyda) qo'shilmasligi kerak.
+      if (b.holat === 'bekor qilingan') return;
       b.zaps.forEach((bp: any) => {
         if (bp.id === p.id) {
           usageCount           += bp.qty;
@@ -60,10 +63,32 @@ export default function PartReportsPage() {
     return matchesSearch && matchesCar;
   }).sort((a, b) => b.usageCount - a.usageCount);
 
+  // Joriy filtr (davr/mashina/qidiruv) bo'yicha ko'rinayotgan qatorlarning jamisi
+  const totalIncome = filtered.reduce((sum, p) => sum + p.totalGeneratedIncome, 0);
+  const totalProfit = filtered.reduce((sum, p) => sum + p.profitPerItem * p.usageCount, 0);
+
   const opt: React.CSSProperties = { background: '#1a1c24', color: 'white' };
 
   return (
     <PageLayout title="Zapchastlar hisoboti" subtitle="Davr bo'yicha zapchastlar sarfi va foyda tahlili">
+
+      {/* ── JAMI (TANLANGAN FILTR BO'YICHA) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 20 }}>
+        {[
+          { label: 'Jami tushum', value: totalIncome, icon: <TrendingUp size={20} />, color: '#10b981' },
+          { label: 'Jami foyda', value: totalProfit, icon: <Target size={20} />, color: '#3b82f6' },
+        ].map((s, i) => (
+          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ padding: 8, borderRadius: 8, background: `${s.color}15`, color: s.color }}>{s.icon}</div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase' }}>{s.label}</span>
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: 'white' }}>
+              {s.value.toLocaleString()} <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>UZS</span>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* ── FILTRLAR ── */}
       <div
