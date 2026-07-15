@@ -1,7 +1,7 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Search, Package, Plus, PackageSearch } from 'lucide-react';
+import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Package, Plus, PackageSearch } from 'lucide-react';
 
 interface StepPartsProps {
   catalog: any;
@@ -14,17 +14,10 @@ export default function StepParts({ catalog, onNext, onPrev }: StepPartsProps) {
   const [partName, setPartName] = useState('');
   const [partQty, setPartQty] = useState(1);
   const [partPrice, setPartPrice] = useState('');
-  const [search, setSearch] = useState('');
 
   // Saytdan kiritilgan zapchastlar ro'yxati (source='site') — bot katalogidan keladi
   const sitePartsAll: { id: number; name: string; price: number; mashina: string }[] = catalog?.parts || [];
-
-  // Qidiruv bo'yicha filtrlaymiz
-  const filteredSiteParts = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return sitePartsAll.slice(0, 50);
-    return sitePartsAll.filter(p => p.name?.toLowerCase().includes(q)).slice(0, 50);
-  }, [sitePartsAll, search]);
+  const siteParts = sitePartsAll.slice(0, 50);
 
   // Saytdagi zapchastni to'g'ridan-to'g'ri qo'shish (isCustom: false — qayta bazaga yozilmaydi)
   const handleSelectSitePart = (p: { id: number; name: string; price: number }) => {
@@ -87,16 +80,6 @@ export default function StepParts({ catalog, onNext, onPrev }: StepPartsProps) {
         <h3 className="text-xs font-bold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
           <Package className="w-4 h-4 text-blue-400" /> Ro'yxatdan tanlash
         </h3>
-        <div className="relative mb-3">
-          <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Zapchast nomini qidiring..."
-            className="w-full bg-gray-900/80 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
-            value={search}
-            onChange={(e: any) => setSearch(e.target.value)}
-          />
-        </div>
 
         {sitePartsAll.length === 0 ? (
           <div className="flex flex-col items-center py-6 text-center">
@@ -105,7 +88,7 @@ export default function StepParts({ catalog, onNext, onPrev }: StepPartsProps) {
           </div>
         ) : (
           <div className="max-h-64 overflow-y-auto space-y-2 pr-1 -mr-1">
-            {filteredSiteParts.map((p) => (
+            {siteParts.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleSelectSitePart(p)}
@@ -125,12 +108,6 @@ export default function StepParts({ catalog, onNext, onPrev }: StepPartsProps) {
                 </div>
               </button>
             ))}
-            {filteredSiteParts.length === 0 && (
-              <div className="flex flex-col items-center py-6 text-center">
-                <PackageSearch className="w-8 h-8 text-gray-600 mb-2" />
-                <p className="text-gray-500 text-xs">Topilmadi</p>
-              </div>
-            )}
           </div>
         )}
       </div>
