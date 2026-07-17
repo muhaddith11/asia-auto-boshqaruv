@@ -17,6 +17,16 @@ const zapchast: Zapchast = {
   balance: 10,
 };
 
+const zapchast2: Zapchast = {
+  id: 2,
+  nom: 'Moy filtri',
+  sebestoimost: 20000,
+  narx: 30000,
+  bir: 'dona',
+  kat: 'Boshqa',
+  balance: 5,
+};
+
 function makeOrder(overrides: Partial<Buyurtma>): Buyurtma {
   return {
     id: 100,
@@ -92,5 +102,69 @@ describe('buyurtma bekor qilinganda/o\'chirilganda ombor balansini qaytarish', (
 
     const part = useStore.getState().zapchastlar.find(z => z.id === 1);
     expect(part?.balance).toBe(10); // o'zgarmagan — cancel paytida allaqachon qaytarilgan bo'lardi
+  });
+});
+
+describe('faol buyurtmani tahrirlashda zapchastlar ro\'yxati o\'zgarsa ombor sinxronlansin', () => {
+  beforeEach(() => {
+    useStore.setState({
+      zapchastlar: [{ ...zapchast }, { ...zapchast2 }],
+      buyurtmalar: [],
+    });
+  });
+
+  it('yangi zapchast qo\'shilsa — balans qo\'shimcha ayiriladi', () => {
+    // Original: faqat zapchast#1, 2 dona
+    useStore.setState({ buyurtmalar: [makeOrder({ holat: 'yaratildi' })] });
+
+    // Tahrirlash: zapchast#1 (2 dona, o'zgarmagan) + zapchast#2 (3 dona, yangi)
+    useStore.getState().updateBuyurtma(100, {
+      zaps: [{ ...zapchast, qty: 2 }, { ...zapchast2, qty: 3 }],
+    });
+
+    expect(useStore.getState().zapchastlar.find(z => z.id === 1)?.balance).toBe(10); // o'zgarmagan (2 - 2 = 0 farq)
+    expect(useStore.getState().zapchastlar.find(z => z.id === 2)?.balance).toBe(2); // 5 - 3
+  });
+
+  it('zapchast ro\'yxatdan olib tashlansa — balans qaytariladi', () => {
+    useStore.setState({
+      buyurtmalar: [makeOrder({
+        holat: 'yaratildi',
+        zaps: [{ ...zapchast, qty: 2 }, { ...zapchast2, qty: 3 }],
+      })],
+    });
+    useStore.setState({ zapchastlar: [{ ...zapchast, balance: 8 }, { ...zapchast2, balance: 2 }] });
+
+    // Tahrirlash: zapchast#2 butunlay olib tashlandi
+    useStore.getState().updateBuyurtma(100, {
+      zaps: [{ ...zapchast, qty: 2 }],
+    });
+
+    expect(useStore.getState().zapchastlar.find(z => z.id === 1)?.balance).toBe(8); // o'zgarmagan
+    expect(useStore.getState().zapchastlar.find(z => z.id === 2)?.balance).toBe(5); // 2 + 3 qaytdi
+  });
+
+  it('miqdor o\'zgarsa — faqat farqi hisoblanadi', () => {
+    useStore.setState({ buyurtmalar: [makeOrder({ holat: 'yaratildi', zaps: [{ ...zapchast, qty: 2 }] })] });
+
+    // 2 donadan 5 donaga oshirildi
+    useStore.getState().updateBuyurtma(100, {
+      zaps: [{ ...zapchast, qty: 5 }],
+    });
+
+    expect(useStore.getState().zapchastlar.find(z => z.id === 1)?.balance).toBe(7); // 10 - (5-2)
+  });
+
+  it('bekor qilingan buyurtmada zaps o\'zgarsa — ombor balansi tegilmaydi', () => {
+    useStore.setState({
+      buyurtmalar: [makeOrder({ holat: 'bekor qilingan', zaps: [{ ...zapchast, qty: 2 }] })],
+    });
+
+    useStore.getState().updateBuyurtma(100, {
+      zaps: [{ ...zapchast, qty: 2 }, { ...zapchast2, qty: 3 }],
+    });
+
+    expect(useStore.getState().zapchastlar.find(z => z.id === 1)?.balance).toBe(10);
+    expect(useStore.getState().zapchastlar.find(z => z.id === 2)?.balance).toBe(5);
   });
 });

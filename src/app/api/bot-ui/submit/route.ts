@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
         id: pId,
         nom: p.name,
         narx: Number(p.price),
-        qty: Number(p.quantity || 1)
+        qty: Number(p.quantity || 1),
+        sebestoimost: 0,
       });
     }
 
@@ -112,12 +113,16 @@ export async function POST(req: NextRequest) {
 
     // Calculate Parts Cost for accurate Profit
     // Narx miqdorga ko'paytirilmagani uchun sebestoimost ham ko'paytirilmaydi (izchillik).
+    // sebestoimost har bir zap obyektiga ham yoziladi — Kassaga tushmagan
+    // zapchastlar foydasini keyinchalik to'g'ri hisoblash uchun kerak.
     let partsCostTotal = 0;
     for (const p of orderParts) {
       if (p.id) {
         const { data: dbPart } = await supabase.from('parts').select('sebestoimost').eq('id', p.id).maybeSingle();
         if (dbPart) {
-          partsCostTotal += (Number(dbPart.sebestoimost) || 0);
+          const cost = Number(dbPart.sebestoimost) || 0;
+          partsCostTotal += cost;
+          p.sebestoimost = cost;
         }
       }
     }

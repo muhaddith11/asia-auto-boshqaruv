@@ -56,13 +56,19 @@ export default function PartsContent() {
         if (z.alohida !== true) return;
         // Narx miqdorga ko'paytirilmaydi
         const narx = Number(z.narx ?? z.price ?? 0);
-        const sebestoimost = Number(z.sebestoimost ?? 0);
+        // Kelish narxi buyurtma ichida saqlangan bo'lsa o'shani, aks holda
+        // (eski buyurtmalar) zapchast ID orqali joriy ombordan olamiz.
+        let sebestoimost = Number(z.sebestoimost ?? 0);
+        if (!sebestoimost && z.id) {
+          const dbPart = zapchastlar.find(zz => Number(zz.id) === Number(z.id));
+          sebestoimost = Number(dbPart?.sebestoimost ?? 0);
+        }
         acc.tushum += narx;
         acc.foyda += narx - sebestoimost;
       });
       return acc;
     }, { tushum: 0, foyda: 0 });
-  }, [buyurtmalar]);
+  }, [buyurtmalar, zapchastlar]);
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({
     search: '',

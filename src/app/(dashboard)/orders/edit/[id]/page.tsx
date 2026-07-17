@@ -216,6 +216,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
           id: p?.id || null,
           nom: p?.nom || r.customNom,
           narx: narx,
+          sebestoimost: p?.sebestoimost || 0,
           qty: r.qty || 1,
           alohida: r.alohida === true
         };
