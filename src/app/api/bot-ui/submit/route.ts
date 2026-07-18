@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
+import { applyStockDelta } from '@/lib/stock';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -77,10 +78,10 @@ export async function POST(req: NextRequest) {
 
     // ── Process Parts ─────────────────────────────────────────────
     const orderParts = [];
-    // Faqat katalogdan tanlangan (mavjud) zapchastlar uchun ombor balansi
-    // kamaytiriladi — botdan qo'lda kiritilgan (isCustom) zapchast balance:0
-    // bilan yaratiladi, uni yana kamaytirish manfiy songa olib keladi.
-    const stockDecrements: { id: number; qty: number }[] = [];
+    // Ombordan ayiriladigan zapchastlar — faqat katalogdan tanlanganlar (isCustom emas).
+    // Botdan qo'lda kiritilgan zapchast balance:0 bilan yangi yaratiladi, uni
+    // ombordan ayirish manfiy balansga olib keladi — shuning uchun qo'shilmaydi.
+    const stockZaps: { id: number; qty: number }[] = [];
     for (const p of (parts || [])) {
       let pId = p.id;
       if (p.isCustom) {
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
           if (newP) pId = newP.id;
         } catch (e) { console.error("Part insert error:", e); }
       } else if (pId) {
-        stockDecrements.push({ id: Number(pId), qty: Number(p.quantity || 1) });
+        stockZaps.push({ id: Number(pId), qty: Number(p.quantity || 1) });
       }
       orderParts.push({
         id: pId,
@@ -164,18 +165,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Ma'lumot saqlanmadi (no data returned)" }, { status: 500 });
     }
 
-    // Ombor balansini kamaytirish — buyurtma saqlangandan KEYIN, faqat
-    // katalogdan tanlangan mavjud zapchastlar uchun (isCustom emas).
-    for (const { id, qty } of stockDecrements) {
-      try {
-        const { data: currentPart } = await supabase.from('parts').select('balance').eq('id', id).maybeSingle();
-        if (currentPart) {
-          await supabase.from('parts').update({ balance: (Number(currentPart.balance) || 0) - qty }).eq('id', id);
-        }
-      } catch (e) {
-        console.error('Ombor balansini kamaytirishda xatolik:', e);
-      }
-    }
+    // Ombor balansini kamaytirish — buyurtma saqlangandan KEYIN. Faqat katalogdan
+    // tanlangan (isCustom bo'lmagan) zapchastlar ayiriladi.
+    await applyStockDelta(null, { zaps: stockZaps, holat: orderData.holat });
 
     // Formatted Receipt Message
     const sanasi = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' });

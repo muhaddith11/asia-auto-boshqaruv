@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
 import { logAudit } from '@/lib/audit';
+import { applyStockDelta } from '@/lib/stock';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -119,6 +120,11 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     const created = (data && data[0]) ?? null;
+
+    // Ombordan ishlatilgan zapchastlarni ayirish (server tomonda — ishonchli).
+    if (created) {
+      await applyStockDelta(null, { zaps: created.zaps, holat: created.holat });
+    }
 
     // Audit log
     if (created) {

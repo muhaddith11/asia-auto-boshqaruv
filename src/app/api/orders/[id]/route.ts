@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
+import { applyStockDelta } from '@/lib/stock';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -74,18 +75,32 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
     }
 
-    const { data, error, status: sbStatus } = await supabase.from('orders').update(dbBody).eq('id', id).select();
-    
+    // Ombor balansini to'g'ri hisoblash uchun update'dan OLDINGI holatni o'qib olamiz
+    // (eski zaps va holat). Delta = yangi_effektiv - eski_effektiv.
+    const { data: prevRow } = await supabase.from('orders').select('zaps, holat').eq('id', id).maybeSingle();
+
+    const { data, error } = await supabase.from('orders').update(dbBody).eq('id', id).select();
+
     if (error) {
       console.error("❌ Supabase Update Error:", error);
       return NextResponse.json({ error: error.message, details: error.details }, { status: 500 });
     }
-    
+
 
     if (!data || data.length === 0) {
       console.error("⚠️ No data returned from update. Possible RLS issue or wrong ID:", id);
       return NextResponse.json({ error: "No data returned from update" }, { status: 404 });
     }
+
+    // Ombor balansini eski->yangi o'tishga qarab moslashtiramiz. dbBody da zaps/holat
+    // bo'lmasa — o'zgarmagan deb eski qiymatni ishlatamiz (delta 0 bo'ladi).
+    await applyStockDelta(
+      { zaps: prevRow?.zaps, holat: prevRow?.holat },
+      {
+        zaps: dbBody.zaps !== undefined ? dbBody.zaps : prevRow?.zaps,
+        holat: dbBody.holat !== undefined ? dbBody.holat : prevRow?.holat,
+      },
+    );
 
     // To'lov holatiga o'tgan bo'lsa alohida belgilaymiz
     const isPayment = dbBody.holat === 'tulangan' || dbBody.paid !== undefined;
@@ -116,6 +131,12 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     const { data, error } = await supabase.from('orders').delete().eq('id', id).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const deleted = (data && data[0]) ?? null;
+
+    // O'chirilgan buyurtmadagi zapchastlar (bekor qilinmagan bo'lsa) omborga qaytadi.
+    if (deleted) {
+      await applyStockDelta({ zaps: deleted.zaps, holat: deleted.holat }, null);
+    }
+
     await logAudit({
       req: request,
       action: 'delete',

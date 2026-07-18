@@ -33,58 +33,6 @@ function settledValue<T>(res: PromiseSettledResult<T>): T | null {
   return res.status === 'fulfilled' ? res.value : null;
 }
 
-// Buyurtmada ishlatilgan zapchastlar ombor balansini +sign*qty ga o'zgartiradi.
-// sign=1 — bekor qilinganda/o'chirilganda ombordan olingan miqdor qaytariladi.
-// sign=-1 — "bekor qilingan"dan qaytadan faollashtirilganda yana ayiriladi.
-function adjustPartsBalanceForOrder(
-  zaps: { id: number; qty?: number; quantity?: number }[] | undefined,
-  sign: 1 | -1,
-  zapchastlar: Zapchast[],
-  updateZapchast: (id: number, data: Partial<Zapchast>) => void,
-) {
-  (zaps || []).forEach((z) => {
-    const zapId = Number(z.id);
-    if (!zapId) return;
-    const current = zapchastlar.find(zz => Number(zz.id) === zapId);
-    if (!current) return;
-    const qty = Number(z.qty ?? z.quantity ?? 1) || 1;
-    updateZapchast(zapId, { balance: (current.balance || 0) + sign * qty });
-  });
-}
-
-// Buyurtma tahrirlanganda (holat bekor qilinmagan holatda) zapchastlar ro'yxati
-// o'zgargan bo'lsa — har bir zapchast uchun ESKI va YANGI miqdor orasidagi FARQni
-// ombor balansiga tatbiq etadi. Bitta o'tishda qo'shilgan/o'chirilgan/soni
-// o'zgargan zapchastlarning barchasini to'g'ri hisoblaydi:
-//  - Yangi qo'shilgan zapchast: eski=0, yangi=qty → balans qty ga kamayadi.
-//  - Ro'yxatdan olib tashlangan: eski=qty, yangi=0 → balans qty ga qaytadi.
-//  - Soni o'zgargan: faqat farqi (delta) qo'llanadi.
-function syncPartsBalanceForOrderEdit(
-  oldZaps: { id: number; qty?: number; quantity?: number }[] | undefined,
-  newZaps: { id: number; qty?: number; quantity?: number }[] | undefined,
-  zapchastlar: Zapchast[],
-  updateZapchast: (id: number, data: Partial<Zapchast>) => void,
-) {
-  const netQtyByPart = new Map<number, number>();
-  const applyDelta = (list: typeof oldZaps, direction: 1 | -1) => {
-    (list || []).forEach((z) => {
-      const zapId = Number(z.id);
-      if (!zapId) return;
-      const qty = Number(z.qty ?? z.quantity ?? 1) || 1;
-      netQtyByPart.set(zapId, (netQtyByPart.get(zapId) || 0) + direction * qty);
-    });
-  };
-  applyDelta(oldZaps, -1);
-  applyDelta(newZaps, 1);
-
-  netQtyByPart.forEach((netQtyChange, zapId) => {
-    if (netQtyChange === 0) return;
-    const current = zapchastlar.find(zz => Number(zz.id) === zapId);
-    if (!current) return;
-    updateZapchast(zapId, { balance: (current.balance || 0) - netQtyChange });
-  });
-}
-
 interface AutoServisStore {
   mijozlar: Mijoz[];
   xodimlar: Xodim[];
@@ -538,24 +486,9 @@ export const useStore = create<AutoServisStore>()(
         // Rollback uchun asl holatni saqlaymiz
         const original = get().buyurtmalar.find(b => Number(b.id) === Number(id));
 
-        // Holat "bekor qilingan"ga o'tsa — ombordan olingan zapchastlar qaytariladi;
-        // "bekor qilingan"dan chiqsa (qaytadan faollashtirilsa) — yana ayiriladi.
-        if (original) {
-          const wasCancelled = original.holat === 'bekor qilingan';
-          const willBeCancelled = data.holat !== undefined ? data.holat === 'bekor qilingan' : wasCancelled;
-          const holatChanged = data.holat !== undefined && data.holat !== original.holat;
-
-          if (holatChanged && !wasCancelled && willBeCancelled) {
-            adjustPartsBalanceForOrder(original.zaps, 1, get().zapchastlar, get().updateZapchast);
-          } else if (holatChanged && wasCancelled && !willBeCancelled) {
-            adjustPartsBalanceForOrder(original.zaps, -1, get().zapchastlar, get().updateZapchast);
-          } else if (!wasCancelled && !willBeCancelled && data.zaps !== undefined) {
-            // Buyurtma faol holatda tahrirlanmoqda (bekor qilingan emas, na avval,
-            // na hozir) — zapchastlar ro'yxati o'zgargan bo'lsa, farqi (qo'shilgan/
-            // olib tashlangan/soni o'zgargan) ombor balansiga tatbiq etiladi.
-            syncPartsBalanceForOrderEdit(original.zaps, data.zaps, get().zapchastlar, get().updateZapchast);
-          }
-        }
+        // Eslatma: ombor balansi endi SERVER tomonda (/api/orders/[id] POST)
+        // eski->yangi holat farqiga qarab yangilanadi — bekor qilish, tahrirlash
+        // va soni o'zgarishi izchil ishlaydi. Bu yerda client tomonda tegilmaydi.
 
         // Optimistic update
         set((state) => ({
@@ -579,15 +512,8 @@ export const useStore = create<AutoServisStore>()(
         }
       },
       deleteBuyurtma: (id) => {
-        // Agar buyurtma hali "bekor qilingan" bo'lmasa — ombordan olingan
-        // zapchastlar o'chirishdan oldin balansga qaytariladi. Aks holda
-        // (allaqachon bekor qilingan bo'lsa) qaytarish bekor qilishda
-        // bo'lib o'tgan, shuning uchun bu yerda takror qaytarilmaydi.
-        const target = get().buyurtmalar.find(b => Number(b.id) === Number(id));
-        if (target && target.holat !== 'bekor qilingan') {
-          adjustPartsBalanceForOrder(target.zaps, 1, get().zapchastlar, get().updateZapchast);
-        }
-
+        // Eslatma: o'chirilgan buyurtmadagi zapchastlar (bekor qilinmagan bo'lsa)
+        // omborga qaytishi endi SERVER tomonda (/api/orders/[id] DELETE) bajariladi.
         set((state) => ({ buyurtmalar: state.buyurtmalar.filter((b) => Number(b.id) != Number(id)) }));
         deleteOrder(id).catch((err) => {
           console.error("❌ Buyurtmani o'chirishda xatolik:", err);

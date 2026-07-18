@@ -14,7 +14,7 @@ export default function NewOrderPage() {
   const router = useRouter();
   const {
     mijozlar, xodimlar, xizmatlar, zapchastlar, mashinalar,
-    addBuyurtma, updateMijoz, updateZapchast, addMashina, loadInitialData
+    addBuyurtma, updateMijoz, addMashina, loadInitialData
   } = useStore();
 
   const [mounted, setMounted] = useState(false);
@@ -132,9 +132,9 @@ export default function NewOrderPage() {
       }
     }
 
-    orderParts.forEach(p => {
-      if (p.id) updateZapchast(p.id, { balance: (p.balance || 0) - (p.qty || 1) });
-    });
+    // Ombor balansini kamaytirish endi SERVER tomonda (/api/orders POST) qilinadi —
+    // ishonchli va bekor qilish/tahrirlash bilan izchil. Bu yerda client tomonda
+    // kamaytirmaymiz (aks holda ikki marta ayirilar edi).
 
     router.push('/orders');
   };
