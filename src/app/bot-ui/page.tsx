@@ -8,7 +8,7 @@ import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
 import { Loader2 } from 'lucide-react';
-import TelegramLogin from '@/components/bot-ui/TelegramLogin';
+import PhoneLogin from '@/components/bot-ui/PhoneLogin';
 
 export default function BotUIPage() {
   const [step, setStep] = useState(1);
@@ -24,7 +24,14 @@ export default function BotUIPage() {
     const saved = localStorage.getItem('bot_auth_user');
     if (saved) {
       try {
-        setAuthUser(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // Yangi oqim: telefon raqami bilan kirish. Eski (Telegram widget) keshda
+        // phone bo'lmaydi — uni bekor qilamiz, xodim raqamini qayta kiritadi.
+        if (parsed && parsed.phone) {
+          setAuthUser(parsed);
+        } else {
+          localStorage.removeItem('bot_auth_user');
+        }
       } catch (e) {
         localStorage.removeItem('bot_auth_user');
       }
@@ -63,6 +70,11 @@ export default function BotUIPage() {
 
   const handleNext = () => setStep(s => s + 1);
   const handlePrev = () => setStep(s => s - 1);
+  const handleLogout = () => {
+    localStorage.removeItem('bot_auth_user');
+    setAuthUser(null);
+    setStep(1);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -72,10 +84,15 @@ export default function BotUIPage() {
         const urlParams = new URLSearchParams(window.location.search);
         workerPhone = urlParams.get('phone') || '';
       }
+      // Telegram tugmasi orqali — raqam URL'da (?phone=). Brauzerda — kirishda
+      // kiritilgan raqam (authUser.phone). Xodim shu raqam bo'yicha tanaladi.
+      if (!workerPhone) workerPhone = authUser?.phone || '';
 
-      const mechanicChatId = (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id : undefined) 
-        || webAppRef.current?.initDataUnsafe?.user?.id
-        || authUser?.id;
+      // mechanicChatId — faqat chekni Telegram'da yuborish uchun. Tanish uchun EMAS.
+      // Telegram ichida — foydalanuvchi id'si; brauzerda — bazadagi telegram id (bo'lsa).
+      const tgUserId = (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id : undefined)
+        || webAppRef.current?.initDataUnsafe?.user?.id;
+      const mechanicChatId = tgUserId || authUser?.telegram || undefined;
       
       const payload = {
         brand: store.brand,
@@ -137,12 +154,11 @@ export default function BotUIPage() {
   if (!isInsideTelegram && !authUser) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <TelegramLogin 
-          botName="Asiaautoservice_bot" 
+        <PhoneLogin
           onAuth={(user) => {
             setAuthUser(user);
             localStorage.setItem('bot_auth_user', JSON.stringify(user));
-          }} 
+          }}
         />
       </div>
     );
@@ -151,9 +167,22 @@ export default function BotUIPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4 font-sans pb-24">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          Asia Auto Service
-        </h1>
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            Asia Auto Service
+          </h1>
+          {authUser && (
+            <button
+              onClick={handleLogout}
+              className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 rounded-lg px-3 py-1.5 transition-colors shrink-0"
+            >
+              Chiqish
+            </button>
+          )}
+        </div>
+        {authUser?.name && (
+          <p className="text-sm text-gray-400 mt-1">👤 {authUser.name}</p>
+        )}
         {error && (
           <div className="mt-2 p-2 bg-red-900/30 border border-red-500/50 rounded-lg text-xs text-red-200">
             ⚠️ Diqqat: {error}. Iltimos, qayta yangilang.
