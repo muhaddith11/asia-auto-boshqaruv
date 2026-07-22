@@ -75,7 +75,8 @@ async function handleJson<T>(res: Response): Promise<T> {
   if (
     res.status === 401 &&
     typeof window !== 'undefined' &&
-    !window.location.pathname.startsWith('/login')
+    !window.location.pathname.startsWith('/login') &&
+    !window.location.pathname.startsWith('/bot-ui')
   ) {
     window.location.href = '/login';
     throw new Error('Sessiya muddati tugagan. Qaytadan tizimga kiring.');

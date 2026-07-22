@@ -148,10 +148,20 @@ export default function BotUIPage() {
     );
   }
 
-  // If not in Telegram TMA and no authUser, show login screen
-  const isInsideTelegram = typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.initData?.length > 0;
-  
-  if (!isInsideTelegram && !authUser) {
+  // Telegram mini app aniqlash — ISHONCHLI, SINXRON signallar bilan.
+  // initData faqat async @twa-dev/sdk yuklangach to'ladi (poyga xavfi), shuning
+  // uchun Telegram URL'ga qo'shadigan hash (#tgWebAppData=...) ni ham tekshiramiz.
+  const isInsideTelegram = typeof window !== 'undefined' && (
+    (window as any).Telegram?.WebApp?.initData?.length > 0 ||
+    window.location.hash.includes('tgWebAppData') ||
+    window.location.hash.includes('tgWebAppVersion')
+  );
+  // Bot tugmasi doim ?phone= qo'shadi — bu bo'lsa, kim ekani aniq, login kerak emas.
+  const hasPhoneParam = typeof window !== 'undefined'
+    && !!new URLSearchParams(window.location.search).get('phone');
+
+  // Faqat brauzerda (Telegram'siz VA raqamsiz VA login qilinmagan) telefon-login.
+  if (!isInsideTelegram && !hasPhoneParam && !authUser) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <PhoneLogin
