@@ -120,7 +120,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
             <button 
               onClick={handleAddCustom}
               disabled={!customName || !customPrice}
-              className="bg-blue-600 hover:bg-blue-500 text-white p-2 px-4 rounded-lg disabled:opacity-50 transition-colors"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-950/40 text-white p-2 px-4 rounded-lg disabled:opacity-50 transition-colors"
             >
               Qo'shish
             </button>
@@ -137,7 +137,7 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
         </button>
         <button
           onClick={onNext}
-          className="flex-[2] bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-all active:scale-[0.98]"
+          className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-950/40 text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-all active:scale-[0.98]"
         >
           Davom etish <ArrowRight className="w-5 h-5" />
         </button>

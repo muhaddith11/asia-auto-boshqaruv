@@ -87,7 +87,7 @@ export default function PhoneLogin({ onAuth }: Props) {
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-950/40 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
       >
         {loading ? (
           <Loader2 className="w-5 h-5 animate-spin" />

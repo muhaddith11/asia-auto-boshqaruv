@@ -10,7 +10,7 @@ const bot = new Telegraf(token || '');
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { brand, model, probeg, plateNumber, services, parts, mechanicChatId, workerPhone } = body;
+    const { orderId, brand, model, probeg, plateNumber, services, parts, mechanicChatId, workerPhone } = body;
 
     const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
     let worker = null;
@@ -131,16 +131,12 @@ export async function POST(req: NextRequest) {
     const zarplataTotal = orderServices.reduce((sum: number, s: any) => sum + (s.zarplata || 0), 0);
 
     const now = new Date();
-    const orderData = {
-      ism: 'Kunlik Mijoz',
-      tel: workerPhone || 'Bot Order',
-      mashina: `${brand} ${model}`,
-      raqam: plateNumber || '',
+    const nowIso = now.toISOString();
+
+    // Yakuniy xizmat/moliyaviy maydonlar (ikkala yo'l uchun umumiy)
+    const completionFields = {
       km: probeg || '',
       muammo: `Xizmatlar: ${servicesStr}\nZapchastlar: ${partsStr}`,
-      sana: now.toISOString().split('T')[0],
-      created_at: now.toISOString(),
-      holat: 'tulanmagan',
       services: orderServices,
       zaps: orderParts,
       srv: servicesTotal,
@@ -149,25 +145,73 @@ export async function POST(req: NextRequest) {
       final: servicesTotal + partsTotal,
       zarplata: zarplataTotal,
       pribil: (servicesTotal + partsTotal) - zarplataTotal - partsCostTotal,
-      vin: '',
-      yil: '',
-      print_status: 'pending'
+      print_status: 'pending',
     };
 
-    const { data: insertedData, error } = await supabase.from('orders').insert([orderData]).select();
+    let insertedData: any[] | null = null;
+    // Chek uchun ko'rsatiladigan mashina ma'lumotlari
+    let receiptCar = `${brand || ''} ${model || ''}`.trim();
+    let receiptPlate = plateNumber || '';
 
-    if (error) {
-      console.error("Supabase Save Error:", error);
-      return NextResponse.json({ ok: false, error: "Bazaga saqlashda xatolik: " + error.message }, { status: 500 });
+    if (orderId) {
+      // ── TOPSHIRISH: mavjud qabul qilingan mashinani yakunlash ──
+      const { data: existing } = await supabase
+        .from('orders')
+        .select('mashina, raqam, status_log')
+        .eq('id', orderId)
+        .maybeSingle();
+      if (!existing) {
+        return NextResponse.json({ ok: false, error: 'Mashina topilmadi.' }, { status: 404 });
+      }
+      if (existing.mashina) receiptCar = existing.mashina;
+      if (existing.raqam) receiptPlate = existing.raqam;
+      const log = Array.isArray(existing.status_log) ? existing.status_log : [];
+      log.push({ bosqich: 'topshirildi', vaqt: nowIso, xodim_id: worker.id });
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update({
+          ...completionFields,
+          holat: 'tulanmagan',
+          bosqich: 'topshirildi',
+          topshirilgan_vaqti: nowIso,
+          status_log: log,
+        })
+        .eq('id', orderId)
+        .select();
+      if (error) {
+        console.error('Complete update error:', error);
+        return NextResponse.json({ ok: false, error: 'Yakunlashda xatolik: ' + error.message }, { status: 500 });
+      }
+      insertedData = data;
+    } else {
+      // ── Eski yo'l: to'g'ridan-to'g'ri yangi buyurtma (qabul bosqichisiz) ──
+      const orderData = {
+        ism: 'Kunlik Mijoz',
+        tel: workerPhone || 'Bot Order',
+        mashina: receiptCar,
+        raqam: receiptPlate,
+        sana: nowIso.split('T')[0],
+        created_at: nowIso,
+        holat: 'tulanmagan',
+        vin: '',
+        yil: '',
+        ...completionFields,
+      };
+      const { data, error } = await supabase.from('orders').insert([orderData]).select();
+      if (error) {
+        console.error('Supabase Save Error:', error);
+        return NextResponse.json({ ok: false, error: 'Bazaga saqlashda xatolik: ' + error.message }, { status: 500 });
+      }
+      insertedData = data;
     }
 
     if (!insertedData || insertedData.length === 0) {
       return NextResponse.json({ ok: false, error: "Ma'lumot saqlanmadi (no data returned)" }, { status: 500 });
     }
 
-    // Ombor balansini kamaytirish — buyurtma saqlangandan KEYIN. Faqat katalogdan
-    // tanlangan (isCustom bo'lmagan) zapchastlar ayiriladi.
-    await applyStockDelta(null, { zaps: stockZaps, holat: orderData.holat });
+    // Ombor balansini kamaytirish — faqat katalogdan tanlangan (isCustom bo'lmagan) zapchastlar.
+    await applyStockDelta(null, { zaps: stockZaps, holat: 'tulanmagan' });
 
     // Formatted Receipt Message
     const sanasi = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' });
@@ -186,8 +230,8 @@ export async function POST(req: NextRequest) {
 👤 Usta: ${workerName}
 📞 Tel: ${workerPhone || '-'}
 
-🚗 Avto: ${brand} ${model}
-🔢 Davlat raqami: ${plateNumber || '-'}
+🚗 Avto: ${receiptCar}
+🔢 Davlat raqami: ${receiptPlate || '-'}
 🛣 Probeg: ${probeg ? probeg + ' km' : '-'}
 🕒 Sana: ${sanasi}
 

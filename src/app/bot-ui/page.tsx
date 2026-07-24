@@ -3,36 +3,45 @@ import toast from 'react-hot-toast';
 
 import { useState, useEffect, useRef } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import StepCarInfo from '@/components/bot-ui/StepCarInfo';
 import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, RefreshCw, ChevronRight } from 'lucide-react';
 import PhoneLogin from '@/components/bot-ui/PhoneLogin';
+import AcceptForm from '@/components/bot-ui/AcceptForm';
+import CarDetail from '@/components/bot-ui/CarDetail';
+import BossMonitor from '@/components/bot-ui/BossMonitor';
+import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
+
+type View = 'home' | 'detail' | 'complete' | 'boss';
 
 export default function BotUIPage() {
-  const [step, setStep] = useState(1);
+  const [view, setView] = useState<View>('home');
+  const [completeStep, setCompleteStep] = useState(1);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [catalogData, setCatalogData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; is_boss: boolean; name: string }>({
+    myCars: [],
+    allCars: null,
+    is_boss: false,
+    name: '',
+  });
+  const [loadingCars, setLoadingCars] = useState(false);
   const store = useBotOrderStore();
   const webAppRef = useRef<any>(null);
-  const [authUser, setAuthUser] = useState<any>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('bot_auth_user');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        // Yangi oqim: telefon raqami bilan kirish. Eski (Telegram widget) keshda
-        // phone bo'lmaydi — uni bekor qilamiz, xodim raqamini qayta kiritadi.
-        if (parsed && parsed.phone) {
-          setAuthUser(parsed);
-        } else {
-          localStorage.removeItem('bot_auth_user');
-        }
-      } catch (e) {
+        const p = JSON.parse(saved);
+        if (p && p.phone) setAuthUser(p);
+        else localStorage.removeItem('bot_auth_user');
+      } catch {
         localStorage.removeItem('bot_auth_user');
       }
     }
@@ -46,95 +55,112 @@ export default function BotUIPage() {
         if (WebApp && typeof WebApp.ready === 'function') {
           WebApp.ready();
           WebApp.expand();
-          WebApp.setHeaderColor('secondary_bg_color');
+          WebApp.setHeaderColor('bg_color');
         }
-      } catch(err) {
-        console.warn("Telegram WebApp API is not available locally.");
+      } catch {
+        console.warn('Telegram WebApp API is not available locally.');
       }
 
       try {
         const res = await fetch(`/api/bot-ui/catalog?t=${Date.now()}`);
         const data = await res.json();
         if (data.error) setError(data.error);
-        if (data.isFallback) console.warn("Using fallback catalog data due to error.");
         setCatalogData(data);
       } catch (err: any) {
-        console.error("Catalog fetch error:", err);
         setError(err.message);
-        setCatalogData({ brands: ['Chevrolet', 'Kia', 'Hyundai', 'BYD', 'Lada'], catalog: { } });
+        setCatalogData({ brands: ['Chevrolet', 'Kia', 'Hyundai', 'BYD', 'Lada'], catalog: {} });
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const handleNext = () => setStep(s => s + 1);
-  const handlePrev = () => setStep(s => s - 1);
+  const isInsideTelegram =
+    typeof window !== 'undefined' &&
+    ((window as any).Telegram?.WebApp?.initData?.length > 0 ||
+      window.location.hash.includes('tgWebAppData') ||
+      window.location.hash.includes('tgWebAppVersion'));
+  const hasPhoneParam =
+    typeof window !== 'undefined' && !!new URLSearchParams(window.location.search).get('phone');
+  const authed = isInsideTelegram || hasPhoneParam || !!authUser;
+
+  const loadCars = async () => {
+    setLoadingCars(true);
+    try {
+      const identity = resolveIdentity(authUser);
+      const res = await fetchCars(identity);
+      if (res.ok) {
+        setCarsData({
+          myCars: res.myCars || [],
+          allCars: res.allCars || null,
+          is_boss: !!res.worker?.is_boss,
+          name: res.worker?.ism || '',
+        });
+      }
+    } catch {
+      /* jim */
+    } finally {
+      setLoadingCars(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!loading && authed) loadCars();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, authed, authUser]);
+
   const handleLogout = () => {
     localStorage.removeItem('bot_auth_user');
     setAuthUser(null);
-    setStep(1);
+    setView('home');
   };
 
-  const handleSubmit = async () => {
-    try {
-      setIsSubmitting(true);
-      let workerPhone = '';
-      if (typeof window !== 'undefined') {
-        const urlParams = new URLSearchParams(window.location.search);
-        workerPhone = urlParams.get('phone') || '';
-      }
-      // Telegram tugmasi orqali — raqam URL'da (?phone=). Brauzerda — kirishda
-      // kiritilgan raqam (authUser.phone). Xodim shu raqam bo'yicha tanaladi.
-      if (!workerPhone) workerPhone = authUser?.phone || '';
+  // Har qanday amaldan keyin — ro'yxatni yangilab, bosh ekranга qaytamiz.
+  const finishHome = async () => {
+    await loadCars();
+    setView('home');
+  };
 
-      // mechanicChatId — faqat chekni Telegram'da yuborish uchun. Tanish uchun EMAS.
-      // Telegram ichida — foydalanuvchi id'si; brauzerda — bazadagi telegram id (bo'lsa).
-      const tgUserId = (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id : undefined)
-        || webAppRef.current?.initDataUnsafe?.user?.id;
-      const mechanicChatId = tgUserId || authUser?.telegram || undefined;
-      
+  const startComplete = (car: Car) => {
+    store.reset();
+    const brands: string[] = catalogData?.brands || [];
+    const found = brands.find((b) => car.mashina?.toLowerCase().startsWith(b.toLowerCase()));
+    if (found) store.setCarInfo({ brand: found, model: car.mashina.slice(found.length).trim() });
+    store.setCarInfo({ plateNumber: car.raqam || '' });
+    setSelectedCar(car);
+    setCompleteStep(1);
+    setView('complete');
+  };
+
+  const handleComplete = async () => {
+    if (!selectedCar) return;
+    setIsSubmitting(true);
+    try {
+      const identity = resolveIdentity(authUser);
       const payload = {
+        orderId: selectedCar.id,
         brand: store.brand,
         model: store.model,
         probeg: store.probeg,
         plateNumber: store.plateNumber,
         services: store.services,
         parts: store.parts,
-        mechanicChatId,
-        workerPhone
+        workerPhone: identity.workerPhone,
+        mechanicChatId: identity.mechanicChatId,
       };
-
       const res = await fetch('/api/bot-ui/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
-      
-      const resJson = await res.json().catch(()=>({}));
-      
-      if (!res.ok) {
-        throw new Error(resJson.error || `Server xatosi: ${res.status}`);
-      }
-
-      const successMsg = `Muvaffaqiyatli! Chek id: #${resJson.id}`;
-      
-      if (isInsideTelegram && webAppRef.current && typeof webAppRef.current.showPopup === 'function') {
-        webAppRef.current.showPopup({
-          title: 'Muvaffaqiyatli',
-          message: successMsg,
-          buttons: [{ type: 'ok' }]
-        }, () => {
-          webAppRef.current?.close();
-        });
-      } else {
-        toast.success(successMsg);
-      }
-
-    } catch (error: any) {
-      console.error(error);
-      const errMsg = error.message || 'Xatolik yuz berdi. Qaytadan urinib ko\'ring.';
-      toast.error("XATOLIK: " + errMsg);
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || `Server xatosi: ${res.status}`);
+      toast.success(`Topshirildi ✅ Chek #${j.id}`);
+      store.reset();
+      setSelectedCar(null);
+      await finishHome();
+    } catch (e: any) {
+      toast.error('XATOLIK: ' + (e.message || 'Xatolik yuz berdi'));
     } finally {
       setIsSubmitting(false);
     }
@@ -142,28 +168,15 @@ export default function BotUIPage() {
 
   if (loading) {
     return (
-      <div className="flex bg-gray-900 text-white min-h-screen items-center justify-center">
+      <div className="flex bg-[#0a0e16] text-white min-h-screen items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
       </div>
     );
   }
 
-  // Telegram mini app aniqlash — ISHONCHLI, SINXRON signallar bilan.
-  // initData faqat async @twa-dev/sdk yuklangach to'ladi (poyga xavfi), shuning
-  // uchun Telegram URL'ga qo'shadigan hash (#tgWebAppData=...) ni ham tekshiramiz.
-  const isInsideTelegram = typeof window !== 'undefined' && (
-    (window as any).Telegram?.WebApp?.initData?.length > 0 ||
-    window.location.hash.includes('tgWebAppData') ||
-    window.location.hash.includes('tgWebAppVersion')
-  );
-  // Bot tugmasi doim ?phone= qo'shadi — bu bo'lsa, kim ekani aniq, login kerak emas.
-  const hasPhoneParam = typeof window !== 'undefined'
-    && !!new URLSearchParams(window.location.search).get('phone');
-
-  // Faqat brauzerda (Telegram'siz VA raqamsiz VA login qilinmagan) telefon-login.
-  if (!isInsideTelegram && !hasPhoneParam && !authUser) {
+  if (!authed) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0a0e16] flex items-center justify-center p-4">
         <PhoneLogin
           onAuth={(user) => {
             setAuthUser(user);
@@ -174,46 +187,149 @@ export default function BotUIPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 font-sans pb-24">
-      <header className="mb-6">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            Asia Auto Service
-          </h1>
-          {authUser && (
-            <button
-              onClick={handleLogout}
-              className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 rounded-lg px-3 py-1.5 transition-colors shrink-0"
-            >
-              Chiqish
-            </button>
-          )}
-        </div>
-        {authUser?.name && (
-          <p className="text-sm text-gray-400 mt-1">👤 {authUser.name}</p>
-        )}
-        {error && (
-          <div className="mt-2 p-2 bg-red-900/30 border border-red-500/50 rounded-lg text-xs text-red-200">
-            ⚠️ Diqqat: {error}. Iltimos, qayta yangilang.
-          </div>
-        )}
-        <div className="flex gap-2 mt-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div 
-              key={i} 
-              className={`h-2 flex-1 rounded-full transition-colors ${i <= step ? 'bg-blue-500' : 'bg-gray-700'}`}
-            />
-          ))}
-        </div>
-      </header>
+  const displayName = authUser?.name || carsData.name;
 
-      <main>
-        {step === 1 && <StepCarInfo catalog={catalogData} onNext={handleNext} />}
-        {step === 2 && <StepServices catalog={catalogData} onNext={handleNext} onPrev={handlePrev} />}
-        {step === 3 && <StepParts catalog={catalogData} onNext={handleNext} onPrev={handlePrev} />}
-        {step === 4 && <ReceiptPreview onPrev={handlePrev} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
-      </main>
+  return (
+    <div className="min-h-screen bg-[#0a0e16] text-slate-100 font-sans" style={{ colorScheme: 'dark' }}>
+      <div className="max-w-md mx-auto px-4 py-5 pb-28">
+        {/* ── Header ── */}
+        <header className="mb-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-950/40">
+                AA
+              </div>
+              <div>
+                <h1 className="text-base font-extrabold leading-tight">Asia Auto Service</h1>
+                {displayName && (
+                  <p className="text-xs text-slate-400 leading-tight">
+                    {displayName}
+                    {carsData.is_boss && <span className="ml-1.5 text-amber-400 font-semibold">· Boshliq</span>}
+                  </p>
+                )}
+              </div>
+            </div>
+            {authUser && (
+              <button
+                onClick={handleLogout}
+                className="text-xs text-slate-400 hover:text-slate-200 border border-white/10 hover:border-white/20 rounded-xl px-3 py-1.5 transition-colors shrink-0"
+              >
+                Chiqish
+              </button>
+            )}
+          </div>
+          {error && (
+            <div className="mt-3 p-2.5 bg-red-500/10 border border-red-500/25 rounded-xl text-xs text-red-300">
+              ⚠️ {error}
+            </div>
+          )}
+        </header>
+
+        <main>
+          {/* ══ BOSH EKRAN — qabul formasi + tugallanmagan ishlar ══ */}
+          {view === 'home' && (
+            <div className="space-y-6 slide-in">
+              {/* Yangi mashina qabul qilish (yuqorida) */}
+              <AcceptForm catalog={catalogData} identity={resolveIdentity(authUser)} onDone={finishHome} />
+
+              {/* Boshliq — barcha mashinalar kuzatuvi */}
+              {carsData.is_boss && (
+                <button
+                  onClick={() => {
+                    loadCars();
+                    setView('boss');
+                  }}
+                  className="w-full font-bold py-3.5 rounded-2xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg shadow-amber-950/40"
+                >
+                  <Eye className="w-5 h-5" /> Barcha mashinalar (kuzatuv)
+                </button>
+              )}
+
+              {/* Tugallanmagan ishlar (qator-qator) */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Tugallanmagan ishlarim ({carsData.myCars.length})
+                  </h2>
+                  <button onClick={loadCars} className="text-slate-400 hover:text-white p-1" title="Yangilash">
+                    <RefreshCw className={`w-4 h-4 ${loadingCars ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+
+                {carsData.myCars.length === 0 && !loadingCars && (
+                  <div className="text-slate-500 text-center py-8 text-sm bg-white/[0.02] border border-white/5 rounded-2xl">
+                    Hozircha tugallanmagan ish yo'q
+                  </div>
+                )}
+
+                <div className="space-y-2.5">
+                  {carsData.myCars.map((c) => {
+                    const meta = stageMeta(c.bosqich);
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setSelectedCar(c);
+                          setView('detail');
+                        }}
+                        className="w-full text-left bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-2xl p-4 flex items-center justify-between gap-2 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-bold truncate">
+                            {c.mashina} {c.raqam && <span className="text-slate-400 font-normal">· {c.raqam}</span>}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span
+                              className="text-xs font-semibold px-2 py-0.5 rounded-lg"
+                              style={{ background: meta.color + '22', color: meta.color }}
+                            >
+                              {meta.emoji} {meta.label}
+                            </span>
+                            <span className="text-xs text-slate-500">{fmtTime(c.qabul_vaqti)}</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══ MASHINA KARTASI — holat o'zgartirish / topshirish ══ */}
+          {view === 'detail' && selectedCar && (
+            <CarDetail
+              car={selectedCar}
+              identity={resolveIdentity(authUser)}
+              onDone={finishHome}
+              onComplete={() => startComplete(selectedCar)}
+              onBack={() => setView('home')}
+            />
+          )}
+
+          {/* ══ BOSHLIQ KUZATUVI ══ */}
+          {view === 'boss' && <BossMonitor cars={carsData.allCars || []} onBack={() => setView('home')} />}
+
+          {/* ══ TOPSHIRISH ══ */}
+          {view === 'complete' && (
+            <div className="slide-in">
+              <div className="mb-4 text-sm text-slate-400">
+                🚗 {selectedCar?.mashina} {selectedCar?.raqam ? `· ${selectedCar.raqam}` : ''} — topshirish
+              </div>
+              {completeStep === 1 && (
+                <StepServices catalog={catalogData} onNext={() => setCompleteStep(2)} onPrev={() => setView('detail')} />
+              )}
+              {completeStep === 2 && (
+                <StepParts catalog={catalogData} onNext={() => setCompleteStep(3)} onPrev={() => setCompleteStep(1)} />
+              )}
+              {completeStep === 3 && (
+                <ReceiptPreview onPrev={() => setCompleteStep(2)} onSubmit={handleComplete} isSubmitting={isSubmitting} />
+              )}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

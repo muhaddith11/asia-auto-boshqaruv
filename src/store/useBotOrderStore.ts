@@ -5,9 +5,10 @@ interface BotOrderState {
   model: string;
   probeg: string;
   plateNumber: string;
+  customerPhone: string;
   services: { name: string; price: number | string; isCustom?: boolean }[];
   parts: { name: string; quantity: number | string; price: number | string; isCustom?: boolean }[];
-  
+
   setCarInfo: (info: Partial<BotOrderState>) => void;
   addService: (service: { name: string; price: number | string; isCustom?: boolean }) => void;
   removeService: (idx: number) => void;
@@ -22,9 +23,10 @@ export const useBotOrderStore = create<BotOrderState>((set, get) => ({
   model: '',
   probeg: '',
   plateNumber: '',
+  customerPhone: '',
   services: [],
   parts: [],
-  
+
   setCarInfo: (info) => set((state) => ({ ...state, ...info })),
   
   addService: (service) => set((state) => ({ 
@@ -52,6 +54,6 @@ export const useBotOrderStore = create<BotOrderState>((set, get) => ({
   },
 
   reset: () => set({
-    brand: '', model: '', probeg: '', plateNumber: '', services: [], parts: []
+    brand: '', model: '', probeg: '', plateNumber: '', customerPhone: '', services: [], parts: []
   })
 }));
