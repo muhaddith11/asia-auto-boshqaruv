@@ -99,6 +99,7 @@ const navGroups: NavGroup[] = [
     color: '#6366f1', // Indigo
     section: 'reports',
     subItems: [
+      { title: 'Kundalik', href: '/reports/daily' },
       { title: 'Ishxona bo\'yicha', href: '/reports/business' },
       { title: 'Aylanmadan tashqari', href: '/reports/external' },
       { title: 'Audit jurnali', href: '/reports/audit', section: 'audit' }
