@@ -14,7 +14,6 @@ const FILTERS: { key: string; label: string }[] = [
   { key: 'tamirlanmoqda', label: '🔧 Ta\'mir' },
   { key: 'zapchast_kutilmoqda', label: '📦 Zapchast' },
   { key: 'tayyor', label: '✅ Tayyor' },
-  { key: 'bekor_qilindi', label: '❌ Bekor' },
 ];
 
 export default function BossMonitor({ cars, onBack }: Props) {
@@ -41,7 +40,7 @@ export default function BossMonitor({ cars, onBack }: Props) {
 
       {/* Bosqich bo'yicha qisqa hisob */}
       <div className="flex flex-wrap gap-2 text-xs">
-        {Object.entries(STAGES).filter(([k]) => k !== 'topshirildi').map(([k, v]) => (
+        {Object.entries(STAGES).filter(([k]) => k !== 'topshirildi' && k !== 'bekor_qilindi').map(([k, v]) => (
           <span key={k} className="px-2 py-1 rounded-lg" style={{ background: v.color + '22', color: v.color }}>
             {v.emoji} {counts[k] || 0}
           </span>

@@ -40,12 +40,14 @@ export async function GET(req: NextRequest) {
 
     let allCars = null;
     if (worker.is_boss) {
-      // Boshliq — faqat topshirilmagan (faol) mashinalar. Topshirilganlar chiqib ketadi.
+      // Boshliq — faqat ustaxonadagi (faol) mashinalar. Topshirilgan VA bekor
+      // qilingan mashinalar ustaxonada yo'q (ketgan) → ro'yxatda ko'rinmaydi.
       const { data: all, error: allErr } = await supabase
         .from('orders')
         .select(CAR_FIELDS)
         .not('bosqich', 'is', null)
         .neq('bosqich', 'topshirildi')
+        .neq('bosqich', 'bekor_qilindi')
         .order('qabul_vaqti', { ascending: false })
         .limit(200);
       if (allErr) {

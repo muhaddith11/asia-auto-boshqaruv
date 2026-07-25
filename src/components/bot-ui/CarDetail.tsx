@@ -69,6 +69,11 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
           <CarIcon className="w-5 h-5 text-blue-400" /> {car.mashina}
         </div>
         {car.raqam && <div className="text-sm text-gray-300">🔢 {car.raqam}</div>}
+        {car.tel && car.tel.replace(/\D/g, '').length > 3 && (
+          <div className="text-sm text-gray-300">
+            📞 <a href={`tel:${car.tel}`} className="text-blue-400 hover:underline">{car.tel}</a>
+          </div>
+        )}
         <div className="inline-flex items-center gap-1 text-sm font-semibold px-2 py-1 rounded-lg" style={{ background: meta.color + '22', color: meta.color }}>
           {meta.emoji} {meta.label}
         </div>
