@@ -50,16 +50,16 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   };
 
   const btn =
-    'w-full font-bold py-4 rounded-2xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg';
+    'w-full font-bold py-4 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg';
 
   return (
     <div className="space-y-5 slide-in">
-      <button onClick={onBack} className="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+      <button onClick={onBack} className="flex items-center gap-1 text-gray-400 hover:text-white text-sm">
         <ArrowLeft className="w-4 h-4" /> Orqaga
       </button>
 
       {/* Mashina kartasi */}
-      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2">
+      <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-2">
         <div className="flex items-center gap-2 text-lg font-bold">
           <CarIcon className="w-5 h-5 text-blue-400" /> {car.mashina}
         </div>
@@ -76,12 +76,12 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
       {/* Zapchast nomlarini kiritish — ko'p qatorli */}
       {zapMode ? (
         <div className="space-y-4">
-          <label className="block text-sm font-semibold text-slate-300">Qaysi zapchast(lar) kerak?</label>
+          <label className="block text-sm font-semibold text-gray-300">Qaysi zapchast(lar) kerak?</label>
 
           <div className="space-y-2.5">
             {zapNames.map((z, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-8 h-11 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm text-slate-400 font-bold">
+                <span className="w-8 h-11 shrink-0 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-sm text-gray-400 font-bold">
                   {i + 1}
                 </span>
                 <input
@@ -89,12 +89,12 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
                   value={z}
                   onChange={(e) => setZapAt(i, e.target.value)}
                   placeholder="Masalan: old tormoz kolodka"
-                  className="flex-1 bg-white/[0.05] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="flex-1 bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {zapNames.length > 1 && (
                   <button
                     onClick={() => removeZapRow(i)}
-                    className="w-11 h-11 shrink-0 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 flex items-center justify-center text-slate-400 hover:text-red-300 transition-colors"
+                    className="w-11 h-11 shrink-0 rounded-xl bg-gray-800 hover:bg-red-500/20 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-red-300 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -105,13 +105,13 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
 
           <button
             onClick={addZapRow}
-            className="w-full py-3 rounded-xl flex justify-center items-center gap-2 bg-white/5 hover:bg-white/10 border border-dashed border-white/15 text-slate-300 text-sm font-semibold transition-colors"
+            className="w-full py-3 rounded-xl flex justify-center items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-dashed border-gray-600 text-gray-300 text-sm font-semibold transition-colors"
           >
             <Plus className="w-4 h-4" /> Yana zapchast qo'shish
           </button>
 
           <div className="flex gap-2 pt-1">
-            <button onClick={() => setZapMode(false)} className={`${btn} bg-white/5 hover:bg-white/10 border border-white/10 shadow-none`}>
+            <button onClick={() => setZapMode(false)} className={`${btn} bg-gray-800 hover:bg-gray-700 border border-gray-700 shadow-none`}>
               Bekor
             </button>
             <button

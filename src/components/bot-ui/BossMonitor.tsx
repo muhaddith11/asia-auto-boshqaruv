@@ -69,7 +69,7 @@ export default function BossMonitor({ cars, onBack }: Props) {
         {shown.map((c) => {
           const meta = stageMeta(c.bosqich);
           return (
-            <div key={c.id} className="bg-white/[0.05] border border-white/10 rounded-2xl p-4 space-y-2">
+            <div key={c.id} className="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="font-bold">{c.mashina} {c.raqam && <span className="text-gray-400 font-normal">· {c.raqam}</span>}</div>
                 <span className="text-xs font-semibold px-2 py-1 rounded-lg whitespace-nowrap" style={{ background: meta.color + '22', color: meta.color }}>

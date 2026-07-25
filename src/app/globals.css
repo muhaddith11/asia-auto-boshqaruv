@@ -421,3 +421,562 @@ html, body {
     margin-left: 0 !important;
   }
 }
+
+
+/* === BOT-UI SPACING BACKFILL (scoped to .tg-scope) ===
+   The unlayered `* { margin:0; padding:0 }` reset near the top of this file
+   clobbers Tailwind v4 layered spacing utilities. The "FINAL SPACING FIX"
+   block only restored a subset (no space-y, no small margins, no *.5 steps),
+   which left the Telegram bot-ui with collapsed row/button spacing. These
+   rules restore the full spacing scale, scoped to .tg-scope so the dashboard
+   is untouched. Generated — see scratchpad/gen-spacing.js. */
+.tg-scope .mt-0 { margin-top: 0 !important; }
+.tg-scope .mt-1 { margin-top: 0.25rem !important; }
+.tg-scope .mt-2 { margin-top: 0.5rem !important; }
+.tg-scope .mt-3 { margin-top: 0.75rem !important; }
+.tg-scope .mt-4 { margin-top: 1rem !important; }
+.tg-scope .mt-5 { margin-top: 1.25rem !important; }
+.tg-scope .mt-6 { margin-top: 1.5rem !important; }
+.tg-scope .mt-7 { margin-top: 1.75rem !important; }
+.tg-scope .mt-8 { margin-top: 2rem !important; }
+.tg-scope .mt-9 { margin-top: 2.25rem !important; }
+.tg-scope .mt-10 { margin-top: 2.5rem !important; }
+.tg-scope .mt-11 { margin-top: 2.75rem !important; }
+.tg-scope .mt-12 { margin-top: 3rem !important; }
+.tg-scope .mt-14 { margin-top: 3.5rem !important; }
+.tg-scope .mt-16 { margin-top: 4rem !important; }
+.tg-scope .mt-20 { margin-top: 5rem !important; }
+.tg-scope .mt-24 { margin-top: 6rem !important; }
+.tg-scope .mt-28 { margin-top: 7rem !important; }
+.tg-scope .mt-32 { margin-top: 8rem !important; }
+.tg-scope .mt-0\.5 { margin-top: 0.125rem !important; }
+.tg-scope .mt-1\.5 { margin-top: 0.375rem !important; }
+.tg-scope .mt-2\.5 { margin-top: 0.625rem !important; }
+.tg-scope .mt-3\.5 { margin-top: 0.875rem !important; }
+.tg-scope .mr-0 { margin-right: 0 !important; }
+.tg-scope .mr-1 { margin-right: 0.25rem !important; }
+.tg-scope .mr-2 { margin-right: 0.5rem !important; }
+.tg-scope .mr-3 { margin-right: 0.75rem !important; }
+.tg-scope .mr-4 { margin-right: 1rem !important; }
+.tg-scope .mr-5 { margin-right: 1.25rem !important; }
+.tg-scope .mr-6 { margin-right: 1.5rem !important; }
+.tg-scope .mr-7 { margin-right: 1.75rem !important; }
+.tg-scope .mr-8 { margin-right: 2rem !important; }
+.tg-scope .mr-9 { margin-right: 2.25rem !important; }
+.tg-scope .mr-10 { margin-right: 2.5rem !important; }
+.tg-scope .mr-11 { margin-right: 2.75rem !important; }
+.tg-scope .mr-12 { margin-right: 3rem !important; }
+.tg-scope .mr-14 { margin-right: 3.5rem !important; }
+.tg-scope .mr-16 { margin-right: 4rem !important; }
+.tg-scope .mr-20 { margin-right: 5rem !important; }
+.tg-scope .mr-24 { margin-right: 6rem !important; }
+.tg-scope .mr-28 { margin-right: 7rem !important; }
+.tg-scope .mr-32 { margin-right: 8rem !important; }
+.tg-scope .mr-0\.5 { margin-right: 0.125rem !important; }
+.tg-scope .mr-1\.5 { margin-right: 0.375rem !important; }
+.tg-scope .mr-2\.5 { margin-right: 0.625rem !important; }
+.tg-scope .mr-3\.5 { margin-right: 0.875rem !important; }
+.tg-scope .mb-0 { margin-bottom: 0 !important; }
+.tg-scope .mb-1 { margin-bottom: 0.25rem !important; }
+.tg-scope .mb-2 { margin-bottom: 0.5rem !important; }
+.tg-scope .mb-3 { margin-bottom: 0.75rem !important; }
+.tg-scope .mb-4 { margin-bottom: 1rem !important; }
+.tg-scope .mb-5 { margin-bottom: 1.25rem !important; }
+.tg-scope .mb-6 { margin-bottom: 1.5rem !important; }
+.tg-scope .mb-7 { margin-bottom: 1.75rem !important; }
+.tg-scope .mb-8 { margin-bottom: 2rem !important; }
+.tg-scope .mb-9 { margin-bottom: 2.25rem !important; }
+.tg-scope .mb-10 { margin-bottom: 2.5rem !important; }
+.tg-scope .mb-11 { margin-bottom: 2.75rem !important; }
+.tg-scope .mb-12 { margin-bottom: 3rem !important; }
+.tg-scope .mb-14 { margin-bottom: 3.5rem !important; }
+.tg-scope .mb-16 { margin-bottom: 4rem !important; }
+.tg-scope .mb-20 { margin-bottom: 5rem !important; }
+.tg-scope .mb-24 { margin-bottom: 6rem !important; }
+.tg-scope .mb-28 { margin-bottom: 7rem !important; }
+.tg-scope .mb-32 { margin-bottom: 8rem !important; }
+.tg-scope .mb-0\.5 { margin-bottom: 0.125rem !important; }
+.tg-scope .mb-1\.5 { margin-bottom: 0.375rem !important; }
+.tg-scope .mb-2\.5 { margin-bottom: 0.625rem !important; }
+.tg-scope .mb-3\.5 { margin-bottom: 0.875rem !important; }
+.tg-scope .ml-0 { margin-left: 0 !important; }
+.tg-scope .ml-1 { margin-left: 0.25rem !important; }
+.tg-scope .ml-2 { margin-left: 0.5rem !important; }
+.tg-scope .ml-3 { margin-left: 0.75rem !important; }
+.tg-scope .ml-4 { margin-left: 1rem !important; }
+.tg-scope .ml-5 { margin-left: 1.25rem !important; }
+.tg-scope .ml-6 { margin-left: 1.5rem !important; }
+.tg-scope .ml-7 { margin-left: 1.75rem !important; }
+.tg-scope .ml-8 { margin-left: 2rem !important; }
+.tg-scope .ml-9 { margin-left: 2.25rem !important; }
+.tg-scope .ml-10 { margin-left: 2.5rem !important; }
+.tg-scope .ml-11 { margin-left: 2.75rem !important; }
+.tg-scope .ml-12 { margin-left: 3rem !important; }
+.tg-scope .ml-14 { margin-left: 3.5rem !important; }
+.tg-scope .ml-16 { margin-left: 4rem !important; }
+.tg-scope .ml-20 { margin-left: 5rem !important; }
+.tg-scope .ml-24 { margin-left: 6rem !important; }
+.tg-scope .ml-28 { margin-left: 7rem !important; }
+.tg-scope .ml-32 { margin-left: 8rem !important; }
+.tg-scope .ml-0\.5 { margin-left: 0.125rem !important; }
+.tg-scope .ml-1\.5 { margin-left: 0.375rem !important; }
+.tg-scope .ml-2\.5 { margin-left: 0.625rem !important; }
+.tg-scope .ml-3\.5 { margin-left: 0.875rem !important; }
+.tg-scope .mx-0 { margin-left: 0 !important; margin-right: 0 !important; }
+.tg-scope .mx-1 { margin-left: 0.25rem !important; margin-right: 0.25rem !important; }
+.tg-scope .mx-2 { margin-left: 0.5rem !important; margin-right: 0.5rem !important; }
+.tg-scope .mx-3 { margin-left: 0.75rem !important; margin-right: 0.75rem !important; }
+.tg-scope .mx-4 { margin-left: 1rem !important; margin-right: 1rem !important; }
+.tg-scope .mx-5 { margin-left: 1.25rem !important; margin-right: 1.25rem !important; }
+.tg-scope .mx-6 { margin-left: 1.5rem !important; margin-right: 1.5rem !important; }
+.tg-scope .mx-7 { margin-left: 1.75rem !important; margin-right: 1.75rem !important; }
+.tg-scope .mx-8 { margin-left: 2rem !important; margin-right: 2rem !important; }
+.tg-scope .mx-9 { margin-left: 2.25rem !important; margin-right: 2.25rem !important; }
+.tg-scope .mx-10 { margin-left: 2.5rem !important; margin-right: 2.5rem !important; }
+.tg-scope .mx-11 { margin-left: 2.75rem !important; margin-right: 2.75rem !important; }
+.tg-scope .mx-12 { margin-left: 3rem !important; margin-right: 3rem !important; }
+.tg-scope .mx-14 { margin-left: 3.5rem !important; margin-right: 3.5rem !important; }
+.tg-scope .mx-16 { margin-left: 4rem !important; margin-right: 4rem !important; }
+.tg-scope .mx-20 { margin-left: 5rem !important; margin-right: 5rem !important; }
+.tg-scope .mx-24 { margin-left: 6rem !important; margin-right: 6rem !important; }
+.tg-scope .mx-28 { margin-left: 7rem !important; margin-right: 7rem !important; }
+.tg-scope .mx-32 { margin-left: 8rem !important; margin-right: 8rem !important; }
+.tg-scope .mx-0\.5 { margin-left: 0.125rem !important; margin-right: 0.125rem !important; }
+.tg-scope .mx-1\.5 { margin-left: 0.375rem !important; margin-right: 0.375rem !important; }
+.tg-scope .mx-2\.5 { margin-left: 0.625rem !important; margin-right: 0.625rem !important; }
+.tg-scope .mx-3\.5 { margin-left: 0.875rem !important; margin-right: 0.875rem !important; }
+.tg-scope .my-0 { margin-top: 0 !important; margin-bottom: 0 !important; }
+.tg-scope .my-1 { margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
+.tg-scope .my-2 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+.tg-scope .my-3 { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; }
+.tg-scope .my-4 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+.tg-scope .my-5 { margin-top: 1.25rem !important; margin-bottom: 1.25rem !important; }
+.tg-scope .my-6 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
+.tg-scope .my-7 { margin-top: 1.75rem !important; margin-bottom: 1.75rem !important; }
+.tg-scope .my-8 { margin-top: 2rem !important; margin-bottom: 2rem !important; }
+.tg-scope .my-9 { margin-top: 2.25rem !important; margin-bottom: 2.25rem !important; }
+.tg-scope .my-10 { margin-top: 2.5rem !important; margin-bottom: 2.5rem !important; }
+.tg-scope .my-11 { margin-top: 2.75rem !important; margin-bottom: 2.75rem !important; }
+.tg-scope .my-12 { margin-top: 3rem !important; margin-bottom: 3rem !important; }
+.tg-scope .my-14 { margin-top: 3.5rem !important; margin-bottom: 3.5rem !important; }
+.tg-scope .my-16 { margin-top: 4rem !important; margin-bottom: 4rem !important; }
+.tg-scope .my-20 { margin-top: 5rem !important; margin-bottom: 5rem !important; }
+.tg-scope .my-24 { margin-top: 6rem !important; margin-bottom: 6rem !important; }
+.tg-scope .my-28 { margin-top: 7rem !important; margin-bottom: 7rem !important; }
+.tg-scope .my-32 { margin-top: 8rem !important; margin-bottom: 8rem !important; }
+.tg-scope .my-0\.5 { margin-top: 0.125rem !important; margin-bottom: 0.125rem !important; }
+.tg-scope .my-1\.5 { margin-top: 0.375rem !important; margin-bottom: 0.375rem !important; }
+.tg-scope .my-2\.5 { margin-top: 0.625rem !important; margin-bottom: 0.625rem !important; }
+.tg-scope .my-3\.5 { margin-top: 0.875rem !important; margin-bottom: 0.875rem !important; }
+.tg-scope .m-0 { margin: 0 !important; }
+.tg-scope .m-1 { margin: 0.25rem !important; }
+.tg-scope .m-2 { margin: 0.5rem !important; }
+.tg-scope .m-3 { margin: 0.75rem !important; }
+.tg-scope .m-4 { margin: 1rem !important; }
+.tg-scope .m-5 { margin: 1.25rem !important; }
+.tg-scope .m-6 { margin: 1.5rem !important; }
+.tg-scope .m-7 { margin: 1.75rem !important; }
+.tg-scope .m-8 { margin: 2rem !important; }
+.tg-scope .m-9 { margin: 2.25rem !important; }
+.tg-scope .m-10 { margin: 2.5rem !important; }
+.tg-scope .m-11 { margin: 2.75rem !important; }
+.tg-scope .m-12 { margin: 3rem !important; }
+.tg-scope .m-14 { margin: 3.5rem !important; }
+.tg-scope .m-16 { margin: 4rem !important; }
+.tg-scope .m-20 { margin: 5rem !important; }
+.tg-scope .m-24 { margin: 6rem !important; }
+.tg-scope .m-28 { margin: 7rem !important; }
+.tg-scope .m-32 { margin: 8rem !important; }
+.tg-scope .m-0\.5 { margin: 0.125rem !important; }
+.tg-scope .m-1\.5 { margin: 0.375rem !important; }
+.tg-scope .m-2\.5 { margin: 0.625rem !important; }
+.tg-scope .m-3\.5 { margin: 0.875rem !important; }
+.tg-scope .mx-auto { margin-left: auto !important; margin-right: auto !important; }
+.tg-scope .ml-auto { margin-left: auto !important; }
+.tg-scope .mr-auto { margin-right: auto !important; }
+.tg-scope .-mt-1 { margin-top: -0.25rem !important; }
+.tg-scope .-mr-1 { margin-right: -0.25rem !important; }
+.tg-scope .-mb-1 { margin-bottom: -0.25rem !important; }
+.tg-scope .-ml-1 { margin-left: -0.25rem !important; }
+.tg-scope .-mx-1 { margin-left: -0.25rem !important; margin-right: -0.25rem !important; }
+.tg-scope .-mt-2 { margin-top: -0.5rem !important; }
+.tg-scope .-mr-2 { margin-right: -0.5rem !important; }
+.tg-scope .-mb-2 { margin-bottom: -0.5rem !important; }
+.tg-scope .-ml-2 { margin-left: -0.5rem !important; }
+.tg-scope .-mx-2 { margin-left: -0.5rem !important; margin-right: -0.5rem !important; }
+.tg-scope .-mt-3 { margin-top: -0.75rem !important; }
+.tg-scope .-mr-3 { margin-right: -0.75rem !important; }
+.tg-scope .-mb-3 { margin-bottom: -0.75rem !important; }
+.tg-scope .-ml-3 { margin-left: -0.75rem !important; }
+.tg-scope .-mx-3 { margin-left: -0.75rem !important; margin-right: -0.75rem !important; }
+.tg-scope .-mt-4 { margin-top: -1rem !important; }
+.tg-scope .-mr-4 { margin-right: -1rem !important; }
+.tg-scope .-mb-4 { margin-bottom: -1rem !important; }
+.tg-scope .-ml-4 { margin-left: -1rem !important; }
+.tg-scope .-mx-4 { margin-left: -1rem !important; margin-right: -1rem !important; }
+.tg-scope .-mt-5 { margin-top: -1.25rem !important; }
+.tg-scope .-mr-5 { margin-right: -1.25rem !important; }
+.tg-scope .-mb-5 { margin-bottom: -1.25rem !important; }
+.tg-scope .-ml-5 { margin-left: -1.25rem !important; }
+.tg-scope .-mx-5 { margin-left: -1.25rem !important; margin-right: -1.25rem !important; }
+.tg-scope .-mt-6 { margin-top: -1.5rem !important; }
+.tg-scope .-mr-6 { margin-right: -1.5rem !important; }
+.tg-scope .-mb-6 { margin-bottom: -1.5rem !important; }
+.tg-scope .-ml-6 { margin-left: -1.5rem !important; }
+.tg-scope .-mx-6 { margin-left: -1.5rem !important; margin-right: -1.5rem !important; }
+.tg-scope .-mt-7 { margin-top: -1.75rem !important; }
+.tg-scope .-mr-7 { margin-right: -1.75rem !important; }
+.tg-scope .-mb-7 { margin-bottom: -1.75rem !important; }
+.tg-scope .-ml-7 { margin-left: -1.75rem !important; }
+.tg-scope .-mx-7 { margin-left: -1.75rem !important; margin-right: -1.75rem !important; }
+.tg-scope .-mt-8 { margin-top: -2rem !important; }
+.tg-scope .-mr-8 { margin-right: -2rem !important; }
+.tg-scope .-mb-8 { margin-bottom: -2rem !important; }
+.tg-scope .-ml-8 { margin-left: -2rem !important; }
+.tg-scope .-mx-8 { margin-left: -2rem !important; margin-right: -2rem !important; }
+.tg-scope .-mt-9 { margin-top: -2.25rem !important; }
+.tg-scope .-mr-9 { margin-right: -2.25rem !important; }
+.tg-scope .-mb-9 { margin-bottom: -2.25rem !important; }
+.tg-scope .-ml-9 { margin-left: -2.25rem !important; }
+.tg-scope .-mx-9 { margin-left: -2.25rem !important; margin-right: -2.25rem !important; }
+.tg-scope .-mt-10 { margin-top: -2.5rem !important; }
+.tg-scope .-mr-10 { margin-right: -2.5rem !important; }
+.tg-scope .-mb-10 { margin-bottom: -2.5rem !important; }
+.tg-scope .-ml-10 { margin-left: -2.5rem !important; }
+.tg-scope .-mx-10 { margin-left: -2.5rem !important; margin-right: -2.5rem !important; }
+.tg-scope .-mt-11 { margin-top: -2.75rem !important; }
+.tg-scope .-mr-11 { margin-right: -2.75rem !important; }
+.tg-scope .-mb-11 { margin-bottom: -2.75rem !important; }
+.tg-scope .-ml-11 { margin-left: -2.75rem !important; }
+.tg-scope .-mx-11 { margin-left: -2.75rem !important; margin-right: -2.75rem !important; }
+.tg-scope .-mt-12 { margin-top: -3rem !important; }
+.tg-scope .-mr-12 { margin-right: -3rem !important; }
+.tg-scope .-mb-12 { margin-bottom: -3rem !important; }
+.tg-scope .-ml-12 { margin-left: -3rem !important; }
+.tg-scope .-mx-12 { margin-left: -3rem !important; margin-right: -3rem !important; }
+.tg-scope .-mt-14 { margin-top: -3.5rem !important; }
+.tg-scope .-mr-14 { margin-right: -3.5rem !important; }
+.tg-scope .-mb-14 { margin-bottom: -3.5rem !important; }
+.tg-scope .-ml-14 { margin-left: -3.5rem !important; }
+.tg-scope .-mx-14 { margin-left: -3.5rem !important; margin-right: -3.5rem !important; }
+.tg-scope .-mt-16 { margin-top: -4rem !important; }
+.tg-scope .-mr-16 { margin-right: -4rem !important; }
+.tg-scope .-mb-16 { margin-bottom: -4rem !important; }
+.tg-scope .-ml-16 { margin-left: -4rem !important; }
+.tg-scope .-mx-16 { margin-left: -4rem !important; margin-right: -4rem !important; }
+.tg-scope .-mt-20 { margin-top: -5rem !important; }
+.tg-scope .-mr-20 { margin-right: -5rem !important; }
+.tg-scope .-mb-20 { margin-bottom: -5rem !important; }
+.tg-scope .-ml-20 { margin-left: -5rem !important; }
+.tg-scope .-mx-20 { margin-left: -5rem !important; margin-right: -5rem !important; }
+.tg-scope .-mt-24 { margin-top: -6rem !important; }
+.tg-scope .-mr-24 { margin-right: -6rem !important; }
+.tg-scope .-mb-24 { margin-bottom: -6rem !important; }
+.tg-scope .-ml-24 { margin-left: -6rem !important; }
+.tg-scope .-mx-24 { margin-left: -6rem !important; margin-right: -6rem !important; }
+.tg-scope .-mt-28 { margin-top: -7rem !important; }
+.tg-scope .-mr-28 { margin-right: -7rem !important; }
+.tg-scope .-mb-28 { margin-bottom: -7rem !important; }
+.tg-scope .-ml-28 { margin-left: -7rem !important; }
+.tg-scope .-mx-28 { margin-left: -7rem !important; margin-right: -7rem !important; }
+.tg-scope .-mt-32 { margin-top: -8rem !important; }
+.tg-scope .-mr-32 { margin-right: -8rem !important; }
+.tg-scope .-mb-32 { margin-bottom: -8rem !important; }
+.tg-scope .-ml-32 { margin-left: -8rem !important; }
+.tg-scope .-mx-32 { margin-left: -8rem !important; margin-right: -8rem !important; }
+.tg-scope .-mt-0\.5 { margin-top: -0.125rem !important; }
+.tg-scope .-mr-0\.5 { margin-right: -0.125rem !important; }
+.tg-scope .-mb-0\.5 { margin-bottom: -0.125rem !important; }
+.tg-scope .-ml-0\.5 { margin-left: -0.125rem !important; }
+.tg-scope .-mx-0\.5 { margin-left: -0.125rem !important; margin-right: -0.125rem !important; }
+.tg-scope .-mt-1\.5 { margin-top: -0.375rem !important; }
+.tg-scope .-mr-1\.5 { margin-right: -0.375rem !important; }
+.tg-scope .-mb-1\.5 { margin-bottom: -0.375rem !important; }
+.tg-scope .-ml-1\.5 { margin-left: -0.375rem !important; }
+.tg-scope .-mx-1\.5 { margin-left: -0.375rem !important; margin-right: -0.375rem !important; }
+.tg-scope .-mt-2\.5 { margin-top: -0.625rem !important; }
+.tg-scope .-mr-2\.5 { margin-right: -0.625rem !important; }
+.tg-scope .-mb-2\.5 { margin-bottom: -0.625rem !important; }
+.tg-scope .-ml-2\.5 { margin-left: -0.625rem !important; }
+.tg-scope .-mx-2\.5 { margin-left: -0.625rem !important; margin-right: -0.625rem !important; }
+.tg-scope .-mt-3\.5 { margin-top: -0.875rem !important; }
+.tg-scope .-mr-3\.5 { margin-right: -0.875rem !important; }
+.tg-scope .-mb-3\.5 { margin-bottom: -0.875rem !important; }
+.tg-scope .-ml-3\.5 { margin-left: -0.875rem !important; }
+.tg-scope .-mx-3\.5 { margin-left: -0.875rem !important; margin-right: -0.875rem !important; }
+.tg-scope .pt-0 { padding-top: 0 !important; }
+.tg-scope .pt-1 { padding-top: 0.25rem !important; }
+.tg-scope .pt-2 { padding-top: 0.5rem !important; }
+.tg-scope .pt-3 { padding-top: 0.75rem !important; }
+.tg-scope .pt-4 { padding-top: 1rem !important; }
+.tg-scope .pt-5 { padding-top: 1.25rem !important; }
+.tg-scope .pt-6 { padding-top: 1.5rem !important; }
+.tg-scope .pt-7 { padding-top: 1.75rem !important; }
+.tg-scope .pt-8 { padding-top: 2rem !important; }
+.tg-scope .pt-9 { padding-top: 2.25rem !important; }
+.tg-scope .pt-10 { padding-top: 2.5rem !important; }
+.tg-scope .pt-11 { padding-top: 2.75rem !important; }
+.tg-scope .pt-12 { padding-top: 3rem !important; }
+.tg-scope .pt-14 { padding-top: 3.5rem !important; }
+.tg-scope .pt-16 { padding-top: 4rem !important; }
+.tg-scope .pt-20 { padding-top: 5rem !important; }
+.tg-scope .pt-24 { padding-top: 6rem !important; }
+.tg-scope .pt-28 { padding-top: 7rem !important; }
+.tg-scope .pt-32 { padding-top: 8rem !important; }
+.tg-scope .pt-0\.5 { padding-top: 0.125rem !important; }
+.tg-scope .pt-1\.5 { padding-top: 0.375rem !important; }
+.tg-scope .pt-2\.5 { padding-top: 0.625rem !important; }
+.tg-scope .pt-3\.5 { padding-top: 0.875rem !important; }
+.tg-scope .pr-0 { padding-right: 0 !important; }
+.tg-scope .pr-1 { padding-right: 0.25rem !important; }
+.tg-scope .pr-2 { padding-right: 0.5rem !important; }
+.tg-scope .pr-3 { padding-right: 0.75rem !important; }
+.tg-scope .pr-4 { padding-right: 1rem !important; }
+.tg-scope .pr-5 { padding-right: 1.25rem !important; }
+.tg-scope .pr-6 { padding-right: 1.5rem !important; }
+.tg-scope .pr-7 { padding-right: 1.75rem !important; }
+.tg-scope .pr-8 { padding-right: 2rem !important; }
+.tg-scope .pr-9 { padding-right: 2.25rem !important; }
+.tg-scope .pr-10 { padding-right: 2.5rem !important; }
+.tg-scope .pr-11 { padding-right: 2.75rem !important; }
+.tg-scope .pr-12 { padding-right: 3rem !important; }
+.tg-scope .pr-14 { padding-right: 3.5rem !important; }
+.tg-scope .pr-16 { padding-right: 4rem !important; }
+.tg-scope .pr-20 { padding-right: 5rem !important; }
+.tg-scope .pr-24 { padding-right: 6rem !important; }
+.tg-scope .pr-28 { padding-right: 7rem !important; }
+.tg-scope .pr-32 { padding-right: 8rem !important; }
+.tg-scope .pr-0\.5 { padding-right: 0.125rem !important; }
+.tg-scope .pr-1\.5 { padding-right: 0.375rem !important; }
+.tg-scope .pr-2\.5 { padding-right: 0.625rem !important; }
+.tg-scope .pr-3\.5 { padding-right: 0.875rem !important; }
+.tg-scope .pb-0 { padding-bottom: 0 !important; }
+.tg-scope .pb-1 { padding-bottom: 0.25rem !important; }
+.tg-scope .pb-2 { padding-bottom: 0.5rem !important; }
+.tg-scope .pb-3 { padding-bottom: 0.75rem !important; }
+.tg-scope .pb-4 { padding-bottom: 1rem !important; }
+.tg-scope .pb-5 { padding-bottom: 1.25rem !important; }
+.tg-scope .pb-6 { padding-bottom: 1.5rem !important; }
+.tg-scope .pb-7 { padding-bottom: 1.75rem !important; }
+.tg-scope .pb-8 { padding-bottom: 2rem !important; }
+.tg-scope .pb-9 { padding-bottom: 2.25rem !important; }
+.tg-scope .pb-10 { padding-bottom: 2.5rem !important; }
+.tg-scope .pb-11 { padding-bottom: 2.75rem !important; }
+.tg-scope .pb-12 { padding-bottom: 3rem !important; }
+.tg-scope .pb-14 { padding-bottom: 3.5rem !important; }
+.tg-scope .pb-16 { padding-bottom: 4rem !important; }
+.tg-scope .pb-20 { padding-bottom: 5rem !important; }
+.tg-scope .pb-24 { padding-bottom: 6rem !important; }
+.tg-scope .pb-28 { padding-bottom: 7rem !important; }
+.tg-scope .pb-32 { padding-bottom: 8rem !important; }
+.tg-scope .pb-0\.5 { padding-bottom: 0.125rem !important; }
+.tg-scope .pb-1\.5 { padding-bottom: 0.375rem !important; }
+.tg-scope .pb-2\.5 { padding-bottom: 0.625rem !important; }
+.tg-scope .pb-3\.5 { padding-bottom: 0.875rem !important; }
+.tg-scope .pl-0 { padding-left: 0 !important; }
+.tg-scope .pl-1 { padding-left: 0.25rem !important; }
+.tg-scope .pl-2 { padding-left: 0.5rem !important; }
+.tg-scope .pl-3 { padding-left: 0.75rem !important; }
+.tg-scope .pl-4 { padding-left: 1rem !important; }
+.tg-scope .pl-5 { padding-left: 1.25rem !important; }
+.tg-scope .pl-6 { padding-left: 1.5rem !important; }
+.tg-scope .pl-7 { padding-left: 1.75rem !important; }
+.tg-scope .pl-8 { padding-left: 2rem !important; }
+.tg-scope .pl-9 { padding-left: 2.25rem !important; }
+.tg-scope .pl-10 { padding-left: 2.5rem !important; }
+.tg-scope .pl-11 { padding-left: 2.75rem !important; }
+.tg-scope .pl-12 { padding-left: 3rem !important; }
+.tg-scope .pl-14 { padding-left: 3.5rem !important; }
+.tg-scope .pl-16 { padding-left: 4rem !important; }
+.tg-scope .pl-20 { padding-left: 5rem !important; }
+.tg-scope .pl-24 { padding-left: 6rem !important; }
+.tg-scope .pl-28 { padding-left: 7rem !important; }
+.tg-scope .pl-32 { padding-left: 8rem !important; }
+.tg-scope .pl-0\.5 { padding-left: 0.125rem !important; }
+.tg-scope .pl-1\.5 { padding-left: 0.375rem !important; }
+.tg-scope .pl-2\.5 { padding-left: 0.625rem !important; }
+.tg-scope .pl-3\.5 { padding-left: 0.875rem !important; }
+.tg-scope .px-0 { padding-left: 0 !important; padding-right: 0 !important; }
+.tg-scope .px-1 { padding-left: 0.25rem !important; padding-right: 0.25rem !important; }
+.tg-scope .px-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+.tg-scope .px-3 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+.tg-scope .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+.tg-scope .px-5 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+.tg-scope .px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+.tg-scope .px-7 { padding-left: 1.75rem !important; padding-right: 1.75rem !important; }
+.tg-scope .px-8 { padding-left: 2rem !important; padding-right: 2rem !important; }
+.tg-scope .px-9 { padding-left: 2.25rem !important; padding-right: 2.25rem !important; }
+.tg-scope .px-10 { padding-left: 2.5rem !important; padding-right: 2.5rem !important; }
+.tg-scope .px-11 { padding-left: 2.75rem !important; padding-right: 2.75rem !important; }
+.tg-scope .px-12 { padding-left: 3rem !important; padding-right: 3rem !important; }
+.tg-scope .px-14 { padding-left: 3.5rem !important; padding-right: 3.5rem !important; }
+.tg-scope .px-16 { padding-left: 4rem !important; padding-right: 4rem !important; }
+.tg-scope .px-20 { padding-left: 5rem !important; padding-right: 5rem !important; }
+.tg-scope .px-24 { padding-left: 6rem !important; padding-right: 6rem !important; }
+.tg-scope .px-28 { padding-left: 7rem !important; padding-right: 7rem !important; }
+.tg-scope .px-32 { padding-left: 8rem !important; padding-right: 8rem !important; }
+.tg-scope .px-0\.5 { padding-left: 0.125rem !important; padding-right: 0.125rem !important; }
+.tg-scope .px-1\.5 { padding-left: 0.375rem !important; padding-right: 0.375rem !important; }
+.tg-scope .px-2\.5 { padding-left: 0.625rem !important; padding-right: 0.625rem !important; }
+.tg-scope .px-3\.5 { padding-left: 0.875rem !important; padding-right: 0.875rem !important; }
+.tg-scope .py-0 { padding-top: 0 !important; padding-bottom: 0 !important; }
+.tg-scope .py-1 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+.tg-scope .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+.tg-scope .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+.tg-scope .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+.tg-scope .py-5 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+.tg-scope .py-6 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+.tg-scope .py-7 { padding-top: 1.75rem !important; padding-bottom: 1.75rem !important; }
+.tg-scope .py-8 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.tg-scope .py-9 { padding-top: 2.25rem !important; padding-bottom: 2.25rem !important; }
+.tg-scope .py-10 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+.tg-scope .py-11 { padding-top: 2.75rem !important; padding-bottom: 2.75rem !important; }
+.tg-scope .py-12 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+.tg-scope .py-14 { padding-top: 3.5rem !important; padding-bottom: 3.5rem !important; }
+.tg-scope .py-16 { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+.tg-scope .py-20 { padding-top: 5rem !important; padding-bottom: 5rem !important; }
+.tg-scope .py-24 { padding-top: 6rem !important; padding-bottom: 6rem !important; }
+.tg-scope .py-28 { padding-top: 7rem !important; padding-bottom: 7rem !important; }
+.tg-scope .py-32 { padding-top: 8rem !important; padding-bottom: 8rem !important; }
+.tg-scope .py-0\.5 { padding-top: 0.125rem !important; padding-bottom: 0.125rem !important; }
+.tg-scope .py-1\.5 { padding-top: 0.375rem !important; padding-bottom: 0.375rem !important; }
+.tg-scope .py-2\.5 { padding-top: 0.625rem !important; padding-bottom: 0.625rem !important; }
+.tg-scope .py-3\.5 { padding-top: 0.875rem !important; padding-bottom: 0.875rem !important; }
+.tg-scope .p-0 { padding: 0 !important; }
+.tg-scope .p-1 { padding: 0.25rem !important; }
+.tg-scope .p-2 { padding: 0.5rem !important; }
+.tg-scope .p-3 { padding: 0.75rem !important; }
+.tg-scope .p-4 { padding: 1rem !important; }
+.tg-scope .p-5 { padding: 1.25rem !important; }
+.tg-scope .p-6 { padding: 1.5rem !important; }
+.tg-scope .p-7 { padding: 1.75rem !important; }
+.tg-scope .p-8 { padding: 2rem !important; }
+.tg-scope .p-9 { padding: 2.25rem !important; }
+.tg-scope .p-10 { padding: 2.5rem !important; }
+.tg-scope .p-11 { padding: 2.75rem !important; }
+.tg-scope .p-12 { padding: 3rem !important; }
+.tg-scope .p-14 { padding: 3.5rem !important; }
+.tg-scope .p-16 { padding: 4rem !important; }
+.tg-scope .p-20 { padding: 5rem !important; }
+.tg-scope .p-24 { padding: 6rem !important; }
+.tg-scope .p-28 { padding: 7rem !important; }
+.tg-scope .p-32 { padding: 8rem !important; }
+.tg-scope .p-0\.5 { padding: 0.125rem !important; }
+.tg-scope .p-1\.5 { padding: 0.375rem !important; }
+.tg-scope .p-2\.5 { padding: 0.625rem !important; }
+.tg-scope .p-3\.5 { padding: 0.875rem !important; }
+.tg-scope .gap-0 { gap: 0 !important; }
+.tg-scope .gap-1 { gap: 0.25rem !important; }
+.tg-scope .gap-2 { gap: 0.5rem !important; }
+.tg-scope .gap-3 { gap: 0.75rem !important; }
+.tg-scope .gap-4 { gap: 1rem !important; }
+.tg-scope .gap-5 { gap: 1.25rem !important; }
+.tg-scope .gap-6 { gap: 1.5rem !important; }
+.tg-scope .gap-7 { gap: 1.75rem !important; }
+.tg-scope .gap-8 { gap: 2rem !important; }
+.tg-scope .gap-9 { gap: 2.25rem !important; }
+.tg-scope .gap-10 { gap: 2.5rem !important; }
+.tg-scope .gap-11 { gap: 2.75rem !important; }
+.tg-scope .gap-12 { gap: 3rem !important; }
+.tg-scope .gap-14 { gap: 3.5rem !important; }
+.tg-scope .gap-16 { gap: 4rem !important; }
+.tg-scope .gap-20 { gap: 5rem !important; }
+.tg-scope .gap-24 { gap: 6rem !important; }
+.tg-scope .gap-28 { gap: 7rem !important; }
+.tg-scope .gap-32 { gap: 8rem !important; }
+.tg-scope .gap-0\.5 { gap: 0.125rem !important; }
+.tg-scope .gap-1\.5 { gap: 0.375rem !important; }
+.tg-scope .gap-2\.5 { gap: 0.625rem !important; }
+.tg-scope .gap-3\.5 { gap: 0.875rem !important; }
+.tg-scope .gap-x-0 { column-gap: 0 !important; }
+.tg-scope .gap-x-1 { column-gap: 0.25rem !important; }
+.tg-scope .gap-x-2 { column-gap: 0.5rem !important; }
+.tg-scope .gap-x-3 { column-gap: 0.75rem !important; }
+.tg-scope .gap-x-4 { column-gap: 1rem !important; }
+.tg-scope .gap-x-5 { column-gap: 1.25rem !important; }
+.tg-scope .gap-x-6 { column-gap: 1.5rem !important; }
+.tg-scope .gap-x-7 { column-gap: 1.75rem !important; }
+.tg-scope .gap-x-8 { column-gap: 2rem !important; }
+.tg-scope .gap-x-9 { column-gap: 2.25rem !important; }
+.tg-scope .gap-x-10 { column-gap: 2.5rem !important; }
+.tg-scope .gap-x-11 { column-gap: 2.75rem !important; }
+.tg-scope .gap-x-12 { column-gap: 3rem !important; }
+.tg-scope .gap-x-14 { column-gap: 3.5rem !important; }
+.tg-scope .gap-x-16 { column-gap: 4rem !important; }
+.tg-scope .gap-x-20 { column-gap: 5rem !important; }
+.tg-scope .gap-x-24 { column-gap: 6rem !important; }
+.tg-scope .gap-x-28 { column-gap: 7rem !important; }
+.tg-scope .gap-x-32 { column-gap: 8rem !important; }
+.tg-scope .gap-x-0\.5 { column-gap: 0.125rem !important; }
+.tg-scope .gap-x-1\.5 { column-gap: 0.375rem !important; }
+.tg-scope .gap-x-2\.5 { column-gap: 0.625rem !important; }
+.tg-scope .gap-x-3\.5 { column-gap: 0.875rem !important; }
+.tg-scope .gap-y-0 { row-gap: 0 !important; }
+.tg-scope .gap-y-1 { row-gap: 0.25rem !important; }
+.tg-scope .gap-y-2 { row-gap: 0.5rem !important; }
+.tg-scope .gap-y-3 { row-gap: 0.75rem !important; }
+.tg-scope .gap-y-4 { row-gap: 1rem !important; }
+.tg-scope .gap-y-5 { row-gap: 1.25rem !important; }
+.tg-scope .gap-y-6 { row-gap: 1.5rem !important; }
+.tg-scope .gap-y-7 { row-gap: 1.75rem !important; }
+.tg-scope .gap-y-8 { row-gap: 2rem !important; }
+.tg-scope .gap-y-9 { row-gap: 2.25rem !important; }
+.tg-scope .gap-y-10 { row-gap: 2.5rem !important; }
+.tg-scope .gap-y-11 { row-gap: 2.75rem !important; }
+.tg-scope .gap-y-12 { row-gap: 3rem !important; }
+.tg-scope .gap-y-14 { row-gap: 3.5rem !important; }
+.tg-scope .gap-y-16 { row-gap: 4rem !important; }
+.tg-scope .gap-y-20 { row-gap: 5rem !important; }
+.tg-scope .gap-y-24 { row-gap: 6rem !important; }
+.tg-scope .gap-y-28 { row-gap: 7rem !important; }
+.tg-scope .gap-y-32 { row-gap: 8rem !important; }
+.tg-scope .gap-y-0\.5 { row-gap: 0.125rem !important; }
+.tg-scope .gap-y-1\.5 { row-gap: 0.375rem !important; }
+.tg-scope .gap-y-2\.5 { row-gap: 0.625rem !important; }
+.tg-scope .gap-y-3\.5 { row-gap: 0.875rem !important; }
+.tg-scope .space-y-0 > :not([hidden]) ~ :not([hidden]) { margin-top: 0 !important; }
+.tg-scope .space-x-0 > :not([hidden]) ~ :not([hidden]) { margin-left: 0 !important; }
+.tg-scope .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem !important; }
+.tg-scope .space-x-1 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.25rem !important; }
+.tg-scope .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem !important; }
+.tg-scope .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem !important; }
+.tg-scope .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem !important; }
+.tg-scope .space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem !important; }
+.tg-scope .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
+.tg-scope .space-x-4 > :not([hidden]) ~ :not([hidden]) { margin-left: 1rem !important; }
+.tg-scope .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem !important; }
+.tg-scope .space-x-5 > :not([hidden]) ~ :not([hidden]) { margin-left: 1.25rem !important; }
+.tg-scope .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem !important; }
+.tg-scope .space-x-6 > :not([hidden]) ~ :not([hidden]) { margin-left: 1.5rem !important; }
+.tg-scope .space-y-7 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.75rem !important; }
+.tg-scope .space-x-7 > :not([hidden]) ~ :not([hidden]) { margin-left: 1.75rem !important; }
+.tg-scope .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 2rem !important; }
+.tg-scope .space-x-8 > :not([hidden]) ~ :not([hidden]) { margin-left: 2rem !important; }
+.tg-scope .space-y-9 > :not([hidden]) ~ :not([hidden]) { margin-top: 2.25rem !important; }
+.tg-scope .space-x-9 > :not([hidden]) ~ :not([hidden]) { margin-left: 2.25rem !important; }
+.tg-scope .space-y-10 > :not([hidden]) ~ :not([hidden]) { margin-top: 2.5rem !important; }
+.tg-scope .space-x-10 > :not([hidden]) ~ :not([hidden]) { margin-left: 2.5rem !important; }
+.tg-scope .space-y-11 > :not([hidden]) ~ :not([hidden]) { margin-top: 2.75rem !important; }
+.tg-scope .space-x-11 > :not([hidden]) ~ :not([hidden]) { margin-left: 2.75rem !important; }
+.tg-scope .space-y-12 > :not([hidden]) ~ :not([hidden]) { margin-top: 3rem !important; }
+.tg-scope .space-x-12 > :not([hidden]) ~ :not([hidden]) { margin-left: 3rem !important; }
+.tg-scope .space-y-14 > :not([hidden]) ~ :not([hidden]) { margin-top: 3.5rem !important; }
+.tg-scope .space-x-14 > :not([hidden]) ~ :not([hidden]) { margin-left: 3.5rem !important; }
+.tg-scope .space-y-16 > :not([hidden]) ~ :not([hidden]) { margin-top: 4rem !important; }
+.tg-scope .space-x-16 > :not([hidden]) ~ :not([hidden]) { margin-left: 4rem !important; }
+.tg-scope .space-y-20 > :not([hidden]) ~ :not([hidden]) { margin-top: 5rem !important; }
+.tg-scope .space-x-20 > :not([hidden]) ~ :not([hidden]) { margin-left: 5rem !important; }
+.tg-scope .space-y-24 > :not([hidden]) ~ :not([hidden]) { margin-top: 6rem !important; }
+.tg-scope .space-x-24 > :not([hidden]) ~ :not([hidden]) { margin-left: 6rem !important; }
+.tg-scope .space-y-28 > :not([hidden]) ~ :not([hidden]) { margin-top: 7rem !important; }
+.tg-scope .space-x-28 > :not([hidden]) ~ :not([hidden]) { margin-left: 7rem !important; }
+.tg-scope .space-y-32 > :not([hidden]) ~ :not([hidden]) { margin-top: 8rem !important; }
+.tg-scope .space-x-32 > :not([hidden]) ~ :not([hidden]) { margin-left: 8rem !important; }
+.tg-scope .space-y-0\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.125rem !important; }
+.tg-scope .space-x-0\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.125rem !important; }
+.tg-scope .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem !important; }
+.tg-scope .space-x-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.375rem !important; }
+.tg-scope .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem !important; }
+.tg-scope .space-x-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.625rem !important; }
+.tg-scope .space-y-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem !important; }
+.tg-scope .space-x-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.875rem !important; }

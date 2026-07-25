@@ -50,9 +50,9 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
   };
 
   const selCls =
-    'w-full bg-white/[0.05] border border-white/10 rounded-2xl py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 appearance-none disabled:opacity-50 transition-colors';
+    'w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none disabled:opacity-50 transition-colors';
   const inCls =
-    'w-full bg-white/[0.05] border border-white/10 rounded-2xl py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors';
+    'w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors';
 
   return (
     <div className="space-y-6 slide-in">
@@ -63,14 +63,14 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
       )}
 
       <div className="flex items-center gap-2.5">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-lg shadow-emerald-950/40">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-lg shadow-emerald-950/40">
           <Check className="w-5 h-5" />
         </div>
         <h2 className="text-xl font-bold">Mashina qabul qilish</h2>
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Marka</label>
+        <label className="block text-sm text-gray-400 mb-1">Marka</label>
         <select
           className={selCls}
           value={store.brand}
@@ -84,7 +84,7 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Rusum (model)</label>
+        <label className="block text-sm text-gray-400 mb-1">Rusum (model)</label>
         <select
           disabled={!store.brand}
           className={selCls}
@@ -99,7 +99,7 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Mashina raqami</label>
+        <label className="block text-sm text-gray-400 mb-1">Mashina raqami</label>
         <input
           type="text"
           placeholder="01 A 123 AA"
@@ -110,7 +110,7 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Mijoz raqami</label>
+        <label className="block text-sm text-gray-400 mb-1">Mijoz raqami</label>
         <PhoneInput
           value={store.customerPhone}
           onChange={(v) => store.setCarInfo({ customerPhone: v })}
@@ -122,7 +122,7 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
       <button
         disabled={!canAccept || saving}
         onClick={handleAccept}
-        className="w-full mt-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-4 rounded-2xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg shadow-emerald-950/40"
+        className="w-full mt-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-4 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg shadow-emerald-950/40"
       >
         {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Qabul qildim <Check className="w-5 h-5" /></>}
       </button>

@@ -168,7 +168,7 @@ export default function BotUIPage() {
 
   if (loading) {
     return (
-      <div className="flex bg-[#0a0e16] text-white min-h-screen items-center justify-center">
+      <div className="tg-scope flex bg-gray-900 text-white min-h-screen items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
       </div>
     );
@@ -176,7 +176,7 @@ export default function BotUIPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-[#0a0e16] flex items-center justify-center p-4">
+      <div className="tg-scope min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <PhoneLogin
           onAuth={(user) => {
             setAuthUser(user);
@@ -190,7 +190,7 @@ export default function BotUIPage() {
   const displayName = authUser?.name || carsData.name;
 
   return (
-    <div className="min-h-screen bg-[#0a0e16] text-slate-100 font-sans" style={{ colorScheme: 'dark' }}>
+    <div className="tg-scope min-h-screen bg-gray-900 text-gray-100 font-sans" style={{ colorScheme: 'dark' }}>
       <div className="max-w-md mx-auto px-4 py-5 pb-28">
         {/* ── Header ── */}
         <header className="mb-6">
@@ -202,7 +202,7 @@ export default function BotUIPage() {
               <div>
                 <h1 className="text-base font-extrabold leading-tight">Asia Auto Service</h1>
                 {displayName && (
-                  <p className="text-xs text-slate-400 leading-tight">
+                  <p className="text-xs text-gray-400 leading-tight">
                     {displayName}
                     {carsData.is_boss && <span className="ml-1.5 text-amber-400 font-semibold">· Boshliq</span>}
                   </p>
@@ -212,7 +212,7 @@ export default function BotUIPage() {
             {authUser && (
               <button
                 onClick={handleLogout}
-                className="text-xs text-slate-400 hover:text-slate-200 border border-white/10 hover:border-white/20 rounded-xl px-3 py-1.5 transition-colors shrink-0"
+                className="text-xs text-gray-400 hover:text-gray-200 border border-gray-700 hover:border-gray-600 rounded-xl px-3 py-1.5 transition-colors shrink-0"
               >
                 Chiqish
               </button>
@@ -232,32 +232,19 @@ export default function BotUIPage() {
               {/* Yangi mashina qabul qilish (yuqorida) */}
               <AcceptForm catalog={catalogData} identity={resolveIdentity(authUser)} onDone={finishHome} />
 
-              {/* Boshliq — barcha mashinalar kuzatuvi */}
-              {carsData.is_boss && (
-                <button
-                  onClick={() => {
-                    loadCars();
-                    setView('boss');
-                  }}
-                  className="w-full font-bold py-3.5 rounded-2xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg shadow-amber-950/40"
-                >
-                  <Eye className="w-5 h-5" /> Barcha mashinalar (kuzatuv)
-                </button>
-              )}
-
               {/* Tugallanmagan ishlar (qator-qator) */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                     Tugallanmagan ishlarim ({carsData.myCars.length})
                   </h2>
-                  <button onClick={loadCars} className="text-slate-400 hover:text-white p-1" title="Yangilash">
+                  <button onClick={loadCars} className="text-gray-400 hover:text-white p-1" title="Yangilash">
                     <RefreshCw className={`w-4 h-4 ${loadingCars ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
 
                 {carsData.myCars.length === 0 && !loadingCars && (
-                  <div className="text-slate-500 text-center py-8 text-sm bg-white/[0.02] border border-white/5 rounded-2xl">
+                  <div className="text-gray-500 text-center py-8 text-sm bg-gray-800/50 border border-gray-700 rounded-xl">
                     Hozircha tugallanmagan ish yo'q
                   </div>
                 )}
@@ -272,11 +259,11 @@ export default function BotUIPage() {
                           setSelectedCar(c);
                           setView('detail');
                         }}
-                        className="w-full text-left bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-2xl p-4 flex items-center justify-between gap-2 transition-colors"
+                        className="w-full text-left bg-gray-800 border border-gray-700 hover:border-gray-600 rounded-xl p-4 flex items-center justify-between gap-2 transition-colors"
                       >
                         <div className="min-w-0">
                           <div className="font-bold truncate">
-                            {c.mashina} {c.raqam && <span className="text-slate-400 font-normal">· {c.raqam}</span>}
+                            {c.mashina} {c.raqam && <span className="text-gray-400 font-normal">· {c.raqam}</span>}
                           </div>
                           <div className="flex items-center gap-2 mt-1.5">
                             <span
@@ -285,15 +272,28 @@ export default function BotUIPage() {
                             >
                               {meta.emoji} {meta.label}
                             </span>
-                            <span className="text-xs text-slate-500">{fmtTime(c.qabul_vaqti)}</span>
+                            <span className="text-xs text-gray-500">{fmtTime(c.qabul_vaqti)}</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
                       </button>
                     );
                   })}
                 </div>
               </div>
+
+              {/* Boshliq — barcha mashinalar kuzatuvi (ro'yxatdan keyin, alohida) */}
+              {carsData.is_boss && (
+                <button
+                  onClick={() => {
+                    loadCars();
+                    setView('boss');
+                  }}
+                  className="w-full font-bold py-4 rounded-xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-950/40"
+                >
+                  <Eye className="w-5 h-5" /> Barcha mashinalar (kuzatuv)
+                </button>
+              )}
             </div>
           )}
 
@@ -314,7 +314,7 @@ export default function BotUIPage() {
           {/* ══ TOPSHIRISH ══ */}
           {view === 'complete' && (
             <div className="slide-in">
-              <div className="mb-4 text-sm text-slate-400">
+              <div className="mb-4 text-sm text-gray-400">
                 🚗 {selectedCar?.mashina} {selectedCar?.raqam ? `· ${selectedCar.raqam}` : ''} — topshirish
               </div>
               {completeStep === 1 && (
