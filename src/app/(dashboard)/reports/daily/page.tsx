@@ -157,9 +157,14 @@ export default function DailyReportPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)', gap: 24, alignItems: 'start' }} className="daily-grid">
         {/* HISOB-KITOB (breakdown) */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Wallet size={18} color="var(--accent)" />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>KUNLIK FOYDA HISOB-KITOBI</span>
+          <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Wallet size={18} color="var(--accent)" />
+              <span style={{ fontSize: 14, fontWeight: 800 }}>KUNLIK FOYDA HISOB-KITOBI</span>
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text3)', marginTop: 4 }}>
+              Sherik va ishxona foydasi — faqat bugun to'langan (kassaga tushgan) buyurtmalardan
+            </div>
           </div>
           <div style={{ padding: '10px 22px 18px' }}>
             {[
@@ -233,11 +238,16 @@ export default function DailyReportPage() {
 
         {/* USTALAR */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Users size={18} color="#8b5cf6" /> USTALAR ISHLAB TOPGANI
-            </span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: '#8b5cf6' }}>{fmt(calc.ustalarJami)} UZS</span>
+          <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Users size={18} color="#8b5cf6" /> USTALAR ISHLAB TOPGANI
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#8b5cf6' }}>{fmt(calc.ustalarJami)} UZS</span>
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text3)', marginTop: 4 }}>
+              Shu kuni qilingan ish bo'yicha — to'langan yoki to'lanmaganidan qat'i nazar ({calc.workOrdersCount} ta buyurtma)
+            </div>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>

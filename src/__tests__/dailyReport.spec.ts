@@ -83,8 +83,6 @@ describe('computeDailyReport', () => {
     expect(r.ustalarJami).toBe(800_000);
     expect(r.empRows).toHaveLength(1);
     expect(r.empRows[0]).toMatchObject({ id: 1, earned: 800_000, count: 1, cars: 1 });
-    // Rekonsilyatsiya: ustalar + yalpi = xizmat daromadi (chegirmadan keyin)
-    expect(r.xizmatDaromad).toBe(2_000_000);
   });
 
   it("boshqa kundagi buyurtma hisobga olinmaydi", () => {
@@ -165,8 +163,6 @@ describe('computeDailyReport', () => {
     }];
     const r = computeDailyReport(orders, [], [usta(1, 40)], DAY);
     expect(r.empRows[0].earned).toBe(200_000);
-    // Rekonsilyatsiya: ustalar(200k) + yalpi(300k) = final − zap = 500k
-    expect(r.xizmatDaromad).toBe(500_000);
   });
 
   it('zarplata berilmagan bo\'lsa foizdan hisoblanadi', () => {
@@ -247,9 +243,10 @@ describe('computeDailyReport — to\'lov sanasi (cash basis)', () => {
     const rDay = computeDailyReport(orders, ops, workers, DAY);
     expect(rDay.ordersCount).toBe(1);
     expect(rDay.yalpiFoyda).toBe(1_200_000);
-    expect(rDay.empRows[0]).toMatchObject({ id: 1, earned: 800_000 });
+    // Usta ish haqi bu yerda EMAS — ish OTHER kuni qilingan (ish kuni asosida)
+    expect(rDay.empRows).toHaveLength(0);
 
-    // Yaratilgan kunida (OTHER) endi hisoblanmaydi
+    // Foyda yaratilgan kunida (OTHER) hisoblanmaydi (o'sha kuni to'lanmagan)
     const rOther = computeDailyReport(orders, ops, workers, OTHER);
     expect(rOther.ordersCount).toBe(0);
     expect(rOther.yalpiFoyda).toBe(0);
@@ -292,5 +289,61 @@ describe('computeDailyReport — to\'lov sanasi (cash basis)', () => {
     expect(map.get('40')).toBe(DAY); // eng oxirgi kun
     expect(map.get('41')).toBe(NEXT);
     expect(map.size).toBe(2);
+  });
+});
+
+// ── Ustalar ish haqi ISH KUNI asosida (to'lovdan qat'i nazar) ─────────────────
+describe('computeDailyReport — ustalar ish kuni asosida', () => {
+  const workers = [usta(1, 40), sherik(2, 50)];
+
+  it("to'lanmagan buyurtmada ham usta ish haqi bugun tushadi (foyda esa 0)", () => {
+    // Bugun yaratilgan, hali TO'LANMAGAN buyurtma
+    const orders: DailyOrderLike[] = [{
+      ...order(50, DAY, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }]),
+      holat: 'tulanmagan',
+    }];
+    const r = computeDailyReport(orders, [], workers, DAY);
+    expect(r.empRows).toHaveLength(1);
+    expect(r.empRows[0].earned).toBe(800_000); // usta ulushi tushadi
+    // Foyda esa faqat to'langandan — bu buyurtma to'lanmagan
+    expect(r.ordersCount).toBe(0);
+    expect(r.yalpiFoyda).toBe(0);
+    expect(r.sherikUlushiJami).toBe(0);
+  });
+
+  it("KALIT: usta ish kuni, foyda to'lov kuni — boshqa-boshqa kunlarga tushadi", () => {
+    // Ish OTHER kuni qilingan, puli DAY kuni tushgan
+    const orders = [order(51, OTHER, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }])];
+    const ops = [payOp(51, DAY, 2_000_000)];
+
+    // DAY (to'lov kuni): foyda bor, usta ish haqi YO'Q (ish OTHER kuni edi)
+    const rDay = computeDailyReport(orders, ops, workers, DAY);
+    expect(rDay.yalpiFoyda).toBe(1_200_000);
+    expect(rDay.empRows).toHaveLength(0);
+
+    // OTHER (ish kuni): usta ish haqi bor, foyda YO'Q (o'sha kuni to'lanmagan)
+    const rOther = computeDailyReport(orders, ops, workers, OTHER);
+    expect(rOther.empRows[0].earned).toBe(800_000);
+    expect(rOther.yalpiFoyda).toBe(0);
+  });
+
+  it("bekor qilingan buyurtma usta ish haqiga kirmaydi", () => {
+    const orders: DailyOrderLike[] = [{
+      ...order(52, DAY, 0, [{ workerId: 1, narx: 1_000_000, zarplata: 400_000 }]),
+      holat: 'bekor qilingan',
+    }];
+    const r = computeDailyReport(orders, [], workers, DAY);
+    expect(r.empRows).toHaveLength(0);
+    expect(r.workOrdersCount).toBe(0);
+  });
+
+  it("workOrdersCount shu kuni yaratilgan (bekor bo'lmagan) buyurtmalarni sanaydi", () => {
+    const orders: DailyOrderLike[] = [
+      { ...order(53, DAY, 0, [{ workerId: 1, narx: 500_000 }]), holat: 'tulanmagan' },
+      { ...order(54, DAY, 0, [{ workerId: 1, narx: 500_000 }]), holat: 'tamirlanmoqda' },
+      { ...order(55, OTHER, 0, [{ workerId: 1, narx: 500_000 }]), holat: 'tulanmagan' }, // boshqa kun
+    ];
+    const r = computeDailyReport(orders, [], workers, DAY);
+    expect(r.workOrdersCount).toBe(2);
   });
 });

@@ -6,13 +6,20 @@
 // farqi: ulush olmaydigan (korxona) xodimlar oyligi o'rniga har kunga
 // BELGILANGAN xarajat ayiriladi (shu xodimlar oylik maoshi ÷ 30 kun).
 //
-// KUN TANLASH — KASSA ASOSIDA (cash basis):
-// Buyurtma qaysi kuni YARATILGANiga emas, qaysi kuni PULI KASSAGA TUSHGANiga
-// (to'langaniga) qarab hisoblanadi. To'lov paytida yaratiladigan kassa
-// operatsiyasi (source 'buyurtma', comment "Buyurtma #<id>") sanasi = to'lov
-// kuni. Bir buyurtma bir necha kun bo'lib to'lansa — yakuniy (eng oxirgi) to'lov
-// kuni olinadi. To'lov operatsiyasi topilmasa (masalan 100% chegirma yoki eski
-// ma'lumot) — buyurtma yaratilgan sanaga (`sana`) qaytiladi.
+// IKKI XIL ASOS (muhim biznes qoidasi):
+//
+// 1) SHERIK va ISHXONA foydasi — KASSA ASOSIDA (cash basis):
+//    Buyurtma qaysi kuni PULI KASSAGA TUSHGANiga (to'langaniga) qarab. To'lov
+//    paytida yaratiladigan kassa operatsiyasi (source 'buyurtma', comment
+//    "Buyurtma #<id>") sanasi = to'lov kuni. Bir buyurtma bir necha kun bo'lib
+//    to'lansa — yakuniy (eng oxirgi) to'lov kuni. To'lov operatsiyasi topilmasa
+//    (100% chegirma yoki eski ma'lumot) — yaratilgan sanaga (`sana`) qaytiladi.
+//
+// 2) USTALAR ish haqi — ISH KUNI ASOSIDA (payment irrelevant):
+//    Usta ishni qilgan kuni (buyurtma `sana`si) ulushini oladi — mijoz
+//    to'lagan yoki to'lamaganidan QAT'I NAZAR (xodimga ish haqi vaqtida
+//    berilishi kerak). Faqat BEKOR QILINGAN buyurtma hisobga olinmaydi.
+//    Bu workers/page.tsx dagi usta hisob-kitobiga mos.
 //
 // MUHIM: bu fayl vitest bilan test qilinadi (dailyReport.spec.ts). Formulani
 // o'zgartirsangiz testlar buziladi — avval biznes qoidasini tasdiqlang.
@@ -100,7 +107,7 @@ export interface DailyReport {
   ishxonaFoyda: number;
   empRows: DailyEmployeeRow[];
   ustalarJami: number;
-  xizmatDaromad: number;
+  workOrdersCount: number;
 }
 
 // Operatsiya kunini (YYYY-MM-DD) aniqlash. `date` to'liq ISO ("...T...") yoki
@@ -157,10 +164,18 @@ export function computeDailyReport(
   const orderDay = (b: DailyOrderLike): string =>
     paymentDayByOrder.get(String(b.id)) ?? b.sana;
 
-  // Takrorlanmas buyurtmalar (id bo'yicha), faqat shu kunga TO'LANGAN — to'lov
-  // (kassaga pul tushgan) kuni bo'yicha, yaratilgan kuni bo'yicha emas.
-  const dayOrders = Array.from(new Map(buyurtmalar.map((b) => [b.id, b])).values())
+  // Takrorlanmas buyurtmalar (id bo'yicha)
+  const uniqueOrders = Array.from(new Map(buyurtmalar.map((b) => [b.id, b])).values());
+
+  // FOYDA uchun (sherik/ishxona) — faqat shu kunga TO'LANGAN buyurtmalar
+  // (kassaga pul tushgan kuni bo'yicha, yaratilgan kuni bo'yicha emas).
+  const dayOrders = uniqueOrders
     .filter((b) => b.holat === 'tulangan' && orderDay(b) === selectedDate);
+
+  // USTALAR ish haqi uchun — shu kuni YARATILGAN (ish qilingan) buyurtmalar,
+  // to'langan yoki to'lanmaganidan qat'i nazar. Faqat bekor qilinganlar chiqadi.
+  const workOrders = uniqueOrders
+    .filter((b) => b.holat !== 'bekor qilingan' && b.sana === selectedDate);
 
   // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi
   const yalpiFoyda = dayOrders.reduce(
@@ -207,14 +222,14 @@ export function computeDailyReport(
   // Qolgani — ishxona foydasi
   const ishxonaFoyda = sofFoyda - sherikUlushiJami;
 
-  // ── Har bir usta bugun ishlab topgani ────────────────────────────────────────
+  // ── Har bir usta shu kuni ishlab topgani (to'lovdan qat'i nazar) ─────────────
   const empRows: DailyEmployeeRow[] = xodimlar
     .filter((x) => (x.role || 'xodim') !== 'sherik')
     .map((x) => {
       let earned = 0;
       let count = 0;
       const orderIds = new Set<string>();
-      dayOrders.forEach((b) => {
+      workOrders.forEach((b) => {
         const srv = (b.srv as number) || b.services.reduce((s, sv) => s + (sv.narx || 0), 0);
         const zap = (b.zap as number) || 0;
         const final = (b.final as number) ?? (b.total as number) ?? 0;
@@ -250,7 +265,6 @@ export function computeDailyReport(
     ishxonaFoyda,
     empRows,
     ustalarJami,
-    // Xizmat daromadi (chegirmadan keyin) = ustalar ulushi + yalpi foyda
-    xizmatDaromad: ustalarJami + yalpiFoyda,
+    workOrdersCount: workOrders.length,
   };
 }
