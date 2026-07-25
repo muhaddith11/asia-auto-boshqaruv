@@ -83,6 +83,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons/).*)',
+    // Statik fayllarni (public/ dagi rasmlar, logolar, shriftlar) auth tekshiruvidan chiqaramiz.
+    // Aks holda login sahifasida (sessiyasiz) /logo-login.png so'rovi /login ga redirect bo'lib,
+    // rasm o'rniga HTML qaytadi va logo ko'rinmaydi.
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons/|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf)$).*)',
   ],
 };
