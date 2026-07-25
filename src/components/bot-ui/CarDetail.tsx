@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle } from 'lucide-react';
-import { Car, Identity, updateStage, stageMeta, fmtTime } from './botClient';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil } from 'lucide-react';
+import { Car, Identity, updateStage, updateCarInfo, stageMeta, fmtTime } from './botClient';
+import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -16,8 +17,34 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   const [busy, setBusy] = useState(false);
   const [zapMode, setZapMode] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editRaqam, setEditRaqam] = useState(car.raqam || '');
+  const [editTel, setEditTel] = useState(car.tel || '');
   const [zapNames, setZapNames] = useState<string[]>(['']);
   const meta = stageMeta(car.bosqich);
+
+  const openEdit = () => {
+    setEditRaqam(car.raqam || '');
+    setEditTel(car.tel || '');
+    setEditMode(true);
+  };
+  const saveEdit = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await updateCarInfo(identity, car.id, { raqam: editRaqam, tel: editTel });
+      if (!res.ok) {
+        toast.error(res.error || 'Xatolik');
+        setBusy(false);
+        return;
+      }
+      toast.success('Saqlandi ✅');
+      onDone();
+    } catch {
+      toast.error("Server bilan bog'lanishda xatolik");
+      setBusy(false);
+    }
+  };
 
   const openZap = () => {
     setZapNames(['']);
@@ -64,24 +91,61 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
       </button>
 
       {/* Mashina kartasi */}
-      <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-2">
-        <div className="flex items-center gap-2 text-lg font-bold">
-          <CarIcon className="w-5 h-5 text-blue-400" /> {car.mashina}
-        </div>
-        {car.raqam && <div className="text-sm text-gray-300">🔢 {car.raqam}</div>}
-        {car.tel && car.tel.replace(/\D/g, '').length > 3 && (
-          <div className="text-sm text-gray-300">
-            📞 <a href={`tel:${car.tel}`} className="text-blue-400 hover:underline">{car.tel}</a>
+      {editMode ? (
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2 text-base font-bold">
+            <CarIcon className="w-5 h-5 text-blue-400" /> {car.mashina}
           </div>
-        )}
-        <div className="inline-flex items-center gap-1 text-sm font-semibold px-2 py-1 rounded-lg" style={{ background: meta.color + '22', color: meta.color }}>
-          {meta.emoji} {meta.label}
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Mashina raqami</label>
+            <input
+              value={editRaqam}
+              onChange={(e) => setEditRaqam(e.target.value)}
+              placeholder="01 A 123 AA"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl py-2.5 px-3 text-white uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Mijoz raqami</label>
+            <PhoneInput
+              value={editTel}
+              onChange={setEditTel}
+              placeholder="+998 90 123 45 67"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl py-2.5 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => setEditMode(false)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-gray-200 transition-colors">
+              Bekor
+            </button>
+            <button disabled={busy} onClick={saveEdit} className="flex-1 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 flex items-center justify-center gap-1.5 transition-colors">
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Saqlash'}
+            </button>
+          </div>
         </div>
-        <div className="text-xs text-gray-400 pt-1">Qabul: {fmtTime(car.qabul_vaqti)}</div>
-        {car.zapchast_nomi && car.bosqich === 'zapchast_kutilmoqda' && (
-          <div className="text-xs text-orange-300">📦 Kutilayotgan zapchast: <b>{car.zapchast_nomi}</b> ({fmtTime(car.zapchast_vaqti)})</div>
-        )}
-      </div>
+      ) : (
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-2 relative">
+          <button onClick={openEdit} className="absolute top-3 right-3 text-gray-400 hover:text-blue-400 p-1" title="Raqam / telefonni tahrirlash">
+            <Pencil className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-2 text-lg font-bold pr-8">
+            <CarIcon className="w-5 h-5 text-blue-400 shrink-0" /> {car.mashina}
+          </div>
+          {car.raqam && <div className="text-sm text-gray-300">🔢 {car.raqam}</div>}
+          {car.tel && car.tel.replace(/\D/g, '').length > 3 && (
+            <div className="text-sm text-gray-300">
+              📞 <a href={`tel:${car.tel}`} className="text-blue-400 hover:underline">{car.tel}</a>
+            </div>
+          )}
+          <div className="inline-flex items-center gap-1 text-sm font-semibold px-2 py-1 rounded-lg" style={{ background: meta.color + '22', color: meta.color }}>
+            {meta.emoji} {meta.label}
+          </div>
+          <div className="text-xs text-gray-400 pt-1">Qabul: {fmtTime(car.qabul_vaqti)}</div>
+          {car.zapchast_nomi && car.bosqich === 'zapchast_kutilmoqda' && (
+            <div className="text-xs text-orange-300">📦 Kutilayotgan zapchast: <b>{car.zapchast_nomi}</b> ({fmtTime(car.zapchast_vaqti)})</div>
+          )}
+        </div>
+      )}
 
       {/* Zapchast nomlarini kiritish — ko'p qatorli */}
       {zapMode ? (

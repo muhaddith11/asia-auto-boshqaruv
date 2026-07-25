@@ -75,6 +75,20 @@ export async function updateStage(
   return res.json();
 }
 
+// Qabul qilingan mashina ma'lumotini (raqam / mijoz tel) tahrirlash. Bosqich o'zgarmaydi.
+export async function updateCarInfo(
+  identity: Identity,
+  orderId: number,
+  info: { raqam: string; tel: string }
+) {
+  const res = await fetch('/api/bot-ui/stage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, action: 'tahrirlash', raqam: info.raqam, tel: info.tel, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
 // ── Bosqich meta (nom, emoji, rang) ──────────────────────────────────────────
 export const STAGES: Record<string, { label: string; emoji: string; color: string }> = {
   qabul_qilindi: { label: 'Qabul qilindi', emoji: '🟡', color: '#eab308' },

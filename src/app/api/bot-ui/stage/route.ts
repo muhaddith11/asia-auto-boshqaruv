@@ -4,16 +4,18 @@ import { identifyWorker } from '@/lib/botWorker';
 
 export const dynamic = 'force-dynamic';
 
-type Action = 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | 'bekor';
+type Action = 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | 'bekor' | 'tahrirlash';
 
 // Mashina bosqichini o'zgartirish. Xizmat/narx kiritish TOPSHIRISH'da (submit) bo'ladi.
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, action, zapchastNomi, workerPhone, mechanicChatId } = body as {
+    const { orderId, action, zapchastNomi, raqam, tel, workerPhone, mechanicChatId } = body as {
       orderId: number;
       action: Action;
       zapchastNomi?: string;
+      raqam?: string;
+      tel?: string;
       workerPhone?: string;
       mechanicChatId?: string;
     };
@@ -64,6 +66,14 @@ export async function POST(req: NextRequest) {
       update.bosqich = 'topshirildi';
       update.topshirilgan_vaqti = nowIso;
       log.push({ bosqich: 'topshirildi', vaqt: nowIso, xodim_id: worker.id });
+    } else if (action === 'tahrirlash') {
+      // Mashina raqami / mijoz telefonini tahrirlash — bosqich o'zgarmaydi.
+      if (typeof raqam === 'string') update.raqam = raqam.trim();
+      if (typeof tel === 'string') update.tel = tel.trim();
+      if (update.raqam === undefined && update.tel === undefined) {
+        return NextResponse.json({ ok: false, error: "Tahrirlash uchun ma'lumot yo'q." }, { status: 400 });
+      }
+      log.push({ bosqich: order.bosqich, vaqt: nowIso, xodim_id: worker.id, izoh: "Ma'lumot tahrirlandi (raqam/tel)" });
     } else if (action === 'bekor') {
       // Mijoz mashinani xizmatsiz qaytarib oldi — buyurtma bekor qilinadi.
       // O'chirilmaydi (tarix saqlanadi), lekin faol ro'yxatdan chiqadi.
