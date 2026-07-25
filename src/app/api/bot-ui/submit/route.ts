@@ -154,7 +154,9 @@ export async function POST(req: NextRequest) {
     let receiptPlate = plateNumber || '';
 
     if (orderId) {
-      // ── TOPSHIRISH: mavjud qabul qilingan mashinani yakunlash ──
+      // ── CHEK CHIQARISH: qabul qilingan mashinaga xizmat/zapchast qo'shib
+      //    chek chiqariladi → mashina "tayyor" bo'ladi (hali TOPSHIRILMAGAN).
+      //    Mijozga topshirish alohida "Topshirildi" tugmasi bilan bo'ladi.
       const { data: existing } = await supabase
         .from('orders')
         .select('mashina, raqam, status_log')
@@ -166,15 +168,15 @@ export async function POST(req: NextRequest) {
       if (existing.mashina) receiptCar = existing.mashina;
       if (existing.raqam) receiptPlate = existing.raqam;
       const log = Array.isArray(existing.status_log) ? existing.status_log : [];
-      log.push({ bosqich: 'topshirildi', vaqt: nowIso, xodim_id: worker.id });
+      log.push({ bosqich: 'tayyor', vaqt: nowIso, xodim_id: worker.id, izoh: 'Chek chiqarildi' });
 
       const { data, error } = await supabase
         .from('orders')
         .update({
           ...completionFields,
           holat: 'tulanmagan',
-          bosqich: 'topshirildi',
-          topshirilgan_vaqti: nowIso,
+          bosqich: 'tayyor',
+          tayyor_vaqti: nowIso,
           status_log: log,
         })
         .eq('id', orderId)

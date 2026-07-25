@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ArrowLeft, Loader2, Wrench, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X } from 'lucide-react';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle } from 'lucide-react';
 import { Car, Identity, updateStage, stageMeta, fmtTime } from './botClient';
 import toast from 'react-hot-toast';
 
@@ -15,6 +15,7 @@ interface Props {
 export default function CarDetail({ car, identity, onDone, onComplete, onBack }: Props) {
   const [busy, setBusy] = useState(false);
   const [zapMode, setZapMode] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [zapNames, setZapNames] = useState<string[]>(['']);
   const meta = stageMeta(car.bosqich);
 
@@ -31,7 +32,11 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
     doStage('zapchast_kerak', list.join(', '));
   };
 
-  const doStage = async (action: 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor', nomi?: string) => {
+  const doStage = async (
+    action: 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | 'bekor',
+    nomi?: string,
+    okMsg = 'Saqlandi ✅'
+  ) => {
     if (busy) return;
     setBusy(true);
     try {
@@ -41,7 +46,7 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
         setBusy(false);
         return;
       }
-      toast.success('Saqlandi ✅');
+      toast.success(okMsg);
       onDone();
     } catch {
       toast.error("Server bilan bog'lanishda xatolik");
@@ -131,8 +136,8 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
               <button disabled={busy} onClick={openZap} className={`${btn} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-orange-950/40`}>
                 <PackageOpen className="w-5 h-5" /> Zapchast kerak
               </button>
-              <button disabled={busy} onClick={() => doStage('tayyor')} className={`${btn} bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 shadow-emerald-950/40`}>
-                {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> Tayyor</>}
+              <button onClick={onComplete} className={`${btn} bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 shadow-emerald-950/40`}>
+                <CheckCircle2 className="w-5 h-5" /> Tayyor (xizmat/chek)
               </button>
             </>
           )}
@@ -144,10 +149,43 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
           )}
 
           {car.bosqich === 'tayyor' && (
-            <button onClick={onComplete} className={`${btn} bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-950/40`}>
-              <Wrench className="w-5 h-5" /> Topshirish (xizmat/narx kiritish)
+            <button disabled={busy} onClick={() => doStage('topshirildi', undefined, 'Mijozga topshirildi 🚗')} className={`${btn} bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-950/40`}>
+              {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> Topshirildi (mijoz oldi)</>}
             </button>
           )}
+
+          {/* Bekor qilish — mijoz mashinani xizmatsiz qaytarib oldi */}
+          <div className="pt-3 mt-1 border-t border-gray-700/60">
+            {confirmCancel ? (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 space-y-3">
+                <p className="text-sm text-red-200 text-center">
+                  Mijoz mashinani qaytarib oldimi? Ish bekor qilinadi.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setConfirmCancel(false)}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 transition-colors"
+                  >
+                    Yo'q
+                  </button>
+                  <button
+                    disabled={busy}
+                    onClick={() => doStage('bekor', undefined, 'Bekor qilindi ❌')}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-bold bg-red-600 hover:bg-red-500 text-white disabled:opacity-50 flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Ha, bekor qilish'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmCancel(true)}
+                className="w-full py-3 rounded-xl text-sm font-semibold border border-red-500/30 text-red-300 hover:bg-red-500/10 flex items-center justify-center gap-2 transition-colors"
+              >
+                <XCircle className="w-4 h-4" /> Bekor qilish (mijoz olib ketdi)
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

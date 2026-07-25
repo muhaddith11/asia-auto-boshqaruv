@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
       .eq('qabul_xodim_id', worker.id)
       .not('bosqich', 'is', null)
       .neq('bosqich', 'topshirildi')
+      .neq('bosqich', 'bekor_qilindi')
       .order('qabul_vaqti', { ascending: false });
 
     if (myErr) {
@@ -39,11 +40,12 @@ export async function GET(req: NextRequest) {
 
     let allCars = null;
     if (worker.is_boss) {
-      // Boshliq — barcha jarayondagi mashinalar + oxirgi topshirilganlar (kuzatuv)
+      // Boshliq — faqat topshirilmagan (faol) mashinalar. Topshirilganlar chiqib ketadi.
       const { data: all, error: allErr } = await supabase
         .from('orders')
         .select(CAR_FIELDS)
         .not('bosqich', 'is', null)
+        .neq('bosqich', 'topshirildi')
         .order('qabul_vaqti', { ascending: false })
         .limit(200);
       if (allErr) {

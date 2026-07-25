@@ -155,7 +155,7 @@ export default function BotUIPage() {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || `Server xatosi: ${res.status}`);
-      toast.success(`Topshirildi ✅ Chek #${j.id}`);
+      toast.success(`Chek chiqdi ✅ Mashina "tayyor" — endi topshirishingiz mumkin. Chek #${j.id}`);
       store.reset();
       setSelectedCar(null);
       await finishHome();
@@ -315,7 +315,7 @@ export default function BotUIPage() {
           {view === 'complete' && (
             <div className="slide-in">
               <div className="mb-4 text-sm text-gray-400">
-                🚗 {selectedCar?.mashina} {selectedCar?.raqam ? `· ${selectedCar.raqam}` : ''} — topshirish
+                🚗 {selectedCar?.mashina} {selectedCar?.raqam ? `· ${selectedCar.raqam}` : ''} — chek chiqarish
               </div>
               {completeStep === 1 && (
                 <StepServices catalog={catalogData} onNext={() => setCompleteStep(2)} onPrev={() => setView('detail')} />

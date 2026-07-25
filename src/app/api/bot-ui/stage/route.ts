@@ -4,7 +4,7 @@ import { identifyWorker } from '@/lib/botWorker';
 
 export const dynamic = 'force-dynamic';
 
-type Action = 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor';
+type Action = 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | 'bekor';
 
 // Mashina bosqichini o'zgartirish. Xizmat/narx kiritish TOPSHIRISH'da (submit) bo'ladi.
 export async function POST(req: NextRequest) {
@@ -59,6 +59,17 @@ export async function POST(req: NextRequest) {
       update.bosqich = 'tayyor';
       update.tayyor_vaqti = nowIso;
       log.push({ bosqich: 'tayyor', vaqt: nowIso, xodim_id: worker.id });
+    } else if (action === 'topshirildi') {
+      // Mijozga topshirildi — yakuniy holat. Boshliq va xodim ro'yxatidan chiqadi.
+      update.bosqich = 'topshirildi';
+      update.topshirilgan_vaqti = nowIso;
+      log.push({ bosqich: 'topshirildi', vaqt: nowIso, xodim_id: worker.id });
+    } else if (action === 'bekor') {
+      // Mijoz mashinani xizmatsiz qaytarib oldi — buyurtma bekor qilinadi.
+      // O'chirilmaydi (tarix saqlanadi), lekin faol ro'yxatdan chiqadi.
+      update.bosqich = 'bekor_qilindi';
+      update.holat = 'bekor';
+      log.push({ bosqich: 'bekor_qilindi', vaqt: nowIso, xodim_id: worker.id, izoh: 'Mijoz mashinani qaytarib oldi' });
     } else {
       return NextResponse.json({ ok: false, error: "Noma'lum amal." }, { status: 400 });
     }

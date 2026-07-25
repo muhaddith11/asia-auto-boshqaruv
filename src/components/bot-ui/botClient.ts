@@ -64,7 +64,7 @@ export async function acceptCar(
 export async function updateStage(
   identity: Identity,
   orderId: number,
-  action: 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor',
+  action: 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | 'bekor',
   zapchastNomi?: string
 ) {
   const res = await fetch('/api/bot-ui/stage', {
@@ -82,6 +82,7 @@ export const STAGES: Record<string, { label: string; emoji: string; color: strin
   zapchast_kutilmoqda: { label: 'Zapchast kutilyapti', emoji: '📦', color: '#f97316' },
   tayyor: { label: 'Tayyor', emoji: '✅', color: '#22c55e' },
   topshirildi: { label: 'Topshirildi', emoji: '🚗', color: '#64748b' },
+  bekor_qilindi: { label: 'Bekor qilindi', emoji: '❌', color: '#f43f5e' },
 };
 
 export function stageMeta(bosqich: string | null) {
