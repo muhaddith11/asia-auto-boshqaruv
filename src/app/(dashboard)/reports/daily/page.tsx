@@ -34,9 +34,9 @@ export default function DailyReportPage() {
 
   useEffect(() => {
     setMounted(true);
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    setSelectedDate(today);
+    // Saqlangan sanalar (buyurtma `sana`, kassa operatsiyasi sanasi) UTC asosida
+    // olingani uchun "bugun" ham UTC bo'yicha — ichki izchillik uchun.
+    setSelectedDate(new Date().toISOString().split('T')[0]);
   }, []);
 
   // ── Kunlik hisob-kitob (sof funksiya, test bilan qoplangan) ──────────────────
@@ -91,10 +91,7 @@ export default function DailyReportPage() {
     }
   })();
 
-  const todayStr = (() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  })();
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div style={{ flex: 1, padding: '28px 28px 60px', background: 'var(--bg)', color: 'white', minHeight: '100vh' }}>

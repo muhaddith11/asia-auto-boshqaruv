@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeDailyReport,
+  buildPaymentDayMap,
   KUNLIK_BELGILANGAN_XARAJAT,
   type DailyOrderLike,
   type DailyOpLike,
@@ -14,6 +15,20 @@ import {
 
 const DAY = '2026-07-24';
 const OTHER = '2026-07-23';
+const NEXT = '2026-07-25';
+
+// Buyurtma to'lovi (kassa income) operatsiyasi — DB'da order_id ustuni yo'q,
+// shuning uchun buyurtma comment orqali bog'lanadi. `date` to'liq ISO bo'ladi.
+function payOp(orderId: number, day: string, amount = 1_000_000): DailyOpLike {
+  return {
+    type: 'income',
+    source: 'buyurtma',
+    category: "Buyurtma to'lovi",
+    amount,
+    date: `${day}T09:00:00.000Z`,
+    comment: `Buyurtma #${orderId} - Mijoz (To'liq)`,
+  };
+}
 
 const usta = (id: number, foiz = 40, ism = `Usta${id}`): DailyWorkerLike => ({
   id, ism, role: 'xodim', foiz,
@@ -217,5 +232,65 @@ describe('computeDailyReport', () => {
 
   it('eksport konstantasi 600 000', () => {
     expect(KUNLIK_BELGILANGAN_XARAJAT).toBe(600_000);
+  });
+});
+
+// ── To'lov sanasi (kassa asosida) — buyurtma yaratilgan emas, to'langan kuni ──
+describe('computeDailyReport — to\'lov sanasi (cash basis)', () => {
+  const workers = [usta(1, 40), sherik(2, 50)];
+
+  it('boshqa kuni yaratilib BUGUN to\'langan buyurtma bugun hisoblanadi', () => {
+    // Yaratilgan OTHER, lekin puli DAY kuni kassaga tushgan
+    const orders = [order(30, OTHER, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }])];
+    const ops = [payOp(30, DAY, 2_000_000)];
+
+    const rDay = computeDailyReport(orders, ops, workers, DAY);
+    expect(rDay.ordersCount).toBe(1);
+    expect(rDay.yalpiFoyda).toBe(1_200_000);
+    expect(rDay.empRows[0]).toMatchObject({ id: 1, earned: 800_000 });
+
+    // Yaratilgan kunida (OTHER) endi hisoblanmaydi
+    const rOther = computeDailyReport(orders, ops, workers, OTHER);
+    expect(rOther.ordersCount).toBe(0);
+    expect(rOther.yalpiFoyda).toBe(0);
+  });
+
+  it('bugun yaratilib KEYINGI kuni to\'langan buyurtma bugun hisoblanmaydi', () => {
+    const orders = [order(31, DAY, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }])];
+    const ops = [payOp(31, NEXT, 2_000_000)];
+
+    expect(computeDailyReport(orders, ops, workers, DAY).ordersCount).toBe(0);
+    expect(computeDailyReport(orders, ops, workers, NEXT).ordersCount).toBe(1);
+  });
+
+  it('bir necha to\'lov — yakuniy (eng oxirgi) to\'lov kuni olinadi', () => {
+    const orders = [order(32, OTHER, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }])];
+    const ops = [payOp(32, DAY, 1_000_000), payOp(32, NEXT, 1_000_000)]; // qisman DAY, yakuniy NEXT
+
+    expect(computeDailyReport(orders, ops, workers, DAY).ordersCount).toBe(0);
+    expect(computeDailyReport(orders, ops, workers, NEXT).ordersCount).toBe(1);
+  });
+
+  it('to\'lov operatsiyasi orderId maydoni orqali ham bog\'lanadi (comment\'siz)', () => {
+    const orders = [order(33, OTHER, 900_000, [{ workerId: 1, narx: 1_000_000, zarplata: 400_000 }])];
+    const ops: DailyOpLike[] = [
+      { type: 'income', source: 'buyurtma', amount: 1_000_000, date: `${DAY}T10:00:00.000Z`, orderId: 33 },
+    ];
+    expect(computeDailyReport(orders, ops, workers, DAY).ordersCount).toBe(1);
+  });
+
+  it('to\'lov operatsiyasi topilmasa yaratilgan sanaga qaytadi (zaxira)', () => {
+    // Op yo'q — 100% chegirma yoki eski ma'lumot; `sana` bo'yicha hisoblanadi
+    const orders = [order(34, DAY, 500_000, [{ workerId: 1, narx: 1_000_000, zarplata: 400_000 }])];
+    expect(computeDailyReport(orders, [], workers, DAY).ordersCount).toBe(1);
+    expect(computeDailyReport(orders, [], workers, OTHER).ordersCount).toBe(0);
+  });
+
+  it('buildPaymentDayMap to\'g\'ri xarita quradi', () => {
+    const ops = [payOp(40, OTHER), payOp(40, DAY), payOp(41, NEXT)];
+    const map = buildPaymentDayMap(ops);
+    expect(map.get('40')).toBe(DAY); // eng oxirgi kun
+    expect(map.get('41')).toBe(NEXT);
+    expect(map.size).toBe(2);
   });
 });

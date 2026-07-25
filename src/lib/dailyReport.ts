@@ -6,6 +6,14 @@
 // farqi: ulush olmaydigan (korxona) xodimlar oyligi o'rniga har kunga
 // BELGILANGAN xarajat ayiriladi (shu xodimlar oylik maoshi ÷ 30 kun).
 //
+// KUN TANLASH — KASSA ASOSIDA (cash basis):
+// Buyurtma qaysi kuni YARATILGANiga emas, qaysi kuni PULI KASSAGA TUSHGANiga
+// (to'langaniga) qarab hisoblanadi. To'lov paytida yaratiladigan kassa
+// operatsiyasi (source 'buyurtma', comment "Buyurtma #<id>") sanasi = to'lov
+// kuni. Bir buyurtma bir necha kun bo'lib to'lansa — yakuniy (eng oxirgi) to'lov
+// kuni olinadi. To'lov operatsiyasi topilmasa (masalan 100% chegirma yoki eski
+// ma'lumot) — buyurtma yaratilgan sanaga (`sana`) qaytiladi.
+//
 // MUHIM: bu fayl vitest bilan test qilinadi (dailyReport.spec.ts). Formulani
 // o'zgartirsangiz testlar buziladi — avval biznes qoidasini tasdiqlang.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,6 +46,10 @@ export interface DailyOpLike {
   date?: string;
   createdAt?: string;
   created_at?: string;
+  source?: string;
+  orderId?: string | number;
+  order_id?: string | number;
+  comment?: string;
 }
 
 export interface DailyWorkerLike {
@@ -91,9 +103,45 @@ export interface DailyReport {
   xizmatDaromad: number;
 }
 
-// Operatsiya kunini (YYYY-MM-DD) aniqlash — avval kiritilgan `date`, bo'lmasa createdAt.
+// Operatsiya kunini (YYYY-MM-DD) aniqlash. `date` to'liq ISO ("...T...") yoki
+// "YYYY-MM-DD" bo'lishi mumkin — ikkalasi ham 10 belgigacha kesiladi.
 export function opDay(op: DailyOpLike): string {
-  return op.date || String(op.createdAt || op.created_at || '').slice(0, 10);
+  const raw = op.date || op.createdAt || op.created_at || '';
+  return String(raw).slice(0, 10);
+}
+
+// Operatsiya kommentidan buyurtma id sini ajratib olish ("Buyurtma #123 ...").
+function orderIdFromComment(comment?: string): number | null {
+  if (!comment) return null;
+  const m = comment.match(/Buyurtma #(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+// Buyurtma to'lovi operatsiyasi bo'lgan id ni topish (DB'da order_id ustuni yo'q —
+// comment orqali bog'lanadi; optimistik holatda orderId ham bo'lishi mumkin).
+function paymentOrderId(op: DailyOpLike): number | null {
+  const direct = op.order_id ?? op.orderId;
+  if (direct != null && direct !== '') return Number(direct);
+  return orderIdFromComment(op.comment);
+}
+
+// Har bir buyurtma qaysi kuni to'langanini (kassaga tushganini) aniqlaydi.
+// Bir necha to'lov bo'lsa — eng oxirgi (yakuniy) to'lov kuni olinadi.
+export function buildPaymentDayMap(ishxonaOperatsiyalar: DailyOpLike[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const op of ishxonaOperatsiyalar) {
+    if (op.type !== 'income') continue;
+    const isOrderPayment = op.source === 'buyurtma' || op.category === "Buyurtma to'lovi";
+    if (!isOrderPayment) continue;
+    const oid = paymentOrderId(op);
+    if (oid == null || Number.isNaN(oid)) continue;
+    const day = opDay(op);
+    if (!day) continue;
+    const key = String(oid);
+    const prev = map.get(key);
+    if (!prev || day > prev) map.set(key, day);
+  }
+  return map;
 }
 
 export function computeDailyReport(
@@ -103,9 +151,16 @@ export function computeDailyReport(
   selectedDate: string,
   fixedDailyCost: number = KUNLIK_BELGILANGAN_XARAJAT,
 ): DailyReport {
-  // Takrorlanmas buyurtmalar (id bo'yicha), faqat shu kunga TO'LANGAN
+  // Buyurtma qaysi kuni to'langanini (kassaga tushganini) aniqlaydigan xarita.
+  const paymentDayByOrder = buildPaymentDayMap(ishxonaOperatsiyalar);
+  // Buyurtmaning "hisob kuni" = to'lov kuni; topilmasa yaratilgan sanasi (zaxira).
+  const orderDay = (b: DailyOrderLike): string =>
+    paymentDayByOrder.get(String(b.id)) ?? b.sana;
+
+  // Takrorlanmas buyurtmalar (id bo'yicha), faqat shu kunga TO'LANGAN — to'lov
+  // (kassaga pul tushgan) kuni bo'yicha, yaratilgan kuni bo'yicha emas.
   const dayOrders = Array.from(new Map(buyurtmalar.map((b) => [b.id, b])).values())
-    .filter((b) => b.holat === 'tulangan' && b.sana === selectedDate);
+    .filter((b) => b.holat === 'tulangan' && orderDay(b) === selectedDate);
 
   // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi
   const yalpiFoyda = dayOrders.reduce(
