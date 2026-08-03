@@ -248,15 +248,17 @@ export default function BusinessReportPage() {
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase' }}>Muddat (Dan)</label>
-            <input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} style={inputStyle} />
+            <input type="date" value={filterFrom} onChange={e => { setActiveQuick(''); setFilterFrom(e.target.value); }} style={inputStyle} />
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'var(--text3)', marginBottom: 8, textTransform: 'uppercase' }}>Muddat (Gacha)</label>
-            <input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)} style={inputStyle} />
+            <input type="date" value={filterTo} onChange={e => { setActiveQuick(''); setFilterTo(e.target.value); }} style={inputStyle} />
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
              {['hafta', 'oy', 'yil'].map(q => (
               <button key={q} onClick={() => {
+                if (activeQuick === q) { setActiveQuick(''); setFilterFrom(''); setFilterTo(''); return; }
+                setActiveQuick(q);
                 if (q === 'hafta') {
                   const now = new Date();
                   const day = now.getDay();
@@ -274,11 +276,12 @@ export default function BusinessReportPage() {
                   setFilterTo(`${new Date().getFullYear()}-12-31`);
                 }
               }} style={{
-                padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: 'none',
-                background: 'var(--surface2)', color: 'var(--text2)'
+                padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.15s',
+                background: activeQuick === q ? '#4f46e5' : 'var(--surface2)',
+                color: activeQuick === q ? '#fff' : 'var(--text2)',
               }}>{q.toUpperCase()}</button>
             ))}
-            <button onClick={() => { setFilterCategory(''); setFilterFrom(''); setFilterTo(''); }} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--surface2)', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => { setActiveQuick(''); setFilterCategory(''); setFilterFrom(''); setFilterTo(''); }} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--surface2)', border: 'none', cursor: 'pointer' }}>
               <Clock size={14} color="var(--text3)" />
             </button>
           </div>
@@ -358,24 +361,39 @@ export default function BusinessReportPage() {
         </div>
       </div>
 
-      {filtered.length > ITEMS_PER_PAGE && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24, paddingBottom: 20 }}>
+      {filtered.length > ITEMS_PER_PAGE && (() => {
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        // Oynali sahifalash: 1 … (joriy-1) joriy (joriy+1) … oxirgi
+        // Bu ko'p sahifada (masalan "yil" filtrida) tugmalar qatori ekrandan chiqib ketmasligi uchun.
+        const pages: (number | string)[] = [1];
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        if (start > 2) pages.push('…');
+        for (let p = start; p <= end; p++) pages.push(p);
+        if (end < totalPages - 1) pages.push('…');
+        if (totalPages > 1) pages.push(totalPages);
+
+        return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24, paddingBottom: 20 }}>
           <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
             style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 12, fontWeight: 600, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}>
             Oldingi
           </button>
-          {Array.from({ length: Math.ceil(filtered.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
+          {pages.map((page, idx) => typeof page === 'string' ? (
+            <span key={`ellipsis-${idx}`} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text3)', fontSize: 12, fontWeight: 700 }}>…</span>
+          ) : (
             <button key={page} onClick={() => setCurrentPage(page)}
               style={{ width: 36, height: 36, borderRadius: 8, background: currentPage === page ? 'var(--accent)' : 'var(--surface)', border: `1px solid ${currentPage === page ? 'var(--accent)' : 'var(--border)'}`, color: currentPage === page ? 'white' : 'var(--text2)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               {page}
             </button>
           ))}
-          <button onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / ITEMS_PER_PAGE), p + 1))} disabled={currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE)}
-            style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 12, fontWeight: 600, cursor: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 'not-allowed' : 'pointer', opacity: currentPage === Math.ceil(filtered.length / ITEMS_PER_PAGE) ? 0.5 : 1 }}>
+          <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+            style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 12, fontWeight: 600, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}>
             Keyingi
           </button>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
