@@ -14,6 +14,16 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
 
   const getWorker = (id: any) => xodimlar.find(w => Number(w.id) === Number(id));
 
+  // Buyurtmani kim kiritgan (bot orqali qabul qilgan xodim). Saytda qo'lda
+  // kiritilganda bu bo'sh bo'ladi → "—".
+  const kiritganXodim =
+    order?.qabul_xodim_nomi ||
+    (() => {
+      const w = getWorker(order?.qabul_xodim_id);
+      return w ? `${w.ism} ${w.familiya || ''}`.trim() : '';
+    })() ||
+    '—';
+
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-[#1a1c24] border border-[#2a2d3d] rounded-2xl w-full max-w-[700px] overflow-hidden shadow-2xl animate-in zoom-in duration-200 flex flex-col max-h-[85vh]">
@@ -78,6 +88,13 @@ export default function HistoryModal({ order, onClose }: HistoryModalProps) {
                    <Hash size={12} /> Holati
                 </div>
                 <div className="text-[11px] text-indigo-400 font-black uppercase tracking-tight bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit">{order?.holat || 'yaratildi'}</div>
+             </div>
+
+             <div className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-1.5 shadow-inner">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-70">
+                   <User size={12} /> Kiritgan xodim
+                </div>
+                <div className="text-[14px] text-white font-black">{kiritganXodim}</div>
              </div>
           </div>
 

@@ -102,6 +102,11 @@ export interface Buyurtma {
   print_status?: 'pending' | 'printed';
   createdAt: string;
   paid?: number;
+  // Bot orqali qabul qilingan buyurtma — kim qabul qilgan / kiritgan (lifecycle)
+  qabul_xodim_id?: number;
+  qabul_xodim_nomi?: string;
+  qabul_vaqti?: string;
+  bosqich?: string;
 }
 
 export interface MaoshTarixi {

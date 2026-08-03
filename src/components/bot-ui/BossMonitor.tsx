@@ -76,6 +76,11 @@ export default function BossMonitor({ cars, onBack }: Props) {
                 </span>
               </div>
               <div className="text-xs text-gray-400">👤 {c.qabul_xodim_nomi || '—'}</div>
+              {c.tel && c.tel.replace(/\D/g, '').length > 3 && (
+                <div className="text-xs text-gray-400">
+                  📞 <a href={`tel:${c.tel}`} className="text-blue-400 hover:underline">{c.tel}</a>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-300 pt-1">
                 <div>🟡 Qabul: <span className="text-gray-400">{fmtTime(c.qabul_vaqti)}</span></div>
                 <div>📦 Zapchast: <span className="text-gray-400">{fmtTime(c.zapchast_vaqti)}</span></div>
