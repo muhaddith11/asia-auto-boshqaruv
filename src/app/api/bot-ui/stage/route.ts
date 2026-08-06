@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { identifyWorker } from '@/lib/botWorker';
+import { findClientNameByPhone } from '@/lib/findClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,6 +73,12 @@ export async function POST(req: NextRequest) {
       if (typeof tel === 'string') update.tel = tel.trim();
       if (update.raqam === undefined && update.tel === undefined) {
         return NextResponse.json({ ok: false, error: "Tahrirlash uchun ma'lumot yo'q." }, { status: 400 });
+      }
+      // Yangi telefon bazadagi mijozga mos kelsa — ismni yangilaymiz.
+      // Faqat topilganda (mavjud ismni o'chirib yubormaydi).
+      if (typeof update.tel === 'string' && update.tel) {
+        const recognizedName = await findClientNameByPhone(update.tel);
+        if (recognizedName) update.ism = recognizedName;
       }
       log.push({ bosqich: order.bosqich, vaqt: nowIso, xodim_id: worker.id, izoh: "Ma'lumot tahrirlandi (raqam/tel)" });
     } else if (action === 'bekor') {

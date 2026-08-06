@@ -7,6 +7,7 @@ export interface Identity {
 
 export interface Car {
   id: number;
+  ism: string;
   mashina: string;
   raqam: string;
   tel: string;

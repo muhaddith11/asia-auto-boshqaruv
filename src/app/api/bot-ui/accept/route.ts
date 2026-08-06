@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { identifyWorker } from '@/lib/botWorker';
+import { findClientNameByPhone } from '@/lib/findClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +30,12 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const nowIso = now.toISOString();
 
+    // Telefon raqami bazadagi mijozga mos kelsa — uning haqiqiy ismini
+    // ishlatamiz (yo'q bo'lsa "Kunlik Mijoz"). Yangi mijoz yaratilmaydi.
+    const recognizedName = await findClientNameByPhone(customerPhone);
+
     const orderData = {
-      ism: 'Kunlik Mijoz',
+      ism: recognizedName || 'Kunlik Mijoz',
       tel: customerPhone || '',
       mashina: `${brand} ${model}`.trim(),
       raqam: plateNumber || '',

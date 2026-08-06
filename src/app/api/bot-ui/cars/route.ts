@@ -5,7 +5,7 @@ import { identifyWorker } from '@/lib/botWorker';
 export const dynamic = 'force-dynamic';
 
 const CAR_FIELDS =
-  'id, mashina, raqam, tel, bosqich, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at';
+  'id, ism, mashina, raqam, tel, bosqich, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at';
 
 // Xodim uchun — o'zining tugallanmagan mashinalari.
 // Boshliq uchun — qo'shimcha: barcha xodimlarning barcha (faol) mashinalari.

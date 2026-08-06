@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search, X } from 'lucide-react';
 import { Car, stageMeta, fmtTime, STAGES } from './botClient';
 
 interface Props {
@@ -18,11 +18,22 @@ const FILTERS: { key: string; label: string }[] = [
 
 export default function BossMonitor({ cars, onBack }: Props) {
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
-  const shown = useMemo(
-    () => (filter === 'all' ? cars : cars.filter((c) => c.bosqich === filter)),
-    [cars, filter]
-  );
+  const shown = useMemo(() => {
+    let list = filter === 'all' ? cars : cars.filter((c) => c.bosqich === filter);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const qDigits = q.replace(/\D/g, '');
+      list = list.filter((c) => {
+        const hay = `${c.mashina || ''} ${c.raqam || ''} ${c.ism || ''} ${c.qabul_xodim_nomi || ''}`.toLowerCase();
+        if (hay.includes(q)) return true;
+        if (qDigits && c.tel && c.tel.replace(/\D/g, '').includes(qDigits)) return true;
+        return false;
+      });
+    }
+    return list;
+  }, [cars, filter, search]);
 
   const counts = useMemo(() => {
     const m: Record<string, number> = {};
@@ -47,6 +58,27 @@ export default function BossMonitor({ cars, onBack }: Props) {
         ))}
       </div>
 
+      {/* Qidiruv — telefon / raqam / marka / mijoz / usta */}
+      <div className="relative">
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Qidirish: telefon, raqam, marka..."
+          className="w-full bg-gray-800 border border-gray-700 rounded-xl py-2.5 pl-9 pr-9 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-1"
+            aria-label="Tozalash"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {/* Filtr */}
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
@@ -62,7 +94,11 @@ export default function BossMonitor({ cars, onBack }: Props) {
         ))}
       </div>
 
-      {shown.length === 0 && <div className="text-gray-500 text-center py-8">Mashina yo'q</div>}
+      {shown.length === 0 && (
+        <div className="text-gray-500 text-center py-8">
+          {search.trim() ? 'Topilmadi' : "Mashina yo'q"}
+        </div>
+      )}
 
       <div className="space-y-3">
         {shown.map((c) => {
@@ -75,6 +111,9 @@ export default function BossMonitor({ cars, onBack }: Props) {
                   {meta.emoji} {meta.label}
                 </span>
               </div>
+              {c.ism && c.ism !== 'Kunlik Mijoz' && (
+                <div className="text-xs text-emerald-400">🧑 {c.ism}</div>
+              )}
               <div className="text-xs text-gray-400">👤 {c.qabul_xodim_nomi || '—'}</div>
               {c.tel && c.tel.replace(/\D/g, '').length > 3 && (
                 <div className="text-xs text-gray-400">
