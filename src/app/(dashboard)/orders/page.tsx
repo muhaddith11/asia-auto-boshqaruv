@@ -1,7 +1,7 @@
 'use client';
 import toast from 'react-hot-toast';
 export const dynamic = 'force-dynamic';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
@@ -83,9 +83,10 @@ export default function OrdersPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  if (!mounted) return null;
 
-  const filtered = [...buyurtmalar]
+  // Saralash + filtrlash useMemo ichida: aks holda ~1500 ta buyurtma har bir
+  // renderda (filtr maydoniga har harf yozilganda ham) qaytadan saralanardi.
+  const filtered = useMemo(() => [...buyurtmalar]
     .sort((a, b) => Number(b.id) - Number(a.id))
     .filter(b => {
     if (applied.tel && (!b.tel || !b.tel.includes(applied.tel))) return false;
@@ -102,10 +103,16 @@ export default function OrdersPage() {
       if (applied.to && d > applied.to) return false;
     }
     return true;
-  });
+  }), [buyurtmalar, applied]);
+
+  const paginated = useMemo(
+    () => filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
+    [filtered, currentPage],
+  );
+
+  if (!mounted) return null;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const applyFilters = () => {
     setApplied({ ...f });

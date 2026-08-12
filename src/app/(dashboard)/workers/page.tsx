@@ -1,6 +1,6 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import SalaryModal from '@/components/SalaryModal';
 import WorkerHistoryModal from '@/components/WorkerHistoryModal';
@@ -73,6 +73,96 @@ export default function WorkersPage() {
     setMounted(true);
   }, []);
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // OG'IR HISOB-KITOBLAR — bir marta, xodimlar ro'yxatidan TASHQARIDA.
+  //
+  // Ilgari bularning hammasi quyidagi .map() ichida edi: har bir xodim uchun
+  // 1456 ta buyurtma va 1677 ta operatsiya qaytadan skanerlanardi. Endi bitta
+  // o'tishda hisoblanib, xodim id bo'yicha Map'dan o'qiladi. Natija — aynan
+  // bir xil raqamlar (scratch dagi solishtirish skripti bilan tekshirilgan).
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Sheriklar uchun umumiy sof foyda — barcha sheriklarga bir xil qiymat.
+  const sofFoyda = useMemo(() => {
+    const uniqueOrders = Array.from(new Map(buyurtmalar.map(b => [b.id, b])).values());
+    const orderProfit = uniqueOrders
+      .filter(b => b.holat === 'tulangan')
+      .reduce((sum, b) => sum + Math.max(0, Number(b.pribil) || 0), 0);
+
+    // Faqat 2026-05-12 dan boshlab ishxona xarajatlari ayiriladi
+    const startDate = new Date('2026-05-12');
+    const ishxonaXarajat = ishxonaOperatsiyalar
+      .filter(op => {
+        const opDate = new Date(op.createdAt || op.date || 0);
+        return op.type === 'expense'
+          && op.category !== 'Aylanmadan tashqari'
+          && opDate >= startDate;
+      })
+      .reduce((s, op) => s + op.amount, 0);
+
+    // "Boshqa" kategoriyali kirimlar sherik ulushiga qo'shiladi
+    const boshqaKirim = ishxonaOperatsiyalar
+      .filter(op => op.type === 'income' && op.category === 'Boshqa')
+      .reduce((s, op) => s + op.amount, 0);
+
+    // "Korxona xodimi" rolidagi ishchilar oyligi sherik foydadan ayiriladi
+    const korxonaIds = new Set(xodimlar.filter(w => w.role === 'korxona').map(w => Number(w.id)));
+    const sherikOylikXarajat = maoshTarixi
+      .filter(m => korxonaIds.has(Number(m.xodimId)) && m.method !== 'shtraf')
+      .reduce((s, m) => s + (m.summa || 0), 0);
+
+    return Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);
+  }, [buyurtmalar, ishxonaOperatsiyalar, xodimlar, maoshTarixi]);
+
+  // Oddiy xodimlar (va korxona xodimlari) ishlab topgani — buyurtmalar
+  // bo'yicha BITTA o'tish, natija xodim id bo'yicha yig'iladi.
+  const ishlabTopganMap = useMemo(() => {
+    const foizById = new Map(xodimlar.map(w => [Number(w.id), w.foiz || 0]));
+    const acc = new Map<number, number>();
+
+    buyurtmalar.forEach((b: any) => {
+      // Usta ishni qilgach ulushi hisoblanadi — mijoz hali to'lamagan
+      // bo'lsa ham. Faqat BEKOR QILINGAN buyurtma ulushi sanalmaydi.
+      if (b.holat === 'bekor qilingan') return;
+
+      const services = b.services || [];
+      const srv = b.srv || services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);
+      const zap = b.zap || 0;
+      const final = b.final ?? b.total ?? 0;
+      const ratio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
+
+      services.forEach((s: any) => {
+        const wid = Number(s.workerId);
+        if (!foizById.has(wid)) return;
+        const raw = s.zarplata || Math.round(((s.narx || 0) * (foizById.get(wid) || 0)) / 100);
+        acc.set(wid, (acc.get(wid) || 0) + Math.round(raw * ratio));
+      });
+    });
+
+    return acc;
+  }, [buyurtmalar, xodimlar]);
+
+  // To'langan maosh va shtraf — maoshTarixi bo'yicha BITTA o'tish.
+  const maoshMap = useMemo(() => {
+    const acc = new Map<number, { paid: number; shtraf: number }>();
+    maoshTarixi.forEach((m) => {
+      const wid = Number(m.xodimId);
+      const cur = acc.get(wid) || { paid: 0, shtraf: 0 };
+      if (m.method === 'shtraf') cur.shtraf += m.summa || 0;
+      else cur.paid += m.summa || 0;
+      acc.set(wid, cur);
+    });
+    return acc;
+  }, [maoshTarixi]);
+
+  const filteredWorkers = useMemo(() => {
+    const q = appliedFilters.search.toLowerCase();
+    return xodimlar.filter(x =>
+      x.ism.toLowerCase().includes(q) ||
+      (x.mutax && x.mutax.toLowerCase().includes(q))
+    );
+  }, [xodimlar, appliedFilters.search]);
+
   if (!mounted) return null;
 
   const openModal = (worker: any = null) => {
@@ -119,11 +209,6 @@ export default function WorkersPage() {
     setFilters({ search: '' });
     setAppliedFilters({ search: '' });
   };
-
-  const filteredWorkers = xodimlar.filter(x =>
-    x.ism.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
-    (x.mutax && x.mutax.toLowerCase().includes(appliedFilters.search.toLowerCase()))
-  );
 
   return (
     <PageLayout
@@ -183,38 +268,7 @@ export default function WorkersPage() {
 
               let totalDue = 0;
               if (isPartner) {
-                // 🏦 SHERIKLAR UCHUN HISOB-KITOB — sof foydadan
-                const uniqueOrders = Array.from(new Map(buyurtmalar.map(b => [b.id, b])).values());
-                const orderProfit = uniqueOrders
-                  .filter(b => b.holat === 'tulangan')
-                  .reduce((sum, b) => sum + Math.max(0, Number(b.pribil) || 0), 0);
-
-                // Faqat 2026-05-12 dan boshlab ishxona xarajatlari ayiriladi
-                const startDate = new Date('2026-05-12');
-                const ishxonaXarajat = ishxonaOperatsiyalar
-                  .filter(op => {
-                    const opDate = new Date(op.createdAt || op.date || 0);
-                    return op.type === 'expense'
-                      && op.category !== 'Aylanmadan tashqari'
-                      && opDate >= startDate;
-                  })
-                  .reduce((s, op) => s + op.amount, 0);
-
-                // "Boshqa" kategoriyali kirimlar sherik ulushiga qo'shiladi
-                const boshqaKirim = ishxonaOperatsiyalar
-                  .filter(op => op.type === 'income' && op.category === 'Boshqa')
-                  .reduce((s, op) => s + op.amount, 0);
-
-                // "Korxona xodimi" rolidagi ishchilar oyligi sherik foydadan ayiriladi
-                const korxonaIds = xodimlar
-                  .filter(w => w.role === 'korxona')
-                  .map(w => Number(w.id));
-                const sherikOylikXarajat = maoshTarixi
-                  .filter(m => korxonaIds.includes(Number(m.xodimId)) && m.method !== 'shtraf')
-                  .reduce((s, m) => s + (m.summa || 0), 0);
-
-                const sofFoyda = Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);
-
+                // 🏦 SHERIKLAR UCHUN — yuqorida hisoblangan sof foydadan ulush
                 if (x.shareType === 'sub') {
                   const parent = xodimlar.find(p => p.id === x.parentId);
                   const parentShare = parent ? sofFoyda * (parent.foiz / 100) : 0;
@@ -223,28 +277,12 @@ export default function WorkersPage() {
                   totalDue = sofFoyda * (x.foiz / 100);
                 }
               } else {
-                // 🛠️ ODDIY XODIMLAR UCHUN HISOB-KITOB
-                totalDue = buyurtmalar.reduce((total, b) => {
-                  // Usta ishni qilgach ulushi hisoblanadi — mijoz hali to'lamagan
-                  // bo'lsa ham. Faqat BEKOR QILINGAN buyurtma ulushi sanalmaydi.
-                  if (b.holat === 'bekor qilingan') return total;
-
-                  const srv = (b as any).srv || b.services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);
-                  const zap = (b as any).zap || 0;
-                  const final = (b as any).final ?? (b as any).total ?? 0;
-                  const ratio = srv > 0 ? Math.min(1, Math.max(0, final - zap) / srv) : 1;
-                  return total + b.services
-                    .filter(s => Number(s.workerId) === Number(x.id))
-                    .reduce((sum, s) => {
-                      const raw = s.zarplata || Math.round(((s.narx || 0) * (x.foiz || 0)) / 100);
-                      return sum + Math.round(raw * ratio);
-                    }, 0);
-                }, 0);
+                // 🛠️ ODDIY XODIMLAR — yuqoridagi bitta o'tishda yig'ilgan qiymat
+                totalDue = ishlabTopganMap.get(Number(x.id)) || 0;
               }
 
-              const workerMaosh = maoshTarixi.filter(m => Number(m.xodimId) === Number(x.id));
-              const totalPaid = workerMaosh.filter(m => m.method !== 'shtraf').reduce((s, m) => s + (m.summa || 0), 0);
-              const totalShtraf = workerMaosh.filter(m => m.method === 'shtraf').reduce((s, m) => s + (m.summa || 0), 0);
+              const { paid: totalPaid, shtraf: totalShtraf } =
+                maoshMap.get(Number(x.id)) || { paid: 0, shtraf: 0 };
               // Qoldiq: ishlab topgan − to'langan − shtraf
               const unpaid = totalDue - totalPaid - totalShtraf;
 

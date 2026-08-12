@@ -98,8 +98,9 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         await addIshxonaOperatsiya(op as any);
       }
 
-      // Ma'lumotlarni DB dan yangilash
-      await loadInitialData();
+      // Ma'lumotlarni DB dan yangilash — to'lovdan keyin kassa/qoldiq
+      // aniq bo'lishi shart, shuning uchun force.
+      await loadInitialData(true);
       onClose();
     } catch (err: any) {
       toast.error('XATOLIK: ' + (err.message || 'Noma\'lum xato'));

@@ -144,7 +144,8 @@ export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => vo
           <button
             onClick={async () => {
               const store = useStore.getState();
-              await store.loadInitialData();
+              // force — "Yangilash" tugmasi doim DB dan qayta yuklashi shart.
+              await store.loadInitialData(true);
               toast.success('Ma\'lumotlar yangilandi!');
             }}
             style={{

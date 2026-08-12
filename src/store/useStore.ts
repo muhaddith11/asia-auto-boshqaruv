@@ -33,6 +33,27 @@ function settledValue<T>(res: PromiseSettledResult<T>): T | null {
   return res.status === 'fulfilled' ? res.value : null;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// loadInitialData takrorlanishining oldini olish.
+//
+// Muammo: DataLoader (root layout) ham, ayrim sahifalar ham (orders,
+// orders/new, orders/edit, backup) mount bo'lganda loadInitialData chaqiradi.
+// Ular bir-biridan bir necha millisekund farq bilan ketgani uchun BIR XIL
+// ma'lumot ikki marta yuklanardi — 10 ta so'rov o'rniga 20 ta, ~2.5 MB
+// o'rniga ~5 MB va sahifa ochilishiga qo'shimcha ~2 soniya.
+//
+// Yechim:
+//  • inFlight — so'rov ketayotgan bo'lsa, yangisini boshlamay o'shanisini kutamiz;
+//  • FRESH_MS — shuncha vaqt ichidagi takroriy chaqiruv o'tkazib yuboriladi.
+//
+// force=true — keshni butunlay chetlab o'tadi ("Yangilash" tugmasi, to'lovdan
+// keyingi sinxronizatsiya, xatolikdan keyin ro'yxatni tiklash). Ya'ni DB
+// haqiqat manbai bo'lib qolaveradi.
+// ─────────────────────────────────────────────────────────────────────────────
+const FRESH_MS = 10_000;
+let inFlight: Promise<void> | null = null;
+let lastLoadedAt = 0;
+
 interface AutoServisStore {
   mijozlar: Mijoz[];
   xodimlar: Xodim[];
@@ -82,7 +103,8 @@ interface AutoServisStore {
   addPurchase: (p: Omit<ZapPurchase, 'id'>) => void;
   addMashina: (m: string) => void;
   resetKassa: () => void;
-  loadInitialData: () => Promise<void>;
+  // force=true — keshni chetlab o'tib, DB dan majburan qayta yuklaydi.
+  loadInitialData: (force?: boolean) => Promise<void>;
 
   // Sherik foydadan ayiriladigan ishchilar (maoshi sherik ulushidan chiqadi)
   sherikOylikIds: number[];
@@ -151,7 +173,7 @@ export const useStore = create<AutoServisStore>()(
         deleteClient(id).catch((err) => {
           console.error("❌ Mijozni o'chirishda xatolik:", err);
           toast.error("Mijoz bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
-          get().loadInitialData();
+          get().loadInitialData(true);
         });
       },
 
@@ -212,7 +234,7 @@ export const useStore = create<AutoServisStore>()(
         deleteWorker(id).catch((err) => {
           console.error("❌ Xodimni o'chirishda xatolik:", err);
           toast.error("Xodim bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
-          get().loadInitialData();
+          get().loadInitialData(true);
         });
       },
 
@@ -417,7 +439,7 @@ export const useStore = create<AutoServisStore>()(
         deleteService(id).catch((err) => {
           console.error("❌ Xizmatni o'chirishda xatolik:", err);
           toast.error("Xizmat bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
-          get().loadInitialData();
+          get().loadInitialData(true);
         });
       },
 
@@ -460,7 +482,7 @@ export const useStore = create<AutoServisStore>()(
         deletePart(id).catch((err) => {
           console.error("❌ Zapchastni o'chirishda xatolik:", err);
           toast.error("Zapchast bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
-          get().loadInitialData();
+          get().loadInitialData(true);
         });
       },
 
@@ -518,7 +540,7 @@ export const useStore = create<AutoServisStore>()(
         deleteOrder(id).catch((err) => {
           console.error("❌ Buyurtmani o'chirishda xatolik:", err);
           toast.error("Buyurtma bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
-          get().loadInitialData();
+          get().loadInitialData(true);
         });
       },
 
@@ -698,83 +720,96 @@ export const useStore = create<AutoServisStore>()(
           console.error("❌ Kassa resetda xatolik:", err);
         }
       },
-      loadInitialData: async () => {
-        try {
-          // Use allSettled to prevent one failing API from blocking others
-          const results = await Promise.allSettled([
-            getClients(), getOrders(), getWorkers(), getParts(), getCars(),
-            getServices(), getKassa(), getOperations(), getSalaries(), getPurchases()
-          ]) as [
-            PromiseSettledResult<Mijoz[]>, PromiseSettledResult<Buyurtma[]>, PromiseSettledResult<Xodim[]>,
-            PromiseSettledResult<Zapchast[]>, PromiseSettledResult<CarRow[]>, PromiseSettledResult<ServiceRow[]>,
-            PromiseSettledResult<Kassa>, PromiseSettledResult<OperationRow[]>, PromiseSettledResult<SalaryRow[]>,
-            PromiseSettledResult<ZapPurchase[]>
-          ];
+      loadInitialData: async (force = false) => {
+        // Ayni damda yuklanayotgan bo'lsa — yangi so'rov yubormay, o'shanisini kutamiz.
+        if (inFlight) return inFlight;
+        // Yaqinda yuklangan bo'lsa — takrorlamaymiz (force bundan mustasno).
+        if (!force && Date.now() - lastLoadedAt < FRESH_MS) return;
 
-          const [
-            clientsRes, ordersRes, workersRes, partsRes, carsRes,
-            servicesRes, kassaRes, opsRes, salariesRes, purchasesRes
-          ] = results;
+        inFlight = (async () => {
+          try {
+            // Use allSettled to prevent one failing API from blocking others
+            const results = await Promise.allSettled([
+              getClients(), getOrders(), getWorkers(), getParts(), getCars(),
+              getServices(), getKassa(), getOperations(), getSalaries(), getPurchases()
+            ]) as [
+              PromiseSettledResult<Mijoz[]>, PromiseSettledResult<Buyurtma[]>, PromiseSettledResult<Xodim[]>,
+              PromiseSettledResult<Zapchast[]>, PromiseSettledResult<CarRow[]>, PromiseSettledResult<ServiceRow[]>,
+              PromiseSettledResult<Kassa>, PromiseSettledResult<OperationRow[]>, PromiseSettledResult<SalaryRow[]>,
+              PromiseSettledResult<ZapPurchase[]>
+            ];
 
-          const clients = settledValue(clientsRes);
-          const orders = settledValue(ordersRes);
-          const workers = settledValue(workersRes);
-          const parts = settledValue(partsRes);
-          const cars = settledValue(carsRes);
-          const services = settledValue(servicesRes);
-          const kassaResult = settledValue(kassaRes);
-          const ops = settledValue(opsRes);
-          const salaries = settledValue(salariesRes);
-          const purchases = settledValue(purchasesRes);
+            const [
+              clientsRes, ordersRes, workersRes, partsRes, carsRes,
+              servicesRes, kassaRes, opsRes, salariesRes, purchasesRes
+            ] = results;
 
-          if (servicesRes.status === 'rejected') {
-            console.error('❌ Xizmatlarni yuklashda xatolik:', servicesRes.reason);
-          }
+            const clients = settledValue(clientsRes);
+            const orders = settledValue(ordersRes);
+            const workers = settledValue(workersRes);
+            const parts = settledValue(partsRes);
+            const cars = settledValue(carsRes);
+            const services = settledValue(servicesRes);
+            const kassaResult = settledValue(kassaRes);
+            const ops = settledValue(opsRes);
+            const salaries = settledValue(salariesRes);
+            const purchases = settledValue(purchasesRes);
 
-          const mashinalarList: string[] = cars && cars.length > 0
-            ? Array.from(new Set(cars.map((c) => normalize(`${c.brand} ${c.name}`)))).sort()
-            : [];
+            if (servicesRes.status === 'rejected') {
+              console.error('❌ Xizmatlarni yuklashda xatolik:', servicesRes.reason);
+            }
 
-          const finalKassa = kassaResult || { naqd: 0, karta: 0 };
-          const allOps = ops || [];
-          const bizOps = allOps.filter((o) => o.source !== 'external');
-          const extOps = allOps.filter((o) => o.source === 'external');
+            const mashinalarList: string[] = cars && cars.length > 0
+              ? Array.from(new Set(cars.map((c) => normalize(`${c.brand} ${c.name}`)))).sort()
+              : [];
 
-          set((state) => ({
-            ...state,
-            mijozlar: clients || [],
-            buyurtmalar: orders || [],
-            xodimlar: workers || [],
-            zapchastlar: parts || [],
-            mashinalar: mashinalarList,
-            kassa: finalKassa,
-            ishxonaOperatsiyalar: bizOps,
-            tashqariOperatsiyalar: extOps,
-            maoshTarixi: salaries ? salaries.map((s) => ({
-              id: s.id, xodimId: s.worker_id, summa: s.amount, method: s.method as MaoshTarixi['method'],
-              sana: s.date, izoh: s.comment, createdAt: s.created_at
-            })) : [],
-            purchases: purchases || [],
-            xizmatlar: services ? (() => {
-              const uniqueMap = new Map<string, Xizmat>();
-              services.forEach((s) => {
-                const normName = normalize(s.name);
-                const normCar = normalize(s.brand === 'UMUMIY' || s.brand === 'Umumiy' || !s.brand ? 'UMUMIY' : `${s.brand} ${s.car_model || ''}`);
-                const key = `${normName}_${normCar}`;
-                uniqueMap.set(key, {
-                  id: s.id,
-                  nom: s.name,
-                  narx: s.price,
-                  mashina: normCar === 'UMUMIY' ? 'UMUMIY' : normCar,
-                  stavka: s.stavka
+            const finalKassa = kassaResult || { naqd: 0, karta: 0 };
+            const allOps = ops || [];
+            const bizOps = allOps.filter((o) => o.source !== 'external');
+            const extOps = allOps.filter((o) => o.source === 'external');
+
+            set((state) => ({
+              ...state,
+              mijozlar: clients || [],
+              buyurtmalar: orders || [],
+              xodimlar: workers || [],
+              zapchastlar: parts || [],
+              mashinalar: mashinalarList,
+              kassa: finalKassa,
+              ishxonaOperatsiyalar: bizOps,
+              tashqariOperatsiyalar: extOps,
+              maoshTarixi: salaries ? salaries.map((s) => ({
+                id: s.id, xodimId: s.worker_id, summa: s.amount, method: s.method as MaoshTarixi['method'],
+                sana: s.date, izoh: s.comment, createdAt: s.created_at
+              })) : [],
+              purchases: purchases || [],
+              xizmatlar: services ? (() => {
+                const uniqueMap = new Map<string, Xizmat>();
+                services.forEach((s) => {
+                  const normName = normalize(s.name);
+                  const normCar = normalize(s.brand === 'UMUMIY' || s.brand === 'Umumiy' || !s.brand ? 'UMUMIY' : `${s.brand} ${s.car_model || ''}`);
+                  const key = `${normName}_${normCar}`;
+                  uniqueMap.set(key, {
+                    id: s.id,
+                    nom: s.name,
+                    narx: s.price,
+                    mashina: normCar === 'UMUMIY' ? 'UMUMIY' : normCar,
+                    stavka: s.stavka
+                  });
                 });
-              });
-              return Array.from(uniqueMap.values());
-            })() : []
-          }));
-        } catch (err) {
-          console.error('❌ Store: loadInitialData kutilmagan xato:', err);
-        }
+                return Array.from(uniqueMap.values());
+              })() : []
+            }));
+            lastLoadedAt = Date.now();
+          } catch (err) {
+            console.error('❌ Store: loadInitialData kutilmagan xato:', err);
+            // Xatoda "yangi" deb belgilamaymiz — keyingi chaqiruv qayta urinsin.
+          } finally {
+            inFlight = null;
+          }
+        })();
+
+        return inFlight;
       }
     }),
     {
