@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,22 +32,22 @@ export async function GET(request: NextRequest) {
 
   // ⚠️ MUHIM: Supabase bitta so'rovda ko'pi bilan 1000 qator qaytaradi.
   // Operatsiyalar 1000 dan oshgani uchun eskilari tushib qolib, kassa va
-  // hisobotlar xato hisoblanardi. Barchasini 1000 talik bo'laklarda yuklaymiz.
-  const PAGE_SIZE = 1000;
-  const all: any[] = [];
-  for (let page = 0; page < 100; page++) {
-    let chunkQuery = supabase.from('operations').select('*').order('created_at', { ascending: false });
-    if (from) chunkQuery = chunkQuery.gte('date', from);
-    if (to) chunkQuery = chunkQuery.lte('date', to);
-
-    const { data, error } = await chunkQuery.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    if (!data || data.length === 0) break;
-    all.push(...data);
-    if (data.length < PAGE_SIZE) break;
+  // hisobotlar xato hisoblanardi. Barchasini bo'laklab yuklaymiz — bo'laklar
+  // PARALLEL so'raladi (fetchAllRows), ilgarigi ketma-ket sikl emas.
+  try {
+    const all = await fetchAllRows<any>((fromIdx, toIdx, withCount) => {
+      let q = withCount
+        ? supabase.from('operations').select('*', { count: 'exact' })
+        : supabase.from('operations').select('*');
+      q = q.order('created_at', { ascending: false });
+      if (from) q = q.gte('date', from);
+      if (to) q = q.lte('date', to);
+      return q.range(fromIdx, toIdx);
+    });
+    return NextResponse.json(all);
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || 'Operatsiyalarni yuklashda xatolik' }, { status: 500 });
   }
-
-  return NextResponse.json(all);
 }
 
 export async function POST(request: NextRequest) {

@@ -3,6 +3,7 @@ import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
 import { logAudit } from '@/lib/audit';
 import { applyStockDelta } from '@/lib/stock';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -77,22 +78,22 @@ export async function GET(request: NextRequest) {
   // tushib qolib, xodimlarning "ishlab topgan" puli va mijoz/moliya
   // hisobotlari xato hisoblanardi (har yangi buyurtmada eskisi oynadan
   // chiqib, qoldiq kamayib borardi).
-  // Shuning uchun barcha qatorlarni 1000 talik bo'laklarda yuklaymiz.
-  const PAGE_SIZE = 1000;
-  const all: any[] = [];
-  for (let page = 0; page < 100; page++) {
-    let chunkQuery = supabase.from('orders').select('*').order('id', { ascending: false });
-    if (from) chunkQuery = chunkQuery.gte('sana', from);
-    if (to) chunkQuery = chunkQuery.lte('sana', to);
-
-    const { data, error } = await chunkQuery.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    if (!data || data.length === 0) break;
-    all.push(...data);
-    if (data.length < PAGE_SIZE) break;
+  // Shuning uchun barcha qatorlarni bo'laklab yuklaymiz — bo'laklar
+  // PARALLEL so'raladi (fetchAllRows), ilgarigi ketma-ket sikl emas.
+  try {
+    const all = await fetchAllRows<any>((fromIdx, toIdx, withCount) => {
+      let q = withCount
+        ? supabase.from('orders').select('*', { count: 'exact' })
+        : supabase.from('orders').select('*');
+      q = q.order('id', { ascending: false });
+      if (from) q = q.gte('sana', from);
+      if (to) q = q.lte('sana', to);
+      return q.range(fromIdx, toIdx);
+    });
+    return NextResponse.json(all.map(mapRowToApp));
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || 'Buyurtmalarni yuklashda xatolik' }, { status: 500 });
   }
-
-  return NextResponse.json(all.map(mapRowToApp));
 }
 
 export async function POST(request: NextRequest) {

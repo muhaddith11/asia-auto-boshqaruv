@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,16 +22,15 @@ export async function GET(req: Request) {
     const carModel = searchParams.get('car_model');
     const brand = searchParams.get('brand');
 
-    const uniqueData = new Map();
-    let page = 0;
-    const pageSize = 1000;
-    let hasMore = true;
+    // ⚠️ services_list eng katta jadval (~4000 qator = 5 ta bo'lak).
+    // Ilgari bo'laklar ketma-ket so'ralardi — jami ~2 soniya, ya'ni butun
+    // loadInitialData shu so'rovni kutib turardi. Endi PARALLEL.
+    const rows = await fetchAllRows<any>((fromIdx, toIdx, withCount) => {
+      let query = withCount
+        ? supabase.from('services_list').select('*', { count: 'exact' })
+        : supabase.from('services_list').select('*');
 
-    while (hasMore) {
-      let query = supabase
-        .from('services_list')
-        .select('*')
-        .range(page * pageSize, (page + 1) * pageSize - 1)
+      query = query
         .order('brand', { ascending: true })
         .order('car_model', { ascending: true })
         .order('id', { ascending: true }); // Added stable sort
@@ -42,25 +42,12 @@ export async function GET(req: Request) {
         query = query.eq('brand', brand);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      return query.range(fromIdx, toIdx);
+    }, 51);
 
-      if (data && data.length > 0) {
-        data.forEach((item: any) => {
-          uniqueData.set(item.id, item);
-        });
-        
-        if (data.length < pageSize) {
-          hasMore = false;
-        } else {
-          page++;
-        }
-      } else {
-        hasMore = false;
-      }
-      
-      if (page > 50) hasMore = false; 
-    }
+    // id bo'yicha takrorlarni olib tashlaymiz (eski xulq saqlanadi)
+    const uniqueData = new Map();
+    rows.forEach((item: any) => uniqueData.set(item.id, item));
 
     return NextResponse.json(Array.from(uniqueData.values()));
   } catch (error: any) {
