@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { applyStockDelta } from '@/lib/stock';
@@ -102,15 +102,19 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
       },
     );
 
-    // To'lov holatiga o'tgan bo'lsa alohida belgilaymiz
+    // To'lov holatiga o'tgan bo'lsa alohida belgilaymiz.
+    // Audit yozuvi javobni kuttirmaydi — `after` orqali javob yuborilgandan
+    // keyin bajariladi (to'lovni tasdiqlashda ortiqcha kechikish bo'lmasin).
     const isPayment = dbBody.holat === 'tulangan' || dbBody.paid !== undefined;
-    await logAudit({
-      req: request,
-      action: isPayment ? 'payment' : 'update',
-      entity: 'order',
-      entityId: id,
-      details: { changes: dbBody },
-    });
+    after(() =>
+      logAudit({
+        req: request,
+        action: isPayment ? 'payment' : 'update',
+        entity: 'order',
+        entityId: id,
+        details: { changes: dbBody },
+      })
+    );
 
     // Eslatma: Telegram guruhga "tayyor" xabari endi avtomatik yuborilmaydi.
     // U faqat buyurtmalar sahifasidagi "SMS yuborish" tugmasi orqali

@@ -77,6 +77,15 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         throw new Error(result.error || `Server xatosi: ${res.status}`);
       }
 
+      // Buyurtmani store'da joyida yangilaymiz — hamma narsani qayta yuklash shart emas.
+      useStore.setState((state) => ({
+        buyurtmalar: state.buyurtmalar.map((b) =>
+          Number(b.id) === Number(order.id)
+            ? { ...b, ...(result && !result.error ? result : { holat: newHolat, final: totalToPay, paid: newPaidTotal }) }
+            : b
+        )
+      }));
+
       // Kassani yangilash — "alohida" zapchastlar puli kassaga tushmaydi.
       // Kassa avval to'ladi (xizmat + oddiy zapchast), qolgan qism (alohida) pool'da qoladi.
       const prevKassaPart = Math.min(alreadyPaid, kassaEligibleTotal);
@@ -84,7 +93,6 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
       const kassaIncrementNow = Math.max(0, newKassaPart - prevKassaPart);
 
       if (kassaIncrementNow > 0) {
-        await updateKassa(method, kassaIncrementNow, 'add');
         const op = {
           date: new Date().toISOString(), // To'liq vaqt (ISO format)
           type: 'income',
@@ -95,13 +103,19 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
           source: 'buyurtma',
           orderId: order.id
         };
-        await addIshxonaOperatsiya(op as any);
+        // Kassa va operatsiya yozuvi bir-biriga bog'liq emas — ketma-ket emas,
+        // parallel yuboriladi (bitta so'rov vaqtiga tushadi).
+        await Promise.all([
+          updateKassa(method, kassaIncrementNow, 'add'),
+          addIshxonaOperatsiya(op as any)
+        ]);
       }
 
-      // Ma'lumotlarni DB dan yangilash — to'lovdan keyin kassa/qoldiq
-      // aniq bo'lishi shart, shuning uchun force.
-      await loadInitialData(true);
+      // Oyna darhol yopiladi. To'liq qayta yuklash (10 ta so'rov, ~2.5 MB)
+      // foydalanuvchini kuttirmasligi kerak — u fonda ketadi va DB haqiqat
+      // manbai bo'lib qolaveradi.
       onClose();
+      void loadInitialData(true);
     } catch (err: any) {
       toast.error('XATOLIK: ' + (err.message || 'Noma\'lum xato'));
     } finally {
