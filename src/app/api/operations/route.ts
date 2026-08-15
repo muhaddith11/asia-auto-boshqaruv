@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { fetchAllRows } from '@/lib/fetchAllRows';
@@ -82,13 +82,16 @@ export async function POST(request: NextRequest) {
        }, { status: 500 });
     }
 
-    await logAudit({
-      req: request,
-      action: cleanBody.type === 'transfer' ? 'transfer' : 'create',
-      entity: 'operation',
-      entityId: data?.id,
-      details: { type: cleanBody.type, amount: cleanBody.amount, category: cleanBody.category, method: cleanBody.method },
-    });
+    // Audit javobni kuttirmaydi — javob yuborilgandan keyin yoziladi.
+    after(() =>
+      logAudit({
+        req: request,
+        action: cleanBody.type === 'transfer' ? 'transfer' : 'create',
+        entity: 'operation',
+        entityId: data?.id,
+        details: { type: cleanBody.type, amount: cleanBody.amount, category: cleanBody.category, method: cleanBody.method },
+      })
+    );
 
     return NextResponse.json(data);
   } catch (err: any) {

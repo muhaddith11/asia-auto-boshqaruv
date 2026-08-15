@@ -23,7 +23,7 @@ interface PaymentModalProps {
 }
 
 export default function PaymentModal({ order, onClose }: PaymentModalProps) {
-  const { updateKassa, addIshxonaOperatsiya, xodimlar, loadInitialData } = useStore();
+  const { xodimlar, loadInitialData } = useStore();
   const [method, setMethod] = useState<'naqd' | 'karta'>('naqd');
   const [discount, setDiscount] = useState(0);
   const [comment, setComment] = useState('');
@@ -61,63 +61,69 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
     const isFullyPaid = newPaidTotal >= totalToPay;
     const newHolat = isFullyPaid ? 'tulangan' : order.holat;
 
+    // Kassaga tushadigan qism — "alohida" zapchastlar puli kassaga tushmaydi.
+    // Kassa avval to'ladi (xizmat + oddiy zapchast), qolgani (alohida) pool'da qoladi.
+    const prevKassaPart = Math.min(alreadyPaid, kassaEligibleTotal);
+    const newKassaPart = Math.min(newPaidTotal, kassaEligibleTotal);
+    const kassaIncrementNow = Math.max(0, newKassaPart - prevKassaPart);
+
+    const prevKassa = useStore.getState().kassa;
+    const nextKassa = kassaIncrementNow > 0
+      ? { ...prevKassa, [method]: prevKassa[method] + kassaIncrementNow }
+      : null;
+
+    const op = kassaIncrementNow > 0 ? {
+      date: new Date().toISOString(), // To'liq vaqt (ISO format)
+      type: 'income' as const,
+      method: method,
+      amount: kassaIncrementNow,
+      category: "Buyurtma to'lovi",
+      comment: `Buyurtma #${order.id} - ${order.ism}${isFullyPaid ? ' (To\'liq)' : ' (Qisman)'}${alohidaTotal > 0 ? ` | Alohida zapchast: ${alohidaTotal.toLocaleString()}` : ''}${comment ? ' | ' + comment : ''}`,
+      source: 'buyurtma',
+    } : null;
+
     try {
-      // To'g'ridan-to'g'ri API ga yuborish (ishonchli)
-      const res = await fetch(`/api/orders/${order.id}`, {
+      // Buyurtma + kassa + operatsiya — BITTA so'rovda (uchta ketma-ket
+      // borib-kelish o'rniga). Server ichida ham parallel bajariladi.
+      const res = await fetch(`/api/orders/${order.id}/payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           holat: newHolat,
           final: totalToPay,
           paid: newPaidTotal,
+          kassa: nextKassa,
+          operation: op,
         })
       });
       const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || `Server xatosi: ${res.status}`);
+      if (!res.ok || result?.error) {
+        throw new Error(result?.error || `Server xatosi: ${res.status}`);
       }
 
-      // Buyurtmani store'da joyida yangilaymiz — hamma narsani qayta yuklash shart emas.
+      // Store'ni joyida yangilaymiz — hamma narsani qayta yuklash shart emas.
       useStore.setState((state) => ({
         buyurtmalar: state.buyurtmalar.map((b) =>
           Number(b.id) === Number(order.id)
-            ? { ...b, ...(result && !result.error ? result : { holat: newHolat, final: totalToPay, paid: newPaidTotal }) }
+            ? { ...b, ...(result.order || { holat: newHolat, final: totalToPay, paid: newPaidTotal }) }
             : b
-        )
+        ),
+        kassa: result.kassa
+          ? { naqd: result.kassa.naqd, karta: result.kassa.karta }
+          : state.kassa,
+        ishxonaOperatsiyalar: result.operation
+          ? [...state.ishxonaOperatsiyalar, result.operation]
+          : state.ishxonaOperatsiyalar,
+        counters: result.operation
+          ? { ...state.counters, cash: state.counters.cash + 1 }
+          : state.counters,
       }));
 
-      // Kassani yangilash — "alohida" zapchastlar puli kassaga tushmaydi.
-      // Kassa avval to'ladi (xizmat + oddiy zapchast), qolgan qism (alohida) pool'da qoladi.
-      const prevKassaPart = Math.min(alreadyPaid, kassaEligibleTotal);
-      const newKassaPart = Math.min(newPaidTotal, kassaEligibleTotal);
-      const kassaIncrementNow = Math.max(0, newKassaPart - prevKassaPart);
-
-      if (kassaIncrementNow > 0) {
-        const op = {
-          date: new Date().toISOString(), // To'liq vaqt (ISO format)
-          type: 'income',
-          method: method,
-          amount: kassaIncrementNow,
-          category: "Buyurtma to'lovi",
-          comment: `Buyurtma #${order.id} - ${order.ism}${isFullyPaid ? ' (To\'liq)' : ' (Qisman)'}${alohidaTotal > 0 ? ` | Alohida zapchast: ${alohidaTotal.toLocaleString()}` : ''}${comment ? ' | ' + comment : ''}`,
-          source: 'buyurtma',
-          orderId: order.id
-        };
-        // Kassa va operatsiya yozuvi bir-biriga bog'liq emas — ketma-ket emas,
-        // parallel yuboriladi (bitta so'rov vaqtiga tushadi).
-        await Promise.all([
-          updateKassa(method, kassaIncrementNow, 'add'),
-          addIshxonaOperatsiya(op as any)
-        ]);
-      }
-
-      // Oyna darhol yopiladi. To'liq qayta yuklash (10 ta so'rov, ~2.5 MB)
-      // foydalanuvchini kuttirmasligi kerak — u fonda ketadi va DB haqiqat
-      // manbai bo'lib qolaveradi.
       onClose();
-      void loadInitialData(true);
     } catch (err: any) {
       toast.error('XATOLIK: ' + (err.message || 'Noma\'lum xato'));
+      // Qisman bajarilgan bo'lishi mumkin — holatni DB dan aniqlab olamiz.
+      void loadInitialData(true);
     } finally {
       setLoading(false);
     }
