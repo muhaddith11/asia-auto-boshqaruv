@@ -13,7 +13,10 @@ from datetime import datetime
 
 PRINTER_NAME   = "XP-80"
 SUPABASE_URL   = "https://fwktbleovtkxxpsccqqr.supabase.co"
-SUPABASE_KEY   = "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
+# RLS'ni chetlab o'tadigan service_role kalit — Windows muhit o'zgaruvchisidan o'qiladi,
+# kodga yozilmaydi (git'ga tushmasligi uchun). Sozlanmagan bo'lsa ochiq (publishable)
+# kalitga tushadi — bu holda faqat print_status='pending' buyurtmalar ko'rinadi (RLS).
+SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "sb_publishable_JUnUk2NcYb8fanWmD5TLJw_Gpmd4aoL"
 CHECK_INTERVAL = 5
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE       = os.path.join(BASE_DIR, "print_agent_log.txt")
