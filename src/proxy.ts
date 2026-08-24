@@ -12,6 +12,7 @@ const PUBLIC_API_PREFIXES = [
   '/api/health',
   '/api/receipt',          // chek
   '/api/send-sms',
+  '/api/cron',             // Vercel Cron — cookie yubormaydi, o'z CRON_SECRET tekshiruvi bor
 ];
 
 // Yo'l prefiksini bo'limga moslash (rol tekshiruvi uchun)
