@@ -1,89 +1,96 @@
-// Tezlik (SLA) bahosi — faqat buyurtma darajasidagi vaqt bor (qabul_vaqti/tayyor_vaqti),
-// shuning uchun o'z-o'zini moslashtiruvchi NISBIY reyting ishlatiladi: mutlaq "shuncha
-// daqiqada tugashi kerak" formulasi emas (buni tasdiqlaydigan ma'lumot yo'q).
+// Tezlik bahosi — har bir xizmatga belgilangan VAQT NORMASI bo'yicha.
+// (Ilgari nisbiy persentil reytingi edi: "boshqalardan tez bo'lsang ball". Egasi
+// buni mutlaq normaga almashtirishni so'radi: "injektor tozalash 1 soat, svecha
+// 20 daqiqa — normadan erta bajarsa bonus, oshirib yuborsa jarima".)
 //
-// Oxirgi 30 kunlik tekshiruvda buyurtmalarning ~62% i 3 daqiqadan kam ichida "tugagan" —
-// bu haqiqiy ta'mirlash vaqti emas, xodim ishni tugatib bo'lib botda ketma-ket bosgani.
-// Shu sabab POINTS_MIN_DURATION_MINUTES dan tez "tugagan" buyurtmalar reytingga umuman
-// kiritilmaydi (neytral, jarima ham, ball ham yo'q).
+// O'lchanadigan vaqt — XOM o'tgan vaqt emas, `workClock.ts` hisoblagan ish soatlari
+// ichidagi sof vaqt (kechasi va zapchast kutish chiqarilgan).
 
-import { POINTS_MIN_DURATION_MINUTES } from './config';
+import {
+  POINTS_MIN_DURATION_MINUTES,
+  POINTS_GRACE_PERCENT,
+  POINTS_FAST_BONUS_RATIO,
+} from './config';
 
-export interface SpeedOrderInput {
-  id: number | string;
-  srv: number; // murakkablik proksisi — buyurtma xizmatlar summasi
-  durationMin: number; // tayyor_vaqti - qabul_vaqti, daqiqada
-}
+export type SpeedReason =
+  | 'much_faster_than_norm'
+  | 'faster_than_norm'
+  | 'within_norm'
+  | 'over_norm'
+  | 'far_over_norm'
+  | 'no_norm'
+  | 'too_short_to_judge';
 
 export interface SpeedVerdict {
-  points: number; // +2 | 0 | -2
-  reason: 'fast_top_quartile' | 'slow_bottom_quartile' | 'neutral';
-  detail: { duration_min: number; percentile: number; tier: 'low' | 'mid' | 'high'; window_n: number };
+  points: number; // +3 | +2 | 0 | -2 | -4
+  reason: SpeedReason;
+  detail: {
+    work_min: number;
+    norma_min: number | null;
+    grace_min: number | null;
+    ratio: number | null;
+  };
 }
 
-export function isSpeedEligible(params: {
-  qabulVaqti?: string | null;
-  tayyorVaqti?: string | null;
-  holat?: string | null;
-  bekorHolat: string;
+export interface SpeedThresholds {
   minDurationMinutes?: number;
-}): boolean {
-  const { qabulVaqti, tayyorVaqti, holat, bekorHolat, minDurationMinutes = POINTS_MIN_DURATION_MINUTES } = params;
-  if (!qabulVaqti || !tayyorVaqti) return false;
-  if (holat === bekorHolat) return false;
-  const durationMin = (new Date(tayyorVaqti).getTime() - new Date(qabulVaqti).getTime()) / 60000;
-  return durationMin >= minDurationMinutes;
+  gracePercent?: number;
+  fastBonusRatio?: number;
 }
 
-function percentileValue(sortedAsc: number[], p: number): number {
-  const n = sortedAsc.length;
-  if (n === 0) return 0;
-  const idx = Math.min(n - 1, Math.floor((p / 100) * n));
-  return sortedAsc[idx];
-}
+// Bitta buyurtmani (uning barcha xizmatlari normasi yig'indisiga) solishtiradi.
+//
+// `normaMinutes === null` — norma belgilanmagan: NEYTRAL. Bu ataylab shunday:
+// noma'lum normani taxmin qilib xodimga jarima yozishdan ko'ra, hech narsa
+// yozmagan yaxshi. Egasi admin sahifada normani qo'shsa, keyingi hisoblashda
+// avtomatik ishga tushadi.
+export function evaluateSpeedAgainstNorm(
+  workMinutes: number,
+  normaMinutes: number | null,
+  thresholds: SpeedThresholds = {},
+): SpeedVerdict {
+  const minDuration = thresholds.minDurationMinutes ?? POINTS_MIN_DURATION_MINUTES;
+  const gracePercent = thresholds.gracePercent ?? POINTS_GRACE_PERCENT;
+  const fastRatio = thresholds.fastBonusRatio ?? POINTS_FAST_BONUS_RATIO;
 
-function percentileRank(sortedAsc: number[], value: number): number {
-  const n = sortedAsc.length;
-  if (n <= 1) return 50;
-  let below = 0;
-  let equal = 0;
-  for (const v of sortedAsc) {
-    if (v < value) below++;
-    else if (v === value) equal++;
+  const work = Math.max(0, workMinutes);
+  const base = { work_min: Math.round(work), norma_min: null, grace_min: null, ratio: null };
+
+  // Oxirgi 30 kunda buyurtmalarning ~62% i 3 daqiqadan kam ichida "tugagan" — bu
+  // haqiqiy ish vaqti emas, xodim ishni tugatib bo'lib botda ikkala tugmani
+  // ketma-ket bosgani. Bunday yozuvga ball berilsa, eng katta bonus aynan
+  // tugmani shoshib bosganga tegib qolardi — shuning uchun neytral.
+  if (work < minDuration) {
+    return { points: 0, reason: 'too_short_to_judge', detail: base };
   }
-  return ((below + equal / 2) / n) * 100;
+  if (normaMinutes == null || !(normaMinutes > 0)) {
+    return { points: 0, reason: 'no_norm', detail: base };
+  }
+
+  const grace = (normaMinutes * gracePercent) / 100;
+  const detail = {
+    work_min: Math.round(work),
+    norma_min: Math.round(normaMinutes),
+    grace_min: Math.round(grace),
+    ratio: Math.round((work / normaMinutes) * 100) / 100,
+  };
+
+  if (work <= normaMinutes * fastRatio) return { points: 3, reason: 'much_faster_than_norm', detail };
+  if (work < normaMinutes) return { points: 2, reason: 'faster_than_norm', detail };
+  if (work <= normaMinutes + grace) return { points: 0, reason: 'within_norm', detail };
+  if (work <= normaMinutes + grace * 2) return { points: -2, reason: 'over_norm', detail };
+  return { points: -4, reason: 'far_over_norm', detail };
 }
 
-// Berilgan (90 kunlik) oynadagi barcha mos buyurtmalarni murakkablikka (srv) qarab 3
-// darajaga bo'lib, har daraja ICHIDA davomiylik persentiliga ko'ra ballaydi — shu bilan
-// motor ta'mirini shina tekshiruvi bilan solishtirmaydi.
-export function computeSpeedVerdicts(orders: SpeedOrderInput[]): Map<string, SpeedVerdict> {
-  const verdicts = new Map<string, SpeedVerdict>();
-  if (orders.length === 0) return verdicts;
-
-  const srvSorted = orders.map((o) => o.srv).sort((a, b) => a - b);
-  const p33 = percentileValue(srvSorted, 33);
-  const p66 = percentileValue(srvSorted, 66);
-  const tierOf = (srv: number): 'low' | 'mid' | 'high' => (srv <= p33 ? 'low' : srv <= p66 ? 'mid' : 'high');
-
-  const byTier: Record<'low' | 'mid' | 'high', SpeedOrderInput[]> = { low: [], mid: [], high: [] };
-  for (const o of orders) byTier[tierOf(o.srv)].push(o);
-
-  for (const tier of ['low', 'mid', 'high'] as const) {
-    const group = byTier[tier];
-    const durationsSorted = group.map((o) => o.durationMin).sort((a, b) => a - b);
-    for (const o of group) {
-      const percentile = percentileRank(durationsSorted, o.durationMin);
-      let points = 0;
-      let reason: SpeedVerdict['reason'] = 'neutral';
-      if (percentile <= 25) { points = 2; reason = 'fast_top_quartile'; }
-      else if (percentile >= 75) { points = -2; reason = 'slow_bottom_quartile'; }
-      verdicts.set(String(o.id), {
-        points,
-        reason,
-        detail: { duration_min: Math.round(o.durationMin), percentile: Math.round(percentile), tier, window_n: group.length },
-      });
-    }
+// Buyurtmadagi xizmatlar normasi YIG'INDISI. Bitta xizmatning ham normasi
+// yo'q bo'lsa — null (butun buyurtma neytral). Yarim-yorti yig'indi bilan
+// solishtirish xodimni nohaq jarimaga qo'yardi.
+export function sumOrderNorm(perServiceNorms: Array<number | null>): number | null {
+  if (perServiceNorms.length === 0) return null;
+  let total = 0;
+  for (const n of perServiceNorms) {
+    if (n == null || !(n > 0)) return null;
+    total += n;
   }
-  return verdicts;
+  return total;
 }

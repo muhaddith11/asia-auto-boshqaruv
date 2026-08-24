@@ -89,7 +89,8 @@ const navGroups: NavGroup[] = [
     subItems: [
       { title: 'Xodim qo\'shish', href: '/workers/new' },
       { title: 'Xodimlar ro\'yxati', href: '/workers' },
-      { title: 'Xodimlar hisoboti', href: '/workers/reports' }
+      { title: 'Xodimlar hisoboti', href: '/workers/reports' },
+      { title: 'Xizmat vaqt normalari', href: '/workers/norms' }
     ]
   },
   {

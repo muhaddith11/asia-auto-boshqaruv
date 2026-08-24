@@ -38,6 +38,14 @@ function normName(nom: string): string {
   return (nom || '').trim().toLowerCase();
 }
 
+// Davlat raqami botda erkin matn sifatida kiritiladi (input'dagi "uppercase" CSS
+// klassi faqat vizual — haqiqiy qiymatni o'zgartirmaydi). Jonli bazada bir xil
+// mashina "40n005nb" va "40M494WA" kabi turlicha registr/bo'shliq bilan yozilgan
+// holatlar bor — shuning uchun taqqoslashdan oldin normallashtiriladi.
+function normPlate(raqam: string): string {
+  return (raqam || '').replace(/\s+/g, '').toUpperCase();
+}
+
 function servicesShareItem(a: QualityService, candidates: QualityService[]): boolean {
   return candidates.some((b) => {
     if (a.catalogId != null && b.catalogId != null) return String(a.catalogId) === String(b.catalogId);
@@ -59,7 +67,10 @@ export function evaluateQuality(
   const windowEndMs = anchor + windowDays * 24 * 60 * 60 * 1000;
   const windowClosed = now.getTime() >= windowEndMs;
 
-  const sameCar = candidates.filter((c) => c.raqam === order.raqam && String(c.id) !== String(order.id));
+  const anchorPlate = normPlate(order.raqam);
+  const sameCar = anchorPlate
+    ? candidates.filter((c) => normPlate(c.raqam) === anchorPlate && String(c.id) !== String(order.id))
+    : [];
 
   return order.services.map((svc) => {
     const match = sameCar.find((c) => {

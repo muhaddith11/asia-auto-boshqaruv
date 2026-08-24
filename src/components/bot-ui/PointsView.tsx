@@ -17,6 +17,7 @@ interface HistoryRow {
   reason: string;
   period: string;
   computed_at: string;
+  detail: { work_min?: number; norma_min?: number | null } | null;
 }
 
 interface PointsData {
@@ -29,12 +30,20 @@ interface PointsData {
 }
 
 const REASON_LABEL: Record<string, string> = {
-  fast_top_quartile: 'Tez bajarildi',
-  slow_bottom_quartile: 'Kechikdi',
-  neutral: "O'rtacha tezlik",
+  much_faster_than_norm: 'Normadan ancha tez',
+  faster_than_norm: 'Normadan tez',
+  within_norm: 'Normada bajarildi',
+  over_norm: 'Normadan oshdi',
+  far_over_norm: 'Normadan ancha oshdi',
   clean_no_rework: 'Sifatli ish',
   rework_detected: 'Qayta ta\'mirlash',
 };
+
+// Xodim "nega shu ball?" degan savolga javob topsin — norma va sarflangan vaqt.
+function speedDetail(d: HistoryRow['detail']): string | null {
+  if (!d || d.norma_min == null || d.work_min == null) return null;
+  return `norma ${d.norma_min} daq · sarflandi ${d.work_min} daq`;
+}
 
 export default function PointsView({ identity, onBack }: Props) {
   const [data, setData] = useState<PointsData | null>(null);
@@ -114,6 +123,9 @@ export default function PointsView({ identity, onBack }: Props) {
                         <div className="text-xs text-gray-500 truncate">
                           {h.service_nom || `Buyurtma #${h.order_id}`} · {fmtTime(h.computed_at)}
                         </div>
+                        {speedDetail(h.detail) && (
+                          <div className="text-xs text-gray-600 truncate">{speedDetail(h.detail)}</div>
+                        )}
                       </div>
                     </div>
                     <div className={`font-black text-sm shrink-0 ${zero ? 'text-gray-500' : positive ? 'text-emerald-400' : 'text-red-400'}`}>

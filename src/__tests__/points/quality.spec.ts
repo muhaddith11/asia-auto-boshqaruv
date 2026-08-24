@@ -76,4 +76,19 @@ describe('evaluateQuality', () => {
     const [v] = evaluateQuality(ORDER, [self], now, 14);
     expect(v.reason).toBe('clean_no_rework');
   });
+
+  it('davlat raqami boshqacha registr/bo\'shliq bilan yozilgan bo\'lsa ham mos keladi', () => {
+    const now = new Date('2026-07-16T00:00:00.000Z');
+    const spaced = candidate({ raqam: ' 01a 123 bc ' });
+    const [v] = evaluateQuality(ORDER, [spaced], now, 14);
+    expect(v.reason).toBe('rework_detected');
+  });
+
+  it('ikkalasida ham raqam bo\'sh bo\'lsa — mos kelmaydi (raqamsiz mashinalar bir-biriga ulanmaydi)', () => {
+    const now = new Date('2026-07-16T00:00:00.000Z');
+    const noPlateOrder: QualityOrderInput = { ...ORDER, raqam: '' };
+    const noPlateCandidate = candidate({ raqam: '' });
+    const [v] = evaluateQuality(noPlateOrder, [noPlateCandidate], now, 14);
+    expect(v.reason).toBe('clean_no_rework');
+  });
 });

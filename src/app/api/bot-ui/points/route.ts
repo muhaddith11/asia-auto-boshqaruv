@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
     const { data: history, error } = await supabase
       .from('points_ledger')
-      .select('id, order_id, service_nom, category, points, reason, period, computed_at')
+      .select('id, order_id, service_nom, category, points, reason, detail, period, computed_at')
       .eq('worker_id', worker.id)
       .order('computed_at', { ascending: false })
       .limit(100);

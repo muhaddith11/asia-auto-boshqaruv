@@ -1,79 +1,76 @@
 import { describe, it, expect } from 'vitest';
-import { computeSpeedVerdicts, isSpeedEligible, type SpeedOrderInput } from '@/lib/points/speed';
+import { evaluateSpeedAgainstNorm, sumOrderNorm } from '@/lib/points/speed';
 
-// Persentil mantig'i: 9 ta bir xil murakkablikdagi (srv) buyurtma, davomiylik 10..90
-// daqiqa (10 daqiqa qadam bilan). Kutilgan: eng tez 2 tasi +2, eng sekin 2 tasi -2,
-// o'rtadagi 5 tasi 0 (neytral) — standart midpoint-persentil formulasi bilan mos.
-function ordersOfDurations(durations: number[], srv = 100_000): SpeedOrderInput[] {
-  return durations.map((durationMin, i) => ({ id: i + 1, srv, durationMin }));
-}
+// Egasi tanlagan sozlama: sabr oynasi = normaning 30% i, min ishonchli vaqt 5 daqiqa.
+const T = { minDurationMinutes: 5, gracePercent: 30, fastBonusRatio: 0.6 };
 
-describe('computeSpeedVerdicts', () => {
-  it("bo'sh ro'yxat — bo'sh natija", () => {
-    expect(computeSpeedVerdicts([]).size).toBe(0);
+describe('evaluateSpeedAgainstNorm', () => {
+  // Norma 60 daqiqa (injektor tozalash). Sabr = 18 daq.
+  // <=36 → +3 | 36..59 → +2 | 60..78 → 0 | 78..96 → -2 | >96 → -4
+  const NORMA = 60;
+
+  it('normadan ancha tez (<=60%) — +3', () => {
+    expect(evaluateSpeedAgainstNorm(30, NORMA, T)).toMatchObject({ points: 3, reason: 'much_faster_than_norm' });
+    expect(evaluateSpeedAgainstNorm(36, NORMA, T)).toMatchObject({ points: 3 });
   });
 
-  it('yagona buyurtma — reyting qilib bo\'lmaydi, neytral', () => {
-    const v = computeSpeedVerdicts([{ id: 1, srv: 100_000, durationMin: 30 }]);
-    expect(v.get('1')?.reason).toBe('neutral');
-    expect(v.get('1')?.points).toBe(0);
+  it('normadan tez — +2', () => {
+    expect(evaluateSpeedAgainstNorm(45, NORMA, T)).toMatchObject({ points: 2, reason: 'faster_than_norm' });
+    expect(evaluateSpeedAgainstNorm(59, NORMA, T)).toMatchObject({ points: 2 });
   });
 
-  it('9 ta bir xil murakkablikdagi buyurtma — eng tez 2tasi +2, eng sekin 2tasi -2, qolgani 0', () => {
-    const durations = [10, 20, 30, 40, 50, 60, 70, 80, 90];
-    const v = computeSpeedVerdicts(ordersOfDurations(durations));
-
-    expect(v.get('1')).toMatchObject({ points: 2, reason: 'fast_top_quartile' }); // 10 daq
-    expect(v.get('2')).toMatchObject({ points: 2, reason: 'fast_top_quartile' }); // 20 daq
-    expect(v.get('3')).toMatchObject({ points: 0, reason: 'neutral' });
-    expect(v.get('5')).toMatchObject({ points: 0, reason: 'neutral' }); // o'rtacha (50 daq)
-    expect(v.get('7')).toMatchObject({ points: 0, reason: 'neutral' });
-    expect(v.get('8')).toMatchObject({ points: -2, reason: 'slow_bottom_quartile' }); // 80 daq
-    expect(v.get('9')).toMatchObject({ points: -2, reason: 'slow_bottom_quartile' }); // 90 daq
+  it('normada yoki sabr oynasi ichida — 0', () => {
+    expect(evaluateSpeedAgainstNorm(60, NORMA, T)).toMatchObject({ points: 0, reason: 'within_norm' });
+    expect(evaluateSpeedAgainstNorm(78, NORMA, T)).toMatchObject({ points: 0, reason: 'within_norm' });
   });
 
-  it('murakkablik (srv) darajalari ALOHIDA reytinglanadi — past tier o\'zining eng tezini ballaydi', () => {
-    // Past murakkablik (srv=100) — barchasi MUTLAQ sekinroq (50..90 daq).
-    // Yuqori murakkablik (srv=100000) — barchasi MUTLAQ tezroq (5..9 daq).
-    // Agar tierlash ishlamasa, past guruh hech qachon +2 ololmasdi (mutlaqda eng sekin).
-    const low: SpeedOrderInput[] = [50, 60, 70, 80, 90].map((d, i) => ({ id: `low${i}`, srv: 100, durationMin: d }));
-    const high: SpeedOrderInput[] = [5, 6, 7, 8, 9].map((d, i) => ({ id: `high${i}`, srv: 100_000, durationMin: d }));
+  it('sabr oynasidan oshdi — -2', () => {
+    expect(evaluateSpeedAgainstNorm(79, NORMA, T)).toMatchObject({ points: -2, reason: 'over_norm' });
+    expect(evaluateSpeedAgainstNorm(96, NORMA, T)).toMatchObject({ points: -2 });
+  });
 
-    const v = computeSpeedVerdicts([...low, ...high]);
+  it('ancha oshirib yubordi — -4', () => {
+    expect(evaluateSpeedAgainstNorm(97, NORMA, T)).toMatchObject({ points: -4, reason: 'far_over_norm' });
+    expect(evaluateSpeedAgainstNorm(600, NORMA, T)).toMatchObject({ points: -4 });
+  });
 
-    expect(v.get('low0')?.reason).toBe('fast_top_quartile'); // 50 daq — past guruh ICHIDA eng tezi
-    expect(v.get('low4')?.reason).toBe('slow_bottom_quartile'); // 90 daq — past guruh ichida eng sekini
-    expect(v.get('high0')?.reason).toBe('fast_top_quartile');
-    expect(v.get('high4')?.reason).toBe('slow_bottom_quartile');
+  it('20 daqiqalik ish (svecha): 30% sabr = 6 daqiqa', () => {
+    expect(evaluateSpeedAgainstNorm(15, 20, T)).toMatchObject({ points: 2 }); // erta
+    expect(evaluateSpeedAgainstNorm(12, 20, T)).toMatchObject({ points: 3 }); // <=60%
+    expect(evaluateSpeedAgainstNorm(26, 20, T)).toMatchObject({ points: 0 }); // sabr oynasi chekkasi
+    expect(evaluateSpeedAgainstNorm(27, 20, T)).toMatchObject({ points: -2 });
+  });
+
+  it('norma belgilanmagan — NEYTRAL, jarima ham bonus ham yo\'q', () => {
+    const v = evaluateSpeedAgainstNorm(500, null, T);
+    expect(v).toMatchObject({ points: 0, reason: 'no_norm' });
+    expect(v.detail.norma_min).toBeNull();
+  });
+
+  it('5 daqiqadan kam — baholanmaydi (botda ikkala tugma ketma-ket bosilgan)', () => {
+    // Aks holda eng katta bonus (+3) aynan tugmani shoshib bosganga tegib qolardi.
+    expect(evaluateSpeedAgainstNorm(0.25, 60, T)).toMatchObject({ points: 0, reason: 'too_short_to_judge' });
+    expect(evaluateSpeedAgainstNorm(4.9, 60, T)).toMatchObject({ points: 0, reason: 'too_short_to_judge' });
+  });
+
+  it('detail hisob-kitobni tushuntiradi', () => {
+    expect(evaluateSpeedAgainstNorm(90, 60, T).detail).toMatchObject({
+      work_min: 90, norma_min: 60, grace_min: 18, ratio: 1.5,
+    });
   });
 });
 
-describe('isSpeedEligible', () => {
-  const base = { bekorHolat: 'bekor', minDurationMinutes: 5 };
-
-  it('vaqt maydonlaridan biri yo\'q bo\'lsa — mos emas', () => {
-    expect(isSpeedEligible({ ...base, qabulVaqti: null, tayyorVaqti: '2026-01-01T10:00:00Z' })).toBe(false);
-    expect(isSpeedEligible({ ...base, qabulVaqti: '2026-01-01T09:00:00Z', tayyorVaqti: undefined })).toBe(false);
+describe('sumOrderNorm', () => {
+  it('barcha normalar bor — yig\'indi', () => {
+    expect(sumOrderNorm([60, 20, 15])).toBe(95);
   });
 
-  it("bekor qilingan buyurtma — mos emas", () => {
-    expect(isSpeedEligible({
-      ...base, holat: 'bekor',
-      qabulVaqti: '2026-01-01T09:00:00Z', tayyorVaqti: '2026-01-01T10:00:00Z',
-    })).toBe(false);
+  it('bitta xizmatning normasi yo\'q — butun buyurtma neytral (null)', () => {
+    // Yarim-yorti yig'indi bilan solishtirish xodimni nohaq jarimaga qo'yardi.
+    expect(sumOrderNorm([60, null])).toBeNull();
   });
 
-  it('5 daqiqadan kam — mos emas (shoshilinch belgilash)', () => {
-    expect(isSpeedEligible({
-      ...base,
-      qabulVaqti: '2026-01-01T09:00:00Z', tayyorVaqti: '2026-01-01T09:02:00Z',
-    })).toBe(false);
-  });
-
-  it('5 daqiqadan ko\'p, bekor emas — mos', () => {
-    expect(isSpeedEligible({
-      ...base,
-      qabulVaqti: '2026-01-01T09:00:00Z', tayyorVaqti: '2026-01-01T09:10:00Z',
-    })).toBe(true);
+  it('xizmat yo\'q — null', () => {
+    expect(sumOrderNorm([])).toBeNull();
   });
 });

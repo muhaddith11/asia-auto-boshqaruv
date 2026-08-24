@@ -4,10 +4,18 @@
 // ishni ikki marta yozishning oldini oladi — cron qayta ishga tushsa ham xavfsiz.
 
 import supabase from '@/lib/supabaseClient';
-import { computeSpeedVerdicts, isSpeedEligible, type SpeedOrderInput } from './speed';
+import { evaluateSpeedAgainstNorm, sumOrderNorm } from './speed';
 import { evaluateQuality, type QualityOrderInput, type QualityCandidateOrder } from './quality';
+import { NormLookup, splitMashina, type ServiceNorm } from './norms';
+import { effectiveWorkMinutes, partsWaitIntervals, type StatusLogEntry } from './workClock';
 import { tashkentPeriod } from './period';
-import { POINTS_SPEED_WINDOW_DAYS, POINTS_REWORK_WINDOW_DAYS, BEKOR_HOLAT } from './config';
+import {
+  POINTS_SPEED_LOOKBACK_DAYS,
+  POINTS_REWORK_WINDOW_DAYS,
+  WORK_DAY_START_HOUR,
+  WORK_DAY_END_HOUR,
+  BEKOR_HOLAT,
+} from './config';
 
 interface OrderServiceRow {
   id?: number | string;
@@ -19,12 +27,14 @@ interface OrderServiceRow {
 interface OrderRow {
   id: number;
   raqam: string;
+  mashina: string | null;
   sana: string;
   holat: string | null;
   qabul_vaqti: string | null;
   tayyor_vaqti: string | null;
   srv: number | null;
   services: OrderServiceRow[] | null;
+  status_log: StatusLogEntry[] | null;
 }
 
 interface LedgerRow {
@@ -40,7 +50,10 @@ interface LedgerRow {
   period: string;
 }
 
-const ORDER_FIELDS = 'id, raqam, sana, holat, qabul_vaqti, tayyor_vaqti, srv, services';
+const ORDER_FIELDS =
+  'id, raqam, mashina, sana, holat, qabul_vaqti, tayyor_vaqti, srv, services, status_log';
+
+const WORK_CLOCK = { startHour: WORK_DAY_START_HOUR, endHour: WORK_DAY_END_HOUR };
 
 function daysAgoDateStr(days: number): string {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -55,35 +68,51 @@ async function writeLedgerRows(rows: LedgerRow[]): Promise<number> {
   return rows.length;
 }
 
-function scoreSpeed(orders: OrderRow[]): LedgerRow[] {
-  const windowSince = daysAgoDateStr(POINTS_SPEED_WINDOW_DAYS);
+export async function loadNormLookup(): Promise<NormLookup> {
+  const { data, error } = await supabase
+    .from('service_norms')
+    .select('nom_norm, brand, car_model, norma_daqiqa');
+  if (error) throw new Error(`service_norms o'qishda xato: ${error.message}`);
+  return new NormLookup((data || []) as ServiceNorm[]);
+}
+
+// Buyurtmaning sof ish vaqti: ish soatlari ichida, zapchast kutish chiqarilgan.
+export function orderWorkMinutes(o: OrderRow): number {
+  const excluded = partsWaitIntervals(o.status_log, o.tayyor_vaqti as string);
+  return effectiveWorkMinutes(o.qabul_vaqti as string, o.tayyor_vaqti as string, excluded, WORK_CLOCK);
+}
+
+function scoreSpeed(orders: OrderRow[], norms: NormLookup): LedgerRow[] {
+  const since = daysAgoDateStr(POINTS_SPEED_LOOKBACK_DAYS);
   const eligible = orders.filter(
     (o) =>
-      o.sana >= windowSince &&
+      o.sana >= since &&
+      o.holat !== BEKOR_HOLAT &&
+      o.qabul_vaqti &&
+      o.tayyor_vaqti &&
       Array.isArray(o.services) &&
-      o.services.length > 0 &&
-      isSpeedEligible({
-        qabulVaqti: o.qabul_vaqti,
-        tayyorVaqti: o.tayyor_vaqti,
-        holat: o.holat,
-        bekorHolat: BEKOR_HOLAT,
-      }),
+      o.services.length > 0,
   );
-  if (eligible.length === 0) return [];
-
-  const inputs: SpeedOrderInput[] = eligible.map((o) => ({
-    id: o.id,
-    srv: Number(o.srv) || 0,
-    durationMin: (new Date(o.tayyor_vaqti as string).getTime() - new Date(o.qabul_vaqti as string).getTime()) / 60000,
-  }));
-  const verdicts = computeSpeedVerdicts(inputs);
 
   const rows: LedgerRow[] = [];
   for (const o of eligible) {
-    const v = verdicts.get(String(o.id));
-    if (!v) continue;
+    const { brand, model } = splitMashina(o.mashina);
+    const services = o.services || [];
+
+    // Buyurtma normasi = xizmatlar normalari yig'indisi (vaqt faqat buyurtma
+    // darajasida o'lchanadi, alohida ishga bo'lib bo'lmaydi).
+    const perService = services.map((s) => norms.find(s.nom || '', brand, model));
+    const totalNorma = sumOrderNorm(perService);
+
+    const verdict = evaluateSpeedAgainstNorm(orderWorkMinutes(o), totalNorma);
+
+    // Normasi yo'q / juda qisqa — hech narsa yozilmaydi. Ledger'ga 0 ballik
+    // yozuv qo'yilsa, keyin norma belgilangach unique indeks qayta baholashga
+    // yo'l bermay qolardi (sifatdagi 'pending' bilan bir xil mantiq).
+    if (verdict.reason === 'no_norm' || verdict.reason === 'too_short_to_judge') continue;
+
     const period = tashkentPeriod(o.tayyor_vaqti as string);
-    (o.services || []).forEach((s, idx) => {
+    services.forEach((s, idx) => {
       if (!s.workerId) return;
       rows.push({
         worker_id: Number(s.workerId),
@@ -92,9 +121,9 @@ function scoreSpeed(orders: OrderRow[]): LedgerRow[] {
         service_catalog_id: s.id ?? null,
         service_nom: s.nom ?? null,
         category: 'speed',
-        points: v.points,
-        reason: v.reason,
-        detail: v.detail,
+        points: verdict.points,
+        reason: verdict.reason,
+        detail: { ...verdict.detail, service_norma_min: perService[idx] },
         period,
       });
     });
@@ -149,13 +178,15 @@ function scoreQuality(orders: OrderRow[]): LedgerRow[] {
   return rows;
 }
 
-export async function runDailyScoring(): Promise<{ speedRows: number; qualityRows: number }> {
-  const since = daysAgoDateStr(Math.max(POINTS_SPEED_WINDOW_DAYS, POINTS_REWORK_WINDOW_DAYS + 30));
+export async function runDailyScoring(): Promise<{ speedRows: number; qualityRows: number; normsLoaded: number }> {
+  const since = daysAgoDateStr(Math.max(POINTS_SPEED_LOOKBACK_DAYS, POINTS_REWORK_WINDOW_DAYS + 30));
   const { data, error } = await supabase.from('orders').select(ORDER_FIELDS).gte('sana', since).limit(3000);
   if (error) throw new Error(`orders o'qishda xato: ${error.message}`);
   const orders = (data || []) as unknown as OrderRow[];
 
-  const speedRows = await writeLedgerRows(scoreSpeed(orders));
+  const norms = await loadNormLookup();
+
+  const speedRows = await writeLedgerRows(scoreSpeed(orders, norms));
   const qualityRows = await writeLedgerRows(scoreQuality(orders));
-  return { speedRows, qualityRows };
+  return { speedRows, qualityRows, normsLoaded: norms.size };
 }
