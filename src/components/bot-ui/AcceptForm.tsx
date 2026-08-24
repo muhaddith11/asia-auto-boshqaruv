@@ -50,12 +50,12 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
   };
 
   const selCls =
-    'w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none disabled:opacity-50 transition-colors';
+    'w-full bg-gray-800 border border-gray-700 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none disabled:opacity-50 transition-colors';
   const inCls =
-    'w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors';
+    'w-full bg-gray-800 border border-gray-700 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors';
 
   return (
-    <div className="space-y-6 slide-in">
+    <div className="space-y-3 slide-in">
       {onCancel && (
         <button onClick={onCancel} className="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
           <ArrowLeft className="w-4 h-4" /> Orqaga
