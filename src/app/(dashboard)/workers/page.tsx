@@ -108,7 +108,7 @@ export default function WorkersPage() {
     // "Korxona xodimi" rolidagi ishchilar oyligi sherik foydadan ayiriladi
     const korxonaIds = new Set(xodimlar.filter(w => w.role === 'korxona').map(w => Number(w.id)));
     const sherikOylikXarajat = maoshTarixi
-      .filter(m => korxonaIds.has(Number(m.xodimId)) && m.method !== 'shtraf')
+      .filter(m => korxonaIds.has(Number(m.xodimId)) && m.method !== 'shtraf' && m.method !== 'bonus')
       .reduce((s, m) => s + (m.summa || 0), 0);
 
     return Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);
@@ -142,13 +142,14 @@ export default function WorkersPage() {
     return acc;
   }, [buyurtmalar, xodimlar]);
 
-  // To'langan maosh va shtraf — maoshTarixi bo'yicha BITTA o'tish.
+  // To'langan maosh, shtraf va bonus — maoshTarixi bo'yicha BITTA o'tish.
   const maoshMap = useMemo(() => {
-    const acc = new Map<number, { paid: number; shtraf: number }>();
+    const acc = new Map<number, { paid: number; shtraf: number; bonus: number }>();
     maoshTarixi.forEach((m) => {
       const wid = Number(m.xodimId);
-      const cur = acc.get(wid) || { paid: 0, shtraf: 0 };
+      const cur = acc.get(wid) || { paid: 0, shtraf: 0, bonus: 0 };
       if (m.method === 'shtraf') cur.shtraf += m.summa || 0;
+      else if (m.method === 'bonus') cur.bonus += m.summa || 0;
       else cur.paid += m.summa || 0;
       acc.set(wid, cur);
     });
@@ -281,10 +282,10 @@ export default function WorkersPage() {
                 totalDue = ishlabTopganMap.get(Number(x.id)) || 0;
               }
 
-              const { paid: totalPaid, shtraf: totalShtraf } =
-                maoshMap.get(Number(x.id)) || { paid: 0, shtraf: 0 };
-              // Qoldiq: ishlab topgan − to'langan − shtraf
-              const unpaid = totalDue - totalPaid - totalShtraf;
+              const { paid: totalPaid, shtraf: totalShtraf, bonus: totalBonus } =
+                maoshMap.get(Number(x.id)) || { paid: 0, shtraf: 0, bonus: 0 };
+              // Qoldiq: ishlab topgan − to'langan − shtraf + bonus
+              const unpaid = totalDue - totalPaid - totalShtraf + totalBonus;
 
               const fmtDate = (iso?: string) => {
                 if (!iso) return '—';

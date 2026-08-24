@@ -50,6 +50,15 @@ export async function fetchCars(identity: Identity) {
   return res.json();
 }
 
+export async function fetchPoints(identity: Identity) {
+  const params = new URLSearchParams();
+  if (identity.workerPhone) params.set('phone', identity.workerPhone);
+  if (identity.mechanicChatId) params.set('tg', String(identity.mechanicChatId));
+  params.set('t', String(Date.now()));
+  const res = await fetch(`/api/bot-ui/points?${params.toString()}`);
+  return res.json();
+}
+
 export async function acceptCar(
   identity: Identity,
   data: { brand: string; model: string; plateNumber: string; customerPhone: string }

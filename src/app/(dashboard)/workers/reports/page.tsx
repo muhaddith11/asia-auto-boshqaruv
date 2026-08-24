@@ -77,11 +77,13 @@ export default function WorkerReportsPage() {
 
     const carsServed = orderIds.size;
 
-    // Berilgan (to'langan) maosh — maosh tarixidan. Shtraf (jarima) hisobga olinmaydi.
+    // Berilgan (to'langan) maosh — maosh tarixidan. Shtraf (jarima) va bonus
+    // (hali "to'langan" emas, faqat hisoblangan) hisobga olinmaydi.
     const paidSalary = (maoshTarixi || [])
       .filter((m: any) =>
         Number(m.xodimId) === Number(x.id) &&
         m.method !== 'shtraf' &&
+        m.method !== 'bonus' &&
         matchesPeriod((m.sana || '').slice(0, 10))
       )
       .reduce((s: number, m: any) => s + (Number(m.summa) || 0), 0);

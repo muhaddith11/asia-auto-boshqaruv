@@ -122,7 +122,10 @@ export default function BusinessReportPage() {
 
       // 3. Maoshlar
       maoshTarixi.forEach((m: any) => {
-        if (m.method === 'shtraf') return; // Shtraf hisobotga tushmaydi
+        // Shtraf/bonus hisobotga tushmaydi — ular kassaga tegmaydi, faqat maoshdan
+        // ayiriladi/qo'shiladi. Bonus tekin tekshirilmasa, chiqim sifatida IKKI marta
+        // hisoblanadi: hisoblanganda soxta xarajat + keyin haqiqiy to'langanda yana.
+        if (m.method === 'shtraf' || m.method === 'bonus') return;
         const raw = m.createdAt || m.sana || '';
         let dStr = m.sana || '';
         let disp = m.sana || '';

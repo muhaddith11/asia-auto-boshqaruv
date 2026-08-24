@@ -6,14 +6,15 @@ import { useBotOrderStore } from '@/store/useBotOrderStore';
 import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
-import { Loader2, Eye, RefreshCw, ChevronRight } from 'lucide-react';
+import { Loader2, Eye, RefreshCw, ChevronRight, Trophy } from 'lucide-react';
 import PhoneLogin from '@/components/bot-ui/PhoneLogin';
 import AcceptForm from '@/components/bot-ui/AcceptForm';
 import CarDetail from '@/components/bot-ui/CarDetail';
 import BossMonitor from '@/components/bot-ui/BossMonitor';
+import PointsView from '@/components/bot-ui/PointsView';
 import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
 
-type View = 'home' | 'detail' | 'complete' | 'boss';
+type View = 'home' | 'detail' | 'complete' | 'boss' | 'points';
 
 export default function BotUIPage() {
   const [view, setView] = useState<View>('home');
@@ -232,6 +233,18 @@ export default function BotUIPage() {
               {/* Yangi mashina qabul qilish (yuqorida) */}
               <AcceptForm catalog={catalogData} identity={resolveIdentity(authUser)} onDone={finishHome} />
 
+              {/* Mening ballarim */}
+              <button
+                onClick={() => setView('points')}
+                className="w-full flex items-center justify-between gap-2 bg-gray-800 border border-gray-700 hover:border-amber-500/40 rounded-xl p-4 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Trophy className="w-5 h-5 text-amber-400" />
+                  <span className="font-bold">Mening ballarim</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-500" />
+              </button>
+
               {/* Tugallanmagan ishlar (qator-qator) */}
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -310,6 +323,9 @@ export default function BotUIPage() {
 
           {/* ══ BOSHLIQ KUZATUVI ══ */}
           {view === 'boss' && <BossMonitor cars={carsData.allCars || []} onBack={() => setView('home')} />}
+
+          {/* ══ MENING BALLARIM ══ */}
+          {view === 'points' && <PointsView identity={resolveIdentity(authUser)} onBack={() => setView('home')} />}
 
           {/* ══ TOPSHIRISH ══ */}
           {view === 'complete' && (

@@ -115,9 +115,26 @@ export interface MaoshTarixi {
   summa: number;
   davr?: string; // YYYY-MM — faqat optimistik create/shtraf yo'lida beriladi, DB'da saqlanmaydi
   sana: string;
-  method: 'naqd' | 'karta' | 'shtraf'; // 'shtraf' — jarima (kassaga/hisobotга tegmaydi, faqat maoshdan ayiriladi)
+  method: 'naqd' | 'karta' | 'shtraf' | 'bonus'; // 'shtraf'/'bonus' — kassaga/hisobotga tegmaydi, faqat maoshdan ayiriladi/qo'shiladi
   izoh?: string;
   createdAt: string;
+}
+
+export interface PointsLedgerRow {
+  id: number;
+  worker_id: number;
+  order_id: number;
+  service_index: number;
+  service_catalog_id?: number | null;
+  service_nom?: string | null;
+  category: 'speed' | 'quality';
+  points: number;
+  reason: string;
+  detail?: Record<string, unknown> | null;
+  period: string; // YYYY-MM (Asia/Tashkent)
+  payout_salary_id?: number | null;
+  computed_at: string;
+  created_at: string;
 }
 
 export interface ZapPurchase {
