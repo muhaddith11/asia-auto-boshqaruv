@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Square, Timer } from 'lucide-react';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Pause, Timer } from 'lucide-react';
 import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, stageMeta, fmtTime, fmtDuration } from './botClient';
 import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
@@ -52,11 +52,11 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
       }
       if (action === 'start') {
         setOpenSince(res.startedAt || new Date().toISOString());
-        toast.success('Ish boshlandi ⏱️');
+        toast.success(baseMinutes > 0 ? 'Davom etyapmiz ⏱️' : 'Ish boshlandi ⏱️');
       } else {
         setBaseMinutes((m) => m + openMinutes);
         setOpenSince(null);
-        toast.success(`Ish to'xtatildi · ${fmtDuration(res.minutes ?? openMinutes)}`);
+        toast.success(`Pauza · bu safar ${fmtDuration(res.minutes ?? openMinutes)}`);
       }
     } catch {
       toast.error("Server bilan bog'lanishda xatolik");
@@ -66,6 +66,8 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   };
 
   const timerActive = !!openSince;
+  // Vaqt yig'ilgan, lekin hozir ketmayapti — ya'ni usta pauza qilgan.
+  const pauzada = !openSince && baseMinutes > 0;
   const canTrackTime = car.bosqich !== 'topshirildi' && car.bosqich !== 'bekor_qilindi';
 
   const openEdit = () => {
@@ -203,6 +205,16 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
             <div className="flex items-center gap-2 min-w-0">
               <Timer className={`w-4 h-4 shrink-0 ${timerActive ? 'text-emerald-400' : 'text-gray-400'}`} />
               <span className="text-sm text-gray-300">Ish vaqti</span>
+              {timerActive && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                  KETYAPTI
+                </span>
+              )}
+              {pauzada && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
+                  PAUZADA
+                </span>
+              )}
             </div>
             <span className={`font-black tabular-nums ${timerActive ? 'text-emerald-400' : 'text-gray-200'}`}>
               {fmtDuration(totalMinutes)}
@@ -214,14 +226,16 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
             onClick={toggleTimer}
             className={`w-full font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg ${
               timerActive
-                ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 shadow-red-950/40'
+                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-950/40'
                 : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 shadow-emerald-950/40'
             }`}
           >
             {timerBusy ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : timerActive ? (
-              <><Square className="w-4 h-4" /> Ishni to'xtatdim</>
+              <><Pause className="w-4 h-4" /> Pauza</>
+            ) : pauzada ? (
+              <><Play className="w-4 h-4" /> Davom ettirish</>
             ) : (
               <><Play className="w-4 h-4" /> Ishni boshladim</>
             )}
@@ -229,8 +243,10 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
 
           <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
             {timerActive
-              ? "Ish tugagach to'xtating — ball shu vaqtga qarab beriladi."
-              : 'Kalitni qo\'lga olganda bosing. Tushlik yoki zapchast kutishda to\'xtatib turing.'}
+              ? "Tushlik yoki zapchast kutishda Pauza bosing — vaqt to'xtaydi. Ish butunlay tugagach pastdagi «Tayyor» tugmasini bosing."
+              : pauzada
+                ? "Vaqt to'xtab turibdi. Ishga qaytganda «Davom ettirish» bosing."
+                : "Kalitni qo'lga olganda bosing — ball shu vaqtga qarab beriladi."}
           </p>
         </div>
       )}
