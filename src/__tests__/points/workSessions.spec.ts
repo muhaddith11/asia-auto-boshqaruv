@@ -60,6 +60,20 @@ describe('summarizeSessions', () => {
     expect(r.totalMinutes).toBe(600);
   });
 
+  it('1 kunlik ish (09:00–21:00 = 12 soat) standart chegara bilan ishonchli', () => {
+    // Batareyka/tarpeda kabi ishlar bitta sessiyada butun kunni oladi —
+    // standart 13 soatlik chegara ularni tashlab yubormasligi kerak.
+    const r = summarizeSessions([s('2026-08-10T04:00:00Z', '2026-08-10T16:00:00Z')], null);
+    expect(r.reliable).toBe(true);
+    expect(r.totalMinutes).toBe(720);
+  });
+
+  it('kechasi oshib ketgan sessiya standart chegara bilan ham rad etiladi', () => {
+    const r = summarizeSessions([s('2026-08-10T04:00:00Z', '2026-08-11T04:00:00Z')], null);
+    expect(r.reliable).toBe(false);
+    expect(r.reason).toBe('session_too_long');
+  });
+
   it('bir necha xodim — vaqt xodimlar bo\'yicha ham ajratiladi', () => {
     const r = summarizeSessions(
       [

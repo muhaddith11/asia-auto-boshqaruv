@@ -17,6 +17,10 @@ export const POINTS_FAST_BONUS_RATIO = Number(process.env.POINTS_FAST_BONUS_RATI
 
 // Bitta ish sessiyasi shu soatdan uzun bo'lsa — xodim "To'xtatdim" bosishni
 // unutgan deb hisoblanadi va buyurtma umuman baholanmaydi (neytral).
-export const POINTS_MAX_SESSION_HOURS = Number(process.env.POINTS_MAX_SESSION_HOURS) || 10;
+//
+// 13 soat: ustaxona 09:00–21:00 ishlaydi, ya'ni eng uzun halol sessiya 12 soat.
+// Batareyka/tarpeda kabi 1 kunlik ishda usta ertalab boshlab kechqurun to'xtatsa
+// shu chegaraga sig'adi; undan oshgani albatta kechani o'z ichiga oladi.
+export const POINTS_MAX_SESSION_HOURS = Number(process.env.POINTS_MAX_SESSION_HOURS) || 13;
 
 export const BEKOR_HOLAT = 'bekor'; // Jonli bazadagi haqiqiy qiymat — types/index.ts'dagi 'bekor qilingan' emas.
