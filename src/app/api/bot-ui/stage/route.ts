@@ -99,6 +99,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Yangilashda xatolik.' }, { status: 500 });
     }
 
+    // Ish to'xtaydigan bosqichlarda ochiq vaqt sessiyalari yopiladi. Aks holda
+    // xodim "to'xtatdim" bosmasa, sessiya kechasi bo'ylab cho'zilib ketadi va
+    // buyurtma "ishonchsiz" deb baholanmay qoladi.
+    const STOPS_WORK = ['zapchast_kerak', 'tayyor', 'topshirildi', 'bekor'];
+    if (STOPS_WORK.includes(action)) {
+      await supabase
+        .from('work_sessions')
+        .update({ ended_at: nowIso, auto_closed: true })
+        .eq('order_id', orderId)
+        .is('ended_at', null);
+    }
+
     return NextResponse.json({ ok: true, bosqich: update.bosqich });
   } catch (err) {
     console.error('stage API error:', err);

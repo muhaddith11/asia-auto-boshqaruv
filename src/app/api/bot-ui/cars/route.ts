@@ -57,11 +57,43 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Ish sessiyalari — kartada "hozir ishlayapman" holati va jami vaqtni ko'rsatish uchun.
+    const carIds = [...new Set([...(myCars || []), ...(allCars || [])].map((c: { id: number }) => c.id))];
+    const sessionsByOrder = new Map<number, { totalMinutes: number; openSince: string | null }>();
+    if (carIds.length > 0) {
+      const { data: sessions } = await supabase
+        .from('work_sessions')
+        .select('order_id, worker_id, started_at, ended_at')
+        .in('order_id', carIds);
+
+      for (const s of sessions || []) {
+        const cur = sessionsByOrder.get(s.order_id) || { totalMinutes: 0, openSince: null };
+        const start = new Date(s.started_at).getTime();
+        if (s.ended_at) {
+          cur.totalMinutes += Math.max(0, (new Date(s.ended_at).getTime() - start) / 60000);
+        } else if (Number(s.worker_id) === Number(worker.id)) {
+          // Faqat SHU xodimning ochiq sessiyasi tugmani "Tugatdim" ga aylantiradi.
+          cur.openSince = s.started_at;
+        }
+        sessionsByOrder.set(s.order_id, cur);
+      }
+    }
+
+    const withSessions = (list: Array<{ id: number }> | null) =>
+      (list || []).map((c) => {
+        const s = sessionsByOrder.get(c.id);
+        return {
+          ...c,
+          ish_daqiqa: Math.round(s?.totalMinutes || 0),
+          ish_boshlandi: s?.openSince || null,
+        };
+      });
+
     return NextResponse.json({
       ok: true,
       worker: { id: worker.id, ism: worker.ism, is_boss: !!worker.is_boss },
-      myCars: myCars || [],
-      allCars,
+      myCars: withSessions(myCars),
+      allCars: allCars ? withSessions(allCars) : null,
     });
   } catch (err) {
     console.error('cars API error:', err);

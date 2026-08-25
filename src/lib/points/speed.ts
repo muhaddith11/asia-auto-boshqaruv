@@ -3,8 +3,8 @@
 // buni mutlaq normaga almashtirishni so'radi: "injektor tozalash 1 soat, svecha
 // 20 daqiqa — normadan erta bajarsa bonus, oshirib yuborsa jarima".)
 //
-// O'lchanadigan vaqt — XOM o'tgan vaqt emas, `workClock.ts` hisoblagan ish soatlari
-// ichidagi sof vaqt (kechasi va zapchast kutish chiqarilgan).
+// O'lchanadigan vaqt — mashina hovlida turgan vaqt EMAS, xodim botda
+// "Ishni boshladim"/"To'xtatdim" bilan o'lchagan sof ish vaqti (`workSessions.ts`).
 
 import {
   POINTS_MIN_DURATION_MINUTES,

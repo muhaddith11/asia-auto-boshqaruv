@@ -20,6 +20,8 @@ export interface Car {
   tayyor_vaqti: string | null;
   topshirilgan_vaqti: string | null;
   created_at: string;
+  ish_daqiqa: number; // yopilgan sessiyalar yig'indisi
+  ish_boshlandi: string | null; // shu xodimning ochiq sessiyasi (bo'lsa)
 }
 
 // URL (?phone=), Telegram foydalanuvchi id, yoki brauzer login — shu tartibda.
@@ -83,6 +85,25 @@ export async function updateStage(
     body: JSON.stringify({ orderId, action, zapchastNomi, ...idBody(identity) }),
   });
   return res.json();
+}
+
+// Ish vaqtini o'lchash — tezlik bali aynan shunga qarab beriladi.
+export async function toggleWorkSession(identity: Identity, orderId: number, action: 'start' | 'stop') {
+  const res = await fetch('/api/bot-ui/work-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, action, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
+// Daqiqani qisqa ko'rinishga: 95 → "1 s 35 daq"
+export function fmtDuration(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes));
+  if (m < 60) return `${m} daq`;
+  const h = Math.floor(m / 60);
+  const rest = m % 60;
+  return rest ? `${h} s ${rest} daq` : `${h} s`;
 }
 
 // Qabul qilingan mashina ma'lumotini (raqam / mijoz tel) tahrirlash. Bosqich o'zgarmaydi.

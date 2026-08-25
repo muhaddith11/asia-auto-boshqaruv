@@ -15,9 +15,8 @@ export const POINTS_GRACE_PERCENT = Number(process.env.POINTS_GRACE_PERCENT) || 
 // Normaning shu ulushidan tez bajarilsa — katta bonus (+3) o'rniga (+2).
 export const POINTS_FAST_BONUS_RATIO = Number(process.env.POINTS_FAST_BONUS_RATIO) || 0.6;
 
-// Ustaxona ish soatlari (Toshkent vaqti). Bazadagi qabul/tayyor belgilashlar
-// taqsimoti aynan shu oraliqda: 09:00 dan oldin va 21:00 dan keyin deyarli yo'q.
-export const WORK_DAY_START_HOUR = Number(process.env.WORK_DAY_START_HOUR) || 9;
-export const WORK_DAY_END_HOUR = Number(process.env.WORK_DAY_END_HOUR) || 21;
+// Bitta ish sessiyasi shu soatdan uzun bo'lsa — xodim "To'xtatdim" bosishni
+// unutgan deb hisoblanadi va buyurtma umuman baholanmaydi (neytral).
+export const POINTS_MAX_SESSION_HOURS = Number(process.env.POINTS_MAX_SESSION_HOURS) || 10;
 
 export const BEKOR_HOLAT = 'bekor'; // Jonli bazadagi haqiqiy qiymat — types/index.ts'dagi 'bekor qilingan' emas.

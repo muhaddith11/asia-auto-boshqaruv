@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
-import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil } from 'lucide-react';
-import { Car, Identity, updateStage, updateCarInfo, stageMeta, fmtTime } from './botClient';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Square, Timer } from 'lucide-react';
+import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, stageMeta, fmtTime, fmtDuration } from './botClient';
 import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
 
@@ -22,6 +22,51 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   const [editTel, setEditTel] = useState(car.tel || '');
   const [zapNames, setZapNames] = useState<string[]>(['']);
   const meta = stageMeta(car.bosqich);
+
+  // ── Ish vaqti hisoblagichi ──
+  // Ochiq sessiya davomida raqam har soniyada yangilanib tursin, aks holda xodim
+  // "ishlayaptimi yo'qmi" tushunmaydi va tugatishni unutadi.
+  const [openSince, setOpenSince] = useState<string | null>(car.ish_boshlandi);
+  const [baseMinutes, setBaseMinutes] = useState<number>(car.ish_daqiqa || 0);
+  const [, setTick] = useState(0); // faqat qayta chizish uchun
+  const [timerBusy, setTimerBusy] = useState(false);
+
+  useEffect(() => {
+    if (!openSince) return;
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [openSince]);
+
+  const openMinutes = openSince ? (Date.now() - new Date(openSince).getTime()) / 60000 : 0;
+  const totalMinutes = baseMinutes + openMinutes;
+
+  const toggleTimer = async () => {
+    if (timerBusy) return;
+    setTimerBusy(true);
+    const action = openSince ? 'stop' : 'start';
+    try {
+      const res = await toggleWorkSession(identity, car.id, action);
+      if (!res.ok) {
+        toast.error(res.error || 'Xatolik');
+        return;
+      }
+      if (action === 'start') {
+        setOpenSince(res.startedAt || new Date().toISOString());
+        toast.success('Ish boshlandi ⏱️');
+      } else {
+        setBaseMinutes((m) => m + openMinutes);
+        setOpenSince(null);
+        toast.success(`Ish to'xtatildi · ${fmtDuration(res.minutes ?? openMinutes)}`);
+      }
+    } catch {
+      toast.error("Server bilan bog'lanishda xatolik");
+    } finally {
+      setTimerBusy(false);
+    }
+  };
+
+  const timerActive = !!openSince;
+  const canTrackTime = car.bosqich !== 'topshirildi' && car.bosqich !== 'bekor_qilindi';
 
   const openEdit = () => {
     setEditRaqam(car.raqam || '');
@@ -144,6 +189,49 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
           {car.zapchast_nomi && car.bosqich === 'zapchast_kutilmoqda' && (
             <div className="text-xs text-orange-300">📦 Kutilayotgan zapchast: <b>{car.zapchast_nomi}</b> ({fmtTime(car.zapchast_vaqti)})</div>
           )}
+        </div>
+      )}
+
+      {/* Ish vaqti hisoblagichi — tezlik bali shu vaqtga qarab beriladi */}
+      {canTrackTime && !editMode && !zapMode && (
+        <div
+          className={`rounded-xl p-4 border ${
+            timerActive ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-gray-800 border-gray-700'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Timer className={`w-4 h-4 shrink-0 ${timerActive ? 'text-emerald-400' : 'text-gray-400'}`} />
+              <span className="text-sm text-gray-300">Ish vaqti</span>
+            </div>
+            <span className={`font-black tabular-nums ${timerActive ? 'text-emerald-400' : 'text-gray-200'}`}>
+              {fmtDuration(totalMinutes)}
+            </span>
+          </div>
+
+          <button
+            disabled={timerBusy}
+            onClick={toggleTimer}
+            className={`w-full font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg ${
+              timerActive
+                ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 shadow-red-950/40'
+                : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 shadow-emerald-950/40'
+            }`}
+          >
+            {timerBusy ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : timerActive ? (
+              <><Square className="w-4 h-4" /> Ishni to'xtatdim</>
+            ) : (
+              <><Play className="w-4 h-4" /> Ishni boshladim</>
+            )}
+          </button>
+
+          <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
+            {timerActive
+              ? "Ish tugagach to'xtating — ball shu vaqtga qarab beriladi."
+              : 'Kalitni qo\'lga olganda bosing. Tushlik yoki zapchast kutishda to\'xtatib turing.'}
+          </p>
         </div>
       )}
 

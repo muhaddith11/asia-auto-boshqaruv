@@ -185,6 +185,16 @@ export async function POST(req: NextRequest) {
         console.error('Complete update error:', error);
         return NextResponse.json({ ok: false, error: 'Yakunlashda xatolik: ' + error.message }, { status: 500 });
       }
+
+      // Ish tugadi — ochiq qolgan vaqt sessiyalarini yopamiz. Xodim "to'xtatdim"
+      // bosmasdan to'g'ridan-to'g'ri chek chiqarsa, sessiya kechasi bo'ylab
+      // cho'zilib ketib, buyurtma "ishonchsiz" bo'lib qolardi.
+      await supabase
+        .from('work_sessions')
+        .update({ ended_at: nowIso, auto_closed: true })
+        .eq('order_id', orderId)
+        .is('ended_at', null);
+
       insertedData = data;
     } else {
       // ── Eski yo'l: to'g'ridan-to'g'ri yangi buyurtma (qabul bosqichisiz) ──

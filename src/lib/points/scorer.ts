@@ -7,13 +7,11 @@ import supabase from '@/lib/supabaseClient';
 import { evaluateSpeedAgainstNorm, sumOrderNorm } from './speed';
 import { evaluateQuality, type QualityOrderInput, type QualityCandidateOrder } from './quality';
 import { NormLookup, splitMashina, type ServiceNorm } from './norms';
-import { effectiveWorkMinutes, partsWaitIntervals, type StatusLogEntry } from './workClock';
+import { summarizeSessions, type WorkSessionRow } from './workSessions';
 import { tashkentPeriod } from './period';
 import {
   POINTS_SPEED_LOOKBACK_DAYS,
   POINTS_REWORK_WINDOW_DAYS,
-  WORK_DAY_START_HOUR,
-  WORK_DAY_END_HOUR,
   BEKOR_HOLAT,
 } from './config';
 
@@ -34,7 +32,6 @@ interface OrderRow {
   tayyor_vaqti: string | null;
   srv: number | null;
   services: OrderServiceRow[] | null;
-  status_log: StatusLogEntry[] | null;
 }
 
 interface LedgerRow {
@@ -50,10 +47,7 @@ interface LedgerRow {
   period: string;
 }
 
-const ORDER_FIELDS =
-  'id, raqam, mashina, sana, holat, qabul_vaqti, tayyor_vaqti, srv, services, status_log';
-
-const WORK_CLOCK = { startHour: WORK_DAY_START_HOUR, endHour: WORK_DAY_END_HOUR };
+const ORDER_FIELDS = 'id, raqam, mashina, sana, holat, qabul_vaqti, tayyor_vaqti, srv, services';
 
 function daysAgoDateStr(days: number): string {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -76,19 +70,16 @@ export async function loadNormLookup(): Promise<NormLookup> {
   return new NormLookup((data || []) as ServiceNorm[]);
 }
 
-// Buyurtmaning sof ish vaqti: ish soatlari ichida, zapchast kutish chiqarilgan.
-export function orderWorkMinutes(o: OrderRow): number {
-  const excluded = partsWaitIntervals(o.status_log, o.tayyor_vaqti as string);
-  return effectiveWorkMinutes(o.qabul_vaqti as string, o.tayyor_vaqti as string, excluded, WORK_CLOCK);
-}
-
-function scoreSpeed(orders: OrderRow[], norms: NormLookup): LedgerRow[] {
+function scoreSpeed(
+  orders: OrderRow[],
+  norms: NormLookup,
+  sessionsByOrder: Map<number, WorkSessionRow[]>,
+): LedgerRow[] {
   const since = daysAgoDateStr(POINTS_SPEED_LOOKBACK_DAYS);
   const eligible = orders.filter(
     (o) =>
       o.sana >= since &&
       o.holat !== BEKOR_HOLAT &&
-      o.qabul_vaqti &&
       o.tayyor_vaqti &&
       Array.isArray(o.services) &&
       o.services.length > 0,
@@ -96,15 +87,19 @@ function scoreSpeed(orders: OrderRow[], norms: NormLookup): LedgerRow[] {
 
   const rows: LedgerRow[] = [];
   for (const o of eligible) {
+    // Vaqt xodim o'lchagan sessiyalardan olinadi — qabul→tayyor emas.
+    // Sessiyasiz buyurtma (eski yozuvlar, yoki tugma bosilmagan) baholanmaydi.
+    const summary = summarizeSessions(sessionsByOrder.get(o.id) || [], o.tayyor_vaqti);
+    if (!summary.reliable) continue;
+
     const { brand, model } = splitMashina(o.mashina);
     const services = o.services || [];
 
-    // Buyurtma normasi = xizmatlar normalari yig'indisi (vaqt faqat buyurtma
-    // darajasida o'lchanadi, alohida ishga bo'lib bo'lmaydi).
+    // Buyurtma normasi = xizmatlar normalari yig'indisi.
     const perService = services.map((s) => norms.find(s.nom || '', brand, model));
     const totalNorma = sumOrderNorm(perService);
 
-    const verdict = evaluateSpeedAgainstNorm(orderWorkMinutes(o), totalNorma);
+    const verdict = evaluateSpeedAgainstNorm(summary.totalMinutes, totalNorma);
 
     // Normasi yo'q / juda qisqa — hech narsa yozilmaydi. Ledger'ga 0 ballik
     // yozuv qo'yilsa, keyin norma belgilangach unique indeks qayta baholashga
@@ -123,7 +118,7 @@ function scoreSpeed(orders: OrderRow[], norms: NormLookup): LedgerRow[] {
         category: 'speed',
         points: verdict.points,
         reason: verdict.reason,
-        detail: { ...verdict.detail, service_norma_min: perService[idx] },
+        detail: { ...verdict.detail, service_norma_min: perService[idx], sessions: summary.sessionCount },
         period,
       });
     });
@@ -178,15 +173,42 @@ function scoreQuality(orders: OrderRow[]): LedgerRow[] {
   return rows;
 }
 
-export async function runDailyScoring(): Promise<{ speedRows: number; qualityRows: number; normsLoaded: number }> {
+async function loadSessions(orderIds: number[]): Promise<Map<number, WorkSessionRow[]>> {
+  const byOrder = new Map<number, WorkSessionRow[]>();
+  if (orderIds.length === 0) return byOrder;
+
+  // Supabase `.in()` juda uzun ro'yxatda so'rovni buzadi — bo'lib yuboriladi.
+  const CHUNK = 200;
+  for (let i = 0; i < orderIds.length; i += CHUNK) {
+    const chunk = orderIds.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('work_sessions')
+      .select('order_id, worker_id, started_at, ended_at')
+      .in('order_id', chunk);
+    if (error) throw new Error(`work_sessions o'qishda xato: ${error.message}`);
+    for (const s of data || []) {
+      const list = byOrder.get(s.order_id) || [];
+      list.push(s as WorkSessionRow);
+      byOrder.set(s.order_id, list);
+    }
+  }
+  return byOrder;
+}
+
+export async function runDailyScoring(): Promise<{
+  speedRows: number;
+  qualityRows: number;
+  normsLoaded: number;
+}> {
   const since = daysAgoDateStr(Math.max(POINTS_SPEED_LOOKBACK_DAYS, POINTS_REWORK_WINDOW_DAYS + 30));
   const { data, error } = await supabase.from('orders').select(ORDER_FIELDS).gte('sana', since).limit(3000);
   if (error) throw new Error(`orders o'qishda xato: ${error.message}`);
   const orders = (data || []) as unknown as OrderRow[];
 
   const norms = await loadNormLookup();
+  const sessions = await loadSessions(orders.map((o) => o.id));
 
-  const speedRows = await writeLedgerRows(scoreSpeed(orders, norms));
+  const speedRows = await writeLedgerRows(scoreSpeed(orders, norms, sessions));
   const qualityRows = await writeLedgerRows(scoreQuality(orders));
   return { speedRows, qualityRows, normsLoaded: norms.size };
 }

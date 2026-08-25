@@ -169,9 +169,10 @@ export default function ServiceNormsPage() {
         >
           <AlertCircle size={16} color="#fbbf24" style={{ marginTop: 1, flexShrink: 0 }} />
           <div className="text-[12px]" style={{ color: 'var(--text2)', lineHeight: 1.6 }}>
-            Normasi belgilanmagan xizmat <b>umuman baholanmaydi</b> — xodim na bonus, na jarima oladi.
-            Vaqt faqat ustaxona ish soatlari ichida sanaladi (kechasi va zapchast kutilgan vaqt chiqarib tashlanadi).
-            Normadan <b>30%</b> gacha oshsa hali jarima yo'q.
+            Bu yerga <b>sof ish vaqtini</b> yozing — mashina hovlida turgan vaqtni emas. Xodim botda
+            "Ishni boshladim / To'xtatdim" tugmalari bilan o'z vaqtini o'lchaydi, ball faqat shunga qarab beriladi.
+            Normasi belgilanmagan xizmat <b>umuman baholanmaydi</b> (na bonus, na jarima), vaqti o'lchanmagan
+            buyurtma ham baholanmaydi. Normadan <b>30%</b> gacha oshsa hali jarima yo'q.
           </div>
         </div>
 
