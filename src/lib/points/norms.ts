@@ -15,6 +15,10 @@ export interface ServiceNorm {
   brand: string | null;
   car_model: string | null;
   norma_daqiqa: number;
+  // Faqat elektromobilda bo'ladigan ishlar (batareyka yechish/remont) uchun true:
+  // ularning normasi allaqachon elektromobilga qarab yozilgan, ustiga klass
+  // koeffitsienti qo'shilsa ikki marta hisoblanardi.
+  koef_qollanmaydi?: boolean;
 }
 
 // Emoji, tinish belgilari va ortiqcha bo'shliqlarni olib tashlaydi.
@@ -37,21 +41,33 @@ function normKey(nom: string, brand: string | null, model: string | null): strin
   return `${nom}|${(brand || '').toLowerCase()}|${(model || '').toLowerCase()}`;
 }
 
+export interface NormEntry {
+  minutes: number;
+  koefQollanmaydi: boolean;
+}
+
 // Normalar ro'yxatidan tez qidiruv uchun indeks.
 export class NormLookup {
-  private map = new Map<string, number>();
+  private map = new Map<string, NormEntry>();
 
   constructor(norms: ServiceNorm[]) {
     for (const n of norms) {
       const minutes = Number(n.norma_daqiqa);
       if (!Number.isFinite(minutes) || minutes <= 0) continue;
-      this.map.set(normKey(n.nom_norm, n.brand, n.car_model), minutes);
+      this.map.set(normKey(n.nom_norm, n.brand, n.car_model), {
+        minutes,
+        koefQollanmaydi: !!n.koef_qollanmaydi,
+      });
     }
   }
 
   // Aniqlikdan umumiyga: (nom+brand+model) → (nom+brand) → (nom).
   // Topilmasa null — chaqiruvchi buni "ball berilmaydi" deb qabul qilishi shart.
   find(nom: string, brand?: string | null, carModel?: string | null): number | null {
+    return this.findEntry(nom, brand, carModel)?.minutes ?? null;
+  }
+
+  findEntry(nom: string, brand?: string | null, carModel?: string | null): NormEntry | null {
     const key = normalizeServiceName(nom);
     if (!key) return null;
     const candidates = [
@@ -73,8 +89,8 @@ export class NormLookup {
     const key = normalizeServiceName(nom);
     if (!key || !brand) return null;
     return (
-      this.map.get(normKey(key, brand, carModel || null)) ??
-      this.map.get(normKey(key, brand, null)) ??
+      this.map.get(normKey(key, brand, carModel || null))?.minutes ??
+      this.map.get(normKey(key, brand, null))?.minutes ??
       null
     );
   }
@@ -155,8 +171,12 @@ export function resolveNorm(
   const aniq = norms.findExact(nom, brand, carModel);
   if (aniq != null) return { minutes: aniq, koef: 1, klass, aniq: true };
 
-  const base = norms.find(nom);
+  const base = norms.findEntry(nom);
   if (base == null) return { minutes: null, koef, klass, aniq: false };
 
-  return { minutes: Math.round(base * koef), koef, klass, aniq: false };
+  // Faqat elektromobilda bo'ladigan ish (batareyka yechish) — normasi allaqachon
+  // elektromobilga qarab yozilgan, koeffitsient qo'shilsa ikki marta hisoblanardi.
+  if (base.koefQollanmaydi) return { minutes: base.minutes, koef: 1, klass, aniq: true };
+
+  return { minutes: Math.round(base.minutes * koef), koef, klass, aniq: false };
 }

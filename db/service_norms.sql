@@ -15,6 +15,11 @@ create table if not exists public.service_norms (
   brand         text,                   -- null = barcha markalar uchun
   car_model     text,                   -- null = barcha modellar uchun
   norma_daqiqa  int not null check (norma_daqiqa > 0),
+  -- true = mashina klassi koeffitsienti QO'LLANMAYDI. Faqat elektromobilda
+  -- bo'ladigan ishlar uchun (batareyka yechish/remont): ularning normasi
+  -- allaqachon elektromobilga qarab yozilgan, ustiga koeffitsient qo'shilsa
+  -- ikki marta hisoblanardi (600 daq -> elektro x2 -> 20 soat).
+  koef_qollanmaydi boolean not null default false,
   izoh          text,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()

@@ -142,6 +142,20 @@ describe('resolveNorm', () => {
   it('normasi yo\'q xizmat — koeffitsientdan qat\'i nazar null', () => {
     expect(resolveNorm(norms, classes, 'Vizf', 'BMW', '320 I').minutes).toBeNull();
   });
+
+  it('faqat elektromobilda bo\'ladigan ishga koeffitsient QO\'LLANMAYDI', () => {
+    // "Batareyka yechish 1 kun" normasi allaqachon elektromobilga qarab yozilgan.
+    // Ustiga elektro x2 qo'shilsa 20 soat, Zeekr'da x3 bilan 30 soat chiqib ketardi.
+    const evNorms = new NormLookup([
+      { nom_norm: 'batareyka yechish', brand: null, car_model: null, norma_daqiqa: 600, koef_qollanmaydi: true },
+    ]);
+    const evClasses = new CarClassLookup([
+      { brand_norm: 'byd', car_model_norm: null, klass: 'elektro', koeffitsient: 2.0 },
+      { brand_norm: 'zeekr', car_model_norm: null, klass: 'premium', koeffitsient: 3.0 },
+    ]);
+    expect(resolveNorm(evNorms, evClasses, 'Batareyka yechish', 'BYD', 'Han').minutes).toBe(600);
+    expect(resolveNorm(evNorms, evClasses, 'Batareyka yechish', 'Zeekr', '001').minutes).toBe(600);
+  });
 });
 
 describe('splitMashina', () => {

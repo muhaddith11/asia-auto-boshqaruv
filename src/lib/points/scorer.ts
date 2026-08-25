@@ -72,7 +72,7 @@ async function writeLedgerRows(rows: LedgerRow[]): Promise<number> {
 export async function loadNormLookup(): Promise<NormLookup> {
   const { data, error } = await supabase
     .from('service_norms')
-    .select('nom_norm, brand, car_model, norma_daqiqa');
+    .select('nom_norm, brand, car_model, norma_daqiqa, koef_qollanmaydi');
   if (error) throw new Error(`service_norms o'qishda xato: ${error.message}`);
   return new NormLookup((data || []) as ServiceNorm[]);
 }

@@ -238,8 +238,8 @@ export default function CarClassesPage() {
           <AlertCircle size={16} color="#3b82f6" style={{ marginTop: 1, flexShrink: 0 }} />
           <div className="text-[12px]" style={{ color: 'var(--text2)', lineHeight: 1.6 }}>
             <b>Yakuniy norma = bazaviy norma × koeffitsient.</b> Masalan diagnostika bazaviy normasi 30 daqiqa
-            bo'lsa, BYD uchun 39 daqiqa, BMW uchun 45 daqiqa bo'ladi. Model uchun alohida qator qo'shilsa,
-            u markadan ustun turadi (Kia benzin ×1.15, lekin Kia EV 6 ×1.30). Ro'yxatda yo'q marka ×1.00 bilan
+            bo'lsa, BYD uchun 60 daqiqa, BMW uchun 90 daqiqa bo'ladi. Model uchun alohida qator qo'shilsa,
+            u markadan ustun turadi (Kia benzin ×1.50, lekin Kia EV 6 ×2.00). Ro'yxatda yo'q marka ×1.00 bilan
             baholanadi.
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function CarClassesPage() {
                           <td style={{ ...S.td, textAlign: 'right', color: 'var(--text3)' }}>{m.marta}</td>
                           <td style={S.td}>
                             <div className="flex gap-1.5 flex-wrap">
-                              {([['oddiy', 1.0], ['orta', 1.15], ['elektro', 1.3], ['premium', 1.5]] as const).map(([k, v]) => (
+                              {([['oddiy', 1.0], ['orta', 1.5], ['elektro', 2.0], ['premium', 3.0]] as const).map(([k, v]) => (
                                 <button
                                   key={k}
                                   onClick={() => addMissing(m, k, v)}
