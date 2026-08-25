@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["fra1"],
   "crons": [
-    { "path": "/api/cron/score-points", "schedule": "0 23 * * *" },
-    { "path": "/api/cron/monthly-points-payout", "schedule": "0 22 16 * *" }
+    { "path": "/api/cron/score-points", "schedule": "0 23 * * *" }
   ]
 }
