@@ -26,6 +26,13 @@ export function normalizeServiceName(nom: string | null | undefined): string {
     .replace(/\s+/g, ' ');
 }
 
+// Marka/model kaliti — xizmat nomidan farqli o'laroq bo'shliqlar butunlay
+// olib tashlanadi. Bazada bir mashina turlicha yozilgan: "Mercedes-Benz",
+// "Mercedes-benz", "MERCEDESBENZ"; "EV 3" va "EV3"; "BYD" va "Byd".
+export function normalizeCarKey(s: string | null | undefined): string {
+  return (s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
 function normKey(nom: string, brand: string | null, model: string | null): string {
   return `${nom}|${(brand || '').toLowerCase()}|${(model || '').toLowerCase()}`;
 }
@@ -59,6 +66,19 @@ export class NormLookup {
     return null;
   }
 
+  // Faqat shu marka/model uchun ATAYLAB yozilgan norma (umumiy qator emas).
+  // Bunday norma topilsa klass koeffitsienti qo'llanmaydi — qiymat allaqachon
+  // shu mashina uchun qo'yilgan.
+  findExact(nom: string, brand?: string | null, carModel?: string | null): number | null {
+    const key = normalizeServiceName(nom);
+    if (!key || !brand) return null;
+    return (
+      this.map.get(normKey(key, brand, carModel || null)) ??
+      this.map.get(normKey(key, brand, null)) ??
+      null
+    );
+  }
+
   get size(): number {
     return this.map.size;
   }
@@ -70,4 +90,73 @@ export function splitMashina(mashina: string | null | undefined): { brand: strin
   const parts = (mashina || '').trim().split(/\s+/);
   if (parts.length === 0 || !parts[0]) return { brand: null, model: null };
   return { brand: parts[0], model: parts.slice(1).join(' ') || null };
+}
+
+// ── Mashina klassi koeffitsienti ─────────────────────────────────────────────
+// Qimmat avtomobil va elektromobil ishi odatdagidan uzoqroq davom etadi.
+
+export interface CarClassRow {
+  brand_norm: string;
+  car_model_norm: string | null;
+  klass: string;
+  koeffitsient: number;
+}
+
+export class CarClassLookup {
+  private map = new Map<string, { klass: string; koef: number }>();
+
+  constructor(rows: CarClassRow[]) {
+    for (const r of rows) {
+      const koef = Number(r.koeffitsient);
+      if (!Number.isFinite(koef) || koef <= 0) continue;
+      this.map.set(`${r.brand_norm}|${r.car_model_norm || ''}`, { klass: r.klass, koef });
+    }
+  }
+
+  // Model istisnosi markadan ustun (Kia benzin 1.15, lekin Kia EV 6 → 1.30).
+  // Topilmasa 1.0 — noma'lum marka bazaviy normada baholanadi.
+  find(brand?: string | null, carModel?: string | null): { klass: string; koef: number } {
+    const b = normalizeCarKey(brand);
+    if (!b) return { klass: 'oddiy', koef: 1 };
+    return (
+      this.map.get(`${b}|${normalizeCarKey(carModel)}`) ??
+      this.map.get(`${b}|`) ?? { klass: 'oddiy', koef: 1 }
+    );
+  }
+
+  get size(): number {
+    return this.map.size;
+  }
+}
+
+export interface ResolvedNorm {
+  minutes: number | null;
+  koef: number;
+  klass: string;
+  aniq: boolean; // shu mashina uchun ANIQ norma yozilganmi (koeffitsient qo'llanmagan)
+}
+
+/**
+ * Yakuniy norma = bazaviy norma x mashina klassi koeffitsienti.
+ *
+ * Agar `service_norms`da shu marka/model uchun ANIQ norma yozilgan bo'lsa,
+ * u o'zgarishsiz ishlatiladi — koeffitsient qo'llanmaydi, chunki aniq qiymat
+ * allaqachon shu mashina uchun qo'yilgan (ikki marta kengaytirmaslik uchun).
+ */
+export function resolveNorm(
+  norms: NormLookup,
+  classes: CarClassLookup,
+  nom: string,
+  brand?: string | null,
+  carModel?: string | null,
+): ResolvedNorm {
+  const { klass, koef } = classes.find(brand, carModel);
+
+  const aniq = norms.findExact(nom, brand, carModel);
+  if (aniq != null) return { minutes: aniq, koef: 1, klass, aniq: true };
+
+  const base = norms.find(nom);
+  if (base == null) return { minutes: null, koef, klass, aniq: false };
+
+  return { minutes: Math.round(base * koef), koef, klass, aniq: false };
 }

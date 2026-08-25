@@ -6,7 +6,14 @@
 import supabase from '@/lib/supabaseClient';
 import { evaluateSpeedAgainstNorm, sumOrderNorm } from './speed';
 import { evaluateQuality, type QualityOrderInput, type QualityCandidateOrder } from './quality';
-import { NormLookup, splitMashina, type ServiceNorm } from './norms';
+import {
+  NormLookup,
+  CarClassLookup,
+  resolveNorm,
+  splitMashina,
+  type ServiceNorm,
+  type CarClassRow,
+} from './norms';
 import { summarizeSessions, type WorkSessionRow } from './workSessions';
 import { tashkentPeriod } from './period';
 import {
@@ -70,9 +77,18 @@ export async function loadNormLookup(): Promise<NormLookup> {
   return new NormLookup((data || []) as ServiceNorm[]);
 }
 
+export async function loadCarClassLookup(): Promise<CarClassLookup> {
+  const { data, error } = await supabase
+    .from('car_classes')
+    .select('brand_norm, car_model_norm, klass, koeffitsient');
+  if (error) throw new Error(`car_classes o'qishda xato: ${error.message}`);
+  return new CarClassLookup((data || []) as CarClassRow[]);
+}
+
 function scoreSpeed(
   orders: OrderRow[],
   norms: NormLookup,
+  classes: CarClassLookup,
   sessionsByOrder: Map<number, WorkSessionRow[]>,
 ): LedgerRow[] {
   const since = daysAgoDateStr(POINTS_SPEED_LOOKBACK_DAYS);
@@ -95,8 +111,10 @@ function scoreSpeed(
     const { brand, model } = splitMashina(o.mashina);
     const services = o.services || [];
 
-    // Buyurtma normasi = xizmatlar normalari yig'indisi.
-    const perService = services.map((s) => norms.find(s.nom || '', brand, model));
+    // Buyurtma normasi = xizmatlar normalari yig'indisi. Har bir norma mashina
+    // klassiga qarab kengaytiriladi (elektromobil/premium ishi uzoqroq).
+    const resolved = services.map((s) => resolveNorm(norms, classes, s.nom || '', brand, model));
+    const perService = resolved.map((r) => r.minutes);
     const totalNorma = sumOrderNorm(perService);
 
     const verdict = evaluateSpeedAgainstNorm(summary.totalMinutes, totalNorma);
@@ -118,7 +136,13 @@ function scoreSpeed(
         category: 'speed',
         points: verdict.points,
         reason: verdict.reason,
-        detail: { ...verdict.detail, service_norma_min: perService[idx], sessions: summary.sessionCount },
+        detail: {
+          ...verdict.detail,
+          service_norma_min: perService[idx],
+          klass: resolved[idx]?.klass,
+          koef: resolved[idx]?.koef,
+          sessions: summary.sessionCount,
+        },
         period,
       });
     });
@@ -199,6 +223,7 @@ export async function runDailyScoring(): Promise<{
   speedRows: number;
   qualityRows: number;
   normsLoaded: number;
+  classesLoaded: number;
 }> {
   const since = daysAgoDateStr(Math.max(POINTS_SPEED_LOOKBACK_DAYS, POINTS_REWORK_WINDOW_DAYS + 30));
   const { data, error } = await supabase.from('orders').select(ORDER_FIELDS).gte('sana', since).limit(3000);
@@ -206,9 +231,10 @@ export async function runDailyScoring(): Promise<{
   const orders = (data || []) as unknown as OrderRow[];
 
   const norms = await loadNormLookup();
+  const classes = await loadCarClassLookup();
   const sessions = await loadSessions(orders.map((o) => o.id));
 
-  const speedRows = await writeLedgerRows(scoreSpeed(orders, norms, sessions));
+  const speedRows = await writeLedgerRows(scoreSpeed(orders, norms, classes, sessions));
   const qualityRows = await writeLedgerRows(scoreQuality(orders));
-  return { speedRows, qualityRows, normsLoaded: norms.size };
+  return { speedRows, qualityRows, normsLoaded: norms.size, classesLoaded: classes.size };
 }

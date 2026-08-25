@@ -90,7 +90,8 @@ const navGroups: NavGroup[] = [
       { title: 'Xodim qo\'shish', href: '/workers/new' },
       { title: 'Xodimlar ro\'yxati', href: '/workers' },
       { title: 'Xodimlar hisoboti', href: '/workers/reports' },
-      { title: 'Xizmat vaqt normalari', href: '/workers/norms' }
+      { title: 'Xizmat vaqt normalari', href: '/workers/norms' },
+      { title: 'Mashina klasslari', href: '/workers/car-classes' }
     ]
   },
   {
