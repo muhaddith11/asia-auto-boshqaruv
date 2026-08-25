@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { runMonthlyPayout } from '@/lib/points/payout';
-import { previousTashkentPeriod } from '@/lib/points/period';
+import { runPayout } from '@/lib/points/payout';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -11,21 +10,19 @@ function isAuthorized(req: NextRequest): boolean {
   return req.headers.get('authorization') === `Bearer ${secret}`;
 }
 
-// Oylik (16-sana): o'tgan oy uchun ball lentasini yig'ib, salaries'ga
-// 'bonus'/'shtraf' yozadi. `?period=YYYY-MM&dryRun=1` — qo'lda tekshirish uchun
-// (dryRun=1 bo'lsa hech narsa yozilmaydi, faqat hisob-kitob qaytariladi).
+// Haftalik: hisoblangan va hali to'lanmagan barcha ballni yig'ib, salaries'ga
+// 'bonus'/'shtraf' yozadi. `?dryRun=1` — hech narsa yozmasdan faqat hisob-kitob
+// (birinchi marta tekshirish uchun SHUNI ishlating).
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
   }
   try {
-    const { searchParams } = new URL(req.url);
-    const period = searchParams.get('period') || previousTashkentPeriod();
-    const dryRun = searchParams.get('dryRun') === '1';
-    const result = await runMonthlyPayout(period, dryRun);
+    const dryRun = new URL(req.url).searchParams.get('dryRun') === '1';
+    const result = await runPayout(dryRun);
     return NextResponse.json({ ok: true, dryRun, ...result });
   } catch (err) {
-    console.error('monthly-points-payout cron xatosi:', err);
+    console.error('weekly-points-payout cron xatosi:', err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }
 }

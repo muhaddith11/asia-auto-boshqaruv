@@ -1,7 +1,11 @@
 // Ball/bonus tizimi sozlamalari — env orqali, kod o'zgartirmasdan tuzatiladi.
 
 export const POINTS_SOM_PER_BALL = Number(process.env.POINTS_SOM_PER_BALL) || 5000;
-export const POINTS_MAX_PERCENT_OF_EARNED = Number(process.env.POINTS_MAX_PERCENT_OF_EARNED) || 20;
+
+// Bonus/shtraf xodimning o'sha davrda ishlab topganining necha foizidan
+// oshmasin. 0 = CHEGARA YO'Q (egasi shuni tanladi — "chegara qo'yish kerakmas").
+// Keyin kerak bo'lsa env orqali qaytariladi, kodga tegmasdan.
+export const POINTS_MAX_PERCENT_OF_EARNED = Number(process.env.POINTS_MAX_PERCENT_OF_EARNED) || 0;
 export const POINTS_REWORK_WINDOW_DAYS = Number(process.env.POINTS_REWORK_WINDOW_DAYS) || 14;
 export const POINTS_MIN_DURATION_MINUTES = Number(process.env.POINTS_MIN_DURATION_MINUTES) || 5;
 
