@@ -42,7 +42,7 @@ function normName(nom: string): string {
 // klassi faqat vizual — haqiqiy qiymatni o'zgartirmaydi). Jonli bazada bir xil
 // mashina "40n005nb" va "40M494WA" kabi turlicha registr/bo'shliq bilan yozilgan
 // holatlar bor — shuning uchun taqqoslashdan oldin normallashtiriladi.
-function normPlate(raqam: string): string {
+export function normPlate(raqam: string): string {
   return (raqam || '').replace(/\s+/g, '').toUpperCase();
 }
 

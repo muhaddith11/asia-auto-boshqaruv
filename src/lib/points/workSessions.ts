@@ -4,10 +4,11 @@
 // mashina hovlida turgan vaqt emas. Shu sabab "svecha 20 daqiqa" kabi norma
 // adolatli maqsadga aylanadi.
 //
-// Eng muhim qism — ISHONCHLILIK. Xodim "Tugatdim" bosishni unutsa, sessiya
-// kechasi bo'ylab cho'zilib ketadi va normadan 30 barobar oshgandek ko'rinadi.
-// Bunday holatda ball YOZILMAYDI (neytral) — noto'g'ri jarima yozishdan ko'ra
-// hech narsa yozmagan xavfsizroq.
+// Xodim "Pauza" bosishni unutsa, sessiya kechasi bo'ylab cho'zilib ketadi.
+// Egasining qarori: bunday holat ham BAHOLANADI va normadan oshgan bo'lsa
+// jarima yoziladi — aks holda tugmani atayin unutish jarimadan qutulish
+// yo'liga aylanardi. Uzoq sessiya `suspicious` deb belgilanadi, shunda egasi
+// qaysi yozuv unutilganini ko'ra oladi (ball baribir -4 dan pastga tushmaydi).
 
 import { POINTS_MAX_SESSION_HOURS } from './config';
 
@@ -17,12 +18,14 @@ export interface WorkSessionRow {
   ended_at: string | null;
 }
 
-export type SessionReason = 'ok' | 'no_sessions' | 'session_too_long' | 'still_open';
+export type SessionReason = 'ok' | 'no_sessions' | 'forgotten_stop' | 'still_open';
 
 export interface SessionSummary {
   totalMinutes: number;
   reliable: boolean;
   reason: SessionReason;
+  /** Sessiya juda uzun — xodim "Pauza" bosishni unutgan. Ball baribir beriladi. */
+  suspicious: boolean;
   byWorker: Record<number, number>;
   sessionCount: number;
 }
@@ -33,8 +36,9 @@ export interface SessionSummary {
  * `fallbackEnd` — yopilmagan sessiyani yopish uchun (odatda tayyor_vaqti).
  * Agar u ham yo'q bo'lsa (ish hali tugamagan) — baholab bo'lmaydi.
  *
- * Bitta sessiya `maxSessionHours` dan uzun bo'lsa, xodim tugmani unutgan deb
- * hisoblanadi va butun buyurtma baholanmaydi.
+ * Bitta sessiya `maxSessionHours` dan uzun bo'lsa ham vaqt HISOBGA OLINADI,
+ * faqat `suspicious: true` deb belgilanadi (egasining qarori: unutish jarimadan
+ * qutulish yo'li bo'lmasin).
  */
 export function summarizeSessions(
   sessions: WorkSessionRow[],
@@ -45,6 +49,7 @@ export function summarizeSessions(
     totalMinutes: 0,
     reliable: false,
     reason: 'no_sessions',
+    suspicious: false,
     byWorker: {},
     sessionCount: 0,
   };
@@ -53,6 +58,7 @@ export function summarizeSessions(
   const maxMs = maxSessionHours * 60 * 60 * 1000;
   const byWorker: Record<number, number> = {};
   let totalMs = 0;
+  let suspicious = false;
 
   for (const s of sessions) {
     const start = new Date(s.started_at).getTime();
@@ -67,10 +73,7 @@ export function summarizeSessions(
     if (!Number.isFinite(end) || end <= start) continue;
 
     const ms = end - start;
-    if (ms > maxMs) {
-      // "Tugatdim" bosilmagan — bu vaqt haqiqiy ish emas.
-      return { ...empty, reason: 'session_too_long', sessionCount: sessions.length };
-    }
+    if (ms > maxMs) suspicious = true; // "Pauza" bosilmagan, lekin baribir sanaladi
 
     totalMs += ms;
     const wid = Number(s.worker_id);
@@ -82,7 +85,8 @@ export function summarizeSessions(
   return {
     totalMinutes: totalMs / 60000,
     reliable: true,
-    reason: 'ok',
+    reason: suspicious ? 'forgotten_stop' : 'ok',
+    suspicious,
     byWorker,
     sessionCount: sessions.length,
   };

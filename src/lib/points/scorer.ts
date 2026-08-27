@@ -5,7 +5,7 @@
 
 import supabase from '@/lib/supabaseClient';
 import { evaluateSpeedAgainstNorm, sumOrderNorm } from './speed';
-import { evaluateQuality, type QualityOrderInput, type QualityCandidateOrder } from './quality';
+import { evaluateQuality, normPlate, type QualityOrderInput, type QualityCandidateOrder } from './quality';
 import {
   NormLookup,
   CarClassLookup,
@@ -142,6 +142,9 @@ function scoreSpeed(
           klass: resolved[idx]?.klass,
           koef: resolved[idx]?.koef,
           sessions: summary.sessionCount,
+          // "Pauza" bosilmagan uzoq sessiya — ball beriladi, lekin egasi
+          // qaysi yozuv shubhali ekanini ko'rib tursin.
+          unutilgan: summary.suspicious || undefined,
         },
         period,
       });
@@ -161,6 +164,18 @@ function scoreQuality(orders: OrderRow[]): LedgerRow[] {
       services: (o.services || []).map((s, idx) => ({ serviceIndex: idx, catalogId: s.id ?? null, nom: s.nom || '' })),
     }));
 
+  // Davlat raqami bo'yicha indeks. Busiz har buyurtma uchun butun ro'yxat qayta
+  // normallashtirilardi (1600 buyurtmada ~2.5 mln regex amali) va Vercel
+  // funksiya vaqtidan oshib ketish xavfi bor edi.
+  const byPlate = new Map<string, QualityCandidateOrder[]>();
+  for (const c of candidates) {
+    const key = normPlate(c.raqam);
+    if (!key) continue;
+    const list = byPlate.get(key);
+    if (list) list.push(c);
+    else byPlate.set(key, [c]);
+  }
+
   const toEvaluate = orders.filter(
     (o) => o.holat !== BEKOR_HOLAT && o.tayyor_vaqti && o.raqam && Array.isArray(o.services) && o.services.length > 0,
   );
@@ -173,7 +188,10 @@ function scoreQuality(orders: OrderRow[]): LedgerRow[] {
       tayyorVaqti: o.tayyor_vaqti as string,
       services: (o.services || []).map((s, idx) => ({ serviceIndex: idx, catalogId: s.id ?? null, nom: s.nom || '' })),
     };
-    const verdicts = evaluateQuality(input, candidates, now, POINTS_REWORK_WINDOW_DAYS);
+    // Faqat shu raqamdagi nomzodlar — evaluateQuality ichidagi filtr baribir
+    // ishlaydi, lekin endi 1600 emas, bir nechta yozuv ustidan yuradi.
+    const sameCar = byPlate.get(normPlate(o.raqam)) || [];
+    const verdicts = evaluateQuality(input, sameCar, now, POINTS_REWORK_WINDOW_DAYS);
     const period = tashkentPeriod(o.tayyor_vaqti as string);
 
     verdicts.forEach((v) => {

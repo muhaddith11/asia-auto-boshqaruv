@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
-import { Timer, Search, Trash2, Check, AlertCircle } from 'lucide-react';
+import { Timer, Search, Trash2, Check, AlertCircle, RefreshCw } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
 
 // Xizmat vaqt normalari — tezlik bali shu normaga qarab beriladi.
@@ -73,6 +73,27 @@ export default function ServiceNormsPage() {
   const [search, setSearch] = useState('');
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [hisoblanmoqda, setHisoblanmoqda] = useState(false);
+
+  // Ballarni qo'lda hisoblash — Vercel cron'iga bog'liq bo'lmaslik uchun.
+  const hisobla = async () => {
+    if (hisoblanmoqda) return;
+    setHisoblanmoqda(true);
+    const t = toast.loading('Ballar hisoblanmoqda...');
+    try {
+      const res = await fetch('/api/points/recalculate', { method: 'POST' });
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error || 'Xatolik');
+      toast.success(
+        `Tayyor · tezlik ${j.speedRows} ta, sifat ${j.qualityRows} ta yozuv`,
+        { id: t, duration: 6000 },
+      );
+    } catch (e: any) {
+      toast.error(e.message || 'Hisoblashda xatolik', { id: t });
+    } finally {
+      setHisoblanmoqda(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -143,6 +164,22 @@ export default function ServiceNormsPage() {
     <PageLayout
       title="Xizmat vaqt normalari"
       subtitle="Tezlik bali shu normaga qarab beriladi — normadan erta bajarilsa bonus, oshirib yuborilsa jarima"
+      headerActions={
+        <button
+          onClick={hisobla}
+          disabled={hisoblanmoqda}
+          style={{
+            background: '#059669', border: 'none', borderRadius: 10,
+            padding: '10px 16px', fontSize: 12, fontWeight: 700, color: '#fff',
+            cursor: hisoblanmoqda ? 'default' : 'pointer', opacity: hisoblanmoqda ? 0.6 : 1,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}
+          title="Ballarni hoziroq qayta hisoblash (cron'ni kutmasdan)"
+        >
+          <RefreshCw size={14} className={hisoblanmoqda ? 'animate-spin' : ''} />
+          Ballarni hozir hisobla
+        </button>
+      }
       filterPanel={
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2" style={{ flex: 1, minWidth: 240 }}>

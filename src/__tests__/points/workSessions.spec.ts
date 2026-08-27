@@ -45,13 +45,20 @@ describe('summarizeSessions', () => {
     expect(r.reason).toBe('still_open');
   });
 
-  it('juda uzun sessiya — xodim "tugatdim" bosishni unutgan, baholanmaydi', () => {
-    // Bu eng muhim himoya: aks holda unutilgan tugma normadan 30 barobar
-    // oshgandek ko'rinib, nohaq -4 jarima yozilardi.
+  it('juda uzun sessiya — vaqt SANALADI va shubhali deb belgilanadi', () => {
+    // Egasining qarori: "Pauza" bosishni unutish jarimadan qutulish yo'li
+    // bo'lmasin. Shuning uchun baholanadi, faqat belgilab qo'yiladi.
     const r = summarizeSessions([s('2026-08-10T05:00:00Z', '2026-08-11T05:00:00Z')], null, 10);
-    expect(r.reliable).toBe(false);
-    expect(r.reason).toBe('session_too_long');
-    expect(r.totalMinutes).toBe(0);
+    expect(r.reliable).toBe(true);
+    expect(r.suspicious).toBe(true);
+    expect(r.reason).toBe('forgotten_stop');
+    expect(r.totalMinutes).toBe(24 * 60);
+  });
+
+  it('normal sessiya shubhali deb belgilanmaydi', () => {
+    const r = summarizeSessions([s('2026-08-10T05:00:00Z', '2026-08-10T06:00:00Z')], null, 10);
+    expect(r.suspicious).toBe(false);
+    expect(r.reason).toBe('ok');
   });
 
   it('chegaradagi sessiya (aynan 10 soat) hali ishonchli', () => {
@@ -68,10 +75,10 @@ describe('summarizeSessions', () => {
     expect(r.totalMinutes).toBe(720);
   });
 
-  it('kechasi oshib ketgan sessiya standart chegara bilan ham rad etiladi', () => {
+  it('kechasi oshib ketgan sessiya — jarima uchun baribir baholanadi', () => {
     const r = summarizeSessions([s('2026-08-10T04:00:00Z', '2026-08-11T04:00:00Z')], null);
-    expect(r.reliable).toBe(false);
-    expect(r.reason).toBe('session_too_long');
+    expect(r.reliable).toBe(true);
+    expect(r.suspicious).toBe(true);
   });
 
   it('bir necha xodim — vaqt xodimlar bo\'yicha ham ajratiladi', () => {
