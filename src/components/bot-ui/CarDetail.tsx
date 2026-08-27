@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Pause, Timer } from 'lucide-react';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Timer } from 'lucide-react';
 import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, stageMeta, fmtTime, fmtDuration } from './botClient';
 import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
@@ -27,7 +27,9 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   // Ochiq sessiya davomida raqam har soniyada yangilanib tursin, aks holda xodim
   // "ishlayaptimi yo'qmi" tushunmaydi va tugatishni unutadi.
   const [openSince, setOpenSince] = useState<string | null>(car.ish_boshlandi);
-  const [baseMinutes, setBaseMinutes] = useState<number>(car.ish_daqiqa || 0);
+  // To'xtatish tugmasi yo'q — yig'ilgan vaqt faqat serverdan keladi, shuning
+  // uchun holat (state) shart emas.
+  const baseMinutes = car.ish_daqiqa || 0;
   const [, setTick] = useState(0); // faqat qayta chizish uchun
   const [timerBusy, setTimerBusy] = useState(false);
 
@@ -40,24 +42,20 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   const openMinutes = openSince ? (Date.now() - new Date(openSince).getTime()) / 60000 : 0;
   const totalMinutes = baseMinutes + openMinutes;
 
-  const toggleTimer = async () => {
-    if (timerBusy) return;
+  // Faqat BOSHLASH. To'xtatish tugmasi yo'q — vaqt "Tayyor"/"Zapchast kerak"/
+  // "Topshirildi"/"Bekor" bosilganda server tomonda o'zi yopiladi. Ikkita tugma
+  // ustalarni chalg'itardi.
+  const startTimer = async () => {
+    if (timerBusy || openSince) return;
     setTimerBusy(true);
-    const action = openSince ? 'stop' : 'start';
     try {
-      const res = await toggleWorkSession(identity, car.id, action);
+      const res = await toggleWorkSession(identity, car.id, 'start');
       if (!res.ok) {
         toast.error(res.error || 'Xatolik');
         return;
       }
-      if (action === 'start') {
-        setOpenSince(res.startedAt || new Date().toISOString());
-        toast.success(baseMinutes > 0 ? 'Davom etyapmiz ⏱️' : 'Ish boshlandi ⏱️');
-      } else {
-        setBaseMinutes((m) => m + openMinutes);
-        setOpenSince(null);
-        toast.success(`Pauza · bu safar ${fmtDuration(res.minutes ?? openMinutes)}`);
-      }
+      setOpenSince(res.startedAt || new Date().toISOString());
+      toast.success(baseMinutes > 0 ? 'Davom etyapmiz ⏱️' : 'Ish boshlandi ⏱️');
     } catch {
       toast.error("Server bilan bog'lanishda xatolik");
     } finally {
@@ -66,8 +64,9 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   };
 
   const timerActive = !!openSince;
-  // Vaqt yig'ilgan, lekin hozir ketmayapti — ya'ni usta pauza qilgan.
-  const pauzada = !openSince && baseMinutes > 0;
+  // Vaqt yig'ilgan, lekin hozir ketmayapti — masalan zapchast kutilgach
+  // sessiya avtomatik yopilgan, usta ishga qaytishi kerak.
+  const toxtagan = !openSince && baseMinutes > 0;
   const canTrackTime = car.bosqich !== 'topshirildi' && car.bosqich !== 'bekor_qilindi';
 
   const openEdit = () => {
@@ -210,9 +209,9 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
                   KETYAPTI
                 </span>
               )}
-              {pauzada && (
+              {toxtagan && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
-                  PAUZADA
+                  {"TO'XTAGAN"}
                 </span>
               )}
             </div>
@@ -221,31 +220,27 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
             </span>
           </div>
 
-          <button
-            disabled={timerBusy}
-            onClick={toggleTimer}
-            className={`w-full font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg ${
-              timerActive
-                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-950/40'
-                : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 shadow-emerald-950/40'
-            }`}
-          >
-            {timerBusy ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : timerActive ? (
-              <><Pause className="w-4 h-4" /> Pauza</>
-            ) : pauzada ? (
-              <><Play className="w-4 h-4" /> Davom ettirish</>
-            ) : (
-              <><Play className="w-4 h-4" /> Ishni boshladim</>
-            )}
-          </button>
+          {!timerActive && (
+            <button
+              disabled={timerBusy}
+              onClick={startTimer}
+              className="w-full font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 shadow-emerald-950/40"
+            >
+              {timerBusy ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : toxtagan ? (
+                <><Play className="w-4 h-4" /> Ishga qaytdim</>
+              ) : (
+                <><Play className="w-4 h-4" /> Ishni boshladim</>
+              )}
+            </button>
+          )}
 
-          <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
+          <p className={`text-xs text-gray-500 leading-relaxed ${timerActive ? '' : 'mt-2.5'}`}>
             {timerActive
-              ? "Tushlik yoki zapchast kutishda Pauza bosing — vaqt to'xtaydi. Ish butunlay tugagach pastdagi «Tayyor» tugmasini bosing."
-              : pauzada
-                ? "Vaqt to'xtab turibdi. Ishga qaytganda «Davom ettirish» bosing."
+              ? "Vaqt ketyapti. Ish tugagach pastdagi «Tayyor» tugmasini bosing — vaqt o'zi to'xtaydi."
+              : toxtagan
+                ? "Vaqt to'xtagan. Ishga qaytganingizda bosing."
                 : "Kalitni qo'lga olganda bosing — ball shu vaqtga qarab beriladi."}
           </p>
         </div>
