@@ -337,7 +337,6 @@ export default function BotUIPage() {
           {view === 'catalog' && (
             <SparePartsAdmin
               identity={resolveIdentity(authUser)}
-              catalog={catalogData}
               onBack={() => setView('home')}
             />
           )}

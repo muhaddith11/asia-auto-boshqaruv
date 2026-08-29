@@ -13,13 +13,12 @@ import {
 
 interface Props {
   identity: Identity;
-  catalog: any; // { brands: string[], catalog: { [brand]: { [model]: [] } } }
   onBack: () => void;
 }
 
-const emptyForm = { nom: '', artikul: '', brand: '', mashina: '', izoh: '', rasmlar: [] as string[] };
+const emptyForm = { nom: '', artikul: '', mashina: '', izoh: '', rasmlar: [] as string[] };
 
-export default function SparePartsAdmin({ identity, catalog, onBack }: Props) {
+export default function SparePartsAdmin({ identity, onBack }: Props) {
   const [mode, setMode] = useState<'list' | 'form'>('list');
   const [parts, setParts] = useState<SparePart[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,15 +55,6 @@ export default function SparePartsAdmin({ identity, catalog, onBack }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const brands: string[] = useMemo(
-    () => ((catalog?.brands || []) as string[]).slice().sort((a, b) => a.localeCompare(b)),
-    [catalog]
-  );
-  const models: string[] = useMemo(() => {
-    if (!form.brand || !catalog?.catalog?.[form.brand]) return [];
-    return Object.keys(catalog.catalog[form.brand]).sort((a, b) => a.localeCompare(b));
-  }, [catalog, form.brand]);
-
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
     if (!s) return parts;
@@ -83,8 +73,8 @@ export default function SparePartsAdmin({ identity, catalog, onBack }: Props) {
     setForm({
       nom: p.nom || '',
       artikul: p.artikul || '',
-      brand: p.brand || '',
-      mashina: p.mashina && p.mashina !== 'UMUMIY' ? p.mashina : '',
+      // Eski yozuvlarda brand+mashina alohida bo'lishi mumkin — bitta maydonga birlashtiramiz
+      mashina: [p.brand, p.mashina && p.mashina !== 'UMUMIY' ? p.mashina : ''].filter(Boolean).join(' '),
       izoh: p.izoh || '',
       rasmlar: Array.isArray(p.rasmlar) ? [...p.rasmlar] : [],
     });
@@ -125,8 +115,8 @@ export default function SparePartsAdmin({ identity, catalog, onBack }: Props) {
     const payload = {
       nom: form.nom.trim(),
       artikul: form.artikul.trim() || null,
-      brand: form.brand || null,
-      mashina: form.brand ? form.mashina || 'UMUMIY' : 'UMUMIY',
+      brand: null,
+      mashina: form.mashina.trim() || 'UMUMIY',
       izoh: form.izoh.trim() || null,
       rasmlar: form.rasmlar,
     };
@@ -239,32 +229,16 @@ export default function SparePartsAdmin({ identity, catalog, onBack }: Props) {
           />
         </div>
 
-        {/* Brend + Model */}
-        <div className="grid grid-cols-2 gap-2.5 mb-4">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Marka</label>
-            <select
-              value={form.brand}
-              onChange={(e) => setForm({ ...form, brand: e.target.value, mashina: '' })}
-              className="w-full bg-white/[0.05] border border-white/10 rounded-xl py-3 px-3 text-white outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-            >
-              <option value="">Umumiy</option>
-              {brands.map((b) => <option key={b} value={b}>{b}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Model</label>
-            <select
-              value={form.mashina}
-              onChange={(e) => setForm({ ...form, mashina: e.target.value })}
-              disabled={!form.brand}
-              className="w-full bg-white/[0.05] border border-white/10 rounded-xl py-3 px-3 text-white outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-40 appearance-none"
-            >
-              <option value="">Barcha modellar</option>
-              {form.mashina && !models.includes(form.mashina) && <option value={form.mashina}>{form.mashina}</option>}
-              {models.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
+        {/* Marka / Model — qo'lda yoziladi */}
+        <label className="block text-xs text-gray-400 mb-1">Marka / Model (mashina)</label>
+        <div className="flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-xl px-3 mb-4 focus-within:ring-2 focus-within:ring-blue-500">
+          <Car className="w-4 h-4 text-gray-500 shrink-0" />
+          <input
+            value={form.mashina}
+            onChange={(e) => setForm({ ...form, mashina: e.target.value })}
+            placeholder="Masalan: Chevrolet Gentra (bo'sh = Umumiy)"
+            className="w-full bg-transparent py-3 text-white outline-none"
+          />
         </div>
 
         {/* Izoh */}
