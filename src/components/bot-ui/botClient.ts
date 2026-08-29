@@ -97,6 +97,91 @@ export async function toggleWorkSession(identity: Identity, orderId: number, act
   return res.json();
 }
 
+// ── Zapchastlar katalogi (faqat boshliq) ─────────────────────────────────────
+export interface SparePart {
+  id: number;
+  nom: string;
+  artikul: string | null;
+  brand: string | null;
+  mashina: string | null;
+  rasmlar: string[];
+  izoh: string | null;
+  created_at?: string;
+}
+
+function identityQuery(identity: Identity) {
+  const params = new URLSearchParams();
+  if (identity.workerPhone) params.set('phone', identity.workerPhone);
+  if (identity.mechanicChatId) params.set('tg', String(identity.mechanicChatId));
+  return params;
+}
+
+export async function fetchSpareParts(identity: Identity) {
+  const params = identityQuery(identity);
+  params.set('t', String(Date.now()));
+  const res = await fetch(`/api/bot-ui/spare-parts?${params.toString()}`);
+  return res.json();
+}
+
+// id berilsa tahrirlaydi, aks holda yangi qo'shadi.
+export async function saveSparePart(identity: Identity, part: Partial<SparePart>, id?: number) {
+  const url = id ? `/api/bot-ui/spare-parts/${id}` : '/api/bot-ui/spare-parts';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...part, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
+export async function deleteSparePartApi(identity: Identity, id: number) {
+  const params = identityQuery(identity);
+  const res = await fetch(`/api/bot-ui/spare-parts/${id}?${params.toString()}`, { method: 'DELETE' });
+  return res.json();
+}
+
+export async function uploadSparePartImage(identity: Identity, dataUrl: string) {
+  const res = await fetch('/api/bot-ui/spare-parts/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
+// Rasmni brauzerda siqib JPEG data URL qaytaradi (yuklashni tez qiladi).
+export function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width >= height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas mavjud emas'));
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error("Rasm o'qib bo'lmadi"));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error("Fayl o'qib bo'lmadi"));
+    reader.readAsDataURL(file);
+  });
+}
+
 // Daqiqani qisqa ko'rinishga: 95 → "1 s 35 daq"
 export function fmtDuration(minutes: number): string {
   const m = Math.max(0, Math.round(minutes));

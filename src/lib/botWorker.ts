@@ -50,3 +50,13 @@ export async function identifyWorker(
 ): Promise<BotWorker | null> {
   return (await findWorkerByPhone(phone)) || (await findWorkerByTelegram(telegramId));
 }
+
+// Xodimni tanidik VA u boshliq bo'lsagina qaytaradi — admin amallari (masalan
+// zapchast katalogini boshqarish) uchun. Aks holda null.
+export async function identifyBoss(
+  phone: string | undefined | null,
+  telegramId: string | number | undefined | null
+): Promise<BotWorker | null> {
+  const w = await identifyWorker(phone, telegramId);
+  return w && w.is_boss ? w : null;
+}

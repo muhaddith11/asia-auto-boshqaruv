@@ -6,15 +6,16 @@ import { useBotOrderStore } from '@/store/useBotOrderStore';
 import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
-import { Loader2, Eye, RefreshCw, ChevronRight, Trophy } from 'lucide-react';
+import { Loader2, Eye, RefreshCw, ChevronRight, Trophy, Package } from 'lucide-react';
 import PhoneLogin from '@/components/bot-ui/PhoneLogin';
 import AcceptForm from '@/components/bot-ui/AcceptForm';
 import CarDetail from '@/components/bot-ui/CarDetail';
 import BossMonitor from '@/components/bot-ui/BossMonitor';
 import PointsView from '@/components/bot-ui/PointsView';
+import SparePartsAdmin from '@/components/bot-ui/SparePartsAdmin';
 import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
 
-type View = 'home' | 'detail' | 'complete' | 'boss' | 'points';
+type View = 'home' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog';
 
 export default function BotUIPage() {
   const [view, setView] = useState<View>('home');
@@ -295,17 +296,25 @@ export default function BotUIPage() {
                 </div>
               </div>
 
-              {/* Boshliq — barcha mashinalar kuzatuvi (ro'yxatdan keyin, alohida) */}
+              {/* Boshliq — barcha mashinalar kuzatuvi + zapchast katalogi (alohida) */}
               {carsData.is_boss && (
-                <button
-                  onClick={() => {
-                    loadCars();
-                    setView('boss');
-                  }}
-                  className="w-full font-bold py-4 rounded-xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-950/40"
-                >
-                  <Eye className="w-5 h-5" /> Barcha mashinalar (kuzatuv)
-                </button>
+                <div className="space-y-2.5">
+                  <button
+                    onClick={() => {
+                      loadCars();
+                      setView('boss');
+                    }}
+                    className="w-full font-bold py-4 rounded-xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-950/40"
+                  >
+                    <Eye className="w-5 h-5" /> Barcha mashinalar (kuzatuv)
+                  </button>
+                  <button
+                    onClick={() => setView('catalog')}
+                    className="w-full font-bold py-4 rounded-xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white"
+                  >
+                    <Package className="w-5 h-5 text-blue-400" /> Zapchastlar katalogi
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -323,6 +332,15 @@ export default function BotUIPage() {
 
           {/* ══ BOSHLIQ KUZATUVI ══ */}
           {view === 'boss' && <BossMonitor cars={carsData.allCars || []} onBack={() => setView('home')} />}
+
+          {/* ══ ZAPCHASTLAR KATALOGI (faqat boshliq) ══ */}
+          {view === 'catalog' && (
+            <SparePartsAdmin
+              identity={resolveIdentity(authUser)}
+              catalog={catalogData}
+              onBack={() => setView('home')}
+            />
+          )}
 
           {/* ══ MENING BALLARIM ══ */}
           {view === 'points' && <PointsView identity={resolveIdentity(authUser)} onBack={() => setView('home')} />}
