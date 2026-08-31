@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import {
   ArrowLeft, Plus, Search, Camera, Image as ImageIcon, X, Loader2,
-  Trash2, Pencil, Package, Hash, Car, Save,
+  Trash2, Pencil, Package, Hash, Car, Save, Banknote,
 } from 'lucide-react';
 import {
   Identity, SparePart, fetchSpareParts, saveSparePart, deleteSparePartApi,
@@ -16,7 +16,13 @@ interface Props {
   onBack: () => void;
 }
 
-const emptyForm = { nom: '', artikul: '', mashina: '', izoh: '', rasmlar: [] as string[] };
+const emptyForm = { nom: '', artikul: '', narx: '', mashina: '', izoh: '', rasmlar: [] as string[] };
+
+// Narxni "250 000" ko'rinishiga keltiradi (raqamlardan boshqasini olib tashlab).
+const fmtSom = (v: number | string | null | undefined) => {
+  const n = Number(String(v ?? '').replace(/[^\d]/g, ''));
+  return n ? n.toLocaleString('ru-RU') : '';
+};
 
 export default function SparePartsAdmin({ identity, onBack }: Props) {
   const [mode, setMode] = useState<'list' | 'form'>('list');
@@ -73,6 +79,7 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
     setForm({
       nom: p.nom || '',
       artikul: p.artikul || '',
+      narx: p.narx != null ? String(p.narx) : '',
       // Eski yozuvlarda brand+mashina alohida bo'lishi mumkin — bitta maydonga birlashtiramiz
       mashina: [p.brand, p.mashina && p.mashina !== 'UMUMIY' ? p.mashina : ''].filter(Boolean).join(' '),
       izoh: p.izoh || '',
@@ -118,6 +125,7 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
       brand: null,
       mashina: form.mashina.trim() || 'UMUMIY',
       izoh: form.izoh.trim() || null,
+      narx: form.narx.trim() ? Number(form.narx) : null,
       rasmlar: form.rasmlar,
     };
     try {
@@ -229,6 +237,20 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
           />
         </div>
 
+        {/* Narx */}
+        <label className="block text-xs text-gray-400 mb-1">Narx</label>
+        <div className="flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-xl px-3 mb-4 focus-within:ring-2 focus-within:ring-blue-500">
+          <Banknote className="w-4 h-4 text-gray-500 shrink-0" />
+          <input
+            value={fmtSom(form.narx)}
+            onChange={(e) => setForm({ ...form, narx: e.target.value.replace(/[^\d]/g, '') })}
+            inputMode="numeric"
+            placeholder="Masalan: 250 000"
+            className="w-full bg-transparent py-3 text-white outline-none"
+          />
+          <span className="text-gray-500 text-sm shrink-0">so'm</span>
+        </div>
+
         {/* Marka / Model — qo'lda yoziladi */}
         <label className="block text-xs text-gray-400 mb-1">Marka / Model (mashina)</label>
         <div className="flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-xl px-3 mb-4 focus-within:ring-2 focus-within:ring-blue-500">
@@ -334,6 +356,14 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
                   <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-1">
                     <Car className="w-3 h-3 shrink-0" /> <span className="truncate">{carLabel(p)}</span>
                   </div>
+                  {p.narx ? (
+                    <div className="flex items-center gap-1 text-[12px] font-bold text-emerald-400 mt-1">
+                      <Banknote className="w-3 h-3 shrink-0" /> {fmtSom(p.narx)} so'm
+                    </div>
+                  ) : null}
+                  {p.izoh ? (
+                    <div className="text-[11px] text-gray-500 mt-1 whitespace-pre-wrap line-clamp-2">{p.izoh}</div>
+                  ) : null}
                 </div>
                 <div className="flex flex-col gap-1.5 shrink-0">
                   <button onClick={() => openEdit(p)} className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300">

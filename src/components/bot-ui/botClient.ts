@@ -132,6 +132,7 @@ export interface SparePart {
   mashina: string | null;
   rasmlar: string[];
   izoh: string | null;
+  narx: number | null;
   created_at?: string;
 }
 

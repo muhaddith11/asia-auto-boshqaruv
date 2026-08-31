@@ -8,7 +8,7 @@ import { deletePartImages, PART_IMAGES_BUCKET } from '@/lib/partImages';
 // kirish tekshiruvi (auth / boss) route darajasida bo'ladi.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ALLOWED = ['nom', 'artikul', 'brand', 'mashina', 'rasmlar', 'izoh'] as const;
+const ALLOWED = ['nom', 'artikul', 'brand', 'mashina', 'rasmlar', 'izoh', 'narx'] as const;
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // 6MB
 
 function clean(body: any) {
@@ -17,6 +17,11 @@ function clean(body: any) {
     if (body?.[k] !== undefined) out[k] = body[k];
   });
   if (out.rasmlar !== undefined && !Array.isArray(out.rasmlar)) out.rasmlar = [];
+  // narx — numeric ustun: bo'sh/xato qiymatni NULL ga aylantiramiz
+  if (out.narx !== undefined) {
+    const n = out.narx === null || out.narx === '' ? null : Number(out.narx);
+    out.narx = n === null || Number.isNaN(n) ? null : n;
+  }
   return out;
 }
 

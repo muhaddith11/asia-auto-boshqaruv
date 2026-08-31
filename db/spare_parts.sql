@@ -21,6 +21,7 @@ create table if not exists public.spare_parts (
   mashina    text default 'UMUMIY',                 -- model yoki UMUMIY
   rasmlar    jsonb not null default '[]'::jsonb,     -- rasm URL massivi
   izoh       text,                                  -- qo'shimcha izoh
+  narx       numeric,                               -- zapchast narxi (so'm), ixtiyoriy
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
