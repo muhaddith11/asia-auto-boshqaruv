@@ -5,6 +5,14 @@ export interface Identity {
   mechanicChatId: string | number | undefined;
 }
 
+// Mashinaga qilingan bitta rasxod (xarajat) — buyurtma zaps ichidan ajratilgan.
+export interface RasxodLine {
+  nom: string;
+  summa: number;
+  vaqt?: string | null;
+  xodim_nomi?: string | null;
+}
+
 export interface Car {
   id: number;
   ism: string;
@@ -12,6 +20,7 @@ export interface Car {
   raqam: string;
   tel: string;
   bosqich: string;
+  holat: string | null; // 'jarayonda' | 'tulanmagan' | 'tulangan' ...
   qabul_xodim_id: number;
   qabul_xodim_nomi: string;
   qabul_vaqti: string | null;
@@ -22,6 +31,8 @@ export interface Car {
   created_at: string;
   ish_daqiqa: number; // yopilgan sessiyalar yig'indisi
   ish_boshlandi: string | null; // shu xodimning ochiq sessiyasi (bo'lsa)
+  rasxodlar: RasxodLine[]; // shu mashinaga kiritilgan rasxodlar
+  rasxod_jami: number; // rasxodlar yig'indisi (kassadan ayirilgan)
 }
 
 // URL (?phone=), Telegram foydalanuvchi id, yoki brauzer login — shu tartibda.
@@ -83,6 +94,21 @@ export async function updateStage(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ orderId, action, zapchastNomi, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
+// Mashinaga rasxod (xarajat) kiritish — summa darrov kassadan (naqd) ayiriladi
+// va buyurtmaga (chek/tafsilot) qo'shiladi.
+export async function addRasxod(
+  identity: Identity,
+  orderId: number,
+  items: { nom: string; summa: number }[]
+) {
+  const res = await fetch('/api/bot-ui/rasxod', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, items, ...idBody(identity) }),
   });
   return res.json();
 }

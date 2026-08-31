@@ -152,6 +152,11 @@ export async function POST(req: NextRequest) {
     // Chek uchun ko'rsatiladigan mashina ma'lumotlari
     let receiptCar = `${brand || ''} ${model || ''}`.trim();
     let receiptPlate = plateNumber || '';
+    // Chek (Telegram) uchun ko'rsatiladigan zapchast ro'yxati. orderId yo'lida
+    // mavjud rasxodlar (bot orqali qo'shilgan xarajatlar) shu ro'yxat oldiga qo'shiladi.
+    let receiptParts: { name: string; quantity: number; price: number }[] =
+      (parts || []).map((p: any) => ({ name: p.name, quantity: Number(p.quantity || 1), price: Number(p.price) }));
+    let receiptPartsTotal = partsTotal;
 
     if (orderId) {
       // ── CHEK CHIQARISH: qabul qilingan mashinaga xizmat/zapchast qo'shib
@@ -159,7 +164,7 @@ export async function POST(req: NextRequest) {
       //    Mijozga topshirish alohida "Topshirildi" tugmasi bilan bo'ladi.
       const { data: existing } = await supabase
         .from('orders')
-        .select('mashina, raqam, status_log')
+        .select('mashina, raqam, status_log, zaps')
         .eq('id', orderId)
         .maybeSingle();
       if (!existing) {
@@ -167,6 +172,33 @@ export async function POST(req: NextRequest) {
       }
       if (existing.mashina) receiptCar = existing.mashina;
       if (existing.raqam) receiptPlate = existing.raqam;
+
+      // Bot orqali qo'shilgan rasxod (xarajat) zaplarini saqlab qolamiz — aks
+      // holda bu chek jarayoni ularni o'chirib yuborardi. Ular kassadan allaqachon
+      // ayirilgan, shuning uchun chekda va buyurtma hisobida ko'rinishi shart.
+      const prevZaps = Array.isArray(existing.zaps) ? existing.zaps : [];
+      const rasxodZaps = prevZaps.filter((z: any) => z && (z.rasxod === true || z.kat === 'Rasxod'));
+      const rasxodTotal = rasxodZaps.reduce((s: number, z: any) => s + (Number(z.narx ?? z.price) || 0), 0);
+      const rasxodCost = rasxodZaps.reduce((s: number, z: any) => s + (Number(z.sebestoimost) || 0), 0);
+
+      const mergedZaps = [...rasxodZaps, ...orderParts];
+      const mergedZapTotal = partsTotal + rasxodTotal;
+      const mergedTotal = servicesTotal + mergedZapTotal;
+      const mergedCost = partsCostTotal + rasxodCost;
+
+      // Telegram cheki uchun rasxodlarni ko'rsatiladigan ro'yxat oldiga qo'shamiz
+      if (rasxodZaps.length > 0) {
+        receiptParts = [
+          ...rasxodZaps.map((z: any) => ({
+            name: z.nom || z.name || '',
+            quantity: Number(z.qty || 1),
+            price: Number(z.narx ?? z.price ?? 0),
+          })),
+          ...receiptParts,
+        ];
+        receiptPartsTotal = mergedZapTotal;
+      }
+
       const log = Array.isArray(existing.status_log) ? existing.status_log : [];
       log.push({ bosqich: 'tayyor', vaqt: nowIso, xodim_id: worker.id, izoh: 'Chek chiqarildi' });
 
@@ -174,6 +206,12 @@ export async function POST(req: NextRequest) {
         .from('orders')
         .update({
           ...completionFields,
+          // Rasxodlarni chek zapchastlariga qo'shib qayta hisoblaymiz
+          zaps: mergedZaps,
+          zap: mergedZapTotal,
+          total: mergedTotal,
+          final: mergedTotal,
+          pribil: mergedTotal - zarplataTotal - mergedCost,
           holat: 'tulanmagan',
           bosqich: 'tayyor',
           tayyor_vaqti: nowIso,
@@ -231,8 +269,8 @@ export async function POST(req: NextRequest) {
       ? services.map((s: any, i: number) => `${i + 1}. ${s.name} - ${Number(s.price).toLocaleString()} UZS`).join('\n')
       : "Xizmat kiritilmagan";
 
-    const zapList = parts?.length > 0
-      ? `\n⚙️ ZAPCHASTLAR:\n${parts.map((p: any, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${Number(p.price).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${partsTotal.toLocaleString()} UZS\n`
+    const zapList = receiptParts.length > 0
+      ? `\n⚙️ ZAPCHASTLAR:\n${receiptParts.map((p, i: number) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${Number(p.price).toLocaleString()} UZS`).join('\n')}\n🔹 Zapchastlar jami: ${receiptPartsTotal.toLocaleString()} UZS\n`
       : "";
 
     const baseReceipt = `📣 YANGI CHEK (Nusxa)
@@ -252,7 +290,7 @@ ${srvList}
 🔹 Xizmatlar jami: ${servicesTotal.toLocaleString()} UZS
 ${zapList}
 ---------------------------
-💰 UMUMIY SUMMA: ${(servicesTotal + partsTotal).toLocaleString()} UZS
+💰 UMUMIY SUMMA: ${(servicesTotal + receiptPartsTotal).toLocaleString()} UZS
 
 (Ushbu chek id: #${insertedData?.[0]?.id || 'yangi'})`;
 

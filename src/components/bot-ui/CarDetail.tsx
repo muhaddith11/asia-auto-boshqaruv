@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Timer } from 'lucide-react';
-import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, stageMeta, fmtTime, fmtDuration } from './botClient';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Timer, Wallet, Receipt } from 'lucide-react';
+import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, addRasxod, stageMeta, fmtTime, fmtDuration } from './botClient';
 import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
 
@@ -21,7 +21,14 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   const [editRaqam, setEditRaqam] = useState(car.raqam || '');
   const [editTel, setEditTel] = useState(car.tel || '');
   const [zapNames, setZapNames] = useState<string[]>(['']);
+  const [rasxodMode, setRasxodMode] = useState(false);
+  const [rasxodRows, setRasxodRows] = useState<{ nom: string; summa: string }[]>([{ nom: '', summa: '' }]);
   const meta = stageMeta(car.bosqich);
+
+  // Rasxod (xarajat) — faqat faol (to'lanmagan) mashinaga qo'shiladi.
+  const canRasxod = car.holat !== 'tulangan' && car.bosqich !== 'topshirildi' && car.bosqich !== 'bekor_qilindi';
+  const rasxodlar = car.rasxodlar || [];
+  const rasxodJami = car.rasxod_jami || 0;
 
   // ── Ish vaqti hisoblagichi ──
   // Ochiq sessiya davomida raqam har soniyada yangilanib tursin, aks holda xodim
@@ -103,6 +110,42 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
   const saveZap = () => {
     const list = zapNames.map((s) => s.trim()).filter(Boolean);
     doStage('zapchast_kerak', list.join(', '));
+  };
+
+  // ── Rasxod (xarajat) ──────────────────────────────────────────────────────
+  const openRasxod = () => {
+    setRasxodRows([{ nom: '', summa: '' }]);
+    setRasxodMode(true);
+  };
+  const setRasxodAt = (i: number, field: 'nom' | 'summa', v: string) =>
+    setRasxodRows((a) => a.map((x, idx) => (idx === i ? { ...x, [field]: v } : x)));
+  const addRasxodRow = () => setRasxodRows((a) => [...a, { nom: '', summa: '' }]);
+  const removeRasxodRow = (i: number) => setRasxodRows((a) => a.filter((_, idx) => idx !== i));
+  const rasxodValid = rasxodRows.some((r) => r.nom.trim() && Math.round(Number(r.summa) || 0) > 0);
+  const rasxodSum = rasxodRows.reduce(
+    (s, r) => s + (r.nom.trim() && Number(r.summa) > 0 ? Math.round(Number(r.summa)) : 0),
+    0
+  );
+  const saveRasxod = async () => {
+    if (busy) return;
+    const items = rasxodRows
+      .map((r) => ({ nom: r.nom.trim(), summa: Math.round(Number(r.summa) || 0) }))
+      .filter((r) => r.nom && r.summa > 0);
+    if (items.length === 0) return;
+    setBusy(true);
+    try {
+      const res = await addRasxod(identity, car.id, items);
+      if (!res.ok) {
+        toast.error(res.error || 'Xatolik');
+        setBusy(false);
+        return;
+      }
+      toast.success(`Rasxod saqlandi — ${rasxodSum.toLocaleString('ru-RU')} so'm kassadan ayirildi`);
+      onDone();
+    } catch {
+      toast.error("Server bilan bog'lanishda xatolik");
+      setBusy(false);
+    }
   };
 
   const doStage = async (
@@ -194,7 +237,7 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
       )}
 
       {/* Ish vaqti hisoblagichi — tezlik bali shu vaqtga qarab beriladi */}
-      {canTrackTime && !editMode && !zapMode && (
+      {canTrackTime && !editMode && !zapMode && !rasxodMode && (
         <div
           className={`rounded-xl p-4 border ${
             timerActive ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-gray-800 border-gray-700'
@@ -296,9 +339,124 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
             </button>
           </div>
         </div>
+      ) : rasxodMode ? (
+        // ── Rasxod kiritish — nomi + summa qatorlari ──
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-300">Rasxod (xarajat)</label>
+            <p className="text-xs text-gray-500 mt-1">
+              Summa <b className="text-red-300">naqd</b> kassadan darrov ayiriladi va chek/hisobga qo'shiladi.
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            {rasxodRows.map((r, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="w-8 h-11 shrink-0 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-sm text-gray-400 font-bold">
+                  {i + 1}
+                </span>
+                <div className="flex-1 space-y-2">
+                  <input
+                    autoFocus={i === rasxodRows.length - 1}
+                    value={r.nom}
+                    onChange={(e) => setRasxodAt(i, 'nom', e.target.value)}
+                    placeholder="Nima uchun? Masalan: old tormoz kolodka"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                  <div className="relative">
+                    <input
+                      inputMode="numeric"
+                      value={r.summa}
+                      onChange={(e) => setRasxodAt(i, 'summa', e.target.value.replace(/[^\d]/g, ''))}
+                      placeholder="Summa"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 pr-14 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">UZS</span>
+                  </div>
+                </div>
+                {rasxodRows.length > 1 && (
+                  <button
+                    onClick={() => removeRasxodRow(i)}
+                    className="w-11 h-11 shrink-0 rounded-xl bg-gray-800 hover:bg-red-500/20 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-red-300 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={addRasxodRow}
+            className="w-full py-3 rounded-xl flex justify-center items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-dashed border-gray-600 text-gray-300 text-sm font-semibold transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Yana rasxod qo'shish
+          </button>
+
+          {rasxodSum > 0 && (
+            <div className="flex items-center justify-between rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3">
+              <span className="text-sm text-red-200">Kassadan ayiriladi</span>
+              <span className="font-black text-red-300 tabular-nums">−{rasxodSum.toLocaleString('ru-RU')} so'm</span>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => setRasxodMode(false)} className={`${btn} bg-gray-800 hover:bg-gray-700 border border-gray-700 shadow-none`}>
+              Bekor
+            </button>
+            <button
+              disabled={busy || !rasxodValid}
+              onClick={saveRasxod}
+              className={`${btn} bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-950/40`}
+            >
+              {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Saqlash <Wallet className="w-5 h-5" /></>}
+            </button>
+          </div>
+        </div>
       ) : (
         // Bosqichga qarab tugmalar
         <div className="space-y-3">
+          {/* Rasxodlar — mavjudlari + qo'shish tugmasi */}
+          {canRasxod && (
+            <div className="rounded-xl border border-gray-700 bg-gray-800/60 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Receipt className="w-4 h-4 shrink-0 text-red-300" />
+                  <span className="text-sm font-semibold text-gray-200">Rasxodlar</span>
+                </div>
+                {rasxodJami > 0 && (
+                  <span className="text-sm font-black text-red-300 tabular-nums whitespace-nowrap">
+                    −{rasxodJami.toLocaleString('ru-RU')} so'm
+                  </span>
+                )}
+              </div>
+
+              {rasxodlar.length > 0 && (
+                <div className="space-y-1.5">
+                  {rasxodlar.map((r, i) => (
+                    <div key={i} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-300 truncate">
+                        {r.nom}
+                        {r.xodim_nomi && <span className="text-gray-500"> · {r.xodim_nomi}</span>}
+                      </span>
+                      <span className="text-gray-200 font-semibold tabular-nums whitespace-nowrap">
+                        {r.summa.toLocaleString('ru-RU')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button
+                disabled={busy}
+                onClick={openRasxod}
+                className="w-full py-3 rounded-xl flex justify-center items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-sm font-bold transition-colors disabled:opacity-50"
+              >
+                <Wallet className="w-4 h-4" /> Rasxod qo'shish
+              </button>
+            </div>
+          )}
+
           {(car.bosqich === 'qabul_qilindi' || car.bosqich === 'tamirlanmoqda') && (
             <>
               <button disabled={busy} onClick={openZap} className={`${btn} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-orange-950/40`}>

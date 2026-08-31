@@ -5,7 +5,7 @@ import { identifyWorker } from '@/lib/botWorker';
 export const dynamic = 'force-dynamic';
 
 const CAR_FIELDS =
-  'id, ism, mashina, raqam, tel, bosqich, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at';
+  'id, ism, mashina, raqam, tel, bosqich, holat, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at, zaps';
 
 // Xodim uchun — o'zining tugallanmagan mashinalari.
 // Boshliq uchun — qo'shimcha: barcha xodimlarning barcha (faol) mashinalari.
@@ -82,10 +82,27 @@ export async function GET(req: NextRequest) {
     const withSessions = (list: Array<{ id: number }> | null) =>
       (list || []).map((c) => {
         const s = sessionsByOrder.get(c.id);
+        // Rasxodlarni buyurtma zaps ichidan ajratamiz (kat='Rasxod' / rasxod:true).
+        // Xom `zaps` klientga yuborilmaydi — faqat rasxod qatorlari kerak.
+        const row = c as Record<string, unknown>;
+        const zapsArr = Array.isArray(row.zaps) ? (row.zaps as Record<string, unknown>[]) : [];
+        const rasxodlar = zapsArr
+          .filter((z) => z && (z.rasxod === true || z.kat === 'Rasxod'))
+          .map((z) => ({
+            nom: String(z.nom || z.name || ''),
+            summa: Number(z.narx || z.price || 0),
+            vaqt: (z.vaqt as string) || null,
+            xodim_nomi: (z.xodim_nomi as string) || null,
+          }));
+        const rasxod_jami = rasxodlar.reduce((sum, r) => sum + r.summa, 0);
+        const { zaps: _zaps, ...rest } = row;
+        void _zaps;
         return {
-          ...c,
+          ...rest,
           ish_daqiqa: Math.round(s?.totalMinutes || 0),
           ish_boshlandi: s?.openSince || null,
+          rasxodlar,
+          rasxod_jami,
         };
       });
 
