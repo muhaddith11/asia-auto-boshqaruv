@@ -6,6 +6,7 @@ import SalaryModal from '@/components/SalaryModal';
 import WorkerHistoryModal from '@/components/WorkerHistoryModal';
 import PageLayout from '@/components/layout/PageLayout';
 import ConfirmModal from '@/components/ConfirmModal';
+import { BOLIMLAR, bolimMeta, normalizeBolim, type Bolim } from '@/lib/departments';
 import {
   UserCog,
   Trash2,
@@ -51,6 +52,7 @@ export default function WorkersPage() {
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({ search: '' });
   const [appliedFilters, setAppliedFilters] = useState({ search: '' });
+  const [bolimFilter, setBolimFilter] = useState<'all' | Bolim>('all');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWorker, setEditingWorker] = useState<any>(null);
@@ -62,6 +64,7 @@ export default function WorkersPage() {
     ism: '',
     tel: '',
     mutax: '',
+    bolim: 'ustaxona' as Bolim,
     foiz: 40,
     role: 'xodim' as 'xodim' | 'sherik' | 'korxona',
     shareType: 'total' as 'total' | 'sub',
@@ -158,11 +161,15 @@ export default function WorkersPage() {
 
   const filteredWorkers = useMemo(() => {
     const q = appliedFilters.search.toLowerCase();
-    return xodimlar.filter(x =>
-      x.ism.toLowerCase().includes(q) ||
-      (x.mutax && x.mutax.toLowerCase().includes(q))
-    );
-  }, [xodimlar, appliedFilters.search]);
+    return xodimlar.filter(x => {
+      const matchesSearch =
+        x.ism.toLowerCase().includes(q) || (x.mutax && x.mutax.toLowerCase().includes(q));
+      // Bo'lim tanlansa — faqat o'sha bo'lim operatsion xodimlari (sheriklar bo'limsiz).
+      const matchesBolim =
+        bolimFilter === 'all' || (x.role !== 'sherik' && normalizeBolim(x.bolim) === bolimFilter);
+      return matchesSearch && matchesBolim;
+    });
+  }, [xodimlar, appliedFilters.search, bolimFilter]);
 
   if (!mounted) return null;
 
@@ -173,6 +180,7 @@ export default function WorkersPage() {
         ism: worker.ism,
         tel: worker.tel || '',
         mutax: worker.mutax || '',
+        bolim: (worker.bolim || 'ustaxona') as Bolim,
         foiz: worker.foiz || 40,
         role: worker.role || 'xodim',
         shareType: worker.shareType || 'total',
@@ -182,7 +190,7 @@ export default function WorkersPage() {
     } else {
       setEditingWorker(null);
       setFormData({
-        ism: '', tel: '', mutax: '', foiz: 40,
+        ism: '', tel: '', mutax: '', bolim: 'ustaxona', foiz: 40,
         role: 'xodim' as 'xodim' | 'sherik' | 'korxona', shareType: 'total', parentId: undefined,
         telegram: ''
       });
@@ -256,6 +264,38 @@ export default function WorkersPage() {
       }
     >
       <div className="flex-1">
+        {/* Bo'lim bo'yicha filtr — Ustaxona / Yog' quyish */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          <button
+            onClick={() => setBolimFilter('all')}
+            className={`text-[12px] font-bold px-4 py-2 rounded-lg border transition-all ${
+              bolimFilter === 'all'
+                ? 'bg-blue-600 border-blue-500 text-white'
+                : 'bg-surface2 border-border text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Hammasi
+          </button>
+          {BOLIMLAR.map((b) => {
+            const active = bolimFilter === b.value;
+            const n = xodimlar.filter((x) => x.role !== 'sherik' && normalizeBolim(x.bolim) === b.value).length;
+            return (
+              <button
+                key={b.value}
+                onClick={() => setBolimFilter(b.value)}
+                className="text-[12px] font-bold px-4 py-2 rounded-lg border transition-all"
+                style={
+                  active
+                    ? { background: b.color, borderColor: b.color, color: '#fff' }
+                    : { background: b.color + '18', borderColor: b.color + '55', color: b.color }
+                }
+              >
+                {b.emoji} {b.label} ({n})
+              </button>
+            );
+          })}
+        </div>
+
         {filteredWorkers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-slate-500 bg-surface/30 border border-dashed border-border rounded-xl">
             <UserCog size={48} className="mb-4 opacity-20" />
@@ -314,6 +354,17 @@ export default function WorkersPage() {
                             {isPartner && (
                               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 tracking-widest">Sherik</span>
                             )}
+                            {!isPartner && (() => {
+                              const bm = bolimMeta(x.bolim);
+                              return (
+                                <span
+                                  className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border tracking-widest"
+                                  style={{ background: bm.color + '22', color: bm.color, borderColor: bm.color + '44' }}
+                                >
+                                  {bm.emoji} {bm.label}
+                                </span>
+                              );
+                            })()}
                           </div>
                           <div className="text-[12px] text-slate-400">
                             {x.mutax || (isPartner ? 'Sarmoyador' : isKorxona ? 'Korxona xodimi' : 'Usta')} •
@@ -392,6 +443,30 @@ export default function WorkersPage() {
                     onChange={(e) => setFormData({ ...formData, ism: e.target.value })}
                     style={{ ...S.input, paddingLeft: '34px' }}
                   />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label style={S.label}>Bo'lim *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {BOLIMLAR.map((b) => {
+                    const active = formData.bolim === b.value;
+                    return (
+                      <button
+                        type="button"
+                        key={b.value}
+                        onClick={() => setFormData({ ...formData, bolim: b.value })}
+                        className="flex items-center justify-center gap-2 py-3 rounded-lg text-[13px] font-bold border transition-all"
+                        style={
+                          active
+                            ? { background: b.color, borderColor: b.color, color: '#fff' }
+                            : { background: 'var(--surface2)', borderColor: 'var(--border)', color: 'var(--text3)' }
+                        }
+                      >
+                        <span>{b.emoji}</span> {b.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

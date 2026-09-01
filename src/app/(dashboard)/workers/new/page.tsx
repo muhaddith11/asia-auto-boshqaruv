@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import PhoneInput from '@/components/PhoneInput';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
+import { BOLIMLAR, type Bolim } from '@/lib/departments';
 import { Plus, UserCog, CheckCircle2, Percent, Phone, Briefcase } from 'lucide-react';
 
 export default function AddWorkerPage() {
@@ -15,6 +16,7 @@ export default function AddWorkerPage() {
     ism: '',
     tel: '',
     mutax: '',
+    bolim: 'ustaxona' as Bolim,
     foiz: 40
   });
 
@@ -35,6 +37,7 @@ export default function AddWorkerPage() {
       ism: formData.ism,
       tel: formData.tel,
       mutax: formData.mutax,
+      bolim: formData.bolim,
       foiz: formData.foiz
     });
 
@@ -66,6 +69,30 @@ export default function AddWorkerPage() {
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-slate-900 text-[14px] font-bold transition-all"
                 placeholder="Xodim ismi"
               />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Bo'lim *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {BOLIMLAR.map((b) => {
+                  const active = formData.bolim === b.value;
+                  return (
+                    <button
+                      type="button"
+                      key={b.value}
+                      onClick={() => setFormData({ ...formData, bolim: b.value })}
+                      className="flex items-center justify-center gap-2 py-3 rounded-lg text-[14px] font-bold border transition-all"
+                      style={
+                        active
+                          ? { background: b.color, borderColor: b.color, color: '#fff' }
+                          : { background: '#f8fafc', borderColor: '#e2e8f0', color: '#64748b' }
+                      }
+                    >
+                      <span>{b.emoji}</span> {b.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

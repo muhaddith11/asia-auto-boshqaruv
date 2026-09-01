@@ -1,3 +1,5 @@
+import type { Bolim } from '@/lib/departments';
+
 export interface Mijoz {
   id: number;
   ism: string;
@@ -21,6 +23,7 @@ export interface Xodim {
   familiya?: string;
   tel?: string;
   mutax?: string;
+  bolim?: Bolim; // 'ustaxona' | 'yog' — qaysi bo'lim xodimi (default: ustaxona)
   foiz: number; // Commission percentage or share percentage
   role?: 'xodim' | 'sherik' | 'korxona';
   shareType?: 'total' | 'sub'; // total profit vs sub-share

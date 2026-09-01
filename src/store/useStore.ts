@@ -190,6 +190,7 @@ export const useStore = create<AutoServisStore>()(
           ism: x.ism,
           tel: x.tel || '',
           mutax: x.mutax || '',
+          bolim: x.bolim || 'ustaxona',
           foiz: Number(x.foiz) || 0,
           role: x.role || 'xodim',
           shareType: x.shareType || 'total',

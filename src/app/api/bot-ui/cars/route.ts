@@ -5,7 +5,7 @@ import { identifyWorker } from '@/lib/botWorker';
 export const dynamic = 'force-dynamic';
 
 const CAR_FIELDS =
-  'id, ism, mashina, raqam, tel, bosqich, holat, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at, zaps';
+  'id, ism, mashina, raqam, tel, bosqich, holat, bolim, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at, zaps';
 
 // Xodim uchun — o'zining tugallanmagan mashinalari.
 // Boshliq uchun — qo'shimcha: barcha xodimlarning barcha (faol) mashinalari.
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      worker: { id: worker.id, ism: worker.ism, is_boss: !!worker.is_boss },
+      worker: { id: worker.id, ism: worker.ism, is_boss: !!worker.is_boss, bolim: worker.bolim || 'ustaxona' },
       myCars: withSessions(myCars),
       allCars: allCars ? withSessions(allCars) : null,
     });

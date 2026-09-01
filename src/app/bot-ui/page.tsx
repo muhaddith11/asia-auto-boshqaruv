@@ -14,6 +14,7 @@ import BossMonitor from '@/components/bot-ui/BossMonitor';
 import PointsView from '@/components/bot-ui/PointsView';
 import SparePartsAdmin from '@/components/bot-ui/SparePartsAdmin';
 import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
+import { bolimMeta } from '@/lib/departments';
 
 type View = 'home' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog';
 
@@ -26,11 +27,12 @@ export default function BotUIPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authUser, setAuthUser] = useState<any>(null);
-  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; is_boss: boolean; name: string }>({
+  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; is_boss: boolean; name: string; bolim: string }>({
     myCars: [],
     allCars: null,
     is_boss: false,
     name: '',
+    bolim: 'ustaxona',
   });
   const [loadingCars, setLoadingCars] = useState(false);
   const store = useBotOrderStore();
@@ -97,6 +99,7 @@ export default function BotUIPage() {
           allCars: res.allCars || null,
           is_boss: !!res.worker?.is_boss,
           name: res.worker?.ism || '',
+          bolim: res.worker?.bolim || 'ustaxona',
         });
       }
     } catch {
@@ -204,9 +207,20 @@ export default function BotUIPage() {
               <div>
                 <h1 className="text-base font-extrabold leading-tight">Asia Auto Service</h1>
                 {displayName && (
-                  <p className="text-xs text-gray-400 leading-tight">
-                    {displayName}
-                    {carsData.is_boss && <span className="ml-1.5 text-amber-400 font-semibold">· Boshliq</span>}
+                  <p className="text-xs text-gray-400 leading-tight flex items-center gap-1.5 flex-wrap">
+                    <span>{displayName}</span>
+                    {(() => {
+                      const bm = bolimMeta(carsData.bolim);
+                      return (
+                        <span
+                          className="font-semibold px-1.5 py-0.5 rounded"
+                          style={{ background: bm.color + '22', color: bm.color }}
+                        >
+                          {bm.emoji} {bm.label}
+                        </span>
+                      );
+                    })()}
+                    {carsData.is_boss && <span className="text-amber-400 font-semibold">· Boshliq</span>}
                   </p>
                 )}
               </div>

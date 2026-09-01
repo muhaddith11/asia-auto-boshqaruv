@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft, Search, X } from 'lucide-react';
 import { Car, stageMeta, fmtTime, STAGES } from './botClient';
+import { BOLIMLAR, bolimMeta, normalizeBolim } from '@/lib/departments';
 
 interface Props {
   cars: Car[];
@@ -18,10 +19,12 @@ const FILTERS: { key: string; label: string }[] = [
 
 export default function BossMonitor({ cars, onBack }: Props) {
   const [filter, setFilter] = useState('all');
+  const [bolimFilter, setBolimFilter] = useState('all');
   const [search, setSearch] = useState('');
 
   const shown = useMemo(() => {
     let list = filter === 'all' ? cars : cars.filter((c) => c.bosqich === filter);
+    if (bolimFilter !== 'all') list = list.filter((c) => normalizeBolim(c.bolim) === bolimFilter);
     const q = search.trim().toLowerCase();
     if (q) {
       const qDigits = q.replace(/\D/g, '');
@@ -33,11 +36,21 @@ export default function BossMonitor({ cars, onBack }: Props) {
       });
     }
     return list;
-  }, [cars, filter, search]);
+  }, [cars, filter, bolimFilter, search]);
 
   const counts = useMemo(() => {
     const m: Record<string, number> = {};
     for (const c of cars) m[c.bosqich] = (m[c.bosqich] || 0) + 1;
+    return m;
+  }, [cars]);
+
+  // Bo'lim bo'yicha son — filtr tugmalarida ko'rsatiladi.
+  const bolimCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of cars) {
+      const b = normalizeBolim(c.bolim);
+      m[b] = (m[b] || 0) + 1;
+    }
     return m;
   }, [cars]);
 
@@ -48,6 +61,35 @@ export default function BossMonitor({ cars, onBack }: Props) {
       </button>
 
       <h2 className="text-xl font-semibold">👁 Barcha mashinalar ({cars.length})</h2>
+
+      {/* Bo'lim bo'yicha ajratish — Ustaxona / Yog' quyish */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setBolimFilter('all')}
+          className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+            bolimFilter === 'all' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-300'
+          }`}
+        >
+          Barcha bo'lim ({cars.length})
+        </button>
+        {BOLIMLAR.map((b) => {
+          const active = bolimFilter === b.value;
+          return (
+            <button
+              key={b.value}
+              onClick={() => setBolimFilter(b.value)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
+              style={
+                active
+                  ? { background: b.color, borderColor: b.color, color: '#fff' }
+                  : { background: b.color + '18', borderColor: b.color + '55', color: b.color }
+              }
+            >
+              {b.emoji} {b.label} ({bolimCounts[b.value] || 0})
+            </button>
+          );
+        })}
+      </div>
 
       {/* Bosqich bo'yicha qisqa hisob */}
       <div className="flex flex-wrap gap-2 text-xs">
@@ -114,7 +156,20 @@ export default function BossMonitor({ cars, onBack }: Props) {
               {c.ism && c.ism !== 'Kunlik Mijoz' && (
                 <div className="text-xs text-emerald-400">🧑 {c.ism}</div>
               )}
-              <div className="text-xs text-gray-400">👤 {c.qabul_xodim_nomi || '—'}</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="text-xs text-gray-400">👤 {c.qabul_xodim_nomi || '—'}</div>
+                {(() => {
+                  const bm = bolimMeta(c.bolim);
+                  return (
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                      style={{ background: bm.color + '22', color: bm.color }}
+                    >
+                      {bm.emoji} {bm.label}
+                    </span>
+                  );
+                })()}
+              </div>
               {c.tel && c.tel.replace(/\D/g, '').length > 3 && (
                 <div className="text-xs text-gray-400">
                   📞 <a href={`tel:${c.tel}`} className="text-blue-400 hover:underline">{c.tel}</a>

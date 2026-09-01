@@ -3,7 +3,7 @@ import supabase from '@/lib/supabaseClient';
 // Bot oqimida xodimni tanish uchun umumiy helper (submit/accept/stage/cars
 // bir xil mantiqdan foydalanadi). is_boss — boshliq kuzatuvi uchun.
 const WORKER_COLUMNS =
-  'id, ism, tel, mutax, foiz, status, role, is_boss, telegram, "shareType", "parentId", created_at';
+  'id, ism, tel, mutax, foiz, status, role, is_boss, bolim, telegram, "shareType", "parentId", created_at';
 
 export interface BotWorker {
   id: number;
@@ -12,6 +12,7 @@ export interface BotWorker {
   foiz: number | null;
   role: string | null;
   is_boss: boolean | null;
+  bolim: string | null; // 'ustaxona' | 'yog' (null → ustaxona)
   telegram: string | null;
 }
 

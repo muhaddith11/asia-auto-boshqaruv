@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { identifyWorker } from '@/lib/botWorker';
 import { findClientNameByPhone } from '@/lib/findClient';
+import { normalizeBolim } from '@/lib/departments';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,8 @@ export async function POST(req: NextRequest) {
       qabul_xodim_id: worker.id,
       qabul_xodim_nomi: worker.ism,
       qabul_vaqti: nowIso,
+      // Mashina qaysi bo'limga qabul qilindi — xodimning bo'limidan olinadi.
+      bolim: normalizeBolim(worker.bolim),
       services: [],
       zaps: [],
       srv: 0,

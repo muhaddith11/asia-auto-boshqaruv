@@ -21,6 +21,7 @@ export interface Car {
   tel: string;
   bosqich: string;
   holat: string | null; // 'jarayonda' | 'tulanmagan' | 'tulangan' ...
+  bolim: string | null; // 'ustaxona' | 'yog' (null → ustaxona)
   qabul_xodim_id: number;
   qabul_xodim_nomi: string;
   qabul_vaqti: string | null;
