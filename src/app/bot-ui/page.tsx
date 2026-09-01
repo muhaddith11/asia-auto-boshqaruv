@@ -368,7 +368,12 @@ export default function BotUIPage() {
                 <StepServices catalog={catalogData} onNext={() => setCompleteStep(2)} onPrev={() => setView('detail')} />
               )}
               {completeStep === 2 && (
-                <StepParts catalog={catalogData} onNext={() => setCompleteStep(3)} onPrev={() => setCompleteStep(1)} />
+                <StepParts
+                  catalog={catalogData}
+                  identity={resolveIdentity(authUser)}
+                  onNext={() => setCompleteStep(3)}
+                  onPrev={() => setCompleteStep(1)}
+                />
               )}
               {completeStep === 3 && (
                 <ReceiptPreview onPrev={() => setCompleteStep(2)} onSubmit={handleComplete} isSubmitting={isSubmitting} />

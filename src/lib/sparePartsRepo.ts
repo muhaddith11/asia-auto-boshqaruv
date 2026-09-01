@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import supabase from '@/lib/supabaseClient';
 import { deletePartImages, PART_IMAGES_BUCKET } from '@/lib/partImages';
+import { normalizeBolim } from '@/lib/departments';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Zapchastlar katalogi (spare_parts) bilan ishlash — DB va rasm yuklash mantiqi.
@@ -8,7 +9,7 @@ import { deletePartImages, PART_IMAGES_BUCKET } from '@/lib/partImages';
 // kirish tekshiruvi (auth / boss) route darajasida bo'ladi.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ALLOWED = ['nom', 'artikul', 'brand', 'mashina', 'rasmlar', 'izoh', 'narx'] as const;
+const ALLOWED = ['nom', 'artikul', 'brand', 'mashina', 'rasmlar', 'izoh', 'narx', 'bolim'] as const;
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // 6MB
 
 function clean(body: any) {
@@ -22,16 +23,22 @@ function clean(body: any) {
     const n = out.narx === null || out.narx === '' ? null : Number(out.narx);
     out.narx = n === null || Number.isNaN(n) ? null : n;
   }
+  // bolim — faqat ma'lum qiymat (ustaxona/yog'), aks holda default (ustaxona)
+  if (out.bolim !== undefined) out.bolim = normalizeBolim(out.bolim);
   return out;
 }
 
-export async function listSpareParts() {
+// bolim berilsa — faqat o'sha bo'lim zapchastlari (xodim ko'rinishi uchun).
+// bolim berilmasa — hammasi (boshliq boshqaruvi uchun).
+export async function listSpareParts(bolim?: string | null) {
   if (!supabase) throw new Error('Supabase sozlanmagan');
-  const { data, error } = await supabase
+  let query = supabase
     .from('spare_parts')
     .select('*')
     .range(0, 10000)
     .order('created_at', { ascending: false });
+  if (bolim) query = query.eq('bolim', bolim);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data ?? [];
 }

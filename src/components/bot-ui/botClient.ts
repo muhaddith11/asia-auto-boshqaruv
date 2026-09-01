@@ -134,6 +134,7 @@ export interface SparePart {
   rasmlar: string[];
   izoh: string | null;
   narx: number | null;
+  bolim?: string | null; // 'ustaxona' | 'yog' (null → ustaxona)
   created_at?: string;
 }
 

@@ -10,13 +10,14 @@ import {
   Identity, SparePart, fetchSpareParts, saveSparePart, deleteSparePartApi,
   uploadSparePartImage, compressImageFile,
 } from '@/components/bot-ui/botClient';
+import { BOLIMLAR, bolimMeta, normalizeBolim } from '@/lib/departments';
 
 interface Props {
   identity: Identity;
   onBack: () => void;
 }
 
-const emptyForm = { nom: '', artikul: '', narx: '', mashina: '', izoh: '', rasmlar: [] as string[] };
+const emptyForm = { nom: '', artikul: '', narx: '', mashina: '', izoh: '', bolim: 'ustaxona', rasmlar: [] as string[] };
 
 // Narxni "250 000" ko'rinishiga keltiradi (raqamlardan boshqasini olib tashlab).
 const fmtSom = (v: number | string | null | undefined) => {
@@ -29,6 +30,7 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
   const [parts, setParts] = useState<SparePart[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [bolimFilter, setBolimFilter] = useState<'all' | string>('all');
 
   const [editing, setEditing] = useState<SparePart | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
@@ -63,11 +65,13 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
-    if (!s) return parts;
-    return parts.filter(
-      (p) => (p.nom || '').toLowerCase().includes(s) || (p.artikul || '').toLowerCase().includes(s)
-    );
-  }, [parts, search]);
+    return parts.filter((p) => {
+      const okBolim = bolimFilter === 'all' || normalizeBolim(p.bolim) === bolimFilter;
+      const okSearch =
+        !s || (p.nom || '').toLowerCase().includes(s) || (p.artikul || '').toLowerCase().includes(s);
+      return okBolim && okSearch;
+    });
+  }, [parts, search, bolimFilter]);
 
   const openAdd = () => {
     setEditing(null);
@@ -83,6 +87,7 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
       // Eski yozuvlarda brand+mashina alohida bo'lishi mumkin — bitta maydonga birlashtiramiz
       mashina: [p.brand, p.mashina && p.mashina !== 'UMUMIY' ? p.mashina : ''].filter(Boolean).join(' '),
       izoh: p.izoh || '',
+      bolim: normalizeBolim(p.bolim),
       rasmlar: Array.isArray(p.rasmlar) ? [...p.rasmlar] : [],
     });
     setMode('form');
@@ -126,6 +131,7 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
       mashina: form.mashina.trim() || 'UMUMIY',
       izoh: form.izoh.trim() || null,
       narx: form.narx.trim() ? Number(form.narx) : null,
+      bolim: form.bolim,
       rasmlar: form.rasmlar,
     };
     try {
@@ -212,6 +218,29 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
         </div>
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }} />
         <input ref={galleryRef} type="file" accept="image/*" multiple hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }} />
+
+        {/* Bo'lim — item qaysi bo'lim xodimlariga ko'rinadi */}
+        <label className="block text-xs text-gray-400 mb-1">Bo'lim (kimga ko'rinadi)</label>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {BOLIMLAR.map((b) => {
+            const active = form.bolim === b.value;
+            return (
+              <button
+                type="button"
+                key={b.value}
+                onClick={() => setForm({ ...form, bolim: b.value })}
+                className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border transition-all"
+                style={
+                  active
+                    ? { background: b.color, borderColor: b.color, color: '#fff' }
+                    : { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: '#9ca3af' }
+                }
+              >
+                <span>{b.emoji}</span> {b.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Nom */}
         <label className="block text-xs text-gray-400 mb-1">Zapchast nomi</label>
@@ -327,6 +356,36 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
         />
       </div>
 
+      {/* Bo'lim bo'yicha filtr */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <button
+          onClick={() => setBolimFilter('all')}
+          className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+            bolimFilter === 'all' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-300'
+          }`}
+        >
+          Hammasi
+        </button>
+        {BOLIMLAR.map((b) => {
+          const active = bolimFilter === b.value;
+          const n = parts.filter((p) => normalizeBolim(p.bolim) === b.value).length;
+          return (
+            <button
+              key={b.value}
+              onClick={() => setBolimFilter(b.value)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
+              style={
+                active
+                  ? { background: b.color, borderColor: b.color, color: '#fff' }
+                  : { background: b.color + '18', borderColor: b.color + '55', color: b.color }
+              }
+            >
+              {b.emoji} {b.label} ({n})
+            </button>
+          );
+        })}
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-blue-500" /></div>
       ) : filtered.length === 0 ? (
@@ -347,7 +406,20 @@ export default function SparePartsAdmin({ identity, onBack }: Props) {
                   {img ? <img src={img} alt="" className="w-full h-full object-cover" /> : <Package className="w-6 h-6 text-gray-700" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-bold text-sm truncate">{p.nom || '—'}</div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="font-bold text-sm truncate">{p.nom || '—'}</div>
+                    {(() => {
+                      const bm = bolimMeta(p.bolim);
+                      return (
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                          style={{ background: bm.color + '22', color: bm.color }}
+                        >
+                          {bm.emoji} {bm.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   {p.artikul && (
                     <div className="inline-flex items-center gap-1 text-[11px] font-mono text-blue-300 bg-blue-500/10 border border-blue-500/20 rounded px-1.5 py-0.5 mt-1">
                       <Hash className="w-2.5 h-2.5" />{p.artikul}
