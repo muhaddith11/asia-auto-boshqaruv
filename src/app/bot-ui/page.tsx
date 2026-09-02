@@ -365,7 +365,7 @@ export default function BotUIPage() {
                 🚗 {selectedCar?.mashina} {selectedCar?.raqam ? `· ${selectedCar.raqam}` : ''} — chek chiqarish
               </div>
               {completeStep === 1 && (
-                <StepServices catalog={catalogData} onNext={() => setCompleteStep(2)} onPrev={() => setView('detail')} />
+                <StepServices catalog={catalogData} bolim={carsData.bolim} onNext={() => setCompleteStep(2)} onPrev={() => setView('detail')} />
               )}
               {completeStep === 2 && (
                 <StepParts

@@ -5,14 +5,19 @@ import { ArrowRight, ArrowLeft, Plus, Check, PlusCircle, Trash2 } from 'lucide-r
 
 interface StepServicesProps {
   catalog: any;
+  bolim?: string; // 'ustaxona' | 'yog' — yog'chiga avtoservis xizmatlari ko'rsatilmaydi
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function StepServices({ catalog, onNext, onPrev }: StepServicesProps) {
+export default function StepServices({ catalog, bolim, onNext, onPrev }: StepServicesProps) {
   const store = useBotOrderStore();
   const [customName, setCustomName] = useState('');
   const [customPrice, setCustomPrice] = useState('');
+
+  // Yog' bo'limi xodimi — avtoservis xizmatlari (tormoz, dvigatel...) unga aloqasiz.
+  // Yog'/filtr keyingi bosqichda (rasmli katalog) qo'shiladi.
+  const isYog = bolim === 'yog';
   
   const umumiyServices = catalog?.catalog?.['Umumiy']?.['Umumiy'] || [];
   const carServices = catalog?.catalog[store.brand]?.[store.model] || [];
@@ -46,32 +51,39 @@ export default function StepServices({ catalog, onNext, onPrev }: StepServicesPr
 
   return (
     <div className="space-y-6 slide-in">
-      <h2 className="text-xl font-semibold mb-2">Xizmatlar ({store.model})</h2>
-      
-      {/* Standard Services */}
-      <div className="space-y-3 max-h-64 overflow-y-auto pr-2 pb-2">
-        {availableServices.length === 0 && <p className="text-gray-400">Standart xizmat topilmadi</p>}
-        {availableServices.map((svc: any) => {
-          const isSelected = store.services.some(s => s.name === svc.name);
-          return (
-            <div 
-              key={svc.id || svc.name} 
-              onClick={() => handleToggleStandard(svc)}
-              className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-6 h-6 rounded-md flex items-center justify-center border ${isSelected ? 'bg-blue-500 border-none' : 'border-gray-600'}`}>
-                  {isSelected && <Check className="w-4 h-4 text-white" />}
-                </div>
-                <div>
-                  <h3 className="text-gray-200 text-sm font-medium">{svc.name}</h3>
-                  <p className="text-blue-400 text-xs mt-1">{Number(svc.price).toLocaleString()} UZS</p>
+      <h2 className="text-xl font-semibold mb-2">{isYog ? "Yog' xizmati" : `Xizmatlar (${store.model})`}</h2>
+
+      {/* Standart avtoservis xizmatlari — YOG' bo'limiga ko'rsatilmaydi (chalkashmasin) */}
+      {isYog ? (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200 leading-relaxed">
+          🛢️ Yog' va filtrni <b>keyingi bosqichda</b> — “Katalogdan tanlash (rasm bilan)” dan qo'shasiz.
+          Bu yerda faqat qo'shimcha xizmat (masalan ish haqi) bo'lsa yozing, aks holda “Davom etish” bosing.
+        </div>
+      ) : (
+        <div className="space-y-3 max-h-64 overflow-y-auto pr-2 pb-2">
+          {availableServices.length === 0 && <p className="text-gray-400">Standart xizmat topilmadi</p>}
+          {availableServices.map((svc: any) => {
+            const isSelected = store.services.some(s => s.name === svc.name);
+            return (
+              <div
+                key={svc.id || svc.name}
+                onClick={() => handleToggleStandard(svc)}
+                className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center border ${isSelected ? 'bg-blue-500 border-none' : 'border-gray-600'}`}>
+                    {isSelected && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                  <div>
+                    <h3 className="text-gray-200 text-sm font-medium">{svc.name}</h3>
+                    <p className="text-blue-400 text-xs mt-1">{Number(svc.price).toLocaleString()} UZS</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Selected Custom Services */}
       {store.services.filter(s => s.isCustom).length > 0 && (

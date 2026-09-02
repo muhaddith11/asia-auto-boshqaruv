@@ -11,7 +11,6 @@ import msvcrt
 from PIL import Image
 from datetime import datetime
 
-PRINTER_NAME   = "XP-80"
 SUPABASE_URL   = "https://fwktbleovtkxxpsccqqr.supabase.co"
 # RLS'ni chetlab o'tadigan service_role kalit — Windows muhit o'zgaruvchisidan o'qiladi,
 # kodga yozilmaydi (git'ga tushmasligi uchun). Sozlanmagan bo'lsa ochiq (publishable)
@@ -22,6 +21,30 @@ BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE       = os.path.join(BASE_DIR, "print_agent_log.txt")
 LOGO_FILE      = os.path.join(BASE_DIR, "public", "logo-receipt.png")
 WORKERS_MAP    = {}
+
+# ── Bo'lim + printer sozlamasi ────────────────────────────────────────────────
+# Bitta agent ikki xil rol o'ynaydi: USTAXONA (XP-80) yoki YOG' stansiyasi.
+# Har bir kompyuter o'z rolini shu tartibda tanlaydi (yuqoridagi ustun quyidan kuchli):
+#   1) Windows muhit o'zgaruvchisi: PRINT_AGENT_DEPARTMENT / PRINT_AGENT_PRINTER
+#   2) Yonidagi printer_config.json: { "department": "yog", "printer_name": "OIL-80" }
+#   3) Default: ustaxona / XP-80  (mavjud ustaxona kompyuteri o'zgarishsiz ishlayveradi)
+# department:
+#   "ustaxona" → faqat ustaxona (va eski/null bo'lim) cheklari chiqadi — YOG' emas
+#   "yog"      → faqat yog' quyish cheklari chiqadi
+PRINTER_NAME = "XP-80"
+DEPARTMENT   = "ustaxona"
+try:
+    _cfg_path = os.path.join(BASE_DIR, "printer_config.json")
+    if os.path.exists(_cfg_path):
+        with open(_cfg_path, "r", encoding="utf-8") as _f:
+            _cfg = json.load(_f)
+        PRINTER_NAME = str(_cfg.get("printer_name") or PRINTER_NAME)
+        DEPARTMENT   = str(_cfg.get("department") or DEPARTMENT).lower()
+except Exception as _cfg_err:
+    print(f"printer_config.json o'qishda xato: {_cfg_err}")
+# Muhit o'zgaruvchilari — eng ustun (OneDrive bilan bo'lingan papkada ham har PC o'ziniki)
+PRINTER_NAME = os.environ.get("PRINT_AGENT_PRINTER") or PRINTER_NAME
+DEPARTMENT   = (os.environ.get("PRINT_AGENT_DEPARTMENT") or DEPARTMENT).lower()
 
 def log_message(msg):
     ts   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -358,7 +381,7 @@ def main():
     lock = acquire_lock()
     log_message("=" * 48)
     log_message("Print Agent ishga tushdi (GDI+Emoji v9)")
-    log_message(f"Printer: {PRINTER_NAME}")
+    log_message(f"Printer: {PRINTER_NAME}  |  Bo'lim: {DEPARTMENT}")
     log_message("=" * 48)
     fetch_workers()
 
@@ -369,6 +392,10 @@ def main():
                 fetch_workers()
             for order in get_pending():
                 if order.get("print_status") == "printed":
+                    continue
+                # Bo'lim filtri: bu agent faqat o'z bo'limi cheklarini chiqaradi.
+                # null/bo'sh bo'lim → ustaxona deb qaraladi (eski cheklar ustaxonada chiqadi).
+                if (order.get("bolim") or "ustaxona").lower() != DEPARTMENT:
                     continue
                 log_message(f"Chop etilmoqda... ID: {order['id']}")
                 if print_receipt(order):
