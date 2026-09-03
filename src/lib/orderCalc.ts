@@ -14,12 +14,14 @@ export interface ServiceLine {
 export interface PartLine {
   narx: number; // zapchast sotish narxi
   qty: number;  // miqdori
+  sebestoimost?: number; // zapchast kelish narxi (tannarx) — foydaga ta'sir qiladi
 }
 
 export interface OrderTotals {
   servicesTotal: number;
   zarplataTotal: number;
   partsTotal: number;
+  partsCostTotal: number;
   subTotal: number;
   finalTotal: number;
   chegirmaRatio: number;
@@ -50,23 +52,30 @@ export function computeOrderTotals(
   const partsTotal = parts.reduce((sum, p) => {
     return sum + (p.narx || 0);
   }, 0);
+  const partsCostTotal = parts.reduce((sum, p) => {
+    return sum + (p.sebestoimost || 0);
+  }, 0);
 
   const subTotal = servicesTotal + partsTotal;
   const finalTotal = Math.max(0, subTotal - discount);
 
-  // Chegirma usta ulushiga proporsional ta'sir qiladi
+  // Chegirma usta ulushiga proporsional ta'sir qiladi (faqat xizmatga bog'liq)
   const chegirmaRatio = servicesTotal > 0
     ? Math.max(0, servicesTotal - discount) / servicesTotal
     : 1;
   const zarplataAdjusted = Math.round(zarplataTotal * chegirmaRatio);
 
-  // pribil = chegirmadan keyingi xizmat summasi − ustalar maoshi
-  const netProfit = Math.max(0, servicesTotal - discount - zarplataAdjusted);
+  // pribil = mijoz to'laydigan yakuniy summa − ustalar maoshi − zapchast tannarxi.
+  // Ya'ni: haqiqiy sof foyda = qabul qilingan pul − real xarajatlar (usta ulushi +
+  // zapchast tannarxi). Chegirma katta bo'lib xizmat foydasini "yeb qo'ysa",
+  // qolgan qism zapchast foydasidan kamayadi (yagona umumiy floor — manfiy bo'lmaydi).
+  const netProfit = Math.max(0, finalTotal - zarplataAdjusted - partsCostTotal);
 
   return {
     servicesTotal,
     zarplataTotal,
     partsTotal,
+    partsCostTotal,
     subTotal,
     finalTotal,
     chegirmaRatio,

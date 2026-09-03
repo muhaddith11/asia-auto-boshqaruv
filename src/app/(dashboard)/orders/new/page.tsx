@@ -69,7 +69,10 @@ export default function NewOrderPage() {
     });
   const partLines = partRows
     .filter(r => r.partId)
-    .map(r => ({ narx: getPartNarx(r.partId), qty: r.qty || 1 }));
+    .map(r => {
+      const p = zapchastlar.find(x => x.id === Number(r.partId));
+      return { narx: p?.narx || 0, qty: r.qty || 1, sebestoimost: p?.sebestoimost || 0 };
+    });
 
   const { servicesTotal, partsTotal, subTotal, finalTotal, zarplataAdjusted, netProfit } =
     computeOrderTotals(serviceLines, partLines, form.chegirma || 0);

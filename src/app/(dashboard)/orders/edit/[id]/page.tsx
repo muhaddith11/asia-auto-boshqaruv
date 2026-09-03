@@ -178,11 +178,18 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   const zarplataAdjusted = Math.round(zarplataTotal * chegirmaRatio);
 
   // Zapchast narxi miqdorga KO'PAYTIRILMAYDI (bot bilan izchil) — miqdor faqat ma'lumot uchun.
+  const getPartSebestoimost = (partId: string | number) => zapchastlar.find(x => String(x.id) === String(partId))?.sebestoimost || 0;
   const partsTotal = partRows.reduce((sum, r) => {
     if (!r.partId && !r.customNom) return sum;
     const base = r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId);
     const narx = isNaN(base) ? 0 : base;
     return sum + narx;
+  }, 0);
+  // Qo'lda ("customNom") kiritilgan zapchastning tannarxi yo'q (0) — faqat
+  // katalogdan tanlanganlarniki hisobga olinadi.
+  const partsCostTotal = partRows.reduce((sum, r) => {
+    if (!r.partId) return sum;
+    return sum + getPartSebestoimost(r.partId);
   }, 0);
 
   const subTotal = servicesTotal + partsTotal;
@@ -231,8 +238,8 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       total: subTotal,
       final: finalTotal,
       zarplata: zarplataAdjusted,
-      // pribil = chegirmadan keyingi xizmat summasi − ustalar maoshi
-      pribil: Math.max(0, servicesTotal - (form.chegirma || 0) - zarplataAdjusted)
+      // pribil = yakuniy to'lov − ustalar maoshi − zapchast tannarxi (orderCalc.ts bilan bir xil)
+      pribil: Math.max(0, finalTotal - zarplataAdjusted - partsCostTotal)
     });
 
     router.push('/orders');
