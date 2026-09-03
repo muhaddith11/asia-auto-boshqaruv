@@ -371,6 +371,7 @@ export default function BotUIPage() {
                 <StepParts
                   catalog={catalogData}
                   identity={resolveIdentity(authUser)}
+                  isBoss={carsData.is_boss}
                   onNext={() => setCompleteStep(3)}
                   onPrev={() => setCompleteStep(1)}
                 />

@@ -7,23 +7,25 @@ import { Identity, SparePart, fetchSpareParts } from '@/components/bot-ui/botCli
 interface StepPartsProps {
   catalog: any;
   identity: Identity;
+  isBoss: boolean;
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function StepParts({ catalog, identity, onNext, onPrev }: StepPartsProps) {
+export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }: StepPartsProps) {
   const store = useBotOrderStore();
   const [partName, setPartName] = useState('');
   const [partQty, setPartQty] = useState(1);
   const [partPrice, setPartPrice] = useState('');
 
-  // ── Rasmli katalog (spare_parts) — xodimning o'z bo'limi item'lari (server filtri).
+  // ── Rasmli katalog (spare_parts) — FAQAT BOSHLIQQA ko'rinadi (server ham tekshiradi).
   //    Bir bosishda chekka qo'shiladi (isCustom: qo'lda qo'shish bilan bir xil).
   const [spareParts, setSpareParts] = useState<SparePart[]>([]);
   const [spLoading, setSpLoading] = useState(true);
   const [catSearch, setCatSearch] = useState('');
 
   useEffect(() => {
+    if (!isBoss) { setSpLoading(false); return; }
     let alive = true;
     (async () => {
       try {
@@ -38,7 +40,7 @@ export default function StepParts({ catalog, identity, onNext, onPrev }: StepPar
       }
     })();
     return () => { alive = false; };
-  }, [identity]);
+  }, [identity, isBoss]);
 
   const catFiltered = useMemo(() => {
     const s = catSearch.trim().toLowerCase();
@@ -117,7 +119,8 @@ export default function StepParts({ catalog, identity, onNext, onPrev }: StepPar
         )}
       </div>
 
-      {/* Rasmli katalogdan tanlash — xodimning o'z bo'limi (bir bosishda chekka qo'shiladi) */}
+      {/* Rasmli katalogdan tanlash — FAQAT BOSHLIQQA (bir bosishda chekka qo'shiladi) */}
+      {isBoss && (
       <div className="bg-gradient-to-b from-gray-800/60 to-gray-800/30 rounded-2xl p-4 border border-gray-700/50 mt-4 shadow-lg shadow-black/10">
         <h3 className="text-xs font-bold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
           <Package className="w-4 h-4 text-amber-400" /> Katalogdan tanlash (rasm bilan)
@@ -179,6 +182,7 @@ export default function StepParts({ catalog, identity, onNext, onPrev }: StepPar
           </>
         )}
       </div>
+      )}
 
       {/* Saytdagi zapchastlar ro'yxatidan tanlash */}
       <div className="bg-gradient-to-b from-gray-800/60 to-gray-800/30 rounded-2xl p-4 border border-gray-700/50 mt-4 shadow-lg shadow-black/10">
