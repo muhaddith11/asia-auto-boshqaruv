@@ -6,7 +6,7 @@ import { useBotOrderStore } from '@/store/useBotOrderStore';
 import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
-import { Loader2, Eye, RefreshCw, ChevronRight, Trophy, Package } from 'lucide-react';
+import { Loader2, Eye, RefreshCw, ChevronRight, Trophy, Package, Home } from 'lucide-react';
 import PhoneLogin from '@/components/bot-ui/PhoneLogin';
 import AcceptForm from '@/components/bot-ui/AcceptForm';
 import CarDetail from '@/components/bot-ui/CarDetail';
@@ -78,6 +78,22 @@ export default function BotUIPage() {
       }
     })();
   }, []);
+
+  // "Bosh ekranga qo'shish" — Telegram ilovasidagi "⋮" menyusi ba'zi eski
+  // versiyalarda ko'rinmaydi, shuning uchun shu tugma orqali to'g'ridan-to'g'ri
+  // native so'rovni chaqiramiz (Telegram WebApp versiya 8.0+ talab qiladi).
+  const handleAddToHomeScreen = () => {
+    const WebApp = webAppRef.current;
+    if (!WebApp || typeof WebApp.addToHomeScreen !== 'function') {
+      toast.error("Bu funksiya ishlashi uchun Telegram ilovasini yangilang.");
+      return;
+    }
+    try {
+      WebApp.addToHomeScreen();
+    } catch {
+      toast.error("Telegram ilovangiz eski — avval uni yangilang, keyin qayta urinib ko'ring.");
+    }
+  };
 
   const isInsideTelegram =
     typeof window !== 'undefined' &&
@@ -225,14 +241,25 @@ export default function BotUIPage() {
                 )}
               </div>
             </div>
-            {authUser && (
-              <button
-                onClick={handleLogout}
-                className="text-xs text-gray-400 hover:text-gray-200 border border-gray-700 hover:border-gray-600 rounded-xl px-3 py-1.5 transition-colors shrink-0"
-              >
-                Chiqish
-              </button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {isInsideTelegram && (
+                <button
+                  onClick={handleAddToHomeScreen}
+                  title="Bosh ekranga qo'shish"
+                  className="text-gray-400 hover:text-gray-200 border border-gray-700 hover:border-gray-600 rounded-xl p-2 transition-colors"
+                >
+                  <Home className="w-4 h-4" />
+                </button>
+              )}
+              {authUser && (
+                <button
+                  onClick={handleLogout}
+                  className="text-xs text-gray-400 hover:text-gray-200 border border-gray-700 hover:border-gray-600 rounded-xl px-3 py-1.5 transition-colors"
+                >
+                  Chiqish
+                </button>
+              )}
+            </div>
           </div>
           {error && (
             <div className="mt-3 p-2.5 bg-red-500/10 border border-red-500/25 rounded-xl text-xs text-red-300">
