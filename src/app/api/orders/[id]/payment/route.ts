@@ -58,7 +58,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const [prevRes, kassaRes, opRes] = await Promise.all([
       // Ombor deltasi uchun buyurtmaning eski holati (update'dan OLDIN o'qilishi shart)
       // + `final` skidka bilan o'zgarsa foyda/maosh qayta hisoblanishi uchun kerakli maydonlar.
-      supabase.from('orders').select('zaps, holat, srv, total, services').eq('id', id).maybeSingle(),
+      supabase.from('orders').select('zaps, holat, srv, total, services, zarplata, pribil').eq('id', id).maybeSingle(),
       body.kassa
         ? supabase
             .from('kassa')
@@ -97,20 +97,33 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     // (chegirmasiz) qiymatda "muzlab" qoladi (buyurtmalar ro'yxatida FOYDA ustuni
     // noto'g'ri, shishirilgan ko'rinadi). `total` — chegirmasiz asl summa (doim
     // o'zgarmaydi), shu bois (total − yangi final) jami chegirmani beradi.
-    // Usta ulushi har doim `services[].zarplata`da XOM (chegirmasiz) saqlanadi
-    // (orderCalc.ts bilan bir xil mantiq) — shu yerdan qayta hisoblash xavfsiz.
+    // Usta ulushi har doim `services[].zarplata`da XOM (chegirmasiz) saqlanadi.
+    //
+    // Buyurtma "foyda" bazasi ikki xil bo'lishi mumkin: dashboard buyurtmalarida
+    // faqat xizmat summasidan (zapchast kirmaydi), bot orqali chiqarilgan
+    // buyurtmalarda esa xizmat + zapchast foydasidan (narx − sebestoimost).
+    // Qaysi formula ishlatilganini taxmin qilish o'rniga — hali chegirma
+    // "singdirilmagan" (zarplata hamon xom) qiymatdan asl bazani orqaga
+    // chiqarib olamiz: bazaBazis = eski_pribil + zarplataRaw (ikkala formula
+    // uchun ham to'g'ri, chunki ikkalasida ham pribil = baza − zarplata).
     if (body.final !== undefined) {
-      const prevRow = prevRes.data as { srv?: number; total?: number; services?: { zarplata?: number }[] } | null;
+      const prevRow = prevRes.data as { srv?: number; total?: number; zarplata?: number; pribil?: number; services?: { zarplata?: number }[] } | null;
       const srv = Number(prevRow?.srv) || 0;
       const totalBase = Number(prevRow?.total) || srv;
       const totalChegirma = Math.max(0, totalBase - Number(body.final));
       const zarplataRaw = Array.isArray(prevRow?.services)
         ? prevRow!.services!.reduce((s, sv) => s + (Number(sv?.zarplata) || 0), 0)
         : 0;
-      const chegirmaRatio = srv > 0 ? Math.max(0, srv - totalChegirma) / srv : 1;
-      const zarplataAdjusted = Math.round(zarplataRaw * chegirmaRatio);
-      orderPatch.zarplata = zarplataAdjusted;
-      orderPatch.pribil = Math.max(0, srv - totalChegirma - zarplataAdjusted);
+      const zarplataCurrent = Number(prevRow?.zarplata) || 0;
+      // Faqat HALI chegirma singdirilmagan bo'lsa qayta hisoblaymiz — aks holda
+      // oldingi bosqichda kiritilgan chegirmani ikki marta hisoblab yuboramiz.
+      if (zarplataCurrent === zarplataRaw) {
+        const baseBasis = (Number(prevRow?.pribil) || 0) + zarplataRaw;
+        const chegirmaRatio = srv > 0 ? Math.max(0, srv - totalChegirma) / srv : 1;
+        const zarplataAdjusted = Math.round(zarplataRaw * chegirmaRatio);
+        orderPatch.zarplata = zarplataAdjusted;
+        orderPatch.pribil = Math.max(0, baseBasis - totalChegirma - zarplataAdjusted);
+      }
     }
 
     // ── 2-bosqich: buyurtmani yangilash ──
