@@ -57,7 +57,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     // ── 1-bosqich: bir-biriga bog'liq bo'lmagan uchta ish parallel ketadi ──
     const [prevRes, kassaRes, opRes] = await Promise.all([
       // Ombor deltasi uchun buyurtmaning eski holati (update'dan OLDIN o'qilishi shart)
-      supabase.from('orders').select('zaps, holat').eq('id', id).maybeSingle(),
+      // + `final` skidka bilan o'zgarsa foyda/maosh qayta hisoblanishi uchun kerakli maydonlar.
+      supabase.from('orders').select('zaps, holat, srv, total, services').eq('id', id).maybeSingle(),
       body.kassa
         ? supabase
             .from('kassa')
@@ -89,6 +90,27 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     if (opRes.error) {
       console.error('❌ To\'lov: operatsiya yozilmadi:', opRes.error);
       return NextResponse.json({ error: 'Operatsiya yozilmadi: ' + opRes.error.message }, { status: 500 });
+    }
+
+    // `final` skidka (to'lov paytidagi "Qo'shimcha skidka") bilan pasaytirilganda
+    // foyda va usta maoshi ham qayta hisoblanishi kerak — aks holda ular eski
+    // (chegirmasiz) qiymatda "muzlab" qoladi (buyurtmalar ro'yxatida FOYDA ustuni
+    // noto'g'ri, shishirilgan ko'rinadi). `total` — chegirmasiz asl summa (doim
+    // o'zgarmaydi), shu bois (total − yangi final) jami chegirmani beradi.
+    // Usta ulushi har doim `services[].zarplata`da XOM (chegirmasiz) saqlanadi
+    // (orderCalc.ts bilan bir xil mantiq) — shu yerdan qayta hisoblash xavfsiz.
+    if (body.final !== undefined) {
+      const prevRow = prevRes.data as { srv?: number; total?: number; services?: { zarplata?: number }[] } | null;
+      const srv = Number(prevRow?.srv) || 0;
+      const totalBase = Number(prevRow?.total) || srv;
+      const totalChegirma = Math.max(0, totalBase - Number(body.final));
+      const zarplataRaw = Array.isArray(prevRow?.services)
+        ? prevRow!.services!.reduce((s, sv) => s + (Number(sv?.zarplata) || 0), 0)
+        : 0;
+      const chegirmaRatio = srv > 0 ? Math.max(0, srv - totalChegirma) / srv : 1;
+      const zarplataAdjusted = Math.round(zarplataRaw * chegirmaRatio);
+      orderPatch.zarplata = zarplataAdjusted;
+      orderPatch.pribil = Math.max(0, srv - totalChegirma - zarplataAdjusted);
     }
 
     // ── 2-bosqich: buyurtmani yangilash ──
