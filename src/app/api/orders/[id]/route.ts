@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { applyStockDelta } from '@/lib/stock';
+import { refundRasxodOnCancel } from '@/lib/orderCancel';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -94,13 +95,15 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
 
     // Ombor balansini eski->yangi o'tishga qarab moslashtiramiz. dbBody da zaps/holat
     // bo'lmasa — o'zgarmagan deb eski qiymatni ishlatamiz (delta 0 bo'ladi).
+    const nextHolat = dbBody.holat !== undefined ? dbBody.holat : prevRow?.holat;
     await applyStockDelta(
       { zaps: prevRow?.zaps, holat: prevRow?.holat },
       {
         zaps: dbBody.zaps !== undefined ? dbBody.zaps : prevRow?.zaps,
-        holat: dbBody.holat !== undefined ? dbBody.holat : prevRow?.holat,
+        holat: nextHolat,
       },
     );
+    await refundRasxodOnCancel(id, prevRow?.zaps, prevRow?.holat, nextHolat);
 
     // To'lov holatiga o'tgan bo'lsa alohida belgilaymiz.
     // Audit yozuvi javobni kuttirmaydi — `after` orqali javob yuborilgandan

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { identifyWorker } from '@/lib/botWorker';
 import { findClientNameByPhone } from '@/lib/findClient';
+import { applyStockDelta } from '@/lib/stock';
+import { refundRasxodOnCancel } from '@/lib/orderCancel';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
     // Buyurtmani olib, egaligini tekshiramiz (o'zi qabul qilgan yoki boshliq)
     const { data: order, error: getErr } = await supabase
       .from('orders')
-      .select('id, qabul_xodim_id, bosqich, status_log')
+      .select('id, qabul_xodim_id, bosqich, status_log, zaps, holat')
       .eq('id', orderId)
       .maybeSingle();
 
@@ -97,6 +99,16 @@ export async function POST(req: NextRequest) {
     if (updErr) {
       console.error('stage update error:', updErr);
       return NextResponse.json({ ok: false, error: 'Yangilashda xatolik.' }, { status: 500 });
+    }
+
+    // Bekor qilinganda: ombordan ayirilgan zapchastlar qaytadi + rasxodga
+    // sarflangan naqd kassaga qaytariladi (bir marta, faqat YANGI bekorda).
+    if (action === 'bekor') {
+      await applyStockDelta(
+        { zaps: order.zaps, holat: order.holat },
+        { zaps: order.zaps, holat: 'bekor' },
+      );
+      await refundRasxodOnCancel(orderId, order.zaps, order.holat, 'bekor');
     }
 
     // Ish to'xtaydigan bosqichlarda ochiq vaqt sessiyalari yopiladi. Aks holda

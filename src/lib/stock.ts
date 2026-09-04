@@ -27,11 +27,22 @@ export interface OrderStockState {
   holat?: string | null;
 }
 
+// "Bekor qilingan" ikki xil qiymat bilan yoziladi: dashboard 'bekor qilingan'
+// (types/index.ts), bot-ui esa 'bekor' (haqiqiy jonli qiymat — points/config.ts
+// dagi BEKOR_HOLAT bilan bir xil). Ombor/kassa hisob-kitoblari ikkalasini ham
+// bir xil "bekor qilingan" deb bilishi kerak — aks holda bot orqali bekor
+// qilingan buyurtmada zapchastlar omborga qaytmaydi.
+const CANCELLED_HOLATLAR = new Set(['bekor qilingan', 'bekor']);
+
+export function isCancelledHolat(holat?: string | null): boolean {
+  return !!holat && CANCELLED_HOLATLAR.has(holat);
+}
+
 // Buyurtmaning "effektiv" zapchast miqdorlari (id -> jami qty).
 // Bekor qilingan buyurtma ombordan hech narsa olmaydi — bo'sh map.
 export function effectiveQtyMap(zaps: ZapLike[] | null | undefined, holat: string | null | undefined): Map<number, number> {
   const map = new Map<number, number>();
-  if (holat === 'bekor qilingan') return map;
+  if (isCancelledHolat(holat)) return map;
   for (const z of (zaps || [])) {
     const id = Number(z?.id);
     if (!id) continue;
