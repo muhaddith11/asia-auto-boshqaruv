@@ -261,7 +261,10 @@ export default function CashModal({ type, onClose }: CashModalProps) {
                 >
                   <option value="">Tanlang...</option>
                   {formData.category === "Aylanmadan tashqari" ? (
-                    <option value="Yahyo aka">👤 Yahyo aka</option>
+                    <>
+                      <option value="Yahyo aka">👤 Yahyo aka</option>
+                      <option value="Opoqi">👤 Opoqi</option>
+                    </>
                   ) : (formData.category === "Ish xaqi" || formData.category === "Shtraf") ? (
                     xodimlar.map(x => <option key={x.id} value={x.ism}>🛠️ {x.ism}{formData.category === "Shtraf" ? " - Jarima" : " - Sotrudnik"}</option>)
                   ) : formData.category === "Buyurtma bo'yicha to'lov" ? (
