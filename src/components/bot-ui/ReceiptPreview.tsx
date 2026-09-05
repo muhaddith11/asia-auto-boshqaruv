@@ -1,20 +1,25 @@
 'use client';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import { ArrowLeft, CheckCircle2, FileText, Check } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileText, Check, Receipt } from 'lucide-react';
+import { Car } from '@/components/bot-ui/botClient';
 
 interface ReceiptPreviewProps {
+  car: Car | null; // oldin kiritilgan rasxodlarni "umumiy to'lov"ga qo'shib ko'rsatish uchun
   onPrev: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
 }
 
-export default function ReceiptPreview({ onPrev, onSubmit, isSubmitting }: ReceiptPreviewProps) {
+export default function ReceiptPreview({ car, onPrev, onSubmit, isSubmitting }: ReceiptPreviewProps) {
   const store = useBotOrderStore();
-  
+
   const totalServices = store.services.reduce((sum, s) => sum + Number(s.price), 0);
   // Zapchast narxi miqdorga ko'paytirilmaydi
   const totalParts = store.parts.reduce((sum, p) => sum + Number(p.price || 0), 0);
-  const totalAmount = store.getTotalAmount();
+  // Oldin kiritilgan rasxod — server chek chiqarganda avtomatik qo'shadi, shuning
+  // uchun bu yerda ham ko'rsatib, haqiqiy yakuniy summani oldindan ko'rsatamiz.
+  const rasxodTotal = car?.rasxod_jami || 0;
+  const totalAmount = store.getTotalAmount() + rasxodTotal;
 
   return (
     <div className="space-y-6 slide-in pb-20">
@@ -88,6 +93,33 @@ export default function ReceiptPreview({ onPrev, onSubmit, isSubmitting }: Recei
               <span className="text-sm font-medium text-gray-400">Oraliq jami:</span>
               <span className="text-orange-400 font-mono font-bold text-sm">
                 {totalParts.toLocaleString()} UZS
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Oldin kiritilgan rasxod — faqat info, chekka avtomatik qo'shiladi */}
+      {!!car?.rasxodlar?.length && (
+        <div className="bg-red-500/10 rounded-2xl p-5 border border-red-500/30 shadow-xl">
+          <h3 className="text-red-200 text-sm mb-4 font-medium uppercase tracking-wider flex items-center gap-2">
+            <Receipt className="w-4 h-4" /> Oldin kiritilgan rasxod
+          </h3>
+          <div className="space-y-3">
+            {car.rasxodlar.map((r, i) => (
+              <div key={i} className="flex justify-between items-start border-b border-red-500/20 pb-3 last:border-0 last:pb-0">
+                <span className="text-red-100 text-sm">
+                  {i + 1}. {r.nom}{r.xodim_nomi && <span className="text-red-300/60"> · {r.xodim_nomi}</span>}
+                </span>
+                <span className="text-red-200 font-mono text-sm whitespace-nowrap ml-4">
+                  {r.summa.toLocaleString()} <span className="text-xs text-red-300/60">UZS</span>
+                </span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center pt-2 mt-2 border-t border-red-500/20">
+              <span className="text-sm font-medium text-red-200/80">Oraliq jami:</span>
+              <span className="text-red-300 font-mono font-bold text-sm">
+                {rasxodTotal.toLocaleString()} UZS
               </span>
             </div>
           </div>

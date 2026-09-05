@@ -443,12 +443,13 @@ export default function BotUIPage() {
                   identity={resolveIdentity(authUser)}
                   isBoss={carsData.is_boss}
                   bolim={carsData.bolim}
+                  car={selectedCar}
                   onNext={() => setCompleteStep(3)}
                   onPrev={() => setCompleteStep(1)}
                 />
               )}
               {completeStep === 3 && (
-                <ReceiptPreview onPrev={() => setCompleteStep(2)} onSubmit={handleComplete} isSubmitting={isSubmitting} />
+                <ReceiptPreview car={selectedCar} onPrev={() => setCompleteStep(2)} onSubmit={handleComplete} isSubmitting={isSubmitting} />
               )}
             </div>
           )}

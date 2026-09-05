@@ -1,19 +1,20 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Package, Plus, PackageSearch, Loader2, Hash, Search, Filter, Check } from 'lucide-react';
-import { Identity, SparePart, OilPrice, fetchSpareParts, fetchOilPrices } from '@/components/bot-ui/botClient';
+import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Package, Plus, PackageSearch, Loader2, Hash, Search, Filter, Check, Receipt } from 'lucide-react';
+import { Identity, SparePart, OilPrice, Car, fetchSpareParts, fetchOilPrices } from '@/components/bot-ui/botClient';
 
 interface StepPartsProps {
   catalog: any;
   identity: Identity;
   isBoss: boolean;
   bolim?: string; // 'ustaxona' | 'yog' — yog'chiga ustaxona ombori ko'rinmaydi
+  car: Car | null; // oldin kiritilgan rasxodlarni ko'rsatish uchun (faqat info)
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function StepParts({ catalog, identity, isBoss, bolim, onNext, onPrev }: StepPartsProps) {
+export default function StepParts({ catalog, identity, isBoss, bolim, car, onNext, onPrev }: StepPartsProps) {
   const store = useBotOrderStore();
   const [partName, setPartName] = useState('');
   const [partQty, setPartQty] = useState(1);
@@ -163,6 +164,32 @@ export default function StepParts({ catalog, identity, isBoss, bolim, onNext, on
   return (
     <div className="space-y-6 slide-in">
       <h2 className="text-xl font-semibold mb-2">{isYog ? 'Filtr tanlash' : 'Ehtiyot Qismlar (Zapchast)'}</h2>
+
+      {/* Oldin kiritilgan rasxodlar — faqat ma'lumot uchun (bu yerda tahrirlanmaydi,
+          chekka avtomatik qo'shiladi va "Umumiy to'lov"ga hisoblab beriladi). */}
+      {!!car?.rasxodlar?.length && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-red-200">
+              <Receipt className="w-4 h-4 shrink-0" /> Oldin kiritilgan rasxod
+            </div>
+            <span className="text-sm font-black text-red-300 tabular-nums whitespace-nowrap">
+              −{(car.rasxod_jami || 0).toLocaleString('ru-RU')} so'm
+            </span>
+          </div>
+          <div className="space-y-1">
+            {car.rasxodlar.map((r, i) => (
+              <div key={i} className="flex items-center justify-between gap-3 text-xs text-red-200/80">
+                <span className="truncate">{r.nom}{r.xodim_nomi && <span className="text-red-300/60"> · {r.xodim_nomi}</span>}</span>
+                <span className="font-semibold tabular-nums whitespace-nowrap">{r.summa.toLocaleString('ru-RU')}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-red-200/60 leading-relaxed">
+            Bu summa allaqachon kassadan ayirilgan — chek chiqarilganda avtomatik chekka va umumiy to'lovga qo'shiladi.
+          </p>
+        </div>
+      )}
 
       {/* Tanlangan zapchastlar ro'yxati */}
       <div className="space-y-3">
