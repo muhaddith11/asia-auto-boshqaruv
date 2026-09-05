@@ -100,8 +100,13 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       }));
 
       // Load parts
-      setPartRows(order.zaps.map((z, idx) => {
-        const catalogPart = zapchastlar.find(x => String(x.id) === String(z.id) || x.nom === (z.nom || z.name));
+      setPartRows(order.zaps.map((z: any, idx) => {
+        // Rasxod (bot-ui'dan kiritilgan xarajat) yozuvlari ombordagi haqiqiy
+        // zapchastlar bilan NOM bo'yicha moslashtirilmaydi — aks holda nomi
+        // tasodifan ombordagi biror zapchastga to'g'ri kelib qolsa, saqlashda
+        // omborni noto'g'ri (haqiqatda sotilmagan zapchast uchun) kamaytiradi.
+        const isRasxod = z.rasxod === true || z.kat === 'Rasxod';
+        const catalogPart = isRasxod ? null : zapchastlar.find(x => String(x.id) === String(z.id) || x.nom === (z.nom || z.name));
         return {
           id: idx,
           partId: catalogPart?.id?.toString() || '',
@@ -109,7 +114,10 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
           customNarx: z.narx?.toString() || z.price?.toString() || '',
           qty: Number(z.qty || z.quantity || 1),
           // Alohida (kassaga emas) — galochka. Default false = kassaga tushadi.
-          alohida: z.alohida === true
+          alohida: z.alohida === true,
+          isRasxod,
+          xodimNomi: z.xodim_nomi || '',
+          origId: z.id,
         };
       }));
     }
@@ -186,8 +194,11 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
     return sum + narx;
   }, 0);
   // Qo'lda ("customNom") kiritilgan zapchastning tannarxi yo'q (0) — faqat
-  // katalogdan tanlanganlarniki hisobga olinadi.
+  // katalogdan tanlanganlarniki hisobga olinadi. Rasxod (xarajat) qatorining
+  // tannarxi narxning o'zi — aks holda foyda (pribil) noto'g'ri (shishirilgan)
+  // hisoblanadi, chunki rasxod narxi savdo sifatida partsTotal'ga qo'shiladi.
   const partsCostTotal = partRows.reduce((sum, r) => {
+    if (r.isRasxod) return sum + (parseFloat(r.customNarx) || 0);
     if (!r.partId) return sum;
     return sum + getPartSebestoimost(r.partId);
   }, 0);
@@ -216,6 +227,23 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
     const updatedParts = partRows
       .filter(r => r.partId || r.customNom)
       .map(r => {
+        if (r.isRasxod) {
+          // Rasxod belgisini saqlab qolamiz — aks holda keyingi ochishda
+          // yana ombordagi bir xil nomli zapchastga tasodifan bog'lanib qolishi mumkin.
+          const narx = parseFloat(r.customNarx) || 0;
+          return {
+            id: r.origId ?? null,
+            nom: r.customNom,
+            narx,
+            sebestoimost: narx,
+            qty: r.qty || 1,
+            bir: 'dona',
+            kat: 'Rasxod',
+            rasxod: true,
+            xodim_nomi: r.xodimNomi || undefined,
+            alohida: r.alohida === true
+          };
+        }
         const p = zapchastlar.find(x => String(x.id) === String(r.partId));
         const rawNarx = r.customNarx ? parseFloat(r.customNarx) : (p?.narx || 0);
         const narx = isNaN(rawNarx) ? 0 : rawNarx;
@@ -454,10 +482,22 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                     </button>
                   </div>
                   <div>
-                    <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, partId: e.target.value, customNom: '' } : x))}>
-                      <option value="">{r.customNom ? `[Maxsus] ${r.customNom}` : '— Tanlang —'}</option>
-                      {zapchastlar.map(p => <option key={p.id} value={p.id}>{p.nom} ({p.balance})</option>)}
-                    </select>
+                    {r.isRasxod ? (
+                      <div
+                        title="Bu — bot-ui orqali kiritilgan rasxod (xarajat) yozuvi, ombordagi zapchast emas. Kassadan allaqachon ayirilgan."
+                        style={{
+                          ...S.select, cursor: 'default', display: 'flex', alignItems: 'center', gap: 6,
+                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.35)', color: '#fca5a5',
+                        }}
+                      >
+                        🔴 Rasxod: {r.customNom}{r.xodimNomi ? ` · ${r.xodimNomi}` : ''}
+                      </div>
+                    ) : (
+                      <select style={S.select} value={r.partId} onChange={e => setPartRows(partRows.map(x => x.id === r.id ? { ...x, partId: e.target.value, customNom: '' } : x))}>
+                        <option value="">{r.customNom ? `[Maxsus] ${r.customNom}` : '— Tanlang —'}</option>
+                        {zapchastlar.map(p => <option key={p.id} value={p.id}>{p.nom} ({p.balance})</option>)}
+                      </select>
+                    )}
                   </div>
                   <div className="text-[13px] font-bold text-emerald-400 py-2.5 px-4 bg-white/5 rounded-xl text-right">
                     {(r.customNarx ? parseFloat(r.customNarx) : getPartNarx(r.partId)).toLocaleString()} sum

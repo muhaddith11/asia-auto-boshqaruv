@@ -9,11 +9,12 @@ interface Props {
   car: Car;
   identity: Identity;
   onDone: () => void; // bosqich o'zgardi → bosh ekran
+  onStay: () => void; // rasxod qo'shildi → shu sahifada qolib, ro'yxatni yangilash
   onComplete: () => void; // topshirishga o'tish
   onBack: () => void;
 }
 
-export default function CarDetail({ car, identity, onDone, onComplete, onBack }: Props) {
+export default function CarDetail({ car, identity, onDone, onStay, onComplete, onBack }: Props) {
   const [busy, setBusy] = useState(false);
   const [zapMode, setZapMode] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -141,7 +142,9 @@ export default function CarDetail({ car, identity, onDone, onComplete, onBack }:
         return;
       }
       toast.success(`Rasxod saqlandi — ${rasxodSum.toLocaleString('ru-RU')} so'm kassadan ayirildi`);
-      onDone();
+      setRasxodMode(false);
+      setBusy(false);
+      onStay(); // shu mashina sahifasida qolib, "Rasxodlar" ro'yxatini yangilaymiz
     } catch {
       toast.error("Server bilan bog'lanishda xatolik");
       setBusy(false);

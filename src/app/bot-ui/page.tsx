@@ -111,18 +111,39 @@ export default function BotUIPage() {
       const identity = resolveIdentity(authUser);
       const res = await fetchCars(identity);
       if (res.ok) {
+        const myCars = res.myCars || [];
+        const allCars = res.allCars || null;
         setCarsData({
-          myCars: res.myCars || [],
-          allCars: res.allCars || null,
+          myCars,
+          allCars,
           is_boss: !!res.worker?.is_boss,
           name: res.worker?.ism || '',
           bolim: res.worker?.bolim || 'ustaxona',
         });
+        return { myCars, allCars };
       }
     } catch {
       /* jim */
     } finally {
       setLoadingCars(false);
+    }
+    return null;
+  };
+
+  // Rasxod/tahrirlash kabi amallardan keyin — bosh ekranga qaytarmasdan, shu
+  // mashina sahifasida qolib, ro'yxatni yangilaymiz. Aks holda foydalanuvchi
+  // endi saqlangan rasxodni ko'rmay, "saqlanmadi" deb o'ylab qayta kiritadi.
+  const refreshSelectedCar = async () => {
+    if (!selectedCar) return;
+    const res = await loadCars();
+    if (!res) return;
+    const all = [...res.myCars, ...(res.allCars || [])];
+    const updated = all.find((c) => c.id === selectedCar.id);
+    if (updated) setSelectedCar(updated);
+    else {
+      // Mashina faol ro'yxatdan chiqib ketgan (masalan topshirilgan) — bosh ekranga qaytamiz.
+      setSelectedCar(null);
+      setView('home');
     }
   };
 
@@ -373,6 +394,7 @@ export default function BotUIPage() {
               car={selectedCar}
               identity={resolveIdentity(authUser)}
               onDone={finishHome}
+              onStay={refreshSelectedCar}
               onComplete={() => startComplete(selectedCar)}
               onBack={() => setView('home')}
             />
