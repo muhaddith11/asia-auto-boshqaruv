@@ -598,12 +598,12 @@ export const useStore = create<AutoServisStore>()(
       addTashqariOperatsiya: async (op) => {
         const tempId = -Date.now();
         set((state) => ({
-          tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: tempId, source: 'external', createdAt: new Date().toISOString() }],
+          tashqariOperatsiyalar: [...state.tashqariOperatsiyalar, { ...op, id: tempId, createdAt: new Date().toISOString() }],
           counters: { ...state.counters, cash: state.counters.cash + 1 }
         }));
 
         try {
-          await createOperation({ ...op, source: 'external' });
+          await createOperation({ ...op });
         } catch (err) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
           // Rollback optimistic update
@@ -766,8 +766,8 @@ export const useStore = create<AutoServisStore>()(
 
             const finalKassa = kassaResult || { naqd: 0, karta: 0 };
             const allOps = ops || [];
-            const bizOps = allOps.filter((o) => o.source !== 'external');
-            const extOps = allOps.filter((o) => o.source === 'external');
+            const bizOps = allOps.filter((o) => o.category !== 'Aylanmadan tashqari');
+            const extOps = allOps.filter((o) => o.category === 'Aylanmadan tashqari');
 
             set((state) => ({
               ...state,

@@ -94,6 +94,7 @@ export default function ExternalOperationsPage() {
       { key: 'date', label: 'Sana', format: (op: any) => (op.date || op.sana || '') },
       { key: 'type', label: 'Turi', format: (op: any) => (op.type === 'income' ? 'Kirim' : 'Chiqim') },
       { key: 'category', label: 'Kategoriya' },
+      { key: 'source', label: 'Manba', format: (op: any) => (op.source && op.source !== 'external' && op.source !== 'manual') ? op.source : '' },
       { key: 'comment', label: 'Izoh' },
       { key: 'amount', label: 'Summa' },
       { key: 'method', label: 'Usul' },
@@ -290,6 +291,7 @@ export default function ExternalOperationsPage() {
                   <tr>
                     <th className="px-8 py-5">Sana</th>
                     <th className="px-6 py-5">Kategoriya</th>
+                    <th className="px-6 py-5">Manba</th>
                     <th className="px-6 py-5">Izoh</th>
                     <th className="px-6 py-5 text-right">Summa</th>
                     <th className="px-6 py-5">To'lov usuli</th>
@@ -318,6 +320,9 @@ export default function ExternalOperationsPage() {
                         }`}>
                           {op.category}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-slate-300 font-medium">{(op.source && op.source !== 'external' && op.source !== 'manual') ? op.source : '—'}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-slate-300 font-medium max-w-[250px] truncate">{op.comment || '—'}</div>
