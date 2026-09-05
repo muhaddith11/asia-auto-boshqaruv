@@ -13,10 +13,11 @@ import CarDetail from '@/components/bot-ui/CarDetail';
 import BossMonitor from '@/components/bot-ui/BossMonitor';
 import PointsView from '@/components/bot-ui/PointsView';
 import SparePartsAdmin from '@/components/bot-ui/SparePartsAdmin';
+import OilPriceAdmin from '@/components/bot-ui/OilPriceAdmin';
 import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
 import { bolimMeta } from '@/lib/departments';
 
-type View = 'home' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog';
+type View = 'home' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog' | 'oilPrices';
 
 export default function BotUIPage() {
   const [view, setView] = useState<View>('home');
@@ -355,6 +356,12 @@ export default function BotUIPage() {
                   >
                     <Package className="w-5 h-5 text-blue-400" /> Zapchastlar katalogi
                   </button>
+                  <button
+                    onClick={() => setView('oilPrices')}
+                    className="w-full font-bold py-4 rounded-xl flex justify-center items-center gap-2 transition-all active:scale-[0.98] bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white"
+                  >
+                    🛢️ Yog' narxlari
+                  </button>
                 </div>
               )}
             </div>
@@ -382,6 +389,14 @@ export default function BotUIPage() {
             />
           )}
 
+          {/* ══ YOG' NARXLARI (faqat boshliq) ══ */}
+          {view === 'oilPrices' && (
+            <OilPriceAdmin
+              identity={resolveIdentity(authUser)}
+              onBack={() => setView('home')}
+            />
+          )}
+
           {/* ══ MENING BALLARIM ══ */}
           {view === 'points' && <PointsView identity={resolveIdentity(authUser)} onBack={() => setView('home')} />}
 
@@ -392,13 +407,20 @@ export default function BotUIPage() {
                 🚗 {selectedCar?.mashina} {selectedCar?.raqam ? `· ${selectedCar.raqam}` : ''} — chek chiqarish
               </div>
               {completeStep === 1 && (
-                <StepServices catalog={catalogData} bolim={carsData.bolim} onNext={() => setCompleteStep(2)} onPrev={() => setView('detail')} />
+                <StepServices
+                  catalog={catalogData}
+                  bolim={carsData.bolim}
+                  identity={resolveIdentity(authUser)}
+                  onNext={() => setCompleteStep(2)}
+                  onPrev={() => setView('detail')}
+                />
               )}
               {completeStep === 2 && (
                 <StepParts
                   catalog={catalogData}
                   identity={resolveIdentity(authUser)}
                   isBoss={carsData.is_boss}
+                  bolim={carsData.bolim}
                   onNext={() => setCompleteStep(3)}
                   onPrev={() => setCompleteStep(1)}
                 />

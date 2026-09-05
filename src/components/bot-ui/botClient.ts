@@ -178,6 +178,41 @@ export async function uploadSparePartImage(identity: Identity, dataUrl: string) 
   return res.json();
 }
 
+// ── Yog' narxlari (yog' bo'limi: narx VA tannarx, "xizmat"siz foyda) ─────────
+export interface OilPrice {
+  id: number;
+  turi: 'yog' | 'yog_filtri' | 'salon_filtri';
+  nom: string;
+  mashina: string | null;
+  narx: number;    // sotish narxi
+  tannarx: number; // sotib olish narxi (sebestoimost)
+  created_at?: string;
+}
+
+export async function fetchOilPrices(identity: Identity) {
+  const params = identityQuery(identity);
+  params.set('t', String(Date.now()));
+  const res = await fetch(`/api/bot-ui/oil-prices?${params.toString()}`);
+  return res.json();
+}
+
+// id berilsa tahrirlaydi, aks holda yangi qo'shadi.
+export async function saveOilPrice(identity: Identity, price: Partial<OilPrice>, id?: number) {
+  const url = id ? `/api/bot-ui/oil-prices/${id}` : '/api/bot-ui/oil-prices';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...price, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
+export async function deleteOilPriceApi(identity: Identity, id: number) {
+  const params = identityQuery(identity);
+  const res = await fetch(`/api/bot-ui/oil-prices/${id}?${params.toString()}`, { method: 'DELETE' });
+  return res.json();
+}
+
 // Rasmni brauzerda siqib JPEG data URL qaytaradi (yuklashni tez qiladi).
 export function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Promise<string> {
   return new Promise((resolve, reject) => {

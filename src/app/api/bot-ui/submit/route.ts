@@ -78,9 +78,11 @@ export async function POST(req: NextRequest) {
 
     // ── Process Parts ─────────────────────────────────────────────
     const orderParts = [];
-    // Ombordan ayiriladigan zapchastlar — faqat katalogdan tanlanganlar (isCustom emas).
-    // Botdan qo'lda kiritilgan zapchast balance:0 bilan yangi yaratiladi, uni
-    // ombordan ayirish manfiy balansga olib keladi — shuning uchun qo'shilmaydi.
+    // Ombordan ayiriladigan zapchastlar — faqat haqiqiy ombor (source='site')dan
+    // tanlanganlar. Botdan qo'lda kiritilgan zapchast balance:0 bilan yangi
+    // yaratiladi, uni ombordan ayirish manfiy balansga olib keladi — shuning
+    // uchun qo'shilmaydi. Yog'/filtr (source='oil_prices') ombor emas — alohida
+    // narx jadvali, stock tushunchasi yo'q.
     const stockZaps: { id: number; qty: number }[] = [];
     for (const p of (parts || [])) {
       let pId = p.id;
@@ -97,6 +99,8 @@ export async function POST(req: NextRequest) {
           }).select('id').single();
           if (newP) pId = newP.id;
         } catch (e) { console.error("Part insert error:", e); }
+      } else if (pId && p.source === 'oil_prices') {
+        // Yog'/filtr — ombordan ayirilmaydi (stockZaps'ga qo'shilmaydi).
       } else if (pId) {
         stockZaps.push({ id: Number(pId), qty: Number(p.quantity || 1) });
       }
@@ -106,6 +110,7 @@ export async function POST(req: NextRequest) {
         narx: Number(p.price),
         qty: Number(p.quantity || 1),
         sebestoimost: 0,
+        source: p.source,
       });
     }
 
@@ -116,9 +121,20 @@ export async function POST(req: NextRequest) {
     // Narx miqdorga ko'paytirilmagani uchun sebestoimost ham ko'paytirilmaydi (izchillik).
     // sebestoimost har bir zap obyektiga ham yoziladi — Kassaga tushmagan
     // zapchastlar foydasini keyinchalik to'g'ri hisoblash uchun kerak.
+    // Tannarx (sebestoimost) HAR DOIM bazadan o'qiladi — klient uni ko'rmaydi
+    // ham, yubormaydi ham. Sotish narxi (narx) klientdan kelgan qiymatda qoladi
+    // (real ombor zapchastlari bilan bir xil ishonch modeli).
     let partsCostTotal = 0;
     for (const p of orderParts) {
-      if (p.id) {
+      if (!p.id) continue;
+      if (p.source === 'oil_prices') {
+        const { data: dbOil } = await supabase.from('oil_prices').select('tannarx').eq('id', p.id).maybeSingle();
+        if (dbOil) {
+          const cost = Number(dbOil.tannarx) || 0;
+          partsCostTotal += cost;
+          p.sebestoimost = cost;
+        }
+      } else {
         const { data: dbPart } = await supabase.from('parts').select('sebestoimost').eq('id', p.id).maybeSingle();
         if (dbPart) {
           const cost = Number(dbPart.sebestoimost) || 0;

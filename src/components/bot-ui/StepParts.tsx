@@ -1,22 +1,91 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
-import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Package, Plus, PackageSearch, Loader2, Hash, Search } from 'lucide-react';
-import { Identity, SparePart, fetchSpareParts } from '@/components/bot-ui/botClient';
+import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Package, Plus, PackageSearch, Loader2, Hash, Search, Filter, Check } from 'lucide-react';
+import { Identity, SparePart, OilPrice, fetchSpareParts, fetchOilPrices } from '@/components/bot-ui/botClient';
 
 interface StepPartsProps {
   catalog: any;
   identity: Identity;
   isBoss: boolean;
+  bolim?: string; // 'ustaxona' | 'yog' — yog'chiga ustaxona ombori ko'rinmaydi
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }: StepPartsProps) {
+export default function StepParts({ catalog, identity, isBoss, bolim, onNext, onPrev }: StepPartsProps) {
   const store = useBotOrderStore();
   const [partName, setPartName] = useState('');
   const [partQty, setPartQty] = useState(1);
   const [partPrice, setPartPrice] = useState('');
+
+  const isYog = bolim === 'yog';
+
+  // ── YOG' BO'LIMI: Filtr tanlash (yog' filtri / salon filtri) ────────────────
+  const [filterOptions, setFilterOptions] = useState<OilPrice[]>([]);
+  const [filterLoading, setFilterLoading] = useState(isYog);
+
+  useEffect(() => {
+    if (!isYog) { setFilterLoading(false); return; }
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetchOilPrices(identity);
+        if (alive && res?.ok) {
+          setFilterOptions((res.prices || []).filter((p: OilPrice) => p.turi === 'yog_filtri' || p.turi === 'salon_filtri'));
+        }
+      } catch {
+        /* jim */
+      } finally {
+        if (alive) setFilterLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isYog, identity?.workerPhone, identity?.mechanicChatId]);
+
+  const isFilterSelected = (id: number) => store.parts.some((p) => p.source === 'oil_prices' && p.id === id);
+  const toggleFilter = (f: OilPrice) => {
+    const idx = store.parts.findIndex((p) => p.source === 'oil_prices' && p.id === f.id);
+    if (idx >= 0) {
+      store.removePart(idx);
+    } else {
+      store.addPart({ name: f.nom, quantity: 1, price: Number(f.narx) || 0, id: f.id, source: 'oil_prices' });
+    }
+  };
+
+  const yogFiltrlari = filterOptions.filter((f) => f.turi === 'yog_filtri');
+  const salonFiltrlari = filterOptions.filter((f) => f.turi === 'salon_filtri');
+
+  const renderFilterGroup = (title: string, items: OilPrice[]) => (
+    <div className="mb-4 last:mb-0">
+      <h4 className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">{title}</h4>
+      {items.length === 0 ? (
+        <p className="text-gray-500 text-xs">Hali qo'shilmagan</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map((f) => {
+            const selected = isFilterSelected(f.id);
+            return (
+              <div
+                key={f.id}
+                onClick={() => toggleFilter(f)}
+                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${selected ? 'border-amber-500 bg-amber-500/10' : 'border-gray-700 bg-gray-800'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center border ${selected ? 'bg-amber-500 border-none' : 'border-gray-600'}`}>
+                    {selected && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                  <h3 className="text-gray-200 text-sm font-medium">{f.nom}</h3>
+                </div>
+                <p className="text-amber-400 text-xs font-semibold shrink-0">{Number(f.narx).toLocaleString()} UZS</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 
   // ── Rasmli katalog (spare_parts) — FAQAT BOSHLIQQA ko'rinadi (server ham tekshiradi).
   //    Bir bosishda chekka qo'shiladi (isCustom: qo'lda qo'shish bilan bir xil).
@@ -63,13 +132,17 @@ export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }:
   const sitePartsAll: { id: number; name: string; price: number; mashina: string }[] = catalog?.parts || [];
   const siteParts = sitePartsAll.slice(0, 50);
 
-  // Saytdagi zapchastni to'g'ridan-to'g'ri qo'shish (isCustom: false — qayta bazaga yozilmaydi)
+  // Saytdagi zapchastni to'g'ridan-to'g'ri qo'shish (isCustom: false — qayta bazaga yozilmaydi).
+  // id+source yuboriladi — server (submit) shu orqali omborni kamaytiradi VA
+  // haqiqiy tannarxni (sebestoimost) bazadan o'qiydi (klient narxiga ishonmaydi).
   const handleSelectSitePart = (p: { id: number; name: string; price: number }) => {
     store.addPart({
       name: p.name,
       quantity: 1,
       price: Number(p.price) || 0,
       isCustom: false,
+      id: p.id,
+      source: 'site',
     });
   };
 
@@ -89,12 +162,12 @@ export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }:
 
   return (
     <div className="space-y-6 slide-in">
-      <h2 className="text-xl font-semibold mb-2">Ehtiyot Qismlar (Zapchast)</h2>
+      <h2 className="text-xl font-semibold mb-2">{isYog ? 'Filtr tanlash' : 'Ehtiyot Qismlar (Zapchast)'}</h2>
 
       {/* Tanlangan zapchastlar ro'yxati */}
       <div className="space-y-3">
         {store.parts.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center py-4">Hali zapchast qo'shilmadi</p>
+          <p className="text-gray-500 text-sm text-center py-4">Hali {isYog ? 'filtr' : 'zapchast'} qo'shilmadi</p>
         ) : (
           store.parts.map((part, i) => (
             <div key={i} className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center transition-all">
@@ -118,6 +191,23 @@ export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }:
           ))
         )}
       </div>
+
+      {/* YOG' BO'LIMI: Yog' filtri / Salon filtri — ikkalasi ham tanlanishi mumkin */}
+      {isYog && (
+        <div className="bg-gradient-to-b from-gray-800/60 to-gray-800/30 rounded-2xl p-4 border border-gray-700/50 shadow-lg shadow-black/10">
+          <h3 className="text-xs font-bold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+            <Filter className="w-4 h-4 text-amber-400" /> Filtr tanlash
+          </h3>
+          {filterLoading ? (
+            <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>
+          ) : (
+            <>
+              {renderFilterGroup("Yog' filtri", yogFiltrlari)}
+              {renderFilterGroup('Salon filtri', salonFiltrlari)}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Rasmli katalogdan tanlash — FAQAT BOSHLIQQA (bir bosishda chekka qo'shiladi) */}
       {isBoss && (
@@ -184,7 +274,8 @@ export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }:
       </div>
       )}
 
-      {/* Saytdagi zapchastlar ro'yxatidan tanlash */}
+      {/* Saytdagi zapchastlar ro'yxatidan tanlash — ustaxona ombori, yog'chiga ALOQASIZ (ko'rinmaydi) */}
+      {!isYog && (
       <div className="bg-gradient-to-b from-gray-800/60 to-gray-800/30 rounded-2xl p-4 border border-gray-700/50 mt-4 shadow-lg shadow-black/10">
         <h3 className="text-xs font-bold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
           <Package className="w-4 h-4 text-blue-400" /> Ro'yxatdan tanlash
@@ -220,11 +311,12 @@ export default function StepParts({ catalog, identity, isBoss, onNext, onPrev }:
           </div>
         )}
       </div>
+      )}
 
-      {/* Qo'lda yangi zapchast qo'shish */}
+      {/* Qo'lda yangi zapchast/filtr qo'shish */}
       <div className="bg-gray-800 rounded-xl p-5 border border-gray-700 mt-4">
         <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
-          <PlusCircle className="w-4 h-4 text-orange-400" /> Qo'lda Zapchast Qo'shish
+          <PlusCircle className="w-4 h-4 text-orange-400" /> {isYog ? "Ro'yxatda yo'q filtr qo'shish" : "Qo'lda Zapchast Qo'shish"}
         </h3>
 
         <div className="space-y-4">
