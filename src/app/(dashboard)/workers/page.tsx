@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import SalaryModal from '@/components/SalaryModal';
 import WorkerHistoryModal from '@/components/WorkerHistoryModal';
+import MonthlyProfitModal from '@/components/MonthlyProfitModal';
 import PageLayout from '@/components/layout/PageLayout';
 import ConfirmModal from '@/components/ConfirmModal';
 import { BOLIMLAR, bolimMeta, normalizeBolim, type Bolim } from '@/lib/departments';
@@ -23,7 +24,8 @@ import {
   Save,
   Briefcase,
   ChevronDown,
-  Send
+  Send,
+  TrendingUp
 } from 'lucide-react';
 
 const S = {
@@ -59,6 +61,7 @@ export default function WorkersPage() {
   const [salaryWorker, setSalaryWorker] = useState<any>(null);
   const [historyWorker, setHistoryWorker] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, id: number | null }>({ isOpen: false, id: null });
+  const [showMonthlyProfit, setShowMonthlyProfit] = useState(false);
 
   const [formData, setFormData] = useState({
     ism: '',
@@ -224,12 +227,20 @@ export default function WorkersPage() {
       title="Xodimlar boshqaruvi"
       subtitle="Ustalar va xodimlarni boshqarish, ularning stavkalari va maoshlarini hisoblash."
       headerActions={
-        <button
-          onClick={() => openModal()}
-          className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
-        >
-          <Plus size={16} /> Yangi xodim qo'shish
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowMonthlyProfit(true)}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-emerald-900/10 active:scale-95"
+          >
+            <TrendingUp size={16} /> Oylik foyda
+          </button>
+          <button
+            onClick={() => openModal()}
+            className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
+          >
+            <Plus size={16} /> Yangi xodim qo'shish
+          </button>
+        </div>
       }
       filterPanel={
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -596,6 +607,10 @@ export default function WorkersPage() {
 
       {historyWorker && (
         <WorkerHistoryModal worker={historyWorker} onClose={() => setHistoryWorker(null)} />
+      )}
+
+      {showMonthlyProfit && (
+        <MonthlyProfitModal onClose={() => setShowMonthlyProfit(false)} />
       )}
 
       <ConfirmModal
