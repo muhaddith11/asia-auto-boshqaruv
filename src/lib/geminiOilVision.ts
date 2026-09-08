@@ -4,7 +4,7 @@
 
 const MODEL = 'gemini-3.6-flash';
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const TIMEOUT_MS = 25000;
+const TIMEOUT_MS = 45000;
 
 export interface RecognizedCar {
   brand: string;

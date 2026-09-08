@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { Camera, Loader2, Sparkles, Droplet, Cog, Zap } from 'lucide-react';
+import { Camera, Image as ImageIcon, Loader2, Sparkles, Droplet, Cog, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   Identity,
@@ -38,6 +38,7 @@ export default function OilScanCard({ identity, catalog, onApply }: Props) {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<{ recognized: OilScanRecognized; recommendation: OilScanRecommendation } | null>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (files: FileList | null) => {
     const file = files?.[0];
@@ -45,7 +46,8 @@ export default function OilScanCard({ identity, catalog, onApply }: Props) {
     setScanning(true);
     setResult(null);
     try {
-      const dataUrl = await compressImageFile(file, 1600, 0.85);
+      // Kichikroq o'lcham — mobil internetda tezroq yuklanadi, AI ham tezroq javob beradi.
+      const dataUrl = await compressImageFile(file, 1280, 0.8);
       const res = await scanOilCar(identity, dataUrl);
       if (!res.ok || !res.recognized || !res.recommendation) {
         toast.error(res.error || "Aniqlab bo'lmadi, qo'lda kiriting");
@@ -76,27 +78,45 @@ export default function OilScanCard({ identity, catalog, onApply }: Props) {
   };
 
   return (
-    <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent p-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm font-bold text-amber-200">
-        <Sparkles className="w-4 h-4" /> AI bilan tanish
+    <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 space-y-2.5">
+      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-200">
+        <Sparkles className="w-3.5 h-3.5" /> AI bilan tanish
+        {scanning && <span className="text-amber-200/60 font-normal">— tekshiryapti...</span>}
       </div>
-      <p className="text-xs text-amber-100/70 leading-relaxed">
-        Texpasport yoki birkani rasmga oling — marka, model, raqam avtomatik to'ldiriladi va motor/korobka yog' tavsiyasi chiqadi.
-      </p>
-      <button
-        type="button"
-        disabled={scanning}
-        onClick={() => cameraRef.current?.click()}
-        className="w-full py-3 rounded-xl flex justify-center items-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-sm font-bold transition-colors disabled:opacity-60"
-      >
-        {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-        {scanning ? 'AI tekshiryapti...' : 'Rasmga olish'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          disabled={scanning}
+          onClick={() => cameraRef.current?.click()}
+          className="flex-1 py-2.5 rounded-xl flex justify-center items-center gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-xs font-bold transition-colors disabled:opacity-60"
+        >
+          {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+          Suratga olish
+        </button>
+        <button
+          type="button"
+          disabled={scanning}
+          onClick={() => galleryRef.current?.click()}
+          className="flex-1 py-2.5 rounded-xl flex justify-center items-center gap-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-xs font-bold transition-colors disabled:opacity-60"
+        >
+          <ImageIcon className="w-4 h-4" /> Galereyadan
+        </button>
+      </div>
       <input
         ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
+        hidden
+        onChange={(e) => {
+          handleFile(e.target.files);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
         hidden
         onChange={(e) => {
           handleFile(e.target.files);
