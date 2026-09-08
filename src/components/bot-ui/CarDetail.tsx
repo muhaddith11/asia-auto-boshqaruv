@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Timer, Wallet, Receipt } from 'lucide-react';
+import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as CarIcon, Plus, X, XCircle, Pencil, Play, Timer, Wallet, Receipt, Droplet, Cog, Zap } from 'lucide-react';
 import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, addRasxod, stageMeta, fmtTime, fmtDuration } from './botClient';
 import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
@@ -236,6 +236,43 @@ export default function CarDetail({ car, identity, onDone, onStay, onComplete, o
           {car.zapchast_nomi && car.bosqich === 'zapchast_kutilmoqda' && (
             <div className="text-xs text-orange-300">📦 Kutilayotgan zapchast: <b>{car.zapchast_nomi}</b> ({fmtTime(car.zapchast_vaqti)})</div>
           )}
+        </div>
+      )}
+
+      {/* Yog' bo'limi: qabulda AI skanerlagan yog' tavsiyasi (bo'lsa) */}
+      {car.oil_recommendation && !editMode && !zapMode && !rasxodMode && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-2">
+          <div className="text-xs font-bold text-amber-200 flex items-center gap-1.5">
+            🛢️ AI yog' tavsiyasi
+            {car.oil_recommendation.vin && (
+              <span className="text-gray-500 font-normal ml-auto">VIN: {car.oil_recommendation.vin}</span>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm gap-2">
+              <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Droplet className="w-3.5 h-3.5 text-amber-400" /> Motor</span>
+              <span className="font-semibold text-white text-right">
+                {car.oil_recommendation.motorYogTuri || '—'}
+                {car.oil_recommendation.motorLitr ? <> · {car.oil_recommendation.motorLitr} L</> : ''}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm gap-2">
+              <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Cog className="w-3.5 h-3.5 text-blue-400" /> Korobka</span>
+              <span className="font-semibold text-white text-right">
+                {car.oil_recommendation.korobkaYogTuri || '—'}
+                {car.oil_recommendation.korobkaLitr ? <> · {car.oil_recommendation.korobkaLitr} L</> : ''}
+              </span>
+            </div>
+            {car.oil_recommendation.isElectric && (
+              <div className="flex items-center justify-between text-sm gap-2">
+                <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Zap className="w-3.5 h-3.5 text-emerald-400" /> Reduktor</span>
+                <span className="font-semibold text-white text-right">
+                  {car.oil_recommendation.reduktorYogTuri || '—'}
+                  {car.oil_recommendation.reduktorLitr ? <> · {car.oil_recommendation.reduktorLitr} L</> : ''}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

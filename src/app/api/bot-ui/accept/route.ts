@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { brand, model, plateNumber, customerPhone, workerPhone, mechanicChatId } = body;
+    const { brand, model, plateNumber, customerPhone, workerPhone, mechanicChatId, oilRecommendation } = body;
 
     const worker = await identifyWorker(workerPhone, mechanicChatId);
     if (!worker) {
@@ -51,6 +51,10 @@ export async function POST(req: NextRequest) {
       qabul_vaqti: nowIso,
       // Mashina qaysi bo'limga qabul qilindi — xodimning bo'limidan olinadi.
       bolim: normalizeBolim(worker.bolim),
+      // Yog' bo'limi: qabulda rasmdan AI o'qigan yog' tavsiyasi (bo'lsa) — keyinroq
+      // mashina kartasida ko'rish uchun. Klient obyektiga ishonamiz (server o'zi
+      // hisoblamaydi), chunki bu shunchaki ma'lumot — foyda/kassaga ta'sir qilmaydi.
+      oil_recommendation: oilRecommendation || null,
       services: [],
       zaps: [],
       srv: 0,

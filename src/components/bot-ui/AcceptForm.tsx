@@ -3,19 +3,22 @@ import { useState } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import PhoneInput from '@/components/PhoneInput';
-import { acceptCar, Identity } from './botClient';
+import { acceptCar, Identity, OilRecommendationSnapshot } from './botClient';
+import OilScanCard from './OilScanCard';
 import toast from 'react-hot-toast';
 
 interface Props {
   catalog: any;
   identity: Identity;
+  bolim?: string; // 'ustaxona' | 'yog' — faqat yog'chiga AI skanerlash ko'rinadi
   onDone: () => void; // muvaffaqiyatli qabuldan keyin (bosh ekranga)
   onCancel?: () => void; // bo'lsa "Orqaga" tugmasi ko'rsatiladi (alohida ekranда)
 }
 
-export default function AcceptForm({ catalog, identity, onDone, onCancel }: Props) {
+export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel }: Props) {
   const store = useBotOrderStore();
   const [saving, setSaving] = useState(false);
+  const [oilSnapshot, setOilSnapshot] = useState<OilRecommendationSnapshot | null>(null);
 
   const brands = (catalog?.brands || []).slice().sort((a: string, b: string) => a.localeCompare(b));
   const models =
@@ -34,6 +37,7 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
         model: store.model,
         plateNumber: store.plateNumber,
         customerPhone: store.customerPhone,
+        oilRecommendation: oilSnapshot,
       });
       if (!res.ok) {
         toast.error(res.error || 'Xatolik');
@@ -42,6 +46,7 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
       }
       toast.success('Mashina qabul qilindi ✅');
       store.reset();
+      setOilSnapshot(null);
       onDone();
     } catch {
       toast.error("Server bilan bog'lanishda xatolik");
@@ -68,6 +73,17 @@ export default function AcceptForm({ catalog, identity, onDone, onCancel }: Prop
         </div>
         <h2 className="text-xl font-bold">Mashina qabul qilish</h2>
       </div>
+
+      {bolim === 'yog' && (
+        <OilScanCard
+          identity={identity}
+          catalog={catalog}
+          onApply={(info, snapshot) => {
+            store.setCarInfo({ brand: info.brand, model: info.model, plateNumber: info.plateNumber || store.plateNumber });
+            setOilSnapshot(snapshot);
+          }}
+        />
+      )}
 
       <div>
         <label className="block text-sm text-gray-400 mb-1">Marka</label>

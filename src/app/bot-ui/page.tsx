@@ -295,7 +295,7 @@ export default function BotUIPage() {
           {view === 'home' && (
             <div className="space-y-6 slide-in">
               {/* Yangi mashina qabul qilish (yuqorida) */}
-              <AcceptForm catalog={catalogData} identity={resolveIdentity(authUser)} onDone={finishHome} />
+              <AcceptForm catalog={catalogData} identity={resolveIdentity(authUser)} bolim={carsData.bolim} onDone={finishHome} />
 
               {/* Mening ballarim */}
               <button

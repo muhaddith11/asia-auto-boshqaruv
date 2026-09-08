@@ -13,6 +13,19 @@ export interface RasxodLine {
   xodim_nomi?: string | null;
 }
 
+// Yog' bo'limi: qabul paytida rasmdan AI o'qigan tavsiya (buyurtmaga saqlanadi).
+export interface OilRecommendationSnapshot {
+  vin?: string;
+  isElectric: boolean;
+  motorYogTuri: string;
+  motorLitr: number | null;
+  korobkaYogTuri: string;
+  korobkaLitr: number | null;
+  reduktorYogTuri: string | null;
+  reduktorLitr: number | null;
+  izoh?: string;
+}
+
 export interface Car {
   id: number;
   ism: string;
@@ -34,6 +47,7 @@ export interface Car {
   ish_boshlandi: string | null; // shu xodimning ochiq sessiyasi (bo'lsa)
   rasxodlar: RasxodLine[]; // shu mashinaga kiritilgan rasxodlar
   rasxod_jami: number; // rasxodlar yig'indisi (kassadan ayirilgan)
+  oil_recommendation: OilRecommendationSnapshot | null; // qabulda AI skanerlagan yog' tavsiyasi (bo'lsa)
 }
 
 // URL (?phone=), Telegram foydalanuvchi id, yoki brauzer login — shu tartibda.
@@ -75,7 +89,13 @@ export async function fetchPoints(identity: Identity) {
 
 export async function acceptCar(
   identity: Identity,
-  data: { brand: string; model: string; plateNumber: string; customerPhone: string }
+  data: {
+    brand: string;
+    model: string;
+    plateNumber: string;
+    customerPhone: string;
+    oilRecommendation?: OilRecommendationSnapshot | null;
+  }
 ) {
   const res = await fetch('/api/bot-ui/accept', {
     method: 'POST',
@@ -211,6 +231,41 @@ export async function deleteOilPriceApi(identity: Identity, id: number) {
   const params = identityQuery(identity);
   const res = await fetch(`/api/bot-ui/oil-prices/${id}?${params.toString()}`, { method: 'DELETE' });
   return res.json();
+}
+
+// ── Yog' bo'limi: texpasport/birka rasmidan AI tanish + yog' tavsiyasi ──────
+export interface OilScanRecognized {
+  brand: string;
+  model: string;
+  plateNumber: string;
+  vin: string;
+  isElectric: boolean;
+  found: boolean;
+}
+
+export interface OilScanRecommendation {
+  motorYogTuri: string;
+  motorLitr: number | null;
+  korobkaYogTuri: string;
+  korobkaLitr: number | null;
+  reduktorYogTuri: string | null;
+  reduktorLitr: number | null;
+  izoh: string;
+}
+
+export async function scanOilCar(identity: Identity, dataUrl: string) {
+  const res = await fetch('/api/bot-ui/oil-scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl, ...idBody(identity) }),
+  });
+  return res.json() as Promise<{
+    ok: boolean;
+    error?: string;
+    recognized?: OilScanRecognized;
+    recommendation?: OilScanRecommendation;
+    fromCache?: boolean;
+  }>;
 }
 
 // Rasmni brauzerda siqib JPEG data URL qaytaradi (yuklashni tez qiladi).

@@ -1,0 +1,159 @@
+'use client';
+import { useRef, useState } from 'react';
+import { Camera, Loader2, Sparkles, Droplet, Cog, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
+import {
+  Identity,
+  OilScanRecognized,
+  OilScanRecommendation,
+  OilRecommendationSnapshot,
+  scanOilCar,
+  compressImageFile,
+} from './botClient';
+
+interface Props {
+  identity: Identity;
+  catalog: any;
+  onApply: (info: { brand: string; model: string; plateNumber: string }, snapshot: OilRecommendationSnapshot) => void;
+}
+
+// Katalogdagi eng yaqin brand/model nomini topadi (dropdown to'g'ri tanlansin
+// deb) — topilmasa AI o'qigan xom matn qoladi (foydalanuvchi qo'lda tuzatadi).
+function matchCatalog(catalog: any, rawBrand: string, rawModel: string) {
+  const brands: string[] = catalog?.brands || [];
+  const b = rawBrand.toLowerCase();
+  const foundBrand =
+    brands.find((x) => x.toLowerCase() === b) ||
+    brands.find((x) => b.includes(x.toLowerCase()) || x.toLowerCase().includes(b));
+  if (!foundBrand) return { brand: rawBrand, model: rawModel };
+  const models: string[] = Object.keys(catalog?.catalog?.[foundBrand] || {});
+  const m = rawModel.toLowerCase();
+  const foundModel =
+    models.find((x) => x.toLowerCase() === m) ||
+    models.find((x) => m.includes(x.toLowerCase()) || x.toLowerCase().includes(m));
+  return { brand: foundBrand, model: foundModel || rawModel };
+}
+
+export default function OilScanCard({ identity, catalog, onApply }: Props) {
+  const [scanning, setScanning] = useState(false);
+  const [result, setResult] = useState<{ recognized: OilScanRecognized; recommendation: OilScanRecommendation } | null>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    setScanning(true);
+    setResult(null);
+    try {
+      const dataUrl = await compressImageFile(file, 1600, 0.85);
+      const res = await scanOilCar(identity, dataUrl);
+      if (!res.ok || !res.recognized || !res.recommendation) {
+        toast.error(res.error || "Aniqlab bo'lmadi, qo'lda kiriting");
+        return;
+      }
+      setResult({ recognized: res.recognized, recommendation: res.recommendation });
+      const matched = matchCatalog(catalog, res.recognized.brand, res.recognized.model);
+      onApply(
+        { brand: matched.brand, model: matched.model, plateNumber: res.recognized.plateNumber },
+        {
+          vin: res.recognized.vin,
+          isElectric: res.recognized.isElectric,
+          motorYogTuri: res.recommendation.motorYogTuri,
+          motorLitr: res.recommendation.motorLitr,
+          korobkaYogTuri: res.recommendation.korobkaYogTuri,
+          korobkaLitr: res.recommendation.korobkaLitr,
+          reduktorYogTuri: res.recommendation.reduktorYogTuri,
+          reduktorLitr: res.recommendation.reduktorLitr,
+          izoh: res.recommendation.izoh,
+        }
+      );
+      toast.success(res.fromCache ? 'Tavsiya topildi (avval saqlangan) ✅' : 'AI tavsiyasi tayyor ✅');
+    } catch (e: any) {
+      toast.error(e?.message || 'Xatolik yuz berdi');
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm font-bold text-amber-200">
+        <Sparkles className="w-4 h-4" /> AI bilan tanish
+      </div>
+      <p className="text-xs text-amber-100/70 leading-relaxed">
+        Texpasport yoki birkani rasmga oling — marka, model, raqam avtomatik to'ldiriladi va motor/korobka yog' tavsiyasi chiqadi.
+      </p>
+      <button
+        type="button"
+        disabled={scanning}
+        onClick={() => cameraRef.current?.click()}
+        className="w-full py-3 rounded-xl flex justify-center items-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-sm font-bold transition-colors disabled:opacity-60"
+      >
+        {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+        {scanning ? 'AI tekshiryapti...' : 'Rasmga olish'}
+      </button>
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        hidden
+        onChange={(e) => {
+          handleFile(e.target.files);
+          e.target.value = '';
+        }}
+      />
+
+      {result && (
+        <div className="rounded-xl bg-gray-900/60 border border-gray-700/60 p-3 space-y-2.5 mt-1">
+          <div className="text-xs text-gray-400">
+            {result.recognized.brand} {result.recognized.model}
+            {result.recognized.plateNumber && <> · {result.recognized.plateNumber}</>}
+            {result.recognized.vin && (
+              <div className="mt-0.5">
+                Shassi (VIN): <span className="text-gray-300 font-mono">{result.recognized.vin}</span>
+              </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm gap-2">
+              <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
+                <Droplet className="w-3.5 h-3.5 text-amber-400" /> Motor
+              </span>
+              <span className="font-semibold text-white text-right">
+                {result.recommendation.motorYogTuri || '—'}
+                {result.recommendation.motorLitr ? <> · {result.recommendation.motorLitr} L</> : ''}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm gap-2">
+              <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
+                <Cog className="w-3.5 h-3.5 text-blue-400" /> Korobka
+              </span>
+              <span className="font-semibold text-white text-right">
+                {result.recommendation.korobkaYogTuri || '—'}
+                {result.recommendation.korobkaLitr ? <> · {result.recommendation.korobkaLitr} L</> : ''}
+              </span>
+            </div>
+            {result.recognized.isElectric && (
+              <div className="flex items-center justify-between text-sm gap-2">
+                <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" /> Reduktor
+                </span>
+                <span className="font-semibold text-white text-right">
+                  {result.recommendation.reduktorYogTuri || '—'}
+                  {result.recommendation.reduktorLitr ? <> · {result.recommendation.reduktorLitr} L</> : ''}
+                </span>
+              </div>
+            )}
+          </div>
+          {result.recommendation.izoh && (
+            <p className="text-[11px] text-gray-500 leading-relaxed pt-1 border-t border-gray-800">
+              {result.recommendation.izoh}
+            </p>
+          )}
+          <p className="text-[10px] text-amber-200/50">⚠️ Taxminiy AI tavsiyasi — texnik xususiyatlarni tekshiring.</p>
+        </div>
+      )}
+    </div>
+  );
+}
