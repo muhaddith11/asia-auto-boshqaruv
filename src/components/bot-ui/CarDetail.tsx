@@ -242,28 +242,37 @@ export default function CarDetail({ car, identity, onDone, onStay, onComplete, o
       {/* Yog' bo'limi: qabulda AI skanerlagan yog' tavsiyasi (bo'lsa) */}
       {car.oil_recommendation && !editMode && !zapMode && !rasxodMode && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-2">
-          <div className="text-xs font-bold text-amber-200 flex items-center gap-1.5">
+          <div className="text-xs font-bold text-amber-200 flex items-center gap-1.5 flex-wrap">
             🛢️ AI yog' tavsiyasi
+            {car.oil_recommendation.vehicleType && car.oil_recommendation.vehicleType !== 'ICE' && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300">
+                {car.oil_recommendation.vehicleType === 'ELECTRIC' ? '🔋 Elektromobil' : '⚡ Gibrid'}
+              </span>
+            )}
             {car.oil_recommendation.vin && (
               <span className="text-gray-500 font-normal ml-auto">VIN: {car.oil_recommendation.vin}</span>
             )}
           </div>
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm gap-2">
-              <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Droplet className="w-3.5 h-3.5 text-amber-400" /> Motor</span>
-              <span className="font-semibold text-white text-right">
-                {car.oil_recommendation.motorYogTuri || '—'}
-                {car.oil_recommendation.motorLitr ? <> · {car.oil_recommendation.motorLitr} L</> : ''}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm gap-2">
-              <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Cog className="w-3.5 h-3.5 text-blue-400" /> Korobka</span>
-              <span className="font-semibold text-white text-right">
-                {car.oil_recommendation.korobkaYogTuri || '—'}
-                {car.oil_recommendation.korobkaLitr ? <> · {car.oil_recommendation.korobkaLitr} L</> : ''}
-              </span>
-            </div>
-            {car.oil_recommendation.isElectric && (
+            {car.oil_recommendation.vehicleType !== 'ELECTRIC' && (
+              <>
+                <div className="flex items-center justify-between text-sm gap-2">
+                  <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Droplet className="w-3.5 h-3.5 text-amber-400" /> Motor</span>
+                  <span className="font-semibold text-white text-right">
+                    {car.oil_recommendation.motorYogTuri || '—'}
+                    {car.oil_recommendation.motorLitr ? <> · {car.oil_recommendation.motorLitr} L</> : ''}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm gap-2">
+                  <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Cog className="w-3.5 h-3.5 text-blue-400" /> Korobka</span>
+                  <span className="font-semibold text-white text-right">
+                    {car.oil_recommendation.korobkaYogTuri || '—'}
+                    {car.oil_recommendation.korobkaLitr ? <> · {car.oil_recommendation.korobkaLitr} L</> : ''}
+                  </span>
+                </div>
+              </>
+            )}
+            {car.oil_recommendation.vehicleType === 'ELECTRIC' && (
               <div className="flex items-center justify-between text-sm gap-2">
                 <span className="flex items-center gap-1.5 text-gray-300 shrink-0"><Zap className="w-3.5 h-3.5 text-emerald-400" /> Reduktor</span>
                 <span className="font-semibold text-white text-right">

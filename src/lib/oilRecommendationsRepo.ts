@@ -1,5 +1,5 @@
 import supabase from '@/lib/supabaseClient';
-import { OilRecommendation } from '@/lib/geminiOilVision';
+import { OilRecommendation, VehicleType } from '@/lib/geminiOilVision';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AI (Gemini) orqali topilgan mashina modeliga mos yog' tavsiyasi keshi
@@ -13,7 +13,7 @@ export interface CachedOilRecommendation extends OilRecommendation {
   id: number;
   brand: string;
   model: string;
-  isElectric: boolean;
+  vehicleType: VehicleType;
 }
 
 function fromRow(row: any): CachedOilRecommendation {
@@ -21,10 +21,10 @@ function fromRow(row: any): CachedOilRecommendation {
     id: row.id,
     brand: row.brand,
     model: row.model,
-    isElectric: !!row.is_electric,
-    motorYogTuri: row.motor_yog_turi || '',
+    vehicleType: (row.vehicle_type as VehicleType) || 'ICE',
+    motorYogTuri: row.motor_yog_turi || null,
     motorLitr: row.motor_litr != null ? Number(row.motor_litr) : null,
-    korobkaYogTuri: row.korobka_yog_turi || '',
+    korobkaYogTuri: row.korobka_yog_turi || null,
     korobkaLitr: row.korobka_litr != null ? Number(row.korobka_litr) : null,
     reduktorYogTuri: row.reduktor_yog_turi || null,
     reduktorLitr: row.reduktor_litr != null ? Number(row.reduktor_litr) : null,
@@ -34,17 +34,22 @@ function fromRow(row: any): CachedOilRecommendation {
 
 export async function getCachedOilRecommendation(
   brand: string,
-  model: string
+  model: string,
+  vehicleType: VehicleType
 ): Promise<CachedOilRecommendation | null> {
   if (!supabase) throw new Error('Supabase sozlanmagan');
   const b = brand.trim();
   const m = model.trim();
   if (!b || !m) return null;
+  // vehicle_type ham kalitga kiradi — bir xil model nomi ICE'da ham,
+  // gibridda ham bo'lishi mumkin (masalan Panamera / Panamera 4 E-Hybrid),
+  // ular uchun tavsiya butunlay boshqa.
   const { data, error } = await supabase
     .from('oil_recommendations')
     .select('*')
     .ilike('brand', b)
     .ilike('model', m)
+    .eq('vehicle_type', vehicleType)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? fromRow(data) : null;
@@ -53,14 +58,14 @@ export async function getCachedOilRecommendation(
 export async function saveOilRecommendation(
   brand: string,
   model: string,
-  isElectric: boolean,
+  vehicleType: VehicleType,
   rec: OilRecommendation
 ): Promise<CachedOilRecommendation> {
   if (!supabase) throw new Error('Supabase sozlanmagan');
   const patch = {
     brand: brand.trim(),
     model: model.trim(),
-    is_electric: isElectric,
+    vehicle_type: vehicleType,
     motor_yog_turi: rec.motorYogTuri || null,
     motor_litr: rec.motorLitr,
     korobka_yog_turi: rec.korobkaYogTuri || null,
@@ -71,11 +76,10 @@ export async function saveOilRecommendation(
     manba: 'ai',
     updated_at: new Date().toISOString(),
   };
-  // brand+model bo'yicha unikal indeks bor — mavjud bo'lsa yangilanadi (masalan
-  // avval elektromobil deb noto'g'ri aniqlangan bo'lsa, endi to'g'rilanadi).
+  // brand+model+vehicle_type bo'yicha unikal indeks bor — mavjud bo'lsa yangilanadi.
   const { data, error } = await supabase
     .from('oil_recommendations')
-    .upsert(patch, { onConflict: 'brand,model', ignoreDuplicates: false })
+    .upsert(patch, { onConflict: 'brand,model,vehicle_type', ignoreDuplicates: false })
     .select()
     .single();
   if (error) throw new Error(error.message);

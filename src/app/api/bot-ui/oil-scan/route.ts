@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
     }
 
     let fromCache = true;
-    let recommendation = await getCachedOilRecommendation(recognized.brand, recognized.model);
+    let recommendation = await getCachedOilRecommendation(recognized.brand, recognized.model, recognized.vehicleType);
     if (!recommendation) {
       fromCache = false;
-      const rec = await recommendOil(recognized.brand, recognized.model, recognized.isElectric);
-      recommendation = await saveOilRecommendation(recognized.brand, recognized.model, recognized.isElectric, rec);
+      const rec = await recommendOil(recognized.brand, recognized.model, recognized.vehicleType);
+      recommendation = await saveOilRecommendation(recognized.brand, recognized.model, recognized.vehicleType, rec);
     }
 
     return NextResponse.json({ ok: true, recognized, recommendation, fromCache });

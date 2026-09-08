@@ -59,7 +59,7 @@ export default function OilScanCard({ identity, catalog, onApply }: Props) {
         { brand: matched.brand, model: matched.model, plateNumber: res.recognized.plateNumber },
         {
           vin: res.recognized.vin,
-          isElectric: res.recognized.isElectric,
+          vehicleType: res.recognized.vehicleType,
           motorYogTuri: res.recommendation.motorYogTuri,
           motorLitr: res.recommendation.motorLitr,
           korobkaYogTuri: res.recommendation.korobkaYogTuri,
@@ -129,6 +129,11 @@ export default function OilScanCard({ identity, catalog, onApply }: Props) {
           <div className="text-xs text-gray-400">
             {result.recognized.brand} {result.recognized.model}
             {result.recognized.plateNumber && <> · {result.recognized.plateNumber}</>}
+            {result.recognized.vehicleType !== 'ICE' && (
+              <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300">
+                {result.recognized.vehicleType === 'ELECTRIC' ? '🔋 Elektromobil' : '⚡ Gibrid'}
+              </span>
+            )}
             {result.recognized.vin && (
               <div className="mt-0.5">
                 Shassi (VIN): <span className="text-gray-300 font-mono">{result.recognized.vin}</span>
@@ -136,25 +141,29 @@ export default function OilScanCard({ identity, catalog, onApply }: Props) {
             )}
           </div>
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm gap-2">
-              <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
-                <Droplet className="w-3.5 h-3.5 text-amber-400" /> Motor
-              </span>
-              <span className="font-semibold text-white text-right">
-                {result.recommendation.motorYogTuri || '—'}
-                {result.recommendation.motorLitr ? <> · {result.recommendation.motorLitr} L</> : ''}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm gap-2">
-              <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
-                <Cog className="w-3.5 h-3.5 text-blue-400" /> Korobka
-              </span>
-              <span className="font-semibold text-white text-right">
-                {result.recommendation.korobkaYogTuri || '—'}
-                {result.recommendation.korobkaLitr ? <> · {result.recommendation.korobkaLitr} L</> : ''}
-              </span>
-            </div>
-            {result.recognized.isElectric && (
+            {result.recognized.vehicleType !== 'ELECTRIC' && (
+              <>
+                <div className="flex items-center justify-between text-sm gap-2">
+                  <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
+                    <Droplet className="w-3.5 h-3.5 text-amber-400" /> Motor
+                  </span>
+                  <span className="font-semibold text-white text-right">
+                    {result.recommendation.motorYogTuri || '—'}
+                    {result.recommendation.motorLitr ? <> · {result.recommendation.motorLitr} L</> : ''}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm gap-2">
+                  <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
+                    <Cog className="w-3.5 h-3.5 text-blue-400" /> Korobka
+                  </span>
+                  <span className="font-semibold text-white text-right">
+                    {result.recommendation.korobkaYogTuri || '—'}
+                    {result.recommendation.korobkaLitr ? <> · {result.recommendation.korobkaLitr} L</> : ''}
+                  </span>
+                </div>
+              </>
+            )}
+            {result.recognized.vehicleType === 'ELECTRIC' && (
               <div className="flex items-center justify-between text-sm gap-2">
                 <span className="flex items-center gap-1.5 text-gray-300 shrink-0">
                   <Zap className="w-3.5 h-3.5 text-emerald-400" /> Reduktor

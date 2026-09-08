@@ -13,13 +13,17 @@ export interface RasxodLine {
   xodim_nomi?: string | null;
 }
 
+// ICE = oddiy dvigatel. HYBRID = benzin+elektr birga (motor yog'i HAM kerak).
+// ELECTRIC = to'liq elektromobil (motor yog'i yo'q, faqat reduktor).
+export type VehicleType = 'ICE' | 'HYBRID' | 'ELECTRIC';
+
 // Yog' bo'limi: qabul paytida rasmdan AI o'qigan tavsiya (buyurtmaga saqlanadi).
 export interface OilRecommendationSnapshot {
   vin?: string;
-  isElectric: boolean;
-  motorYogTuri: string;
+  vehicleType: VehicleType;
+  motorYogTuri: string | null;
   motorLitr: number | null;
-  korobkaYogTuri: string;
+  korobkaYogTuri: string | null;
   korobkaLitr: number | null;
   reduktorYogTuri: string | null;
   reduktorLitr: number | null;
@@ -239,14 +243,14 @@ export interface OilScanRecognized {
   model: string;
   plateNumber: string;
   vin: string;
-  isElectric: boolean;
+  vehicleType: VehicleType;
   found: boolean;
 }
 
 export interface OilScanRecommendation {
-  motorYogTuri: string;
+  motorYogTuri: string | null;
   motorLitr: number | null;
-  korobkaYogTuri: string;
+  korobkaYogTuri: string | null;
   korobkaLitr: number | null;
   reduktorYogTuri: string | null;
   reduktorLitr: number | null;
