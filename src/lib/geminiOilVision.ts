@@ -42,8 +42,10 @@ const RETRY_STATUSES = new Set([429, 503]);
 // GEMINI_API_KEYS="kalit1,kalit2,..." (vergul bilan) — bo'lmasa yagona
 // GEMINI_API_KEY'ga qaytadi (eski sozlash bilan moslik uchun).
 function getApiKeys(): string[] {
+  // Vergul YOKI yangi qator bilan ajratilgan bo'lishi mumkin (masalan Vercel
+  // env qutisiga joylashtirishda tasodifan qator ko'chishi bo'lsa ham ishlasin).
   const multi = (process.env.GEMINI_API_KEYS || '')
-    .split(',')
+    .split(/[,\n\r]+/)
     .map((s) => s.trim())
     .filter(Boolean);
   if (multi.length) return multi;
@@ -89,10 +91,10 @@ async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any)
   }
 }
 
-// Gemini vaqti-vaqti bilan "high demand" (503) yoki rate-limit (429) qaytaradi —
-// bular vaqtinchalik. Bitta kalit bo'lsa — qisqa kutib qayta urinamiz. Bir
-// nechta kalit bo'lsa — DARROV keyingi kalitga o'tamiz (kutishga hojat yo'q,
-// chunki boshqa loyihaning kvotasi butunlay alohida).
+// Har bir kalitda XATO TURIDAN QAT'IY NAZAR keyingisiga o'tamiz — nafaqat
+// limit (429/503), balki noto'g'ri/yaroqsiz kalit (401/403, masalan xato
+// nusxalangan) bo'lsa ham. Shunday qilib, ro'yxatda BITTA yaroqli kalit
+// bo'lsa ham funksiya ishlayveradi — bitta xato kalit hammasini buzmaydi.
 async function callGemini(parts: any[], responseSchema: any) {
   const keys = getApiKeys();
   if (!keys.length) throw new Error("GEMINI_API_KEY sozlanmagan (.env.local'ga qo'shing)");
@@ -105,12 +107,16 @@ async function callGemini(parts: any[], responseSchema: any) {
       return await callGeminiOnce(key, parts, responseSchema);
     } catch (e: any) {
       lastErr = e;
-      if (!RETRY_STATUSES.has(e?.status)) throw e;
     }
   }
-  // Hamma kalit ham limitga yetgan bo'lsa — bitta so'nggi urinish, qisqa kutib.
-  await new Promise((r) => setTimeout(r, 1500));
-  return await callGeminiOnce(keys[start], parts, responseSchema);
+  // Hammasi ishlamadi. Agar sabab vaqtinchalik limit (429/503) bo'lsa —
+  // bitta so'nggi urinish, qisqa kutib (401 kabi doimiy xatoda kutish
+  // foyda bermaydi, shuning uchun darrov xatoni qaytaramiz).
+  if (RETRY_STATUSES.has(lastErr?.status)) {
+    await new Promise((r) => setTimeout(r, 1500));
+    return await callGeminiOnce(keys[start], parts, responseSchema);
+  }
+  throw lastErr;
 }
 
 const RECOGNIZE_SCHEMA = {
