@@ -37,6 +37,24 @@ function normalizeVehicleType(v: any): VehicleType {
 
 const RETRY_STATUSES = new Set([429, 503]);
 
+// Bir nechta bepul (free-tier) kalit — har biri O'Z loyihasining alohida
+// kvotasiga ega, shuning uchun biri limitga yetsa keyingisiga o'tiladi.
+// GEMINI_API_KEYS="kalit1,kalit2,..." (vergul bilan) — bo'lmasa yagona
+// GEMINI_API_KEY'ga qaytadi (eski sozlash bilan moslik uchun).
+function getApiKeys(): string[] {
+  const multi = (process.env.GEMINI_API_KEYS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (multi.length) return multi;
+  const single = (process.env.GEMINI_API_KEY || '').trim();
+  return single ? [single] : [];
+}
+
+// Har bir chaqiruvda boshqa kalitdan boshlanadi (round-robin) — shunda
+// kvota bir kalitga to'planib qolmay, hammasi bo'ylab tekis taqsimlanadi.
+let rrIndex = 0;
+
 async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -72,18 +90,27 @@ async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any)
 }
 
 // Gemini vaqti-vaqti bilan "high demand" (503) yoki rate-limit (429) qaytaradi —
-// bular vaqtinchalik, shuning uchun 1 marta qisqa kutib qayta urinamiz.
+// bular vaqtinchalik. Bitta kalit bo'lsa — qisqa kutib qayta urinamiz. Bir
+// nechta kalit bo'lsa — DARROV keyingi kalitga o'tamiz (kutishga hojat yo'q,
+// chunki boshqa loyihaning kvotasi butunlay alohida).
 async function callGemini(parts: any[], responseSchema: any) {
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
-  if (!apiKey) throw new Error("GEMINI_API_KEY sozlanmagan (.env.local'ga qo'shing)");
+  const keys = getApiKeys();
+  if (!keys.length) throw new Error("GEMINI_API_KEY sozlanmagan (.env.local'ga qo'shing)");
 
-  try {
-    return await callGeminiOnce(apiKey, parts, responseSchema);
-  } catch (e: any) {
-    if (!RETRY_STATUSES.has(e?.status)) throw e;
-    await new Promise((r) => setTimeout(r, 1500));
-    return await callGeminiOnce(apiKey, parts, responseSchema);
+  const start = rrIndex++ % keys.length;
+  let lastErr: any;
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[(start + i) % keys.length];
+    try {
+      return await callGeminiOnce(key, parts, responseSchema);
+    } catch (e: any) {
+      lastErr = e;
+      if (!RETRY_STATUSES.has(e?.status)) throw e;
+    }
   }
+  // Hamma kalit ham limitga yetgan bo'lsa — bitta so'nggi urinish, qisqa kutib.
+  await new Promise((r) => setTimeout(r, 1500));
+  return await callGeminiOnce(keys[start], parts, responseSchema);
 }
 
 const RECOGNIZE_SCHEMA = {
