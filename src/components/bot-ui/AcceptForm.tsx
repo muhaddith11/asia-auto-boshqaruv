@@ -27,7 +27,10 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
       ? Object.keys(catalog.catalog[store.brand]).sort((a: string, b: string) => a.localeCompare(b))
       : [];
 
-  const canAccept = store.brand && store.model;
+  // AI skanerlangandan keyin (oilSnapshot bor) — raqam ham SHART, aks holda
+  // "AI topolmadi" holatida ham tugma bosilib ketishi mumkin edi. Qo'lda
+  // to'ldiriladigan oddiy qabulda (AI ishlatilmagan) raqam ixtiyoriy qoladi.
+  const canAccept = !!store.brand && !!store.model && (!oilSnapshot || !!store.plateNumber);
 
   // `override` — AI skanerlaganda darrov saqlash uchun: zustand `set` sinxron
   // bo'lsa ham, komponent hali eski render'dagi `store.*` qiymatlarini
@@ -42,13 +45,15 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
     if (saving) return;
     const brand = override?.brand ?? store.brand;
     const model = override?.model ?? store.model;
+    const plateNumber = override?.plateNumber ?? store.plateNumber;
     if (!brand || !model) return;
+    if (!override && !canAccept) return; // qo'lda bosilganda ham himoya (raqam shart bo'lsa)
     setSaving(true);
     try {
       const res = await acceptCar(identity, {
         brand,
         model,
-        plateNumber: override?.plateNumber ?? store.plateNumber,
+        plateNumber,
         customerPhone: store.customerPhone,
         oilRecommendation: override ? override.oilRecommendation : oilSnapshot,
       });
