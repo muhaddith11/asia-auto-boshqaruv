@@ -27,10 +27,9 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
       ? Object.keys(catalog.catalog[store.brand]).sort((a: string, b: string) => a.localeCompare(b))
       : [];
 
-  // AI skanerlangandan keyin (oilSnapshot bor) — raqam ham SHART, aks holda
-  // "AI topolmadi" holatida ham tugma bosilib ketishi mumkin edi. Qo'lda
-  // to'ldiriladigan oddiy qabulda (AI ishlatilmagan) raqam ixtiyoriy qoladi.
-  const canAccept = !!store.brand && !!store.model && (!oilSnapshot || !!store.plateNumber);
+  // Mashina raqami HAR DOIM shart — AI orqali bo'lsin, qo'lda kiritilsin,
+  // raqamsiz "Qabul qildim" bosib bo'lmaydi.
+  const canAccept = !!store.brand && !!store.model && !!store.plateNumber;
 
   // `override` — AI skanerlaganda darrov saqlash uchun: zustand `set` sinxron
   // bo'lsa ham, komponent hali eski render'dagi `store.*` qiymatlarini
