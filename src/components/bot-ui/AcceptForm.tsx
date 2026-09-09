@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import PhoneInput from '@/components/PhoneInput';
@@ -19,6 +19,7 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
   const store = useBotOrderStore();
   const [saving, setSaving] = useState(false);
   const [oilSnapshot, setOilSnapshot] = useState<OilRecommendationSnapshot | null>(null);
+  const plateRef = useRef<HTMLInputElement>(null);
 
   const brands = (catalog?.brands || []).slice().sort((a: string, b: string) => a.localeCompare(b));
   const models =
@@ -28,16 +29,28 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
 
   const canAccept = store.brand && store.model;
 
-  const handleAccept = async () => {
-    if (!canAccept || saving) return;
+  // `override` — AI skanerlaganda darrov saqlash uchun: zustand `set` sinxron
+  // bo'lsa ham, komponent hali eski render'dagi `store.*` qiymatlarini
+  // ko'radi (yangi render kutish shart). Shuning uchun yangi qiymatlarni
+  // to'g'ridan-to'g'ri (state orqali emas) uzatamiz — poyga holati (race) yo'q.
+  const handleAccept = async (override?: {
+    brand: string;
+    model: string;
+    plateNumber: string;
+    oilRecommendation?: OilRecommendationSnapshot | null;
+  }) => {
+    if (saving) return;
+    const brand = override?.brand ?? store.brand;
+    const model = override?.model ?? store.model;
+    if (!brand || !model) return;
     setSaving(true);
     try {
       const res = await acceptCar(identity, {
-        brand: store.brand,
-        model: store.model,
-        plateNumber: store.plateNumber,
+        brand,
+        model,
+        plateNumber: override?.plateNumber ?? store.plateNumber,
         customerPhone: store.customerPhone,
-        oilRecommendation: oilSnapshot,
+        oilRecommendation: override ? override.oilRecommendation : oilSnapshot,
       });
       if (!res.ok) {
         toast.error(res.error || 'Xatolik');
@@ -47,6 +60,7 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
       toast.success('Mashina qabul qilindi ✅');
       store.reset();
       setOilSnapshot(null);
+      setSaving(false);
       onDone();
     } catch {
       toast.error("Server bilan bog'lanishda xatolik");
@@ -81,6 +95,15 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
           onApply={(info, snapshot) => {
             store.setCarInfo({ brand: info.brand, model: info.model, plateNumber: info.plateNumber || store.plateNumber });
             setOilSnapshot(snapshot);
+            if (info.plateNumber) {
+              // Marka, model VA raqam — hammasi topildi: qo'lda "Qabul qildim"
+              // bosishga hojat yo'q, darrov saqlaymiz.
+              handleAccept({ brand: info.brand, model: info.model, plateNumber: info.plateNumber, oilRecommendation: snapshot });
+            } else {
+              // Raqam ko'rinmadi — qo'lda kiritish kerak, avtomatik saqlanmaydi.
+              toast("Mashina raqami topilmadi — pastda qo'lda kiriting", { icon: '⌨️' });
+              plateRef.current?.focus();
+            }
           }}
         />
       )}
@@ -117,6 +140,7 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
       <div>
         <label className="block text-sm text-gray-400 mb-1">Mashina raqami</label>
         <input
+          ref={plateRef}
           type="text"
           placeholder="01 A 123 AA"
           className={`${inCls} uppercase`}
@@ -137,7 +161,7 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
 
       <button
         disabled={!canAccept || saving}
-        onClick={handleAccept}
+        onClick={() => handleAccept()}
         className="w-full mt-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-4 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg shadow-emerald-950/40"
       >
         {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Qabul qildim <Check className="w-5 h-5" /></>}
