@@ -77,7 +77,8 @@ const navGroups: NavGroup[] = [
     subItems: [
       { title: 'Zapchast qo\'shish', href: '/parts?add=true' },
       { title: 'Zapchastlar ro\'yxati', href: '/parts' },
-      { title: 'Zapchastlar hisoboti', href: '/parts/reports' }
+      { title: 'Zapchastlar hisoboti', href: '/parts/reports' },
+      { title: 'Sarmoya va foyda tahlili', href: '/parts/investitsiya' }
     ]
   },
   {
