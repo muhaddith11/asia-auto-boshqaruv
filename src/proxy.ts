@@ -17,7 +17,6 @@ const PUBLIC_API_PREFIXES = [
 
 // Yo'l prefiksini bo'limga moslash (rol tekshiruvi uchun)
 function sectionForPath(pathname: string): Section | null {
-  if (pathname.startsWith('/reports/audit')) return 'audit';
   if (pathname.startsWith('/reports')) return 'reports';
   if (pathname.startsWith('/workers')) return 'workers';
   if (pathname.startsWith('/clients/reminders')) return 'reminders';

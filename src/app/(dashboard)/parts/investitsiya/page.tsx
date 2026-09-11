@@ -98,14 +98,14 @@ export default function PartsInvestmentPage() {
     <PageLayout title="Sarmoya va foyda tahlili" subtitle="Dashboarddan kiritilgan zapchastlar — boshidan hozirgacha to'liq hisob">
 
       {/* ── JAMI ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cards.length}, minmax(0, 1fr))`, gap: 16, marginBottom: 20 }}>
         {cards.map((s, i) => (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{ padding: 8, borderRadius: 8, background: `${s.color}15`, color: s.color }}>{s.icon}</div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase' }}>{s.label}</span>
+          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ padding: 8, borderRadius: 8, background: `${s.color}15`, color: s.color, flexShrink: 0 }}>{s.icon}</div>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', lineHeight: 1.3 }}>{s.label}</span>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: 'white' }}>{s.value}</div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: 'white', whiteSpace: 'nowrap' }}>{s.value}</div>
           </div>
         ))}
       </div>

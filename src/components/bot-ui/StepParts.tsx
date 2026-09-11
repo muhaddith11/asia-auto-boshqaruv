@@ -162,7 +162,7 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
   };
 
   return (
-    <div className="space-y-6 slide-in">
+    <div className="space-y-4 slide-in">
       <h2 className="text-xl font-semibold mb-2">{isYog ? 'Filtr tanlash' : 'Ehtiyot Qismlar (Zapchast)'}</h2>
 
       {/* Oldin kiritilgan rasxodlar — faqat ma'lumot uchun (bu yerda tahrirlanmaydi,
@@ -192,12 +192,12 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
       )}
 
       {/* Tanlangan zapchastlar ro'yxati */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {store.parts.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-4">Hali {isYog ? 'filtr' : 'zapchast'} qo'shilmadi</p>
         ) : (
           store.parts.map((part, i) => (
-            <div key={i} className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center transition-all">
+            <div key={i} className="bg-gray-800 p-3 rounded-xl border border-gray-700 flex justify-between items-center transition-all">
               <div className="flex-1">
                 <h3 className="font-medium text-gray-200">{part.name}</h3>
                 <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
@@ -391,7 +391,7 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
         </div>
       </div>
 
-      <div className="flex gap-3 mt-8">
+      <div className="flex gap-3 mt-6">
         <button
           onClick={onPrev}
           className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-colors"

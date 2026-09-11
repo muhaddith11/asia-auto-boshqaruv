@@ -101,7 +101,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
   };
 
   return (
-    <div className="space-y-6 slide-in">
+    <div className="space-y-4 slide-in">
       <h2 className="text-xl font-semibold mb-2">{isYog ? "Yog' tanlash" : `Xizmatlar (${store.model})`}</h2>
 
       {/* YOG' BO'LIMI: avtoservis xizmatlari o'rniga yog' tanlanadi (narx−tannarx = foyda) */}
@@ -114,14 +114,14 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
               🛢️ Yog' narxlari hali kiritilmagan. Pastda qo'lda qo'shing yoki boshliqqa murojaat qiling.
             </div>
           ) : (
-            <div className="space-y-3 max-h-72 overflow-y-auto pr-2 pb-2">
+            <div className="space-y-2 max-h-72 overflow-y-auto pr-2 pb-2">
               {oilOptions.map((o) => {
                 const isSelected = selectedOilId === o.id;
                 return (
                   <div
                     key={o.id}
                     onClick={() => handleSelectOil(o)}
-                    className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isSelected ? 'border-amber-500 bg-amber-500/10' : 'border-gray-700 bg-gray-800'}`}
+                    className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isSelected ? 'border-amber-500 bg-amber-500/10' : 'border-gray-700 bg-gray-800'}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-6 h-6 rounded-md flex items-center justify-center border ${isSelected ? 'bg-amber-500 border-none' : 'border-gray-600'}`}>
@@ -179,7 +179,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
           </div>
         </div>
       ) : (
-        <div className="space-y-3 max-h-64 overflow-y-auto pr-2 pb-2">
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-2 pb-2">
           {availableServices.length === 0 && <p className="text-gray-400">Standart xizmat topilmadi</p>}
           {availableServices.map((svc: any) => {
             const isSelected = store.services.some(s => s.name === svc.name);
@@ -187,7 +187,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
               <div
                 key={svc.id || svc.name}
                 onClick={() => handleToggleStandard(svc)}
-                className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center border ${isSelected ? 'bg-blue-500 border-none' : 'border-gray-600'}`}>
@@ -259,7 +259,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
         </div>
       </div>
 
-      <div className="flex gap-3 mt-8">
+      <div className="flex gap-3 mt-6">
         <button
           onClick={onPrev}
           className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-xl transition-colors"

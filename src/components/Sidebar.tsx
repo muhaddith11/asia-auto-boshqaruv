@@ -105,8 +105,7 @@ const navGroups: NavGroup[] = [
     subItems: [
       { title: 'Kundalik', href: '/reports/daily' },
       { title: 'Ishxona bo\'yicha', href: '/reports/business' },
-      { title: 'Aylanmadan tashqari', href: '/reports/external' },
-      { title: 'Audit jurnali', href: '/reports/audit', section: 'audit' }
+      { title: 'Aylanmadan tashqari', href: '/reports/external' }
     ]
   },
   {

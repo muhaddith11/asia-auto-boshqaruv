@@ -17,14 +17,13 @@ export type Section =
   | 'workers'
   | 'reports'
   | 'reminders'
-  | 'audit'
   | 'backup';
 
 // Har bir rol qaysi bo'limlarga kira oladi
 const PERMISSIONS: Record<Role, Section[]> = {
   // Egasi — hammasi
-  egasi: ['dashboard', 'orders', 'services', 'clients', 'parts', 'workers', 'reports', 'reminders', 'audit', 'backup'],
-  // Sherik — moliyani ko'radi, lekin xodim boshqaruvi/audit/backupsiz
+  egasi: ['dashboard', 'orders', 'services', 'clients', 'parts', 'workers', 'reports', 'reminders', 'backup'],
+  // Sherik — moliyani ko'radi, lekin xodim boshqaruvi/backupsiz
   sherik: ['dashboard', 'orders', 'services', 'clients', 'parts', 'reports', 'reminders'],
   // Xodim — faqat operatsion ish (moliya/hisobotlarsiz)
   xodim: ['dashboard', 'orders', 'services', 'clients', 'parts'],

@@ -19,10 +19,10 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
   const isComplete = store.brand && store.model && store.probeg && store.plateNumber;
 
   return (
-    <div className="space-y-6 slide-in">
+    <div className="space-y-4 slide-in">
       <h2 className="text-xl font-semibold mb-2">Avto Ma'lumotlari</h2>
-      
-      <div className="space-y-4">
+
+      <div className="space-y-3">
         {/* Brand */}
         <div>
           <label className="block text-sm text-gray-400 mb-1">Brend</label>
@@ -90,7 +90,7 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
       <button
         disabled={!isComplete}
         onClick={onNext}
-        className="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-950/40 text-white font-semibold py-4 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+        className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-950/40 text-white font-semibold py-4 rounded-xl flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
       >
         Davom etish <ArrowRight className="w-5 h-5" />
       </button>
