@@ -17,6 +17,7 @@ import {
   Box
 } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
+import { isCancelledHolat } from '@/lib/stock';
 
 const S = {
   input: {
@@ -49,7 +50,9 @@ export default function PartsContent() {
   // yig'iladi. Bekor qilingan buyurtmalar hisobga olinmaydi.
   const kassagaTushmaganHisob = useMemo(() => {
     return (buyurtmalar || []).reduce((acc, b: any) => {
-      if (b.holat === 'bekor qilingan') return acc;
+      // Bekor qilingan buyurtma ikki xil qiymat bilan yoziladi: dashboard
+      // "bekor qilingan", bot esa "bekor" — ikkalasi ham hisobdan chiqarilishi kerak.
+      if (isCancelledHolat(b.holat)) return acc;
       const zaps = b.zaps || [];
       zaps.forEach((z: any) => {
         // Faqat "alohida" belgilangan (galochka bosilgan) zapchastlar kassaga tushmaydi

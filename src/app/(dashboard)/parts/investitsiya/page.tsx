@@ -41,10 +41,12 @@ export default function PartsInvestmentPage() {
         if (Number(z.id) !== Number(p.id)) return;
         const qty = Number(z.qty ?? z.quantity ?? 1) || 1;
         sotilganDona += qty;
-        sotilganSumma += qty * Number(z.narx ?? 0);
+        // Narx miqdorga ko'paytirilmaydi — buyurtmaga yozilgan narx shu qator
+        // uchun to'liq summa (bot-ui'dagi konventsiya bilan bir xil).
+        sotilganSumma += Number(z.narx ?? 0);
         // Eski buyurtmalarda sebestoimost saqlanmagan bo'lishi mumkin —
         // shunday holatda zapchastning joriy tannarxi bilan taxminlanadi.
-        sotilganTannarx += qty * Number(z.sebestoimost ?? p.sebestoimost ?? 0);
+        sotilganTannarx += Number(z.sebestoimost ?? p.sebestoimost ?? 0);
       });
     });
 
