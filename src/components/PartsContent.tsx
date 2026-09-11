@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import { isCancelledHolat } from '@/lib/stock';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 const S = {
   input: {
@@ -453,8 +454,8 @@ export default function PartsContent() {
                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Kelish narxi (so'm) *</label>
                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-red-500/50 transition-all">
                         <input
-                          type="number" required value={formData.sebestoimost || ''}
-                          onChange={(e) => setFormData({...formData, sebestoimost: parseInt(e.target.value) || 0})}
+                          type="text" inputMode="numeric" required value={formatDigits(formData.sebestoimost || '')}
+                          onChange={(e) => setFormData({...formData, sebestoimost: parseInt(stripToDigits(e.target.value)) || 0})}
                           placeholder="0"
                           className="bg-transparent border-none outline-none flex-1 text-red-400 text-[16px] font-black placeholder:text-red-900"
                         />
@@ -464,8 +465,8 @@ export default function PartsContent() {
                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Sotish narxi (so'm) *</label>
                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-emerald-500/50 transition-all">
                         <input
-                          type="number" required value={formData.narx || ''}
-                          onChange={(e) => setFormData({...formData, narx: parseInt(e.target.value) || 0})}
+                          type="text" inputMode="numeric" required value={formatDigits(formData.narx || '')}
+                          onChange={(e) => setFormData({...formData, narx: parseInt(stripToDigits(e.target.value)) || 0})}
                           placeholder="0"
                           className="bg-transparent border-none outline-none flex-1 text-emerald-400 text-[16px] font-black placeholder:text-emerald-900"
                         />

@@ -20,6 +20,7 @@ import {
   LayoutGrid,
   ChevronDown
 } from 'lucide-react';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 const S = {
   input: {
@@ -328,9 +329,9 @@ export default function ServicesContent() {
                        <label className="block text-[12px] font-black text-slate-500 uppercase tracking-widest ml-1">Narxi (so'm) *</label>
                        <div className="bg-[#1e212b] border border-[#2a2d3d] rounded-xl flex items-center px-4 py-4 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all group">
                         <Coins size={20} className="text-slate-600 group-focus-within:text-emerald-500 transition-colors mr-3" />
-                        <input 
-                          type="number" required value={formData.narx} 
-                          onChange={(e) => setFormData({...formData, narx: parseInt(e.target.value) || 0})} 
+                        <input
+                          type="text" inputMode="numeric" required value={formatDigits(formData.narx)}
+                          onChange={(e) => setFormData({...formData, narx: parseInt(stripToDigits(e.target.value)) || 0})}
                           className="bg-transparent border-none outline-none flex-1 text-emerald-400 text-[16px] font-black placeholder:text-slate-700"
                           placeholder="0"
                         />

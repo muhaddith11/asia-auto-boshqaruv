@@ -2,6 +2,7 @@
 import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 import { 
   X, Banknote, CreditCard, ChevronDown, User, Hash,
   Tag, Briefcase, FileText, Plus, Save, Info
@@ -182,10 +183,10 @@ export default function CashModal({ type, onClose }: CashModalProps) {
           <div className="space-y-1.5 px-1">
             <label className={S.label}>Summa *</label>
             <div className="relative">
-              <input 
-                type="number" required
-                value={formData.amount}
-                onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              <input
+                type="text" inputMode="numeric" required
+                value={formatDigits(formData.amount)}
+                onChange={(e) => setFormData({...formData, amount: stripToDigits(e.target.value)})}
                 className={S.input}
                 placeholder="Summani kiriting..."
               />

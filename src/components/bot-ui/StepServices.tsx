@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowRight, ArrowLeft, Check, PlusCircle, Trash2, Loader2, Droplet } from 'lucide-react';
 import { Identity, OilPrice, fetchOilPrices } from '@/components/bot-ui/botClient';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface StepServicesProps {
   catalog: any;
@@ -156,11 +157,11 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
               />
               <div className="flex gap-2">
                 <input
-                  type="number"
+                  type="text" inputMode="numeric"
                   placeholder="Narxi (UZS)"
                   className="flex-1 bg-gray-900 border border-gray-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                  value={manualPrice}
-                  onChange={(e) => setManualPrice(e.target.value)}
+                  value={formatDigits(manualPrice)}
+                  onChange={(e) => setManualPrice(stripToDigits(e.target.value))}
                 />
                 <button
                   onClick={handleAddManualOil}
@@ -242,11 +243,11 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
           />
           <div className="flex gap-2">
             <input
-              type="number"
+              type="text" inputMode="numeric"
               placeholder="Narxi (UZS)"
               className="flex-1 bg-gray-900 border border-gray-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-              value={customPrice}
-              onChange={e => setCustomPrice(e.target.value)}
+              value={formatDigits(customPrice)}
+              onChange={e => setCustomPrice(stripToDigits(e.target.value))}
             />
             <button
               onClick={handleAddCustom}

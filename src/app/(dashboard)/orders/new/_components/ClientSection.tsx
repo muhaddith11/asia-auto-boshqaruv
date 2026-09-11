@@ -7,6 +7,7 @@ import { normalizePhone } from '@/lib/phone';
 import { normalize } from '@/lib/normalize';
 import { Mijoz, Xizmat } from '@/types';
 import { S, STATUS_TABS, OrderForm, Assignment } from './formStyles';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface Props {
   form: OrderForm;
@@ -153,8 +154,8 @@ export default function ClientSection({
         <div>
           <label style={S.label}>Probeg (KM)</label>
           <input
-            style={S.input} type="number" value={form.yil} placeholder="0"
-            onChange={e => setForm({ ...form, yil: e.target.value })}
+            style={S.input} type="text" inputMode="numeric" value={formatDigits(form.yil)} placeholder="0"
+            onChange={e => setForm({ ...form, yil: stripToDigits(e.target.value) })}
           />
         </div>
 

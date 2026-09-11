@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, PackageOpen, PackageCheck, CheckCircle2, Car as Car
 import { Car, Identity, updateStage, updateCarInfo, toggleWorkSession, addRasxod, stageMeta, fmtTime, fmtDuration } from './botClient';
 import PhoneInput from '@/components/PhoneInput';
 import toast from 'react-hot-toast';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface Props {
   car: Car;
@@ -415,8 +416,8 @@ export default function CarDetail({ car, identity, onDone, onStay, onComplete, o
                   <div className="relative">
                     <input
                       inputMode="numeric"
-                      value={r.summa}
-                      onChange={(e) => setRasxodAt(i, 'summa', e.target.value.replace(/[^\d]/g, ''))}
+                      value={formatDigits(r.summa)}
+                      onChange={(e) => setRasxodAt(i, 'summa', stripToDigits(e.target.value))}
                       placeholder="Summa"
                       className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 pr-14 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                     />

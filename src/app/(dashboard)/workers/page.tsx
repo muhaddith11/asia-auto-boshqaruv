@@ -7,6 +7,7 @@ import WorkerHistoryModal from '@/components/WorkerHistoryModal';
 import MonthlyProfitModal from '@/components/MonthlyProfitModal';
 import PageLayout from '@/components/layout/PageLayout';
 import ConfirmModal from '@/components/ConfirmModal';
+import PhoneInput from '@/components/PhoneInput';
 import { BOLIMLAR, bolimMeta, normalizeBolim, type Bolim } from '@/lib/departments';
 import {
   UserCog,
@@ -513,9 +514,9 @@ export default function WorkersPage() {
                   <label style={S.label}>Telefon</label>
                   <div className="relative group">
                     <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
-                    <input
-                      type="text" value={formData.tel}
-                      onChange={(e) => setFormData({ ...formData, tel: e.target.value })}
+                    <PhoneInput
+                      value={formData.tel}
+                      onChange={(tel) => setFormData({ ...formData, tel })}
                       style={{ ...S.input, paddingLeft: '34px' }}
                     />
                   </div>

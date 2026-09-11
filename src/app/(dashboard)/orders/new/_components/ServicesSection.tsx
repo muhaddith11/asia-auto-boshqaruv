@@ -4,6 +4,7 @@ import { Plus, Trash2, Wrench } from 'lucide-react';
 import { normalize } from '@/lib/normalize';
 import { Xodim, Xizmat } from '@/types';
 import { S, Assignment } from './formStyles';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface Props {
   assignments: Assignment[];
@@ -118,10 +119,10 @@ export default function ServicesSection({
                   <label style={{ ...S.label, marginBottom: 4 }}>Narxi</label>
                   <input
                     style={{ ...S.input, background: 'var(--surface3)', textAlign: 'right', fontWeight: 700 }}
-                    type="number"
-                    value={a.customNarx || (a.serviceId ? getServiceNarx(a.serviceId) : '')}
+                    type="text" inputMode="numeric"
+                    value={formatDigits(a.customNarx || (a.serviceId ? getServiceNarx(a.serviceId) : ''))}
                     placeholder="0"
-                    onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, customNarx: e.target.value } : x))}
+                    onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, customNarx: stripToDigits(e.target.value) } : x))}
                   />
                 </div>
                 <button

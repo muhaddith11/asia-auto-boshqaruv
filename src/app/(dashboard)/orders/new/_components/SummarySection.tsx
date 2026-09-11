@@ -2,6 +2,7 @@
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { S, OrderForm } from './formStyles';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface Props {
   form: OrderForm;
@@ -64,9 +65,9 @@ export default function SummarySection({
             <div style={{ position: 'relative' }}>
               <input
                 style={{ ...S.input, paddingRight: 46 }}
-                type="number" min={0} value={form.chegirma}
+                type="text" inputMode="numeric" value={formatDigits(form.chegirma)}
                 onChange={e => {
-                  const s = parseInt(e.target.value) || 0;
+                  const s = parseInt(stripToDigits(e.target.value)) || 0;
                   setForm({ ...form, chegirma: s, chegirmaFoiz: subTotal > 0 ? Math.round(s / subTotal * 100) : 0 });
                 }}
               />

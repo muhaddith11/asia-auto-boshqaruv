@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Buyurtma, Xodim } from '@/types';
 import { useStore } from '@/store/useStore';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface PaymentModalProps {
   order: Buyurtma;
@@ -288,9 +289,9 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
                   <label className="text-[11px] font-black text-blue-400 uppercase tracking-widest ml-1">To'lanayotgan summa (so'm)</label>
                   <div className="relative">
                     <input
-                      type="number"
-                      value={paidNow || ''}
-                      onChange={(e) => setPaidNow(Math.max(0, parseInt(e.target.value) || 0))}
+                      type="text" inputMode="numeric"
+                      value={formatDigits(paidNow || '')}
+                      onChange={(e) => setPaidNow(Math.max(0, parseInt(stripToDigits(e.target.value)) || 0))}
                       placeholder="To'lanayotgan summani kiriting"
                       className="w-full bg-blue-500/5 border-blue-500/30 border-2 rounded-xl py-3 px-4 text-[16px] text-white font-black outline-none focus:border-blue-500 transition-all"
                     />
@@ -302,9 +303,9 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
                   <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Qo'shimcha Skidka (so'm)</label>
                   <div className="relative">
                     <input
-                      type="number"
-                      value={discount || ''}
-                      onChange={(e) => setDiscount(Math.max(0, parseInt(e.target.value) || 0))}
+                      type="text" inputMode="numeric"
+                      value={formatDigits(discount || '')}
+                      onChange={(e) => setDiscount(Math.max(0, parseInt(stripToDigits(e.target.value)) || 0))}
                       placeholder="Chegirma summasini kiriting"
                       className="w-full bg-black/20 border-border border-2 rounded-xl py-3 px-4 text-[14px] text-white font-black outline-none focus:border-red-500 transition-all"
                     />

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { User, CreditCard, Wallet, X, Banknote, Save } from 'lucide-react';
 import { Xodim } from '@/types';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface SalaryModalProps {
   worker: Xodim;
@@ -87,11 +88,11 @@ export default function SalaryModal({ worker, onClose }: SalaryModalProps) {
 
           <div className="space-y-2">
             <label style={S.label}>To'lov summasi (UZS) *</label>
-            <input 
-              type="number" 
+            <input
+              type="text" inputMode="numeric"
               required
-              value={formData.amount}
-              onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              value={formatDigits(formData.amount)}
+              onChange={(e) => setFormData({...formData, amount: stripToDigits(e.target.value)})}
               style={S.input}
               className="font-black text-lg focus:border-blue-500/50 transition-all text-emerald-400"
               placeholder="0"

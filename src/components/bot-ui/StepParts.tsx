@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowRight, ArrowLeft, PlusCircle, Trash2, Package, Plus, PackageSearch, Loader2, Hash, Search, Filter, Check } from 'lucide-react';
 import { Identity, SparePart, OilPrice, Car, fetchSpareParts, fetchOilPrices } from '@/components/bot-ui/botClient';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface StepPartsProps {
   catalog: any;
@@ -359,11 +360,11 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
             <div className="flex-[2]">
               <label className="text-xs text-gray-400 mb-1 block">Narxi</label>
               <input
-                type="number"
+                type="text" inputMode="numeric"
                 placeholder="UZS"
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
-                value={partPrice}
-                onChange={(e: any) => setPartPrice(e.target.value)}
+                value={formatDigits(partPrice)}
+                onChange={(e: any) => setPartPrice(stripToDigits(e.target.value))}
               />
             </div>
           </div>

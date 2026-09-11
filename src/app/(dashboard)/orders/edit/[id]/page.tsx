@@ -16,6 +16,7 @@ import {
 import PhoneInput from '@/components/PhoneInput';
 import { normalizePhone } from '@/lib/phone';
 import { normalize } from '@/store/useStore';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 const STATUS_TABS = [
   { key: 'yaratildi', label: 'Yaratildi', color: '#64748b' },
@@ -432,7 +433,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
                   </div>
                   <div>
                     <label style={S.label}>Narx</label>
-                    <input style={S.input} type="number" value={a.customNarx || getServiceNarx(a.serviceId) || ''} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, customNarx: e.target.value } : x))} />
+                    <input style={S.input} type="text" inputMode="numeric" value={formatDigits(a.customNarx || getServiceNarx(a.serviceId) || '')} onChange={e => setAssignments(assignments.map(x => x.id === a.id ? { ...x, customNarx: stripToDigits(e.target.value) } : x))} />
                   </div>
                   <button onClick={() => setAssignments(assignments.filter(x => x.id !== a.id))} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
                     <Trash2 size={16} />

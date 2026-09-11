@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
 import { X, Plus, Package, CheckCircle2, DollarSign, Settings } from 'lucide-react';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 export default function AddPartPage() {
   const router = useRouter();
@@ -94,9 +95,9 @@ export default function AddPartPage() {
                 <label className="block text-[13px] font-bold text-slate-500 mb-1 pl-1">Kelish narxi *</label>
                 <div className="relative group">
                   <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-red-400 transition-colors" />
-                  <input 
-                    type="number" required value={formData.sebestoimost}
-                    onChange={e => setFormData({...formData, sebestoimost: e.target.value})}
+                  <input
+                    type="text" inputMode="numeric" required value={formatDigits(formData.sebestoimost)}
+                    onChange={e => setFormData({...formData, sebestoimost: stripToDigits(e.target.value)})}
                     className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-12 pr-4 py-4 outline-none focus:border-red-500/50 text-red-400 text-[15px] font-bold transition-all"
                     placeholder="0"
                   />
@@ -106,9 +107,9 @@ export default function AddPartPage() {
                 <label className="block text-[13px] font-bold text-slate-500 mb-1 pl-1">Sotish narxi *</label>
                 <div className="relative group">
                   <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
-                  <input 
-                    type="number" required value={formData.narx}
-                    onChange={e => setFormData({...formData, narx: e.target.value})}
+                  <input
+                    type="text" inputMode="numeric" required value={formatDigits(formData.narx)}
+                    onChange={e => setFormData({...formData, narx: stripToDigits(e.target.value)})}
                     className="w-full bg-[#1e212b] border border-[#2a2d3d] rounded-xl pl-12 pr-4 py-4 outline-none focus:border-emerald-500/50 text-emerald-400 text-[15px] font-bold transition-all"
                     placeholder="0"
                   />

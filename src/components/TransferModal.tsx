@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { X, ArrowRightLeft, CreditCard, Banknote } from 'lucide-react';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface TransferModalProps {
   onClose: () => void;
@@ -75,11 +76,11 @@ export default function TransferModal({ onClose }: TransferModalProps) {
 
           <div>
             <label className="block text-[13px] font-bold text-slate-400 mb-2">O'tkazma summasi *</label>
-            <input 
-              type="number" 
+            <input
+              type="text" inputMode="numeric"
               required
-              value={formData.amount}
-              onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              value={formatDigits(formData.amount)}
+              onChange={(e) => setFormData({...formData, amount: stripToDigits(e.target.value)})}
               className="w-full bg-[#1c212a] border border-white/5 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-white text-lg font-black transition-all"
               placeholder="0"
             />

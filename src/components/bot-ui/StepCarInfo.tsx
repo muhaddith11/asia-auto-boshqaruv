@@ -1,6 +1,7 @@
 'use client';
 import { useBotOrderStore } from '@/store/useBotOrderStore';
 import { ArrowRight } from 'lucide-react';
+import { formatDigits, stripToDigits } from '@/lib/numberInput';
 
 interface StepCarInfoProps {
   catalog: any;
@@ -76,12 +77,12 @@ export default function StepCarInfo({ catalog, onNext }: StepCarInfoProps) {
         <div>
           <label className="block text-sm text-gray-400 mb-1">Probeg (km)</label>
           <div className="relative">
-            <input 
-              type="number"
-              placeholder="150000"
+            <input
+              type="text" inputMode="numeric"
+              placeholder="150 000"
               className="w-full bg-white/[0.05] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={store.probeg}
-              onChange={(e: any) => store.setCarInfo({ probeg: e.target.value })}
+              value={formatDigits(store.probeg)}
+              onChange={(e: any) => store.setCarInfo({ probeg: stripToDigits(e.target.value) })}
             />
           </div>
         </div>
