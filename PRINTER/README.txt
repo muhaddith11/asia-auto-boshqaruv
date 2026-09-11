@@ -6,3 +6,7 @@ PRINTER AGENT QO'LLANMASI:
 4. Kompyuter o'chib yonsa, agent avtomatik ravishda o'zi ishga tushadi (Startup-ga qo'shilgan).
 
 Agar printer to'xtab qolsa, shunchaki 'run_printer.vbs' faylini yana bir marta bosib qo'ying.
+
+ESLATMA (2026-09-10): bu papkadagi print_agent.py endi asosiy (../print_agent.py)
+skriptni ishga tushiradi — bu yerda alohida eski kod qolmagan, shuning uchun
+qaysi yorliqni bossangiz ham bitta to'g'ri agent ishlaydi.

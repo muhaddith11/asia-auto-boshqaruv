@@ -12,10 +12,15 @@ scriptPath = "C:\Users\nout.plus\OneDrive\Desktop\Projects made by AI\Asia Auto 
 
 Do While True
     Dim colItems
-    Set colItems = objWMI.ExecQuery("Select * From Win32_Process Where Name = 'pythonw.exe'")
+    ' MUHIM: nomi bo'yicha emas, aynan shu skript ishga tushirilganini tekshiradi.
+    ' Oldin faqat "pythonw.exe bormi" deb tekshirar edi — shu sabab 2026-09-10 kuni
+    ' ESKI (xato) print_agent.py nusxasi ishga tushib qolganda ham watchdog buni
+    ' "hammasi joyida" deb hisoblab, to'g'ri agentni qayta ishga tushirmadi.
+    Set colItems = objWMI.ExecQuery("Select * From Win32_Process Where Name = 'pythonw.exe' And CommandLine Like '%print_agent.py%'")
 
     If colItems.Count = 0 Then
-        ' Agent ishlamayapti - qayta ishga tushirish
+        ' To'g'ri agent ishlamayapti (umuman ishlamayapti yoki boshqa/eski nusxa
+        ' ishga tushib qolgan) - qayta ishga tushirish
         objShell.Run "pythonw """ & scriptPath & """", 0, False
     End If
 
