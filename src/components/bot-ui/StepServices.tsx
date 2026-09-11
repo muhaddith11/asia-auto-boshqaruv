@@ -179,7 +179,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
           </div>
         </div>
       ) : (
-        <div className="space-y-2 max-h-64 overflow-y-auto pr-2 pb-2">
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-2 pb-2">
           {availableServices.length === 0 && <p className="text-gray-400">Standart xizmat topilmadi</p>}
           {availableServices.map((svc: any) => {
             const isSelected = store.services.some(s => s.name === svc.name);
