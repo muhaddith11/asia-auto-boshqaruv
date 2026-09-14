@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 import { buildLedgerRows, type LedgerRow } from '@/lib/businessLedger';
 import { exportToCSV } from '@/lib/export';
-import { TrendingUp, TrendingDown, Target, Wallet, Receipt, FileSpreadsheet, Package } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Banknote, Receipt, FileSpreadsheet, Package } from 'lucide-react';
 import type { Buyurtma, OrderZap } from '@/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ function realParts(zaps: OrderZap[] | undefined | null): { nom: string; qty: num
 }
 
 export default function BossBusinessReport() {
-  const { buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar, kassa } = useStore();
+  const { buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar } = useStore();
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [activeQuick, setActiveQuick] = useState('oy');
@@ -56,10 +56,15 @@ export default function BossBusinessReport() {
 
   // Statistika — EGASI'ning /reports/business sahifasidagi bilan bir xil formula
   // (barcha qatorlar, rasxod ham ichida) — foyda raqami hech qachon buzilmaydi.
-  const stats = useMemo(() => ({
-    income: filtered.filter((r) => r._positive).reduce((s, r) => s + r._amount, 0),
-    expense: filtered.filter((r) => !r._positive).reduce((s, r) => s + r._amount, 0),
-  }), [filtered]);
+  // Xarajat ikkiga ajratiladi: to'langan ish xaqi (maoshTarixi'dan, shtraf/bonus
+  // bundan mustasno) va qolgan hammasi — "ishxona xarajati" (ijara, kommunal,
+  // ta'minotchi, rasxod va h.k.). Ikkalasi yig'indisi = jami xarajat, aynan.
+  const stats = useMemo(() => {
+    const income = filtered.filter((r) => r._positive).reduce((s, r) => s + r._amount, 0);
+    const expense = filtered.filter((r) => !r._positive).reduce((s, r) => s + r._amount, 0);
+    const ishXaqi = filtered.filter((r) => !r._positive && r._category === 'Ish xaqi').reduce((s, r) => s + r._amount, 0);
+    return { income, expense, ishXaqi, ishxonaXarajat: expense - ishXaqi };
+  }, [filtered]);
 
   const orderById = useMemo(() => new Map<number, Buyurtma>(buyurtmalar.map((b) => [Number(b.id), b])), [buyurtmalar]);
 
@@ -164,13 +169,13 @@ export default function BossBusinessReport() {
         </div>
       </div>
 
-      {/* STATS — egasi bilan bir xil formula */}
+      {/* STATS — egasi bilan bir xil formula, faqat xarajat ish xaqi/ishxona bo'lib ko'rsatiladi */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
         {[
-          { label: 'Daromad', value: stats.income, icon: <TrendingUp size={20} />, color: '#10b981' },
-          { label: 'Xarajat', value: stats.expense, icon: <TrendingDown size={20} />, color: '#fb7185' },
+          { label: 'Kirim', value: stats.income, icon: <TrendingUp size={20} />, color: '#10b981' },
+          { label: 'Ishxona xarajati', value: stats.ishxonaXarajat, icon: <TrendingDown size={20} />, color: '#fb7185' },
+          { label: "To'langan ish xaqi", value: stats.ishXaqi, icon: <Banknote size={20} />, color: '#f59e0b' },
           { label: 'Foyda', value: stats.income - stats.expense, icon: <Target size={20} />, color: '#3b82f6' },
-          { label: 'Kassa', value: kassa.naqd + kassa.karta, icon: <Wallet size={20} />, color: '#f59e0b' },
         ].map((s, i) => (
           <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
@@ -195,21 +200,19 @@ export default function BossBusinessReport() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-                {['Sana', 'Mijoz / Mashina', 'Xizmatlar', 'Ishlatilgan zapchastlar', "To'lov", 'Holat'].map((h) => (
+                {['Sana', 'Mijoz', 'Mashina', 'Xizmatlar', 'Ishlatilgan zapchastlar', "To'lov", 'Holat'].map((h) => (
                   <th key={h} style={{ padding: '12px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {orderRows.length === 0 ? (
-                <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun buyurtma topilmadi</td></tr>
+                <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun buyurtma topilmadi</td></tr>
               ) : orderRows.map(({ row, order, parts }) => (
                 <tr key={row._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '12px 20px', fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>{row._displayDate}</td>
-                  <td style={{ padding: '12px 20px' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'white' }}>{row._mijoz || '—'}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{order?.mashina} {order?.raqam ? `· ${order.raqam}` : ''}</div>
-                  </td>
+                  <td style={{ padding: '12px 20px', fontSize: 12, fontWeight: 700, color: 'white', whiteSpace: 'nowrap' }}>{row._mijoz || '—'}</td>
+                  <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', whiteSpace: 'nowrap' }}>{order?.mashina} {order?.raqam ? `· ${order.raqam}` : ''}</td>
                   <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', whiteSpace: 'nowrap' }}>{fmt(order?.srv || 0)}</td>
                   <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', maxWidth: 320 }}>
                     {parts.length === 0 ? (
