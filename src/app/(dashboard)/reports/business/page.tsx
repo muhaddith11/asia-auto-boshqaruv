@@ -2,7 +2,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
+import { useRole } from '@/lib/useRole';
+import BossBusinessReport from '@/components/BossBusinessReport';
 import { exportToCSV } from '@/lib/export';
+import { buildLedgerRows } from '@/lib/businessLedger';
 import {
   Filter,
   TrendingUp,
@@ -22,6 +25,7 @@ import {
  */
 export default function BusinessReportPage() {
   const store = useStore();
+  const { boss, ready } = useRole();
   const [mounted, setMounted] = useState(false);
 
   const buyurtmalar = store?.buyurtmalar || [];
@@ -49,116 +53,13 @@ export default function BusinessReportPage() {
     setFilterTo(to);
   }, []);
 
-  // Ma'lumotlarni birlashtirish (O'ta xavfsiz usulda)
-  const allRows = useMemo(() => {
-    const rows: any[] = [];
-    try {
-      // 1. Amaliyotlar (Asosiy moliya manbasi)
-      ishxonaOperatsiyalar.forEach((op: any) => {
-        const raw = op.created_at || op.createdAt || op.date || '';
-        let dStr = op.date || '';
-        let disp = op.date || '';
-        try { 
-          const d = new Date(raw); 
-          if (!isNaN(d.getTime())) {
-            dStr = d.toISOString().split('T')[0];
-            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          }
-        } catch {}
-        
-        rows.push({
-          _id: String(op.id),
-          _date: dStr,
-          _displayDate: disp,
-          _rawDate: raw,
-          _category: op.category || (op.source === 'buyurtma' ? 'Buyurtma' : 'Operatsiya'),
-          _izoh: op.comment || '',
-          _mijoz: (() => {
-            if (op.source !== 'buyurtma') return '';
-            const idFromComment = op.comment ? Number((op.comment.match(/Buyurtma #(\d+)/) || [])[1]) : null;
-            const orderId = Number(op.order_id || op.orderId || idFromComment);
-            return buyurtmalar.find(b => Number(b.id) === orderId)?.ism || '';
-          })(),
-          _amount: Number(op.amount) || 0,
-          _method: (op.method || '').toUpperCase(),
-          _positive: op.type === 'income',
-        });
-      });
-
-      // 2. Buyurtmalar (Zaxira - faqat operatsiyasi yo'q to'langan buyurtmalar uchun)
-      buyurtmalar.forEach((b: any) => {
-        if (b.holat !== 'tulangan') return;
-        // Dublikatni tekshirish (String/Number farqini yo'qotish uchun Number() ishlatamiz)
-        const hasOperation = ishxonaOperatsiyalar.some(op => {
-          const idFromComment = op.comment ? Number((op.comment.match(/Buyurtma #(\d+)/) || [])[1]) : null;
-          const opOrderId = Number(op.order_id || op.orderId || idFromComment);
-          return opOrderId === Number(b.id);
-        });
-        if (hasOperation) return;
-
-        const raw = b.createdAt || b.created_at || b.sana || '';
-        let dStr = b.sana || '';
-        let disp = b.sana || '';
-        try { 
-          const d = new Date(raw); 
-          if (!isNaN(d.getTime())) {
-            dStr = d.toISOString().split('T')[0];
-            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          }
-        } catch {}
-        rows.push({
-          _id: String(b.id),
-          _date: dStr,
-          _displayDate: disp,
-          _rawDate: raw,
-          _category: "Buyurtma to'lovi", // Nomini bir xil qildik
-          _izoh: `Buyurtma #${b.id} - ${b.mashina || ''}`,
-          _mijoz: b.ism || '',
-          _amount: Number(b.final) || 0,
-          _method: 'NAQD',
-          _positive: true,
-        });
-      });
-
-      // 3. Maoshlar
-      maoshTarixi.forEach((m: any) => {
-        // Shtraf/bonus hisobotga tushmaydi — ular kassaga tegmaydi, faqat maoshdan
-        // ayiriladi/qo'shiladi. Bonus tekin tekshirilmasa, chiqim sifatida IKKI marta
-        // hisoblanadi: hisoblanganda soxta xarajat + keyin haqiqiy to'langanda yana.
-        if (m.method === 'shtraf' || m.method === 'bonus') return;
-        const raw = m.createdAt || m.sana || '';
-        let dStr = m.sana || '';
-        let disp = m.sana || '';
-        try { 
-          const d = new Date(raw); 
-          if (!isNaN(d.getTime())) {
-            dStr = d.toISOString().split('T')[0];
-            disp = d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          }
-        } catch {}
-        const worker = xodimlar.find((w: any) => w.id === m.xodimId);
-        rows.push({
-          _id: String(m.id),
-          _date: dStr,
-          _displayDate: disp,
-          _rawDate: raw,
-          _category: 'Ish xaqi',
-          _izoh: m.izoh || '',
-          _mijoz: worker?.ism || 'Xodim',
-          _amount: Number(m.summa) || 0,
-          _method: (m.method || '').toUpperCase(),
-          _positive: false,
-        });
-      });
-    } catch (e) {
-      console.error("Data processing error:", e);
-    }
-    return rows.sort((a, b) => {
-      const timeA = new Date(a._rawDate || a._date).getTime();
-      const timeB = new Date(b._rawDate || b._date).getTime();
-      return timeB - timeA;
-    });
-  }, [buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar]);
+  // Qator qurish mantig'i endi @/lib/businessLedger'da (sof, testlangan) — boshliq
+  // hisoboti (BossBusinessReport) ham AYNAN shu funksiyadan foydalanadi, shuning
+  // uchun ikkala ko'rinishning Daromad/Xarajat raqamlari doim bir xil bo'ladi.
+  const allRows = useMemo(
+    () => buildLedgerRows(buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar),
+    [buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar],
+  );
 
   const categories = useMemo(() => Array.from(new Set(allRows.map(r => r._category))).sort(), [allRows]);
 
@@ -196,7 +97,15 @@ export default function BusinessReportPage() {
     toast.success(`${filtered.length} ta amaliyot eksport qilindi`);
   };
 
-  if (!mounted) return null;
+  if (!mounted || !ready) return null;
+
+  // Boshliq — buyurtma-markazli ko'rinish: har qator bitta buyurtma (ishlatilgan
+  // zapchastlar bilan birga), xodimlar bot orqali kiritgan "Rasxod: ..." chiqim
+  // qatorlari alohida ko'rinmaydi (ular allaqachon o'sha buyurtmaning o'z summasida
+  // hisobga olingan). Daromad/Xarajat/Foyda raqamlari EGASI bilan bir xil (shu
+  // sahifadagi kabi buildLedgerRows'dan, hech narsa yashirilmaydi — faqat ro'yxat
+  // boshqacha ko'rsatiladi).
+  if (boss) return <BossBusinessReport />;
 
   const inputStyle: React.CSSProperties = {
     background: '#121721',

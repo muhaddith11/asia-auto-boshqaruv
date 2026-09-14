@@ -78,6 +78,12 @@ export interface OrderZap extends Zapchast {
   // true (galochka belgilangan) — puli KASSAGA TUSHMAYDI, "zapchast puli" hisobiga alohida yig'iladi.
   // false/undefined (default) — puli KASSAGA tushadi.
   alohida?: boolean;
+  // Xodim bot-ui orqali kiritgan rasxod (xarajat) pseudo-qatori — haqiqiy
+  // zapchast emas (src/app/api/bot-ui/rasxod/route.ts). kat==='Rasxod' bilan birga keladi.
+  rasxod?: boolean;
+  xodim_id?: number;
+  xodim_nomi?: string;
+  vaqt?: string;
 }
 
 export interface Buyurtma {
