@@ -75,11 +75,18 @@ export default function OrdersPage() {
   useEffect(() => {
     setMounted(true);
     loadInitialData();
+    const params = new URLSearchParams(window.location.search);
     // Mijozlar hisobotidan "Barchasini ko'rish" orqali kelinsa — ism bo'yicha filtr qo'llanadi
-    const ismParam = new URLSearchParams(window.location.search).get('ism');
+    const ismParam = params.get('ism');
     if (ismParam) {
       setF(prev => ({ ...prev, ism: ismParam }));
       setApplied(prev => ({ ...prev, ism: ismParam }));
+    }
+    // Boshliq bosh sahifasidan (masalan "To'lanmagan" kartasi) kelinsa — status bo'yicha filtr
+    const statusParam = params.get('status');
+    if (statusParam && STATUS_CONFIG[statusParam]) {
+      setF(prev => ({ ...prev, status: statusParam }));
+      setApplied(prev => ({ ...prev, status: statusParam }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -44,13 +44,18 @@ npm run dev
 
 ## Rollar (kirish huquqlari)
 
-Tizimda 3 rol bor (`src/lib/auth.ts` da sozlanadi):
+Tizimda 4 rol bor (`src/lib/auth.ts` da sozlanadi):
 
 | Rol | Huquqlar |
 |------|----------|
-| **egasi** | Hamma bo'lim (audit, zaxira, xodimlar, hisobotlar) |
+| **egasi** | Hamma bo'lim (audit, zaxira, xodimlar, hisobotlar) — to'liq interfeys |
+| **boshliq** | Huquqi egasi bilan bir xil (hamma sahifaga kira oladi), lekin interfeysi ixcham — Sidebar/Navbar/bosh sahifa faqat buyurtmalar, hisobotlar va xodimlar hisobotini ko'rsatadi |
 | **sherik** | Buyurtma, mijoz, xizmat, zapchast, hisobot, eslatma |
 | **xodim** | Faqat operatsion bo'limlar (moliyasiz) |
+
+> `boshliq` — veb-panel login roli (`src/lib/auth.ts`). Bot-ui'dagi `workers.is_boss`
+> (Telegram orqali kiruvchi ustaxona boshlig'i, masalan Yahyo aka) bilan bog'liq emas —
+> ikkalasi mustaqil tizim.
 
 > ⚠️ Akkaunt parollari hozircha `src/lib/auth.ts` ichida. Ishlatishdan oldin
 > ularni o'zgartiring. To'liq xavfsiz auth (parol hash + server session) — keyingi bosqich.

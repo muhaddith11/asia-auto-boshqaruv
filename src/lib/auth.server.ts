@@ -18,6 +18,9 @@ export interface ServerAccount {
 
 export const ACCOUNTS: ServerAccount[] = [
   { login: 'asiaauto', parol: process.env.OWNER_PASSWORD  || 'salom123',  role: 'egasi',  ism: 'Egasi' },
+  // Boshliq — egasi bilan bir xil huquq, ixcham ko'rinish. BOSS_PASSWORD berilmasa
+  // egasi paroli ishlaydi — shu sabab yangi (zaifroq) standart parol qo'shilmaydi.
+  { login: 'boshliq',  parol: process.env.BOSS_PASSWORD || process.env.OWNER_PASSWORD || 'salom123', role: 'boshliq', ism: 'Boshliq' },
   { login: 'sherik',   parol: process.env.PARTNER_PASSWORD || 'sherik123', role: 'sherik', ism: 'Sherik' },
   { login: 'xodim',    parol: process.env.WORKER_PASSWORD  || 'xodim123',  role: 'xodim',  ism: 'Xodim' },
 ];

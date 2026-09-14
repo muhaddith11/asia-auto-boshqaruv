@@ -3,17 +3,25 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { useRole } from '@/lib/useRole';
 import { Users, ClipboardList, Package, Banknote, Clock, ExternalLink } from 'lucide-react';
 import AiForecast from '@/components/AiForecast';
+import BossDashboard from '@/components/BossDashboard';
 import Link from 'next/link';
 
 export default function Dashboard() {
   const { buyurtmalar, xodimlar, kassa } = useStore();
+  const { boss, ready } = useRole();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !ready) return null;
+
+  // Boshliq — ixcham bosh sahifa: faqat hisob-kitob, buyurtmalar va eng muhim
+  // narsalar. Huquqi cheklanmagan (istalgan sahifaga o'ta oladi), faqat birinchi
+  // ekran soddalashtirilgan.
+  if (boss) return <BossDashboard />;
 
   const activeOrders = buyurtmalar.filter(o => o.holat !== 'tulangan' && o.holat !== 'bekor qilingan');
   const recentOrders = [...buyurtmalar].sort((a, b) => b.id - a.id).slice(0, 6);

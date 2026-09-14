@@ -2,7 +2,7 @@
 import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw, Menu, LogOut } from 'lucide-react';
+import { Banknote, CreditCard, Wallet, Plus, RefreshCw, RefreshCcw, Menu, LogOut, ChevronDown } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import CashModal from '@/components/CashModal';
 import TransferModal from '@/components/TransferModal';
@@ -13,10 +13,19 @@ export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => vo
   const router = useRouter();
   const pathname = usePathname();
   const { kassa } = useStore();
-  const { role } = useRole();
+  const { role, boss, canSwitchView, viewMode, setViewMode } = useRole();
   const [mounted, setMounted] = useState(false);
   const [cashModal, setCashModal] = useState<{ open: boolean; type: 'income' | 'expense' }>({ open: false, type: 'income' });
   const [transferOpen, setTransferOpen] = useState(false);
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+
+  // To'liq huquqli hisob (egasi/boshliq) qaysi ko'rinishga o'tishni tanlaydi —
+  // huquq o'zgarmaydi, faqat interfeys. Tanlagach o'z bosh sahifasiga qaytadi.
+  const switchView = (mode: 'full' | 'compact') => {
+    setViewMode(mode);
+    setViewMenuOpen(false);
+    router.push('/');
+  };
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -98,47 +107,52 @@ export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => vo
 
         {/* Section 3: Actions (O'NG TOMONDA) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Xarajat */}
-          <button
-            onClick={() => setCashModal({ open: true, type: 'expense' })}
-            style={{
-              background: 'rgba(244,63,94,0.12)', color: 'var(--red)',
-              border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
-              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-            }}
-          >
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }} />
-            Xarajat
-          </button>
+          {/* Boshliqqa qo'lda kassa amallari kerak emas — ixcham interfeys uchun yashirilgan */}
+          {!boss && (
+            <>
+              {/* Xarajat */}
+              <button
+                onClick={() => setCashModal({ open: true, type: 'expense' })}
+                style={{
+                  background: 'rgba(244,63,94,0.12)', color: 'var(--red)',
+                  border: '1px solid rgba(244,63,94,0.25)', borderRadius: 9,
+                  padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }} />
+                Xarajat
+              </button>
 
-          {/* O'tkazma */}
-          <button
-            onClick={() => setTransferOpen(true)}
-            style={{
-              background: 'rgba(99,102,241,0.12)', color: 'var(--accent)',
-              border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9,
-              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-            }}
-          >
-            <RefreshCw size={12} /> Perevod
-          </button>
+              {/* O'tkazma */}
+              <button
+                onClick={() => setTransferOpen(true)}
+                style={{
+                  background: 'rgba(99,102,241,0.12)', color: 'var(--accent)',
+                  border: '1px solid rgba(99,102,241,0.25)', borderRadius: 9,
+                  padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
+                }}
+              >
+                <RefreshCw size={12} /> Perevod
+              </button>
 
-          {/* Kirim */}
-          <button
-            onClick={() => setCashModal({ open: true, type: 'income' })}
-            style={{
-              background: 'rgba(16,185,129,0.12)', color: 'var(--green)',
-              border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9,
-              padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
-            }}
-          >
-            <Plus size={13} /> Kirim
-          </button>
+              {/* Kirim */}
+              <button
+                onClick={() => setCashModal({ open: true, type: 'income' })}
+                style={{
+                  background: 'rgba(16,185,129,0.12)', color: 'var(--green)',
+                  border: '1px solid rgba(16,185,129,0.3)', borderRadius: 9,
+                  padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s',
+                }}
+              >
+                <Plus size={13} /> Kirim
+              </button>
 
-          <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 2px' }} />
+              <div style={{ width: 1, height: 28, background: 'var(--border)', margin: '0 2px' }} />
+            </>
+          )}
 
           {/* Yangilash */}
           <button
@@ -158,15 +172,66 @@ export default function GlobalNavbar({ onMenuToggle }: { onMenuToggle?: () => vo
             <RefreshCcw size={14} /> Yangilash
           </button>
 
-          {/* Rol belgisi + Chiqish */}
+          {/* Rol belgisi — to'liq huquqli hisobda bosilsa ko'rinish tanlash ro'yxati chiqadi */}
           {mounted && role && (
-            <span style={{
-              fontSize: 11, fontWeight: 700, color: '#a5b4fc',
-              background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
-              borderRadius: 8, padding: '5px 10px', textTransform: 'uppercase', letterSpacing: '0.04em',
-            }}>
-              {ROLE_LABEL[role]}
-            </span>
+            canSwitchView ? (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setViewMenuOpen(o => !o)}
+                  style={{
+                    fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+                    background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+                    borderRadius: 8, padding: '5px 8px 5px 10px', textTransform: 'uppercase', letterSpacing: '0.04em',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  {viewMode === 'compact' ? 'Boshliq' : 'Admin'}
+                  <ChevronDown size={12} style={{ transition: 'transform 0.15s', transform: viewMenuOpen ? 'rotate(180deg)' : 'none' }} />
+                </button>
+
+                {viewMenuOpen && (
+                  <>
+                    {/* Tashqariga bosilsa yopiladigan shaffof orqa fon */}
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 150 }} onClick={() => setViewMenuOpen(false)} />
+                    <div style={{
+                      position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 200,
+                      background: 'var(--surface)', border: '1px solid var(--border2)', borderRadius: 10,
+                      minWidth: 190, boxShadow: 'var(--shadow-md)', overflow: 'hidden',
+                    }}>
+                      <div style={{ padding: '8px 14px 6px', fontSize: 9, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        Ko&apos;rinishni tanlang
+                      </div>
+                      {[
+                        { mode: 'full' as const, label: 'To\'liq (Admin)', hint: 'Hammasi ko\'rinadi' },
+                        { mode: 'compact' as const, label: 'Ixcham (Boshliq)', hint: 'Hisob-kitob, buyurtmalar' },
+                      ].map(opt => (
+                        <button
+                          key={opt.mode}
+                          onClick={() => switchView(opt.mode)}
+                          style={{
+                            display: 'block', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer',
+                            background: viewMode === opt.mode ? 'rgba(99,102,241,0.1)' : 'transparent',
+                            color: viewMode === opt.mode ? 'var(--accent)' : 'var(--text)',
+                            padding: '10px 14px', fontSize: 12, fontWeight: 700,
+                          }}
+                        >
+                          {opt.label}
+                          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text3)', marginTop: 1 }}>{opt.hint}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+                background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+                borderRadius: 8, padding: '5px 10px', textTransform: 'uppercase', letterSpacing: '0.04em',
+              }}>
+                {ROLE_LABEL[role]}
+              </span>
+            )
           )}
           <button
             onClick={() => { if (confirm('Tizimdan chiqasizmi?')) logout(); }}

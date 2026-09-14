@@ -125,9 +125,16 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+// Boshliq — huquqi to'liq (egasi kabi), lekin menyusi ixcham: faqat buyurtmalar,
+// hisobotlar va xodimlar hisoboti (moliya bilan bog'liq). Xizmat/mijoz/zapchast
+// qo'shish va xodim CRUD kabi operatsion bo'limlar yashiriladi — u baribir URL
+// orqali o'sha sahifalarga kira oladi, faqat menyuda ko'rinmaydi.
+const BOSS_VISIBLE_GROUPS = ['orders', 'finance', 'workers'];
+const BOSS_WORKERS_HREFS = ['/workers/reports'];
+
 const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
   const pathname = usePathname();
-  const { can, ready } = useRole();
+  const { can, ready, boss } = useRole();
 
   // Rolga ko'ra ko'rinadigan guruhlar va subitemlar
   const visibleGroups = navGroups
@@ -136,6 +143,11 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
       ...g,
       subItems: g.subItems.filter(s => !s.section || !ready || can(s.section)),
     }))
+    .filter(g => g.subItems.length > 0)
+    .filter(g => !boss || BOSS_VISIBLE_GROUPS.includes(g.id))
+    .map(g => (boss && g.id === 'workers')
+      ? { ...g, subItems: g.subItems.filter(s => BOSS_WORKERS_HREFS.includes(s.href)) }
+      : g)
     .filter(g => g.subItems.length > 0);
 
   const [openGroups, setOpenGroups] = useState<string[]>(['orders']);
