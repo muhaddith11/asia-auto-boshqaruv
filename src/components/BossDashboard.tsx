@@ -5,7 +5,7 @@ import { useStore } from '@/store/useStore';
 import { computeDailyReport } from '@/lib/dailyReport';
 import { isCancelledHolat } from '@/lib/stock';
 import AiForecast from '@/components/AiForecast';
-import { ClipboardList, Wallet, TrendingUp, TrendingDown, CreditCard, Receipt } from 'lucide-react';
+import { ClipboardList, Wallet, TrendingUp, TrendingDown, CreditCard, Receipt, Target } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Boshliq uchun ixcham bosh sahifa. Oddiy Dashboard (page.tsx) o'rniga ko'rsatiladi
@@ -16,8 +16,10 @@ import { ClipboardList, Wallet, TrendingUp, TrendingDown, CreditCard, Receipt } 
 //
 // Moliyaviy hisob-kitob mavjud tekshirilgan funksiyalardan olinadi (yangi formula
 // yozilmagan): kunlik — computeDailyReport (dailyReport.ts, testlangan), oyma-oy
-// tendensiya — AiForecast (compareMonthToDate, testlangan). Faqat qarzdorlik va
-// faol buyurtmalar sanog'i shu yerda hisoblanadi (oddiy yig'indi, xatolik xavfi yo'q).
+// tendensiya — AiForecast (compareMonthToDate, testlangan). Sherik ulushi bu yerda
+// UMUMAN ko'rsatilmaydi — faqat ishxonaning o'z foydasi (ishxonaFoyda). Qarzdorlik,
+// faol buyurtmalar va potentsial foyda (hali to'lanmagan buyurtmalardagi pribil)
+// shu yerda hisoblanadi (oddiy yig'indi, xatolik xavfi yo'q).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const fmt = (n: number) => Math.round(n).toLocaleString('ru-RU');
@@ -31,14 +33,20 @@ export default function BossDashboard() {
     [buyurtmalar, ishxonaOperatsiyalar, xodimlar, today],
   );
 
-  const { activeCount, qarzJami, qarzdorlar, recentOrders } = useMemo(() => {
+  const { activeCount, qarzJami, potentialProfit, qarzdorlar, recentOrders } = useMemo(() => {
     let qarzJami = 0;
     let activeCount = 0;
+    let potentialProfit = 0;
     const qarzdorlar: { id: number; ism: string; mashina: string; qarz: number }[] = [];
     for (const b of buyurtmalar) {
       // 'bekor' (bot-ui) va 'bekor qilingan' (dashboard) — ikkalasi ham bekor qilingan.
       if (isCancelledHolat(b.holat)) continue;
-      if (b.holat !== 'tulangan') activeCount++;
+      if (b.holat !== 'tulangan') {
+        activeCount++;
+        // Potentsial foyda — hali to'lanmagan, faol buyurtmalardagi foyda (pribil).
+        // Mijoz to'lasa, shu summa ishxona foydasiga qo'shiladi.
+        potentialProfit += Math.max(0, Number(b.pribil) || 0);
+      }
       const qarz = (b.final || 0) - (b.paid || 0);
       if (b.holat !== 'tulangan' && qarz > 0) {
         qarzJami += qarz;
@@ -47,13 +55,14 @@ export default function BossDashboard() {
     }
     qarzdorlar.sort((a, b) => b.qarz - a.qarz);
     const recentOrders = [...buyurtmalar].sort((a, b) => Number(b.id) - Number(a.id)).slice(0, 6);
-    return { activeCount, qarzJami, qarzdorlar: qarzdorlar.slice(0, 6), recentOrders };
+    return { activeCount, qarzJami, potentialProfit, qarzdorlar: qarzdorlar.slice(0, 6), recentOrders };
   }, [buyurtmalar]);
 
   const isLoss = daily.sofFoyda < 0;
 
   const kpis: { label: string; value: number; icon: typeof Wallet; color: string; href: string; isCount?: boolean }[] = [
     { label: 'Bugungi sof foyda', value: daily.sofFoyda, icon: isLoss ? TrendingDown : TrendingUp, color: isLoss ? 'var(--red)' : 'var(--green)', href: '/reports/daily' },
+    { label: 'Potentsial foyda', value: potentialProfit, icon: Target, color: '#8b5cf6', href: '/orders' },
     { label: 'Kassa jami', value: kassa.naqd + kassa.karta, icon: Wallet, color: 'var(--accent)', href: '/reports/business' },
     { label: 'Faol buyurtmalar', value: activeCount, icon: ClipboardList, color: 'var(--cyan)', href: '/orders', isCount: true },
     { label: 'Qarzdorlik jami', value: qarzJami, icon: CreditCard, color: 'var(--orange)', href: '/orders?status=tulanmagan' },
@@ -64,7 +73,7 @@ export default function BossDashboard() {
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex flex-col gap-6 lg:gap-8">
 
         {/* KPI */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
           {kpis.map((k, i) => (
             <Link key={i} href={k.href} className="stat-card" style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
+import { useRole } from '@/lib/useRole';
 import { exportToCSV } from '@/lib/export';
 import { computeDailyReport, KUNLIK_BELGILANGAN_XARAJAT } from '@/lib/dailyReport';
 import {
@@ -25,6 +26,7 @@ const fmt = (n: number) => Math.round(n).toLocaleString('ru-RU');
 
 export default function DailyReportPage() {
   const store = useStore();
+  const { boss } = useRole();
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -138,7 +140,8 @@ export default function DailyReportPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16, marginBottom: 24 }}>
         {[
           { label: 'Ustalar ishlab topgani', value: calc.ustalarJami, icon: <Users size={20} />, color: '#8b5cf6' },
-          { label: 'Sherik ulushi', value: calc.sherikUlushiJami, icon: <Handshake size={20} />, color: '#6366f1' },
+          // Boshliqqa sherik ulushi ko'rsatilmaydi — faqat ishxonaning o'z foydasi/zarari kerak.
+          ...(boss ? [] : [{ label: 'Sherik ulushi', value: calc.sherikUlushiJami, icon: <Handshake size={20} />, color: '#6366f1' }]),
           { label: 'Ishxona foydasi', value: calc.ishxonaFoyda, icon: <Building2 size={20} />, color: isLoss ? '#fb7185' : '#10b981' },
           { label: 'Kunlik sof foyda', value: calc.sofFoyda, icon: isLoss ? <TrendingDown size={20} /> : <TrendingUp size={20} />, color: isLoss ? '#fb7185' : '#3b82f6' },
         ].map((s, i) => (
@@ -163,7 +166,7 @@ export default function DailyReportPage() {
               <span style={{ fontSize: 14, fontWeight: 800 }}>KUNLIK FOYDA HISOB-KITOBI</span>
             </div>
             <div style={{ fontSize: 10.5, color: 'var(--text3)', marginTop: 4 }}>
-              Sherik va ishxona foydasi — faqat bugun to'langan (kassaga tushgan) buyurtmalardan
+              {boss ? 'Ishxona foydasi' : 'Sherik va ishxona foydasi'} — faqat bugun to'langan (kassaga tushgan) buyurtmalardan
             </div>
           </div>
           <div style={{ padding: '10px 22px 18px' }}>
@@ -194,12 +197,12 @@ export default function DailyReportPage() {
               </div>
             </div>
 
-            {/* Bo'linish */}
+            {/* Bo'linish — sherik ulushi boshliqqa ko'rsatilmaydi, faqat ishxona foydasi */}
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px dashed var(--border)' }}>
-              {calc.partnerShares.length === 0 && (
+              {!boss && calc.partnerShares.length === 0 && (
                 <div style={{ fontSize: 12, color: 'var(--text3)', paddingBottom: 8 }}>Sherik kiritilmagan</div>
               )}
-              {calc.partnerShares.map((p: any) => (
+              {!boss && calc.partnerShares.map((p: any) => (
                 <div key={p.id}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', display: 'flex', alignItems: 'center', gap: 8 }}>
