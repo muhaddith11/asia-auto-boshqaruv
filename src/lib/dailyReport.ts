@@ -25,6 +25,8 @@
 // o'zgartirsangiz testlar buziladi — avval biznes qoidasini tasdiqlang.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { isCancelledHolat } from './stock';
+
 // Ulush olmaydigan xodimlar oyligining kunlik ulushi (boshliq ko'rsatmasi).
 export const KUNLIK_BELGILANGAN_XARAJAT = 600_000;
 
@@ -173,9 +175,10 @@ export function computeDailyReport(
     .filter((b) => b.holat === 'tulangan' && orderDay(b) === selectedDate);
 
   // USTALAR ish haqi uchun — shu kuni YARATILGAN (ish qilingan) buyurtmalar,
-  // to'langan yoki to'lanmaganidan qat'i nazar. Faqat bekor qilinganlar chiqadi.
+  // to'langan yoki to'lanmaganidan qat'i nazar. Faqat bekor qilinganlar chiqadi
+  // (isCancelledHolat — 'bekor qilingan' VA bot-ui'ning 'bekor' qiymati ikkalasi ham).
   const workOrders = uniqueOrders
-    .filter((b) => b.holat !== 'bekor qilingan' && b.sana === selectedDate);
+    .filter((b) => !isCancelledHolat(b.holat) && b.sana === selectedDate);
 
   // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi
   const yalpiFoyda = dayOrders.reduce(

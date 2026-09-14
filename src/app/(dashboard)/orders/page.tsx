@@ -18,6 +18,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { Buyurtma } from '@/types';
 import { sendSMS, getStatusMessage } from '@/services/smsService';
 import { exportToCSV } from '@/lib/export';
+import { isCancelledHolat } from '@/lib/stock';
 import { FileSpreadsheet } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -408,6 +409,10 @@ export default function OrdersPage() {
                     const sc = STATUS_CONFIG[b.holat] || { label: b.holat, bg: 'transparent', color: 'var(--text3)' };
                     const profit = b.pribil || 0;
                     const srv = b.srv || 0;
+                    // isCancelledHolat — 'bekor qilingan' (dashboard) VA 'bekor' (bot-ui)
+                    // ikkalasini ham biladi, aks holda botdan bekor qilingan buyurtmaga
+                    // ham to'lov qilish tugmasi yoqilib qolardi.
+                    const isPayable = b.holat !== 'tulangan' && !isCancelledHolat(b.holat);
 
                     return (
                       <tr
@@ -544,23 +549,23 @@ export default function OrdersPage() {
                             </button>
                              <button
                                title="To'lov qilish"
-                               disabled={b.holat === 'tulangan' || b.holat === 'bekor qilingan'}
-                               onClick={(e) => { 
-                                 e.stopPropagation(); 
-                                 if (b.holat !== 'tulangan') setPaymentOrder(b); 
+                               disabled={!isPayable}
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 if (isPayable) setPaymentOrder(b);
                                }}
-                               style={{ 
-                                 padding: 7, 
-                                 background: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)', 
-                                 border: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.05)', 
-                                 borderRadius: 7, 
-                                 cursor: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? 'pointer' : 'not-allowed', 
-                                 color: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? '#10b981' : '#475569', 
+                               style={{
+                                 padding: 7,
+                                 background: isPayable ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
+                                 border: isPayable ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.05)',
+                                 borderRadius: 7,
+                                 cursor: isPayable ? 'pointer' : 'not-allowed',
+                                 color: isPayable ? '#10b981' : '#475569',
                                  display: 'flex',
-                                 opacity: (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') ? 1 : 0.4
+                                 opacity: isPayable ? 1 : 0.4
                                }}
-                               onMouseEnter={e => (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') && (e.currentTarget.style.borderColor = '#10b981')}
-                               onMouseLeave={e => (b.holat !== 'tulangan' && b.holat !== 'bekor qilingan') && (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.15)')}
+                               onMouseEnter={e => isPayable && (e.currentTarget.style.borderColor = '#10b981')}
+                               onMouseLeave={e => isPayable && (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.15)')}
                              >
                                <CreditCard size={14} />
                              </button>

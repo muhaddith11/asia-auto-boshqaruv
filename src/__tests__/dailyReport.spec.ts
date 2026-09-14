@@ -337,6 +337,18 @@ describe('computeDailyReport — ustalar ish kuni asosida', () => {
     expect(r.workOrdersCount).toBe(0);
   });
 
+  it("bot-ui'dan 'bekor' bilan bekor qilingan buyurtma ham usta ish haqiga kirmaydi", () => {
+    // bot-ui bekor qilinganda 'bekor qilingan' emas, 'bekor' yozadi (@/lib/stock
+    // isCancelledHolat) — ikkalasi ham bir xil natija berishi shart.
+    const orders: DailyOrderLike[] = [{
+      ...order(56, DAY, 0, [{ workerId: 1, narx: 1_000_000, zarplata: 400_000 }]),
+      holat: 'bekor',
+    }];
+    const r = computeDailyReport(orders, [], workers, DAY);
+    expect(r.empRows).toHaveLength(0);
+    expect(r.workOrdersCount).toBe(0);
+  });
+
   it("workOrdersCount shu kuni yaratilgan (bekor bo'lmagan) buyurtmalarni sanaydi", () => {
     const orders: DailyOrderLike[] = [
       { ...order(53, DAY, 0, [{ workerId: 1, narx: 500_000 }]), holat: 'tulanmagan' },

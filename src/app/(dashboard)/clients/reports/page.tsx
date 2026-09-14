@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
+import { isCancelledHolat } from '@/lib/stock';
 import {
   Users,
   Search,
@@ -78,15 +79,18 @@ export default function ClientReportsPage() {
       return matchesPeriod(b.sana);
     });
 
-    // Faqat "tulangan" buyurtmalar foydaga kiradi
+    // Faqat "tulangan" buyurtmalar foydaga kiradi. isCancelledHolat — 'bekor
+    // qilingan' (dashboard) VA 'bekor' (bot-ui) ikkalasini ham bekor deb
+    // hisoblaydi (@/lib/stock), aks holda botdan bekor qilingan buyurtma
+    // to'lanmagan deb sanalib, mijozning qarzdorligiga noto'g'ri qo'shiladi.
     const paidOrders   = orders.filter(b => b.holat === 'tulangan');
-    const unpaidOrders = orders.filter(b => b.holat !== 'tulangan' && b.holat !== 'bekor qilingan');
+    const unpaidOrders = orders.filter(b => b.holat !== 'tulangan' && !isCancelledHolat(b.holat));
 
     const totalSpent    = paidOrders.reduce((sum, b) => sum + (b.final || 0), 0);
     const totalProfit   = paidOrders.reduce((sum, b) => sum + (b.pribil || 0), 0);
     const servicesCount = orders.reduce((sum, b) => sum + b.services.length, 0);
     // Nechta mashina qilingani — bekor qilinmagan buyurtmalar soni
-    const carsCount     = orders.filter(b => b.holat !== 'bekor qilingan').length;
+    const carsCount     = orders.filter(b => !isCancelledHolat(b.holat)).length;
 
     // Qarzdorlik: to'lanmagan buyurtmalarning (final - paid) yig'indisi
     const qarzdorlik = unpaidOrders.reduce((sum, b) => {

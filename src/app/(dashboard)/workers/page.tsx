@@ -9,6 +9,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import ConfirmModal from '@/components/ConfirmModal';
 import PhoneInput from '@/components/PhoneInput';
 import { BOLIMLAR, bolimMeta, normalizeBolim, type Bolim } from '@/lib/departments';
+import { isCancelledHolat } from '@/lib/stock';
 import {
   UserCog,
   Trash2,
@@ -129,8 +130,9 @@ export default function WorkersPage() {
 
     buyurtmalar.forEach((b: any) => {
       // Usta ishni qilgach ulushi hisoblanadi — mijoz hali to'lamagan
-      // bo'lsa ham. Faqat BEKOR QILINGAN buyurtma ulushi sanalmaydi.
-      if (b.holat === 'bekor qilingan') return;
+      // bo'lsa ham. Faqat BEKOR QILINGAN buyurtma ulushi sanalmaydi (bot-ui'ning
+      // 'bekor' qiymati ham — isCancelledHolat ikkalasini ham biladi).
+      if (isCancelledHolat(b.holat)) return;
 
       const services = b.services || [];
       const srv = b.srv || services.reduce((s: number, sv: any) => s + (sv.narx || 0), 0);

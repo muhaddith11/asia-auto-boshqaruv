@@ -36,6 +36,18 @@ describe('compareMonthToDate', () => {
     expect(a.current).toBe(100000);
   });
 
+  it("bot-ui'dan 'bekor' bilan bekor qilingan buyurtma ham hisobga olinmaydi", () => {
+    // bot-ui bekor qilinganda 'bekor qilingan' emas, 'bekor' yozadi (@/lib/stock
+    // isCancelledHolat) — ikkalasi ham bir xil natija berishi shart.
+    const now = new Date(2026, 5, 30);
+    const orders = [
+      order('2026-06-10', 100000),
+      order('2026-06-11', 500000, 'bekor'), // tushmaydi
+    ];
+    const a = compareMonthToDate(orders, now);
+    expect(a.current).toBe(100000);
+  });
+
   it('o\'tgan oyda kun bo\'lmasa cheklaydi (31-mart → fevral 28)', () => {
     const now = new Date(2026, 2, 31); // 31-mart 2026
     const orders = [

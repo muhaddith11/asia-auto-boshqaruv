@@ -1,4 +1,5 @@
 import { Buyurtma } from '@/types';
+import { isCancelledHolat } from '@/lib/stock';
 
 export const analyzeTrends = (buyurtmalar: Buyurtma[]) => {
   if (buyurtmalar.length < 5) return { 
@@ -65,7 +66,7 @@ export const compareMonthToDate = (buyurtmalar: Buyurtma[], now: Date = new Date
   let previous = 0;
 
   buyurtmalar.forEach(b => {
-    if (!b.sana || b.holat === 'bekor qilingan') return;
+    if (!b.sana || isCancelledHolat(b.holat)) return;
     const parts = String(b.sana).split('-');
     const y = Number(parts[0]);
     const m = Number(parts[1]);

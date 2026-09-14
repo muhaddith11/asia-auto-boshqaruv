@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { isCancelledHolat } from '@/lib/stock';
 import { Search, TrendingUp, Target, Archive, List } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
 
@@ -139,7 +140,7 @@ export default function PartReportsPage() {
     let totalGeneratedIncome = 0;
     buyurtmalar.forEach(b => {
       if (!matchesPeriod(b.sana)) return;
-      if (b.holat === 'bekor qilingan') return;
+      if (isCancelledHolat(b.holat)) return;
       b.zaps.forEach((bp: any) => {
         if (bp.id === p.id) {
           usageCount           += bp.qty;

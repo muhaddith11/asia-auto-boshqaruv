@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRole } from '@/lib/useRole';
+import { isCancelledHolat } from '@/lib/stock';
 import { Users, ClipboardList, Package, Banknote, Clock, ExternalLink } from 'lucide-react';
 import AiForecast from '@/components/AiForecast';
 import BossDashboard from '@/components/BossDashboard';
@@ -23,7 +24,10 @@ export default function Dashboard() {
   // ekran soddalashtirilgan.
   if (boss) return <BossDashboard />;
 
-  const activeOrders = buyurtmalar.filter(o => o.holat !== 'tulangan' && o.holat !== 'bekor qilingan');
+  // isCancelledHolat — 'bekor qilingan' (dashboard) VA 'bekor' (bot-ui) ikkalasini
+  // ham bekor deb hisoblaydi (@/lib/stock), aks holda botdan bekor qilingan
+  // buyurtma "aktiv" deb noto'g'ri sanaladi.
+  const activeOrders = buyurtmalar.filter(o => o.holat !== 'tulangan' && !isCancelledHolat(o.holat));
   const recentOrders = [...buyurtmalar].sort((a, b) => b.id - a.id).slice(0, 6);
 
   const stats = [
