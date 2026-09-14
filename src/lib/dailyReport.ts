@@ -153,6 +153,32 @@ export function buildPaymentDayMap(ishxonaOperatsiyalar: DailyOpLike[]): Map<str
   return map;
 }
 
+// Operatsiyaning TO'LIQ (kun+vaqt) yozuvi — buildPaymentDayMap'dan farqli, kunga
+// kesilmaydi. `created_at` ustuvor (haqiqiy soat/daqiqa bor), `date` faqat kun
+// ustuni (vaqtsiz) — shuning uchun opDay'dagidan TESKARI ustuvorlik.
+function opRawTimestamp(op: DailyOpLike): string {
+  return String(op.created_at || op.createdAt || op.date || '');
+}
+
+// Har bir buyurtma qachon (kun+vaqt) to'langanini aniqlaydi — orders sahifasida
+// "To'langan" ustuni uchun. Bir necha to'lov bo'lsa — eng oxirgisi olinadi.
+export function buildPaymentTimeMap(ishxonaOperatsiyalar: DailyOpLike[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const op of ishxonaOperatsiyalar) {
+    if (op.type !== 'income') continue;
+    const isOrderPayment = op.source === 'buyurtma' || op.category === "Buyurtma to'lovi";
+    if (!isOrderPayment) continue;
+    const oid = paymentOrderId(op);
+    if (oid == null || Number.isNaN(oid)) continue;
+    const ts = opRawTimestamp(op);
+    if (!ts) continue;
+    const key = String(oid);
+    const prev = map.get(key);
+    if (!prev || ts > prev) map.set(key, ts);
+  }
+  return map;
+}
+
 export function computeDailyReport(
   buyurtmalar: DailyOrderLike[],
   ishxonaOperatsiyalar: DailyOpLike[],

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   computeDailyReport,
   buildPaymentDayMap,
+  buildPaymentTimeMap,
   KUNLIK_BELGILANGAN_XARAJAT,
   type DailyOrderLike,
   type DailyOpLike,
@@ -289,6 +290,21 @@ describe('computeDailyReport — to\'lov sanasi (cash basis)', () => {
     expect(map.get('40')).toBe(DAY); // eng oxirgi kun
     expect(map.get('41')).toBe(NEXT);
     expect(map.size).toBe(2);
+  });
+
+  it("buildPaymentTimeMap to'liq (kun+vaqt) qaytaradi — orders sahifasidagi \"To'langan\" ustuni uchun", () => {
+    // orders/page.tsx'dagi bug: "Yaratilgan" va "O'zgartirilgan" ustunlari ikkalasi
+    // ham createdAt'ni ko'rsatardi. Bu funksiya haqiqiy to'lov vaqtini beradi.
+    const ops = [payOp(40, OTHER), payOp(40, DAY), payOp(41, NEXT)];
+    const map = buildPaymentTimeMap(ops);
+    expect(map.get('40')).toBe(`${DAY}T09:00:00.000Z`); // eng oxirgi to'lov vaqti
+    expect(map.get('41')).toBe(`${NEXT}T09:00:00.000Z`);
+    expect(map.size).toBe(2);
+  });
+
+  it("buildPaymentTimeMap to'lanmagan buyurtma uchun yozuv qaytarmaydi", () => {
+    const map = buildPaymentTimeMap([payOp(40, DAY)]);
+    expect(map.get('99')).toBeUndefined();
   });
 });
 

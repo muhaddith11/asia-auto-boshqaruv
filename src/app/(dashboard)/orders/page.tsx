@@ -19,6 +19,7 @@ import { Buyurtma } from '@/types';
 import { sendSMS, getStatusMessage } from '@/services/smsService';
 import { exportToCSV } from '@/lib/export';
 import { isCancelledHolat } from '@/lib/stock';
+import { buildPaymentTimeMap } from '@/lib/dailyReport';
 import { FileSpreadsheet } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -56,7 +57,7 @@ const S = {
 
 export default function OrdersPage() {
   const router = useRouter();
-  const { buyurtmalar, deleteBuyurtma, loadInitialData } = useStore();
+  const { buyurtmalar, ishxonaOperatsiyalar, deleteBuyurtma, loadInitialData } = useStore();
   const [mounted, setMounted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Buyurtma | null>(null);
   const [paymentOrder, setPaymentOrder] = useState<Buyurtma | null>(null);
@@ -112,6 +113,11 @@ export default function OrdersPage() {
     }
     return true;
   }), [buyurtmalar, applied]);
+
+  // Har bir buyurtma qachon TO'LANGANINI (kassa operatsiyasidan) aniqlaydi —
+  // "O'zgartirilgan" ustuni ilgari createdAt'ni takrorlardi (chin holat
+  // o'zgarishini ko'rsatmasdi). Hali to'lanmagan buyurtmada '—' ko'rsatiladi.
+  const paymentTimeByOrder = useMemo(() => buildPaymentTimeMap(ishxonaOperatsiyalar), [ishxonaOperatsiyalar]);
 
   const paginated = useMemo(
     () => filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
@@ -392,7 +398,7 @@ export default function OrdersPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
                   <tr style={{ background: 'var(--surface2)' }}>
-                    {['ID', 'Mijoz', 'Mashina', 'Raqami', 'Yaratilgan', "O'zgartirilgan", 'Status', 'Xizmatlar', 'Zapchast', "To'lov", 'Maosh', 'Foyda', 'Amallar'].map(h => (
+                    {['ID', 'Mijoz', 'Mashina', 'Raqami', 'Yaratilgan', "To'langan", 'Status', 'Xizmatlar', 'Zapchast', "To'lov", 'Maosh', 'Foyda', 'Amallar'].map(h => (
                       <th key={h} style={{
                         padding: '11px 14px', textAlign: h === 'ID' ? 'center' : 'left',
                         fontSize: 10, fontWeight: 700, color: 'var(--text3)',
@@ -469,9 +475,9 @@ export default function OrdersPage() {
                           {fmtDate(b.createdAt || b.sana)}
                         </td>
 
-                        {/* O'zgartirilgan */}
+                        {/* To'langan — kassa operatsiyasidan (real to'lov vaqti), hali to'lanmagan bo'lsa '—' */}
                         <td style={{ padding: '8px 10px', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
-                          {fmtDate(b.createdAt || b.sana)}
+                          {fmtDate(paymentTimeByOrder.get(String(b.id)))}
                         </td>
 
                         {/* Status */}
