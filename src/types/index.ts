@@ -116,6 +116,9 @@ export interface Buyurtma {
   qabul_xodim_nomi?: string;
   qabul_vaqti?: string;
   bosqich?: string;
+  // Chek chiqarilgan vaqt (bot-ui "Tayyor (xizmat/chek)" bosqichi — holat hali
+  // 'tulanmagan', mijoz keyinroq to'laydi). src/app/api/bot-ui/submit/route.ts.
+  tayyor_vaqti?: string;
 }
 
 export interface MaoshTarixi {

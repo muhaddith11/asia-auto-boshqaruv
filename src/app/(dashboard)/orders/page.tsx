@@ -159,7 +159,8 @@ export default function OrdersPage() {
     toast.success(`${filtered.length} ta buyurtma eksport qilindi`);
   };
 
-  const fmtDate = (iso?: string) => {
+  // `note` — vaqt to'lov emas, chek chiqarilgan vaqt ekanini belgilaydigan kichik yorliq.
+  const fmtDate = (iso?: string, note?: string) => {
     if (!iso) return '—';
     try {
       const d = new Date(iso);
@@ -168,7 +169,9 @@ export default function OrdersPage() {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
           <span style={{ fontWeight: 600, fontSize: 12 }}>{dateStr}</span>
-          <span style={{ fontSize: 11, color: 'var(--text3)' }}>{timeStr}</span>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+            {timeStr}{note && <span style={{ color: '#f59e0b', marginLeft: 4 }}>{note}</span>}
+          </span>
         </div>
       );
     } catch { return iso; }
@@ -419,6 +422,12 @@ export default function OrdersPage() {
                     // ikkalasini ham biladi, aks holda botdan bekor qilingan buyurtmaga
                     // ham to'lov qilish tugmasi yoqilib qolardi.
                     const isPayable = b.holat !== 'tulangan' && !isCancelledHolat(b.holat);
+                    // To'langan ustuni: to'langan bo'lsa — haqiqiy to'lov vaqti; hali
+                    // to'lanmagan bo'lsa — chek chiqarilgan vaqt (tayyor_vaqti, bot-ui
+                    // "Tayyor" bosqichi), to'langach shu ustunda avtomatik almashadi.
+                    const paidAt = paymentTimeByOrder.get(String(b.id));
+                    const chekOrPaidTime = paidAt || b.tayyor_vaqti;
+                    const timeNote = paidAt ? undefined : (b.tayyor_vaqti ? '(chek)' : undefined);
 
                     return (
                       <tr
@@ -475,9 +484,9 @@ export default function OrdersPage() {
                           {fmtDate(b.createdAt || b.sana)}
                         </td>
 
-                        {/* To'langan — kassa operatsiyasidan (real to'lov vaqti), hali to'lanmagan bo'lsa '—' */}
+                        {/* To'langan — to'langan bo'lsa haqiqiy to'lov vaqti, aks holda chek chiqarilgan vaqt */}
                         <td style={{ padding: '8px 10px', color: 'var(--text3)', whiteSpace: 'nowrap' }}>
-                          {fmtDate(paymentTimeByOrder.get(String(b.id)))}
+                          {fmtDate(chekOrPaidTime, timeNote)}
                         </td>
 
                         {/* Status */}
