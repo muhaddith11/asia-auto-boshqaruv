@@ -196,12 +196,16 @@ export default function BossBusinessReport() {
           <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>BUYURTMALAR VA ISHLATILGAN ZAPCHASTLAR</span>
           <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{orderRows.length} ta buyurtma</span>
         </div>
-        <div style={{ overflowX: 'auto' }}>
+        {/* Balandlik chegaralangan (ichkarida o'z skrolli bilan) — aks holda 100+
+            buyurtma pastdagi "Chiqimlar" bo'limini sahifaning tagiga surib
+            yuborib, boshliq uni deyarli topolmasdi. Sarlavha "sticky" — skroll
+            qilganda ustun nomlari ko'rinishda qoladi. */}
+        <div style={{ overflow: 'auto', maxHeight: 560 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
                 {['Sana', 'Mijoz', 'Mashina', 'Xizmatlar', 'Ishlatilgan zapchastlar', "To'lov", 'Holat'].map((h) => (
-                  <th key={h} style={{ padding: '12px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '12px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', position: 'sticky', top: 0, background: '#171d30', zIndex: 1 }}>{h}</th>
                 ))}
               </tr>
             </thead>
