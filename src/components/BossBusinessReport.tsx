@@ -189,48 +189,8 @@ export default function BossBusinessReport() {
         ))}
       </div>
 
-      {/* CHIQIMLAR VA BOSHQA AMALIYOTLAR — buyurtmaga bog'liq bo'lmagan (ijara,
-          kommunal, maosh, ta'minotchi va h.k.). Statistikadan keyin DARROV
-          ko'rinishi uchun buyurtmalar jadvalidan OLDIN chiqariladi — aks holda
-          ko'p buyurtma orasida yashirinib qolib, boshliq chiqimlarni ko'rmasdi. */}
+      {/* BUYURTMALAR + ZAPCHASTLAR — eski holatdagidek birinchi (asosiy jadval) */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 28 }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Receipt size={18} color="var(--text3)" />
-          <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>CHIQIMLAR VA BOSHQA AMALIYOTLAR</span>
-          <span style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Ishxona xarajati, maosh, o&apos;tkazma va h.k. — buyurtmaga bog&apos;liq emas</span>
-          <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{otherRows.length} ta amaliyot</span>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-                {['Sana', 'Kategoriya', 'Izoh', 'Summa'].map((h, i) => (
-                  <th key={h} style={{ padding: '10px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', textAlign: i === 3 ? 'right' : 'left' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {otherRows.length === 0 ? (
-                <tr><td colSpan={4} style={{ padding: 32, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun boshqa amaliyot yo&apos;q</td></tr>
-              ) : otherRows.map((r) => (
-                <tr key={r._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '10px 20px', fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>{r._displayDate}</td>
-                  <td style={{ padding: '10px 20px' }}>
-                    <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'var(--surface2)', color: 'var(--text2)' }}>{r._category}</span>
-                  </td>
-                  <td style={{ padding: '10px 20px', fontSize: 12, color: 'var(--text2)' }}>{r._izoh || '—'}</td>
-                  <td style={{ padding: '10px 20px', fontSize: 13, fontWeight: 800, textAlign: 'right', color: r._positive ? '#10b981' : '#fb7185', whiteSpace: 'nowrap' }}>
-                    {r._positive ? '+' : '−'} {fmt(r._amount)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* BUYURTMALAR + ZAPCHASTLAR */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <Package size={18} color="var(--accent)" />
           <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>BUYURTMALAR VA ISHLATILGAN ZAPCHASTLAR</span>
@@ -265,6 +225,44 @@ export default function BossBusinessReport() {
                   </td>
                   <td style={{ padding: '12px 20px', fontSize: 13, fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>{fmt(row._amount)}</td>
                   <td style={{ padding: '12px 20px', fontSize: 11, color: 'var(--text3)', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{order?.holat}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* CHIQIMLAR VA BOSHQA AMALIYOTLAR — buyurtmalar jadvalidan keyin (eski
+          joyida), lekin endi ustun sarlavhalari va yozuvlar soni bilan. */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Receipt size={18} color="var(--text3)" />
+          <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>CHIQIMLAR VA BOSHQA AMALIYOTLAR</span>
+          <span style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Ishxona xarajati, maosh, o&apos;tkazma va h.k. — buyurtmaga bog&apos;liq emas</span>
+          <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{otherRows.length} ta amaliyot</span>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+                {['Sana', 'Kategoriya', 'Izoh', 'Summa'].map((h, i) => (
+                  <th key={h} style={{ padding: '10px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', textAlign: i === 3 ? 'right' : 'left' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {otherRows.length === 0 ? (
+                <tr><td colSpan={4} style={{ padding: 32, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun boshqa amaliyot yo&apos;q</td></tr>
+              ) : otherRows.map((r) => (
+                <tr key={r._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '10px 20px', fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>{r._displayDate}</td>
+                  <td style={{ padding: '10px 20px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'var(--surface2)', color: 'var(--text2)' }}>{r._category}</span>
+                  </td>
+                  <td style={{ padding: '10px 20px', fontSize: 12, color: 'var(--text2)' }}>{r._izoh || '—'}</td>
+                  <td style={{ padding: '10px 20px', fontSize: 13, fontWeight: 800, textAlign: 'right', color: r._positive ? '#10b981' : '#fb7185', whiteSpace: 'nowrap' }}>
+                    {r._positive ? '+' : '−'} {fmt(r._amount)}
+                  </td>
                 </tr>
               ))}
             </tbody>
