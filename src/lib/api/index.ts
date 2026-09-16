@@ -3,7 +3,7 @@ import { Mijoz, Buyurtma, Xodim, Zapchast, Kassa, ZapPurchase } from '@/types';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Bu modul faqat @/store/useStore.ts tomonidan ishlatiladi. Route handlerlar
+// Bu modul asosan @/store/useStore.ts tomonidan ishlatiladi. Route handlerlar
 // (server) xato bo'lsa non-2xx status bilan qaytaradi va handleJson shuni
 // Error qilib tashlaydi — shuning uchun muvaffaqiyatli javobda `error` maydoni
 // odatda bo'lmaydi. Baribir chaqiruvchi tomon (useStore) buni himoya sifatida
@@ -64,7 +64,9 @@ export interface OperationRow {
   created_at: string;
 }
 
-async function handleJson<T>(res: Response): Promise<T> {
+// Store'dan tashqari client modullar ham (masalan rasxodDaftarClient) shu
+// yagona 401/xato ishlovchisidan foydalanadi.
+export async function handleJson<T>(res: Response): Promise<T> {
   // Sessiya tugagan/yo'q — foydalanuvchini login sahifasiga qaytaramiz.
   // Aks holda sahifa ochiq turaveradi va har bir saqlash jim ravishda
   // "Avtorizatsiya talab qilinadi" xatosi bilan yiqiladi.
