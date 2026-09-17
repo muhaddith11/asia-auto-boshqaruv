@@ -43,6 +43,17 @@ async function resetMenuButton(chatId: string) {
   });
 }
 
+let isCleanupWorkerStarted = false;
+
+export function startCleanupWorker() {
+  if (isCleanupWorkerStarted) return;
+  isCleanupWorkerStarted = true;
+
+  console.log('🧹 Background cleanup worker started (5m interval)');
+  setInterval(cleanupExpiredMessages, 5 * 60 * 1000);
+  cleanupExpiredMessages(); // Initial run
+}
+
 async function cleanupExpiredMessages() {
   try {
     const now = new Date().toISOString();
@@ -277,9 +288,7 @@ export async function startBotPolling() {
   }
 
   // Start background cleanup (every 5 minutes)
-  console.log('🧹 Background cleanup worker started (5m interval)');
-  setInterval(cleanupExpiredMessages, 5 * 60 * 1000);
-  cleanupExpiredMessages(); // Initial run
+  startCleanupWorker();
 
   while (true) {
     try {

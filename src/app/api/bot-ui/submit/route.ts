@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { orderId, brand, model, probeg, plateNumber, services, parts, mechanicChatId, workerPhone } = body;
 
-    const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, "shareType", "parentId", created_at';
+    const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, is_boss, "shareType", "parentId", created_at';
     let worker = null;
 
     if (workerPhone) {
@@ -311,28 +311,32 @@ ${zapList}
 (Ushbu chek id: #${insertedData?.[0]?.id || 'yangi'})`;
 
     const adminMsg = baseReceipt;
-    const mechanicMsg = baseReceipt + `\n\n(Ushbu chek 24 soatdan so'ng avtomatik tozalanadi)`;
+    const mechanicMsg = worker.is_boss
+      ? baseReceipt
+      : baseReceipt + `\n\n(Ushbu chek 24 soatdan so'ng avtomatik tozalanadi)`;
 
-    // Send to Admin
+    // Send to Admin — hech qachon o'chirilmaydi
     if (adminId) {
       try { await bot.telegram.sendMessage(adminId, adminMsg); }
       catch (e) { console.warn("Admin tg xabar ketmadi:", e); }
     }
 
-    // Send to Mechanic and log for auto-deletion
+    // Send to Mechanic and log for auto-deletion (boshliqning o'ziga chiqargan cheki o'chirilmaydi)
     if (mechanicChatId && mechanicChatId.toString() !== adminId) {
       try {
         const sentMsg = await bot.telegram.sendMessage(mechanicChatId, mechanicMsg);
 
-        // Log to DB for guaranteed 24h deletion
-        const deleteAt = new Date();
-        deleteAt.setHours(deleteAt.getHours() + 24);
+        if (!worker.is_boss) {
+          // Log to DB for guaranteed 24h deletion
+          const deleteAt = new Date();
+          deleteAt.setHours(deleteAt.getHours() + 24);
 
-        await supabase.from('bot_messages_to_delete').insert({
-          chat_id: Number(mechanicChatId),
-          message_id: sentMsg.message_id,
-          delete_at: deleteAt.toISOString()
-        });
+          await supabase.from('bot_messages_to_delete').insert({
+            chat_id: Number(mechanicChatId),
+            message_id: sentMsg.message_id,
+            delete_at: deleteAt.toISOString()
+          });
+        }
 
       } catch (e) { console.warn("Mexanik tg xabar ketmadi:", e); }
     }
