@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  carStats, fmtSana, isValidSana, joinCarsWithItems, kunFarqi, parseCarInput, parseItemInput, parseItemsInput,
-  parseSumma, patchCar, qaytishKuni, removeItem, suggestCars, summarizeDaftar, tashkentDate, upsertItems, visibleCars,
+  carStats, fmtSana, isValidSana, itemHolat, joinCarsWithItems, kunFarqi, paidAmount, parseCarInput, parseItemInput,
+  parseItemsInput, parseSumma, patchCar, qaytishKuni, removeItem, suggestCars, summarizeDaftar, tashkentDate,
+  upsertItems, visibleCars,
   type RasxodCar, type RasxodCarRow, type RasxodItem,
 } from '@/lib/rasxodDaftar';
 
@@ -17,8 +18,14 @@ const item = (carId: number, nom: string, summa: number, sana: string, tulanganV
   summa,
   sana,
   tulandi: !!tulanganVaqt,
+  tulangan_summa: 0,
   tulangan_vaqt: tulanganVaqt ?? null,
   created_at: `${sana}T08:00:00.000Z`,
+});
+const partialItem = (carId: number, nom: string, summa: number, sana: string, tulanganSumma: number, tulanganVaqt?: string): RasxodItem => ({
+  ...item(carId, nom, summa, sana),
+  tulangan_summa: tulanganSumma,
+  tulangan_vaqt: tulanganVaqt ?? null,
 });
 const carRow = (id: number, extra: Partial<RasxodCarRow> = {}): RasxodCarRow => ({
   id,
@@ -141,6 +148,25 @@ describe('hisob-kitob', () => {
     expect(carStats(car(1, [item(1, 'A', 100, '2026-09-10')]), NOW).holat).toBe('kutilmoqda');
     expect(carStats(car(1, [item(1, 'A', 100, '2026-09-10'), item(1, 'B', 50, '2026-09-11', '2026-09-12T08:00:00Z')]), NOW).holat).toBe('qisman');
     expect(carStats(car(1, [item(1, 'A', 100, '2026-09-10', '2026-09-12T08:00:00Z')]), NOW).holat).toBe('tulandi');
+    // Bitta qatorning o'zi qisman qaytgan bo'lsa ham — mashina "qisman" hisoblanadi.
+    expect(carStats(car(1, [partialItem(1, 'A', 1_000_000, '2026-09-10', 400_000)]), NOW).holat).toBe('qisman');
+  });
+
+  it("paidAmount va itemHolat: to'liq to'langanda summa, qisman to'langanda tulangan_summa qaytadi", () => {
+    const unpaid = item(1, 'A', 1000, '2026-09-10');
+    const partial = partialItem(1, 'B', 1000, '2026-09-10', 400);
+    const paid = item(1, 'C', 1000, '2026-09-10', '2026-09-12T08:00:00Z');
+    expect(paidAmount(unpaid)).toBe(0);
+    expect(paidAmount(partial)).toBe(400);
+    expect(paidAmount(paid)).toBe(1000);
+    expect(itemHolat(unpaid)).toBe('kutilmoqda');
+    expect(itemHolat(partial)).toBe('qisman');
+    expect(itemHolat(paid)).toBe('tulandi');
+  });
+
+  it("carStats: qisman to'langan qatorda tulangan/qoldiq to'g'ri taqsimlanadi", () => {
+    const st = carStats(car(1, [partialItem(1, 'A', 1_000_000, '2026-09-14', 500_000)]), NOW);
+    expect(st).toMatchObject({ jami: 1_000_000, tulangan: 500_000, qoldiq: 500_000, unpaidCount: 1, holat: 'qisman' });
   });
 
   it("carStats summalarni va eng eski to'lanmagan rasxoddan beri kunlarni hisoblaydi", () => {

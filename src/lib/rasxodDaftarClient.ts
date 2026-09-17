@@ -54,3 +54,19 @@ export async function setDaftarTulov(carId: number, tulandi: boolean, itemIds?: 
   );
   return res.items;
 }
+
+// Qisman to'lov: `summa` qatorning qoldig'iga qo'shiladi (to'liq to'lansa avtomatik "tulandi").
+export async function addDaftarPartialPayment(carId: number, itemId: number, summa: number): Promise<RasxodItem> {
+  const res = await handleJson<{ item: RasxodItem }>(
+    await fetch(`${BASE}/${carId}/items/${itemId}/tulov`, send('POST', { summa })),
+  );
+  return res.item;
+}
+
+// Qisman to'lovni bekor qilish.
+export async function resetDaftarPartialPayment(carId: number, itemId: number): Promise<RasxodItem> {
+  const res = await handleJson<{ item: RasxodItem }>(
+    await fetch(`${BASE}/${carId}/items/${itemId}/tulov`, send('DELETE')),
+  );
+  return res.item;
+}

@@ -26,6 +26,7 @@ const carRoute = await import('@/app/api/rasxod-daftar/[id]/route');
 const itemsRoute = await import('@/app/api/rasxod-daftar/[id]/items/route');
 const itemRoute = await import('@/app/api/rasxod-daftar/[id]/items/[itemId]/route');
 const tulovRoute = await import('@/app/api/rasxod-daftar/[id]/tulov/route');
+const itemTulovRoute = await import('@/app/api/rasxod-daftar/[id]/items/[itemId]/tulov/route');
 
 const tokens = {
   boshliq: await createSessionToken('boshliq', 'Boshliq'),
@@ -58,7 +59,7 @@ const ctx = <T extends Record<string, string>>(params: T) => ({ params: Promise.
 
 const carRow = { id: 7, mashina: 'Zeekr 001', raqam: '601111111', mijoz: null, tel: null, izoh: null, created_at: '2026-09-03T08:00:00Z', updated_at: '2026-09-03T08:00:00Z' };
 const itemRow = (id: number, extra: Record<string, unknown> = {}) => ({
-  id, car_id: 7, nom: 'Zds', summa: '1200000', sana: '2026-09-03', tulandi: false, tulangan_vaqt: null, created_at: '2026-09-03T08:00:00Z', ...extra,
+  id, car_id: 7, nom: 'Zds', summa: '1200000', sana: '2026-09-03', tulandi: false, tulangan_summa: 0, tulangan_vaqt: null, created_at: '2026-09-03T08:00:00Z', ...extra,
 });
 
 describe('/api/rasxod-daftar — kirish huquqi', () => {
@@ -66,6 +67,7 @@ describe('/api/rasxod-daftar — kirish huquqi', () => {
     expect((await listRoute.GET(req('', { role: null }))).status).toBe(401);
     expect((await listRoute.GET(req('', { role: 'xodim' }))).status).toBe(403);
     expect((await tulovRoute.POST(req('/7/tulov', { method: 'POST', body: { tulandi: true }, role: 'xodim' }), ctx({ id: '7' }))).status).toBe(403);
+    expect((await itemTulovRoute.POST(req('/7/items/1/tulov', { method: 'POST', body: { summa: 1 }, role: 'xodim' }), ctx({ id: '7', itemId: '1' }))).status).toBe(403);
     expect(mockState.calls.rasxod_items).toBeUndefined();
   });
 
@@ -260,5 +262,74 @@ describe('POST /api/rasxod-daftar/[id]/tulov', () => {
       expect(res.status).toBe(400);
     }
     expect(mockState.calls.rasxod_items).toBeUndefined();
+  });
+});
+
+describe('POST/DELETE /api/rasxod-daftar/[id]/items/[itemId]/tulov (qisman to\'lov)', () => {
+  it("qisman to'lov qo'shadi, qoldiqqa yetmasa tulandi=false qoladi", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0
+        ? { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 0 })], error: null }
+        : { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 500_000, tulangan_vaqt: '2026-09-16T10:00:00Z' })], error: null };
+    const res = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 500000 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).item).toMatchObject({ id: 1, tulandi: false, tulangan_summa: 500_000 });
+    const [patch] = mockState.calls.rasxod_items.update[0] as [Record<string, unknown>];
+    expect(patch.tulangan_summa).toBe(500_000);
+    expect(patch.tulandi).toBe(false);
+    expect(mockState.afterTasks).toHaveLength(1);
+  });
+
+  it("qoldiqni to'ldirsa avtomatik tulandi=true bo'ladi", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0
+        ? { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 700_000 })], error: null }
+        : { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 1_000_000, tulandi: true, tulangan_vaqt: '2026-09-16T10:00:00Z' })], error: null };
+    const res = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 300000 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).item).toMatchObject({ tulandi: true, tulangan_summa: 1_000_000 });
+    const [patch] = mockState.calls.rasxod_items.update[0] as [Record<string, unknown>];
+    expect(patch.tulandi).toBe(true);
+  });
+
+  it("qoldiqdan katta summa yoki allaqachon to'liq to'langan bo'lsa 400, topilmasa 404", async () => {
+    mockState.responses.rasxod_items = { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 800_000 })], error: null };
+    const tooMuch = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 300000 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(tooMuch.status).toBe(400);
+
+    mockState.responses.rasxod_items = { data: [itemRow(1, { tulandi: true })], error: null };
+    const alreadyPaid = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 1 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(alreadyPaid.status).toBe(400);
+
+    mockState.responses.rasxod_items = { data: [], error: null };
+    const notFound = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 1 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(notFound.status).toBe(404);
+
+    const badSumma = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 0 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(badSumma.status).toBe(400);
+  });
+
+  it("DELETE — qisman to'lovni bekor qiladi (tulangan_summa=0, tulangan_vaqt=null)", async () => {
+    mockState.responses.rasxod_items = { data: [itemRow(1, { tulangan_summa: 0, tulangan_vaqt: null })], error: null };
+    const res = await itemTulovRoute.DELETE(req('/7/items/1/tulov', { method: 'DELETE' }), ctx({ id: '7', itemId: '1' }));
+    expect(res.status).toBe(200);
+    const [patch] = mockState.calls.rasxod_items.update[0] as [Record<string, unknown>];
+    expect(patch).toEqual({ tulangan_summa: 0, tulangan_vaqt: null });
+
+    mockState.responses.rasxod_items = { data: [], error: null };
+    const notFound = await itemTulovRoute.DELETE(req('/7/items/1/tulov', { method: 'DELETE' }), ctx({ id: '7', itemId: '1' }));
+    expect(notFound.status).toBe(404);
   });
 });

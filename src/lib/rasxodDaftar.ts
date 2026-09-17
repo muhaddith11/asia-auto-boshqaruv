@@ -17,8 +17,9 @@ export interface RasxodItem {
   nom: string;
   summa: number;
   sana: string; // YYYY-MM-DD — xarajat qilingan kun
-  tulandi: boolean;
-  tulangan_vaqt: string | null; // ISO — "to'landi" belgilangan vaqt
+  tulandi: boolean; // summa TO'LIQ qaytdimi
+  tulangan_summa: number; // qisman to'lov: hozirgacha qaytgan qism (tulandi=false bo'lganda ma'noli)
+  tulangan_vaqt: string | null; // ISO — oxirgi to'lov (to'liq yoki qisman) vaqti
   created_at: string;
 }
 
@@ -213,6 +214,19 @@ export function joinCarsWithItems(cars: RasxodCarRow[], items: RasxodItem[]): Ra
   return cars.map((car) => ({ ...car, items: sortItems(byCar.get(car.id) ?? []) }));
 }
 
+// Bitta qatordan hozirgacha qaytgan summa — to'liq bo'lsa summa, aks holda qisman to'lov.
+export function paidAmount(item: RasxodItem): number {
+  if (item.tulandi) return item.summa;
+  return Math.min(Math.max(item.tulangan_summa, 0), item.summa);
+}
+
+export type ItemHolat = 'kutilmoqda' | 'qisman' | 'tulandi';
+
+export function itemHolat(item: RasxodItem): ItemHolat {
+  if (item.tulandi) return 'tulandi';
+  return paidAmount(item) > 0 ? 'qisman' : 'kutilmoqda';
+}
+
 // bosh — hali rasxod yozilmagan; qisman — bir qismi qaytgan.
 export type CarHolat = 'bosh' | 'kutilmoqda' | 'qisman' | 'tulandi';
 
@@ -237,19 +251,22 @@ export function carStats(car: RasxodCar, now: Date = new Date()): CarStats {
   };
   for (const item of car.items) {
     stats.jami += item.summa;
+    const paid = paidAmount(item);
+    stats.tulangan += paid;
+    stats.qoldiq += item.summa - paid;
     if (item.tulandi) {
-      stats.tulangan += item.summa;
       if (item.tulangan_vaqt && (!stats.oxirgiTulov || item.tulangan_vaqt > stats.oxirgiTulov)) {
         stats.oxirgiTulov = item.tulangan_vaqt;
       }
     } else {
-      stats.qoldiq += item.summa;
       stats.unpaidCount++;
       stats.kutishKuni = Math.max(stats.kutishKuni ?? 0, kunFarqi(item.sana, now));
     }
   }
   if (stats.itemCount > 0) {
-    stats.holat = stats.unpaidCount === 0 ? 'tulandi' : stats.unpaidCount < stats.itemCount ? 'qisman' : 'kutilmoqda';
+    // Jami qoldiq 0 — hammasi qaytdi; hech narsa qaytmagan bo'lsa kutilmoqda;
+    // aks holda (bitta qatorning bir qismi yoki ba'zi qatorlar to'liq qaytgan) — qisman.
+    stats.holat = stats.qoldiq === 0 ? 'tulandi' : stats.tulangan > 0 ? 'qisman' : 'kutilmoqda';
   }
   return stats;
 }

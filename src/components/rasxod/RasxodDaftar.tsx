@@ -9,12 +9,13 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { exportToCSV } from '@/lib/export';
 import { formatPhone } from '@/lib/phone';
 import {
-  carStats, fmtSana, kunFarqi, patchCar, qaytishKuni, removeItem, summarizeDaftar, tashkentDate, upsertItems, visibleCars,
+  carStats, fmtSana, itemHolat, kunFarqi, paidAmount, patchCar, qaytishKuni, removeItem, summarizeDaftar, tashkentDate,
+  upsertItems, visibleCars,
   type CarInput, type DaftarTab, type ItemInput, type RasxodCar, type RasxodItem,
 } from '@/lib/rasxodDaftar';
 import {
-  addDaftarItem, createDaftarCar, deleteDaftarCar, deleteDaftarItem, fetchDaftar, setDaftarTulov, updateDaftarCar,
-  updateDaftarItem,
+  addDaftarItem, addDaftarPartialPayment, createDaftarCar, deleteDaftarCar, deleteDaftarItem, fetchDaftar,
+  resetDaftarPartialPayment, setDaftarTulov, updateDaftarCar, updateDaftarItem,
 } from '@/lib/rasxodDaftarClient';
 import RasxodCarCard from './RasxodCarCard';
 import RasxodCarModal from './RasxodCarModal';
@@ -140,6 +141,34 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
     }
   };
 
+  const handleAddPartial = async (car: RasxodCar, item: RasxodItem, summa: number): Promise<boolean> => {
+    try {
+      const updated = await addDaftarPartialPayment(car.id, item.id, summa);
+      setCars((prev) => upsertItems(prev ?? [], [updated]));
+      toast.success(
+        updated.tulandi
+          ? `${item.nom}: qolgan ${fmt(summa)} so'm ham to'landi`
+          : `${item.nom}: ${fmt(summa)} so'm qisman to'landi (qoldi ${fmt(updated.summa - updated.tulangan_summa)})`,
+      );
+      return true;
+    } catch (err) {
+      toast.error(errorText(err, "To'lov saqlanmadi"));
+      return false;
+    }
+  };
+
+  const handleResetPartial = async (car: RasxodCar, item: RasxodItem): Promise<boolean> => {
+    try {
+      const updated = await resetDaftarPartialPayment(car.id, item.id);
+      setCars((prev) => upsertItems(prev ?? [], [updated]));
+      toast.success(`${item.nom}: qisman to'lov bekor qilindi`);
+      return true;
+    } catch (err) {
+      toast.error(errorText(err, "Bekor qilinmadi"));
+      return false;
+    }
+  };
+
   const handleSetTulov = async (car: RasxodCar, tulandi: boolean, items?: RasxodItem[]): Promise<boolean> => {
     try {
       const changed = await setDaftarTulov(car.id, tulandi, items?.map((i) => i.id));
@@ -210,9 +239,13 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
       { key: 'sana', label: 'Rasxod sanasi', format: (r) => fmtSana(r.item.sana) },
       { key: 'nom', label: 'Nima uchun', format: (r) => r.item.nom },
       { key: 'summa', label: 'Summa', format: (r) => r.item.summa },
-      { key: 'holat', label: 'Holat', format: (r) => (r.item.tulandi ? "To'langan" : 'Kutilmoqda') },
       {
-        key: 'tulangan', label: "To'langan sana",
+        key: 'holat', label: 'Holat',
+        format: (r) => ({ tulandi: "To'langan", qisman: "Qisman to'landi", kutilmoqda: 'Kutilmoqda' })[itemHolat(r.item)],
+      },
+      { key: 'tulangan_summa', label: "To'langan summa", format: (r) => paidAmount(r.item) },
+      {
+        key: 'tulangan', label: "Oxirgi to'lov sana",
         format: (r) => (r.item.tulangan_vaqt ? fmtSana(tashkentDate(new Date(r.item.tulangan_vaqt))) : ''),
       },
       { key: 'qaytish', label: 'Necha kunda qaytdi', format: (r) => qaytishKuni(r.item) ?? '' },
@@ -369,6 +402,8 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
               onUpdateItem={handleUpdateItem}
               onDeleteItem={(c, item) => setConfirm({ kind: 'item', car: c, item })}
               onSetTulov={handleSetTulov}
+              onAddPartial={handleAddPartial}
+              onResetPartial={handleResetPartial}
             />
           ))}
         </div>
