@@ -2,7 +2,9 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { applyStockDelta } from '@/lib/stock';
-import { refundRasxodOnCancel } from '@/lib/orderCancel';
+import { refundRasxodOnCancel, refundRemovedRasxod } from '@/lib/orderCancel';
+import { diffRemovedZaps } from '@/lib/zapArchive';
+import { archiveRemovedZaps } from '@/lib/zapArchiveRepo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -105,6 +107,17 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
     );
     await refundRasxodOnCancel(id, prevRow?.zaps, prevRow?.holat, nextHolat);
 
+    // Tahrirlashda zapchast/rasxod qatori olib tashlangan bo'lsa: rasxod puli naqd
+    // kassaga qaytadi, har bir olib tashlangan qator esa Zapchastlar hisoboti
+    // yo'qolib qolmasligi uchun arxivga nusxalanadi (zap_archive).
+    if (dbBody.zaps !== undefined) {
+      const removed = diffRemovedZaps(prevRow?.zaps, dbBody.zaps);
+      if (removed.length > 0) {
+        await refundRemovedRasxod(id, removed, prevRow?.holat, nextHolat);
+        await archiveRemovedZaps(data[0], removed, 'tahrirlandi');
+      }
+    }
+
     // To'lov holatiga o'tgan bo'lsa alohida belgilaymiz.
     // Audit yozuvi javobni kuttirmaydi — `after` orqali javob yuborilgandan
     // keyin bajariladi (to'lovni tasdiqlashda ortiqcha kechikish bo'lmasin).
@@ -142,6 +155,8 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     // O'chirilgan buyurtmadagi zapchastlar (bekor qilinmagan bo'lsa) omborga qaytadi.
     if (deleted) {
       await applyStockDelta({ zaps: deleted.zaps, holat: deleted.holat }, null);
+      // Buyurtma bilan birga uning zapchastlari ham hisobotdan yo'qolmasligi uchun arxivga.
+      await archiveRemovedZaps(deleted, Array.isArray(deleted.zaps) ? deleted.zaps : [], 'buyurtma_ochirildi');
     }
 
     await logAudit({

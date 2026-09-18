@@ -90,7 +90,7 @@ interface AutoServisStore {
   deleteZapchast: (id: number) => void;
 
   addBuyurtma: (b: Omit<Buyurtma, 'id'>) => void;
-  updateBuyurtma: (id: number, data: Partial<Buyurtma>) => void;
+  updateBuyurtma: (id: number, data: Partial<Buyurtma>) => Promise<void>;
   deleteBuyurtma: (id: number) => void;
 
   updateKassa: (method: keyof Kassa, amount: number, operation: 'add' | 'sub') => Promise<void>;

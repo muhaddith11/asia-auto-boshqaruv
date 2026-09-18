@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
 import { applyStockDelta } from '@/lib/stock';
+import { diffRemovedZaps } from '@/lib/zapArchive';
+import { archiveRemovedZaps } from '@/lib/zapArchiveRepo';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -250,6 +252,13 @@ export async function POST(req: NextRequest) {
         .is('ended_at', null);
 
       insertedData = data;
+
+      // Chek qayta chiqarilsa, avvalgi oddiy zapchastlar yangi ro'yxat bilan
+      // almashadi — Zapchastlar hisobotidan yo'qolib qolmasligi uchun olib
+      // tashlanganlarini arxivga yozamiz (bir xil qolganlari yozilmaydi).
+      if (data?.[0]) {
+        await archiveRemovedZaps(data[0], diffRemovedZaps(prevZaps, mergedZaps), 'tahrirlandi');
+      }
     } else {
       // ── Eski yo'l: to'g'ridan-to'g'ri yangi buyurtma (qabul bosqichisiz) ──
       const orderData = {

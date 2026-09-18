@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { isCancelledHolat } from '@/lib/stock';
+import { fetchZapArchive } from '@/lib/zapArchiveClient';
+import { isRasxodZap, type ArchivedZap } from '@/lib/zapArchive';
 import { Search, TrendingUp, Target, Archive, List } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
 
@@ -48,14 +50,29 @@ export default function PartReportsPage() {
   const [view, setView] = useState<'log' | 'arxiv'>('log');
   const [logSearch, setLogSearch] = useState('');
   const [filters, setFilters] = useState({ search: '', mashina: '', period: 'month' });
+  // Buyurtmadan olib tashlangan (yoki buyurtmasi o'chirilgan) zapchastlar — hisobotda
+  // yo'qolib qolmasligi uchun serverdagi arxivdan alohida yuklanadi (zap_archive).
+  const [archived, setArchived] = useState<ArchivedZap[]>([]);
+  const [archiveError, setArchiveError] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    fetchZapArchive()
+      .then((rows) => { if (!cancelled) setArchived(rows); })
+      .catch((err) => {
+        console.error('Zapchast arxivini yuklashda xatolik:', err);
+        if (!cancelled) setArchiveError(true);
+      });
+    return () => { cancelled = true; };
+  }, []);
   if (!mounted) return null;
 
   // ═══════════════════════════════════════════════════════════════════════
   // YANGI: Xodimlar buyurtmalarga kiritgan har bir zapchast qatori — xuddi
   // chek qog'ozidagi "Ehtiyot qismlar" bo'limida chiqadigan ma'lumot bilan
   // bir xil manbadan (orders.zaps), qaysi mashinaga va qachon qo'shilgani bilan.
+  // Buyurtmadan olib tashlangan qatorlar ham (arxivdan) shu yerda qoladi.
   // ═══════════════════════════════════════════════════════════════════════
   type LogRow = {
     key: string;
@@ -69,6 +86,8 @@ export default function PartReportsPage() {
     narx: number;
     turi: 'oddiy' | 'alohida' | 'rasxod';
     xodim: string;
+    // null — qator hozir ham buyurtmada; aks holda buyurtmadan olib tashlangan.
+    arxiv: null | { sabab: ArchivedZap['sabab']; vaqt: string };
   };
 
   const logRows: LogRow[] = [];
@@ -89,7 +108,27 @@ export default function PartReportsPage() {
         narx: Number(z.narx ?? z.price ?? 0),
         turi,
         xodim: (isRasxod ? z.xodim_nomi : b.qabul_xodim_nomi) || '',
+        arxiv: null,
       });
+    });
+  });
+
+  archived.forEach((a) => {
+    const z = a.zap;
+    const isRasxod = isRasxodZap(z);
+    logRows.push({
+      key: `arxiv-${a.id}`,
+      sanaIso: a.sana || a.removed_at || null,
+      orderId: a.order_id,
+      mashina: a.mashina,
+      raqam: a.raqam,
+      ism: a.ism,
+      holat: a.order_holat || '',
+      nom: z.nom || z.name || '',
+      narx: Number(z.narx ?? z.price ?? 0),
+      turi: isRasxod ? 'rasxod' : z.alohida === true ? 'alohida' : 'oddiy',
+      xodim: a.xodim,
+      arxiv: { sabab: a.sabab, vaqt: a.removed_at },
     });
   });
 
@@ -165,7 +204,7 @@ export default function PartReportsPage() {
   return (
     <PageLayout
       title="Zapchastlar hisoboti"
-      subtitle={view === 'log' ? "Xodimlar kiritgan har bir zapchast — chekdagi ma'lumotlar bilan bir xil" : "Davr bo'yicha zapchastlar sarfi va foyda tahlili (arxiv)"}
+      subtitle={view === 'log' ? "Xodimlar kiritgan har bir zapchast — buyurtmadan olib tashlansa ham bu yerda saqlanadi" : "Davr bo'yicha zapchastlar sarfi va foyda tahlili (arxiv)"}
       headerActions={
         <button
           onClick={() => setView(view === 'log' ? 'arxiv' : 'log')}
@@ -198,8 +237,17 @@ export default function PartReportsPage() {
                 style={{ ...SEL, paddingLeft: 34, width: '100%' }}
               />
             </div>
-            <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{logFiltered.length} ta qator</span>
+            <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>
+              {logFiltered.length} ta qator
+              {logFiltered.some((r) => r.arxiv) && ` · ${logFiltered.filter((r) => r.arxiv).length} tasi buyurtmadan olib tashlangan`}
+            </span>
           </div>
+
+          {archiveError && (
+            <div style={{ marginBottom: 20, padding: '10px 16px', borderRadius: 10, fontSize: 12, color: '#fbbf24', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}>
+              {"Olib tashlangan zapchastlar arxivi yuklanmadi — hozircha faqat buyurtmalarda turgan zapchastlar ko'rsatilmoqda. Sahifani yangilab ko'ring."}
+            </div>
+          )}
 
           {/* ── JADVAL ── */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
@@ -223,7 +271,7 @@ export default function PartReportsPage() {
                       </td>
                     </tr>
                   ) : logFiltered.map((r, idx) => (
-                    <tr key={r.key} style={{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                    <tr key={r.key} style={{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', opacity: r.arxiv ? 0.6 : 1 }}>
                       <td style={{ padding: '12px 20px', color: 'var(--text3)', fontSize: 11 }}>{fmtSana(r.sanaIso)}</td>
                       <td style={{ padding: '12px 20px', color: 'var(--text3)', fontSize: 11 }}>#{r.orderId}</td>
                       <td style={{ padding: '12px 20px' }}>
@@ -238,7 +286,16 @@ export default function PartReportsPage() {
                       <td style={{ padding: '12px 20px', color: 'var(--text3)', fontSize: 11 }}>{r.xodim || '—'}</td>
                       <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 800, color: 'var(--text)' }}>{r.narx.toLocaleString()}</td>
                       <td style={{ padding: '12px 20px' }}>
-                        <span style={TAG_STYLE(HOLAT_COLOR[r.holat] || '#64748b')}>{r.holat}</span>
+                        {r.arxiv ? (
+                          <span
+                            style={TAG_STYLE('#94a3b8')}
+                            title={`${fmtSana(r.arxiv.vaqt)} da olib tashlangan${r.holat ? ` · buyurtma holati: ${r.holat}` : ''}`}
+                          >
+                            {r.arxiv.sabab === 'buyurtma_ochirildi' ? "Buyurtma o'chirilgan" : 'Olib tashlangan'}
+                          </span>
+                        ) : (
+                          <span style={TAG_STYLE(HOLAT_COLOR[r.holat] || '#64748b')}>{r.holat}</span>
+                        )}
                       </td>
                     </tr>
                   ))}

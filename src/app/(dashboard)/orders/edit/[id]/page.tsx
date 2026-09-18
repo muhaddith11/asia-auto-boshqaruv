@@ -258,7 +258,14 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         };
       });
 
-    updateBuyurtma(orderId, {
+    // Rasxod qatori olib tashlansa, server uning pulini naqd kassaga qaytaradi —
+    // navbardagi kassa darrov to'g'ri ko'rinishi uchun saqlangach majburan yangilaymiz.
+    const rasxodBefore = (buyurtmalar.find(b => b.id === orderId)?.zaps || [])
+      .filter(z => z.rasxod === true || z.kat === 'Rasxod').length;
+    const rasxodAfter = partRows.filter(r => r.isRasxod && (r.partId || r.customNom)).length;
+    const rasxodRemoved = rasxodBefore > rasxodAfter;
+
+    const saving = updateBuyurtma(orderId, {
       ...form,
       services: updatedServices,
       zaps: updatedParts,
@@ -270,6 +277,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
       // pribil = yakuniy to'lov − ustalar maoshi − zapchast tannarxi (orderCalc.ts bilan bir xil)
       pribil: Math.max(0, finalTotal - zarplataAdjusted - partsCostTotal)
     });
+    if (rasxodRemoved) void saving.then(() => loadInitialData(true));
 
     router.push('/orders');
   };
