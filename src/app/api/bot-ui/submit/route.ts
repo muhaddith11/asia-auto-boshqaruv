@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
 import { applyStockDelta } from '@/lib/stock';
+import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 import { diffRemovedZaps } from '@/lib/zapArchive';
 import { archiveRemovedZaps } from '@/lib/zapArchiveRepo';
 
@@ -349,6 +350,8 @@ ${zapList}
 
       } catch (e) { console.warn("Mexanik tg xabar ketmadi:", e); }
     }
+
+    after(() => cleanupExpiredMessagesThrottled());
 
     return NextResponse.json({ ok: true, id: insertedData[0].id });
   } catch (err) {

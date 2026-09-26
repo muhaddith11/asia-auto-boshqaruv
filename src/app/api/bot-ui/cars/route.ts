@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { identifyWorker } from '@/lib/botWorker';
+import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,9 @@ export async function GET(req: NextRequest) {
         { status: 403 }
       );
     }
+
+    // Xodim ilovani ochganda muddati o'tgan chek xabarlari tozalanadi (serverless'da setInterval ishonchsiz)
+    after(() => cleanupExpiredMessagesThrottled());
 
     // Xodimning o'z tugallanmagan mashinalari (topshirilmagan)
     const { data: myCars, error: myErr } = await supabase
