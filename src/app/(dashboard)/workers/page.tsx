@@ -10,7 +10,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import PhoneInput from '@/components/PhoneInput';
 import { BOLIMLAR, bolimMeta, normalizeBolim, type Bolim } from '@/lib/departments';
 import { isCancelledHolat } from '@/lib/stock';
-import { realizedProfit } from '@/lib/realizedProfit';
+import { buildQismanTolovMap, realizedProfit } from '@/lib/realizedProfit';
 import {
   UserCog,
   Trash2,
@@ -97,8 +97,13 @@ export default function WorkersPage() {
     // Kassaga tushgan pul FOYDA hisobiga boradi — buyurtma to'liq yopilishini
     // kutmaydi (boshliq qoidasi, @/lib/realizedProfit). To'liq to'langan
     // buyurtmalarda avvalgidek foyda to'liq olinadi; qisman to'langanda esa
-    // tushgan pul (buyurtma foydasidan oshmagan holda) hisobga olinadi.
-    const orderProfit = uniqueOrders.reduce((sum, b) => sum + realizedProfit(b), 0);
+    // SANA CHEGARASIDAN keyingi to'lovlar (buyurtma foydasidan oshmagan holda)
+    // hisobga olinadi — undan oldingilari allaqachon hisob-kitob qilingan.
+    const qismanTolov = buildQismanTolovMap(ishxonaOperatsiyalar);
+    const orderProfit = uniqueOrders.reduce(
+      (sum, b) => sum + realizedProfit(b, qismanTolov.get(Number(b.id))),
+      0,
+    );
 
     // Faqat 2026-05-12 dan boshlab ishxona xarajatlari ayiriladi
     const startDate = new Date('2026-05-12');
