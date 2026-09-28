@@ -6,6 +6,7 @@ import { useRole } from '@/lib/useRole';
 import BossBusinessReport from '@/components/BossBusinessReport';
 import { exportToCSV } from '@/lib/export';
 import { buildLedgerRows } from '@/lib/businessLedger';
+import { monthRange, quickRange, type QuickRangeKind } from '@/lib/dateRange';
 import {
   Filter,
   TrendingUp,
@@ -42,13 +43,10 @@ export default function BusinessReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 30;
 
-  useEffect(() => { 
-    setMounted(true); 
-    // Default: joriy oyni sozlash
-    const now = new Date();
-    const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const to   = last.toISOString().split('T')[0];
+  useEffect(() => {
+    setMounted(true);
+    // Default: joriy oy (oxirgi kuni ham kiradi — @/lib/dateRange)
+    const { from, to } = monthRange();
     setFilterFrom(from);
     setFilterTo(to);
   }, []);
@@ -171,22 +169,9 @@ export default function BusinessReportPage() {
               <button key={q} onClick={() => {
                 if (activeQuick === q) { setActiveQuick(''); setFilterFrom(''); setFilterTo(''); return; }
                 setActiveQuick(q);
-                if (q === 'hafta') {
-                  const now = new Date();
-                  const day = now.getDay();
-                  const diffToMon = (day === 0 ? -6 : 1 - day);
-                  const mon = new Date(now); mon.setDate(now.getDate() + diffToMon);
-                  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-                  setFilterFrom(mon.toISOString().split('T')[0]);
-                  setFilterTo(sun.toISOString().split('T')[0]);
-                } else if (q === 'oy') {
-                  const now = new Date();
-                  setFilterFrom(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`);
-                  setFilterTo(new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]);
-                } else if (q === 'yil') {
-                  setFilterFrom(`${new Date().getFullYear()}-01-01`);
-                  setFilterTo(`${new Date().getFullYear()}-12-31`);
-                }
+                const { from, to } = quickRange(q as QuickRangeKind);
+                setFilterFrom(from);
+                setFilterTo(to);
               }} style={{
                 padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.15s',
                 background: activeQuick === q ? '#4f46e5' : 'var(--surface2)',

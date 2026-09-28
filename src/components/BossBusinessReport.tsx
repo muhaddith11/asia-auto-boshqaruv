@@ -2,34 +2,39 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
-import { buildLedgerRows, type LedgerRow } from '@/lib/businessLedger';
+import { buildLedgerRows } from '@/lib/businessLedger';
+import { attachOrderProfit, computeBossStats, orderPartLines } from '@/lib/bossProfit';
+import { monthRange, quickRange, type QuickRangeKind } from '@/lib/dateRange';
 import { exportToCSV } from '@/lib/export';
-import { TrendingUp, TrendingDown, Target, Banknote, Receipt, FileSpreadsheet, Package } from 'lucide-react';
-import type { Buyurtma, OrderZap } from '@/types';
+import { TrendingDown, Target, Banknote, Receipt, FileSpreadsheet, Package, Wrench } from 'lucide-react';
+import type { Buyurtma } from '@/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Boshliq uchun "Ishxona bo'yicha" hisobotning buyurtma-markazli ko'rinishi.
+// Boshliq uchun "Ishxona bo'yicha" hisobot.
 //
-// Daromad/Xarajat/Foyda — EGASI ko'radigan raqamlar bilan AYNAN bir xil (ikkalasi
-// ham @/lib/businessLedger'dan, hech narsa yashirilmaydi/o'zgartirilmaydi).
+// ASOSIY RAQAM — kirim emas, ISHXONA FOYDASI:
+//     Foyda = Kirim − Zapchast − To'langan ish xaqi − Ishxona xarajati
+// Formula va uning "nega hech narsa ikki marta ayirilmaydi" izohi: @/lib/bossProfit.
 //
-// Farqi — RO'YXAT: har qator alohida amaliyot emas, balki BITTA BUYURTMA —
-// qaysi xizmat va qanaqa zapchast ishlatilgani bilan birga ("hammasi bitta
-// joyda"). Xodimlar bot orqali kiritgan "Rasxod: ..." chiqim yozuvlari bu
-// ro'yxatda ALOHIDA qator sifatida ko'rinmaydi — ular allaqachon o'sha
-// buyurtmaning o'z zap/final summasiga qo'shilgan (src/app/api/bot-ui/rasxod);
-// pastdagi "Boshqa amaliyotlar" jadvalida ham chiqarib tashlanadi. Summasi
-// baribir Xarajat statistikasida TO'LIQ hisobga olinadi — faqat itemized
-// ro'yxatdan yashiriladi, foyda raqami buzilmaydi.
+// Qatorlar manbasi — @/lib/businessLedger (egasining /reports/business sahifasi
+// bilan AYNAN bir xil), farqi faqat KO'RINISHDA: har qator bitta BUYURTMA,
+// yonida o'sha buyurtmaning zapchast puli va ishxonaga qolgan foydasi.
+//
+// Jadvaldagi "Foyda" ustuni yig'indisi + boshqa kirimlar − ish xaqi − ishxona
+// xarajati = yuqoridagi katta raqam (hech qayerda raqam "yo'qolmaydi").
 // ─────────────────────────────────────────────────────────────────────────────
 
 const fmt = (n: number) => Math.round(n).toLocaleString('ru-RU');
 
-// Buyurtmada ishlatilgan HAQIQIY zapchastlar (rasxod pseudo-qatorlari chiqarib tashlangan).
-function realParts(zaps: OrderZap[] | undefined | null): { nom: string; qty: number }[] {
-  return (zaps || [])
-    .filter((z) => z && z.rasxod !== true && z.kat !== 'Rasxod')
-    .map((z) => ({ nom: z.nom || z.name || 'Nomsiz', qty: Number(z.qty ?? z.quantity ?? 1) || 1 }));
+// Katta raqam ostidagi formula bo'lagi: "− ZAPCHAST 22 730 000"
+function Term({ label, value, color, sign }: { label: string; value: number; color: string; sign?: string }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
+      {sign && <span style={{ color: 'var(--text3)', fontWeight: 800 }}>{sign}</span>}
+      <span style={{ fontSize: 10.5, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 800, color }}>{fmt(value)}</span>
+    </span>
+  );
 }
 
 export default function BossBusinessReport() {
@@ -39,9 +44,9 @@ export default function BossBusinessReport() {
   const [activeQuick, setActiveQuick] = useState('oy');
 
   useEffect(() => {
-    const now = new Date();
-    setFilterFrom(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`);
-    setFilterTo(new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]);
+    const { from, to } = monthRange();
+    setFilterFrom(from);
+    setFilterTo(to);
   }, []);
 
   const allRows = useMemo(
@@ -54,34 +59,40 @@ export default function BossBusinessReport() {
     [allRows, filterFrom, filterTo],
   );
 
-  // Statistika — EGASI'ning /reports/business sahifasidagi bilan bir xil formula
-  // (barcha qatorlar, rasxod ham ichida) — foyda raqami hech qachon buzilmaydi.
-  // Xarajat ikkiga ajratiladi: to'langan ish xaqi (maoshTarixi'dan, shtraf/bonus
-  // bundan mustasno) va qolgan hammasi — "ishxona xarajati" (ijara, kommunal,
-  // ta'minotchi, rasxod va h.k.). Ikkalasi yig'indisi = jami xarajat, aynan.
-  const stats = useMemo(() => {
-    const income = filtered.filter((r) => r._positive).reduce((s, r) => s + r._amount, 0);
-    const expense = filtered.filter((r) => !r._positive).reduce((s, r) => s + r._amount, 0);
-    const ishXaqi = filtered.filter((r) => !r._positive && r._category === 'Ish xaqi').reduce((s, r) => s + r._amount, 0);
-    return { income, expense, ishXaqi, ishxonaXarajat: expense - ishXaqi };
-  }, [filtered]);
-
   const orderById = useMemo(() => new Map<number, Buyurtma>(buyurtmalar.map((b) => [Number(b.id), b])), [buyurtmalar]);
 
-  // Buyurtma-markazli ro'yxat — aynan shu davr uchun Daromadga qo'shilgan qatorlar
-  // (shu sababli jadval va statistika har doim bir-biriga mos keladi).
-  const orderRows = useMemo(() => {
-    return filtered
+  // Buyurtma-markazli qatorlar — har biriga o'sha buyurtmaning zapchast puli va
+  // foydasi biriktiriladi. Taqsimlash BARCHA to'lovlar bo'yicha qilinadi (davr
+  // filtridan OLDIN): buyurtma bir oyda qisman, keyingi oyda qolganini to'lagan
+  // bo'lsa, zapchast ikkala oyga ham to'liq tushib ketmaydi — har oyga o'z
+  // ulushi tushadi.
+  const allOrderRows = useMemo(() => {
+    const base = allRows
       .filter((r) => r._category === "Buyurtma to'lovi" && r._orderId != null)
       .map((r) => {
         const order = orderById.get(r._orderId as number);
-        return { row: r, order, parts: realParts(order?.zaps) };
+        return { row: r, order, parts: orderPartLines(order?.zaps) };
       })
       .filter((x) => x.order);
-  }, [filtered, orderById]);
+    return attachOrderProfit(base);
+  }, [allRows, orderById]);
 
-  // Buyurtmaga bog'liq bo'lmagan (yoki bog'liq bo'lsa ham rasxod bo'lgan) qolgan
-  // amaliyotlar — ishxona xarajati, maosh, o'tkazma va h.k.
+  const orderRows = useMemo(
+    () => allOrderRows.filter((x) => (!filterFrom || x.row._date >= filterFrom) && (!filterTo || x.row._date <= filterTo)),
+    [allOrderRows, filterFrom, filterTo],
+  );
+
+  const zapchastJami = useMemo(() => orderRows.reduce((s, r) => s + r.zapchast, 0), [orderRows]);
+  const stats = useMemo(() => computeBossStats(filtered, zapchastJami), [filtered, zapchastJami]);
+
+  const jami = useMemo(() => ({
+    tolov: orderRows.reduce((s, r) => s + r.row._amount, 0),
+    foyda: orderRows.reduce((s, r) => s + r.foyda, 0),
+  }), [orderRows]);
+
+  // Buyurtmaga bog'liq bo'lmagan qolgan amaliyotlar. Rasxod qatorlari bu yerda
+  // ham, statistikada ham ko'rinmaydi — ular yuqorida o'z buyurtmasining
+  // "Zapchast" ustunida allaqachon ayirilgan (ikki marta ayirilmasligi uchun).
   const otherRows = useMemo(
     () => filtered.filter((r) => r._category !== "Buyurtma to'lovi" && !r._isRasxod),
     [filtered],
@@ -89,13 +100,15 @@ export default function BossBusinessReport() {
 
   const handleExport = () => {
     if (orderRows.length === 0) { toast.error("Eksport uchun ma'lumot yo'q"); return; }
-    exportToCSV('boshliq_buyurtmalar', orderRows.map(({ row, order, parts }) => ({
+    exportToCSV('boshliq_buyurtmalar', orderRows.map(({ row, order, parts, zapchast, foyda }) => ({
       sana: row._displayDate,
       mijoz: row._mijoz,
       mashina: order?.mashina || '',
       xizmatlar: order?.srv || 0,
       zapchastlar: parts.map((p) => `${p.nom} x${p.qty}`).join('; '),
+      zapchast_summa: zapchast,
       summa: row._amount,
+      foyda,
       holat: order?.holat || '',
     })), [
       { key: 'sana', label: 'Sana' },
@@ -103,7 +116,9 @@ export default function BossBusinessReport() {
       { key: 'mashina', label: 'Mashina' },
       { key: 'xizmatlar', label: 'Xizmatlar summasi' },
       { key: 'zapchastlar', label: 'Ishlatilgan zapchastlar' },
+      { key: 'zapchast_summa', label: 'Zapchast summasi' },
       { key: 'summa', label: "To'lov" },
+      { key: 'foyda', label: 'Foyda' },
       { key: 'holat', label: 'Holat' },
     ]);
     toast.success(`${orderRows.length} ta buyurtma eksport qilindi`);
@@ -120,7 +135,7 @@ export default function BossBusinessReport() {
       <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Ishxona bo&apos;yicha</h1>
-          <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>Buyurtmalar, ishlatilgan zapchastlar va moliyaviy hisob-kitob — bitta joyda</p>
+          <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>Zapchast, ish xaqi va xarajatlar chiqarilgandan keyingi sof foyda</p>
         </div>
         <button onClick={handleExport} style={{
           display: 'flex', alignItems: 'center', gap: 8,
@@ -146,20 +161,9 @@ export default function BossBusinessReport() {
           {['hafta', 'oy', 'yil'].map((q) => (
             <button key={q} onClick={() => {
               setActiveQuick(q);
-              const now = new Date();
-              if (q === 'hafta') {
-                const day = now.getDay();
-                const mon = new Date(now); mon.setDate(now.getDate() + (day === 0 ? -6 : 1 - day));
-                const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-                setFilterFrom(mon.toISOString().split('T')[0]);
-                setFilterTo(sun.toISOString().split('T')[0]);
-              } else if (q === 'oy') {
-                setFilterFrom(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`);
-                setFilterTo(new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]);
-              } else {
-                setFilterFrom(`${now.getFullYear()}-01-01`);
-                setFilterTo(`${now.getFullYear()}-12-31`);
-              }
+              const { from, to } = quickRange(q as QuickRangeKind);
+              setFilterFrom(from);
+              setFilterTo(to);
             }} style={{
               padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: 'none',
               background: activeQuick === q ? '#4f46e5' : 'var(--surface2)',
@@ -169,13 +173,32 @@ export default function BossBusinessReport() {
         </div>
       </div>
 
-      {/* STATS — egasi bilan bir xil formula, faqat xarajat ish xaqi/ishxona bo'lib ko'rsatiladi */}
+      {/* ASOSIY RAQAM — ISHXONA FOYDASI (kirim emas) */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(59,130,246,0.14) 0%, rgba(16,185,129,0.08) 100%)',
+        border: '1px solid rgba(59,130,246,0.28)', borderRadius: 18, padding: '24px 28px', marginBottom: 16,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <div style={{ padding: 8, borderRadius: 10, background: 'rgba(59,130,246,0.18)', color: '#3b82f6' }}><Target size={20} /></div>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Ishxona foydasi</span>
+        </div>
+        <div style={{ fontSize: 40, fontWeight: 900, color: stats.foyda >= 0 ? '#10b981' : '#fb7185', lineHeight: 1.05 }}>
+          {fmt(stats.foyda)} <span style={{ fontSize: 13, color: 'var(--text3)', fontWeight: 600 }}>UZS</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 14px', marginTop: 14, alignItems: 'baseline' }}>
+          <Term label="Kirim" value={stats.kirim} color="#e2e8f0" />
+          <Term sign="−" label="Zapchast" value={stats.zapchast} color="#f59e0b" />
+          <Term sign="−" label="Ish xaqi" value={stats.ishXaqi} color="#a78bfa" />
+          <Term sign="−" label="Ishxona xarajati" value={stats.ishxonaXarajat} color="#fb7185" />
+        </div>
+      </div>
+
+      {/* CHIQIMLAR TAFSILOTI */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
         {[
-          { label: 'Kirim', value: stats.income, icon: <TrendingUp size={20} />, color: '#10b981' },
-          { label: 'Ishxona xarajati', value: stats.ishxonaXarajat, icon: <TrendingDown size={20} />, color: '#fb7185' },
-          { label: "To'langan ish xaqi", value: stats.ishXaqi, icon: <Banknote size={20} />, color: '#f59e0b' },
-          { label: 'Foyda', value: stats.income - stats.expense, icon: <Target size={20} />, color: '#3b82f6' },
+          { label: 'Zapchast xarajati', value: stats.zapchast, icon: <Wrench size={20} />, color: '#f59e0b', hint: 'Buyurtmalardagi zapchast puli' },
+          { label: "To'langan ish xaqi", value: stats.ishXaqi, icon: <Banknote size={20} />, color: '#a78bfa', hint: 'Kassadan chiqqan maoshlar' },
+          { label: 'Ishxona xarajati', value: stats.ishxonaXarajat, icon: <TrendingDown size={20} />, color: '#fb7185', hint: 'Ijara, kommunal, asbob va h.k.' },
         ].map((s, i) => (
           <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
@@ -185,53 +208,84 @@ export default function BossBusinessReport() {
             <div style={{ fontSize: 22, fontWeight: 900, color: 'white' }}>
               {fmt(s.value)} <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>UZS</span>
             </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text4)', marginTop: 6 }}>{s.hint}</div>
           </div>
         ))}
       </div>
 
-      {/* BUYURTMALAR + ZAPCHASTLAR — eski holatdagidek birinchi (asosiy jadval) */}
+      {/* BUYURTMALAR + ZAPCHASTLAR + HAR BIRINING FOYDASI */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 28 }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <Package size={18} color="var(--accent)" />
           <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>BUYURTMALAR VA ISHLATILGAN ZAPCHASTLAR</span>
+          <span style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Foyda = to&apos;lov − zapchast (ish xaqi va ishxona xarajati yuqorida, umumiy hisobda)</span>
           <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{orderRows.length} ta buyurtma</span>
         </div>
         {/* Balandlik chegaralangan (ichkarida o'z skrolli bilan) — aks holda 100+
             buyurtma pastdagi "Chiqimlar" bo'limini sahifaning tagiga surib
-            yuborib, boshliq uni deyarli topolmasdi. Sarlavha "sticky" — skroll
-            qilganda ustun nomlari ko'rinishda qoladi. */}
+            yuborib, boshliq uni deyarli topolmasdi. Sarlavha va "Jami" qatori
+            "sticky" — skroll qilganda ham ko'rinib turadi. */}
         <div style={{ overflow: 'auto', maxHeight: 560 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
-                {['Sana', 'Mijoz', 'Mashina', 'Xizmatlar', 'Ishlatilgan zapchastlar', "To'lov", 'Holat'].map((h) => (
-                  <th key={h} style={{ padding: '12px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', position: 'sticky', top: 0, background: '#171d30', zIndex: 1 }}>{h}</th>
+                {['Sana', 'Mijoz', 'Mashina', 'Xizmat', 'Ishlatilgan zapchastlar', 'Zapchast', "To'lov", 'Foyda', 'Holat'].map((h) => (
+                  <th key={h} style={{ padding: '12px 20px', fontSize: 10, fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', position: 'sticky', top: 0, background: '#171d30', zIndex: 1, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {orderRows.length === 0 ? (
-                <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun buyurtma topilmadi</td></tr>
-              ) : orderRows.map(({ row, order, parts }) => (
+                <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun buyurtma topilmadi</td></tr>
+              ) : orderRows.map(({ row, order, parts, zapchast, foyda }) => (
                 <tr key={row._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '12px 20px', fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>{row._displayDate}</td>
                   <td style={{ padding: '12px 20px', fontSize: 12, fontWeight: 700, color: 'white', whiteSpace: 'nowrap' }}>{row._mijoz || '—'}</td>
                   <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', whiteSpace: 'nowrap' }}>{order?.mashina} {order?.raqam ? `· ${order.raqam}` : ''}</td>
                   <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', whiteSpace: 'nowrap' }}>{fmt(order?.srv || 0)}</td>
-                  <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', maxWidth: 320 }}>
+                  <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text2)', maxWidth: 300 }}>
                     {parts.length === 0 ? (
                       <span style={{ color: 'var(--text4)' }}>—</span>
                     ) : (
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={parts.map((p) => `${p.nom} x${p.qty}`).join(', ')}>
-                        {parts.map((p) => `${p.nom}${p.qty > 1 ? ` x${p.qty}` : ''}`).join(', ')}
+                      <div
+                        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        title={parts.map((p) => `${p.nom} x${p.qty} — ${fmt(p.narx)}${p.alohida ? " (alohida — kassaga tushmagan)" : ''}`).join(', ')}
+                      >
+                        {parts.map((p, i) => (
+                          <span key={i} style={{ color: p.alohida ? 'var(--text4)' : p.rasxod ? '#f59e0b' : 'var(--text2)' }}>
+                            {i > 0 && ', '}{p.nom}{p.qty > 1 ? ` x${p.qty}` : ''}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: '12px 20px', fontSize: 13, fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>{fmt(row._amount)}</td>
+                  <td style={{ padding: '12px 20px', fontSize: 12, fontWeight: 700, color: zapchast > 0 ? '#f59e0b' : 'var(--text4)', whiteSpace: 'nowrap' }}>{zapchast > 0 ? `− ${fmt(zapchast)}` : '—'}</td>
+                  <td style={{ padding: '12px 20px', fontSize: 13, fontWeight: 800, color: 'var(--text2)', whiteSpace: 'nowrap' }}>{fmt(row._amount)}</td>
+                  <td style={{ padding: '12px 20px', fontSize: 13, fontWeight: 900, color: foyda >= 0 ? '#10b981' : '#fb7185', whiteSpace: 'nowrap' }}>{fmt(foyda)}</td>
                   <td style={{ padding: '12px 20px', fontSize: 11, color: 'var(--text3)', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{order?.holat}</td>
                 </tr>
               ))}
             </tbody>
+            {orderRows.length > 0 && (
+              <tfoot>
+                <tr>
+                  {[
+                    { v: 'JAMI', c: 'var(--text3)' },
+                    { v: '', c: '' }, { v: '', c: '' }, { v: '', c: '' }, { v: '', c: '' },
+                    { v: `− ${fmt(zapchastJami)}`, c: '#f59e0b' },
+                    { v: fmt(jami.tolov), c: 'var(--text2)' },
+                    { v: fmt(jami.foyda), c: jami.foyda >= 0 ? '#10b981' : '#fb7185' },
+                    { v: '', c: '' },
+                  ].map((c, i) => (
+                    <td key={i} style={{
+                      padding: '12px 20px', fontSize: 12.5, fontWeight: 900, color: c.c || 'var(--text3)',
+                      whiteSpace: 'nowrap', position: 'sticky', bottom: 0, background: '#171d30',
+                      borderTop: '1px solid var(--border)',
+                    }}>{c.v}</td>
+                  ))}
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </div>
