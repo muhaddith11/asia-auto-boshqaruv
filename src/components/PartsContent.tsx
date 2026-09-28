@@ -14,11 +14,15 @@ import {
   X,
   Save,
   ChevronDown,
-  Box
+  Box,
+  MinusCircle
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
-import { isCancelledHolat } from '@/lib/stock';
 import { formatDigits, stripToDigits } from '@/lib/numberInput';
+import { useRole } from '@/lib/useRole';
+import { computeZapPool, type ZapPoolChiqim } from '@/lib/zapPool';
+import { createZapPoolChiqim, deleteZapPoolChiqim, fetchZapPoolChiqim } from '@/lib/zapPoolClient';
 
 const S = {
   input: {
@@ -47,32 +51,58 @@ export default function PartsContent() {
   const { zapchastlar, addZapchast, updateZapchast, deleteZapchast, mashinalar, buyurtmalar } = useStore();
 
   // Kassaga tushmagan (galochka = "alohida" belgilangan) zapchastlar bo'yicha
-  // tushum (sotish narxi) va foyda (sotish − kelish narxi). Buyurtmalar bo'yicha
-  // yig'iladi. Bekor qilingan buyurtmalar hisobga olinmaydi.
-  const kassagaTushmaganHisob = useMemo(() => {
-    return (buyurtmalar || []).reduce((acc, b: any) => {
-      // Bekor qilingan buyurtma ikki xil qiymat bilan yoziladi: dashboard
-      // "bekor qilingan", bot esa "bekor" — ikkalasi ham hisobdan chiqarilishi kerak.
-      if (isCancelledHolat(b.holat)) return acc;
-      const zaps = b.zaps || [];
-      zaps.forEach((z: any) => {
-        // Faqat "alohida" belgilangan (galochka bosilgan) zapchastlar kassaga tushmaydi
-        if (z.alohida !== true) return;
-        // Narx miqdorga ko'paytirilmaydi
-        const narx = Number(z.narx ?? z.price ?? 0);
-        // Kelish narxi buyurtma ichida saqlangan bo'lsa o'shani, aks holda
-        // (eski buyurtmalar) zapchast ID orqali joriy ombordan olamiz.
-        let sebestoimost = Number(z.sebestoimost ?? 0);
-        if (!sebestoimost && z.id) {
-          const dbPart = zapchastlar.find(zz => Number(zz.id) === Number(z.id));
-          sebestoimost = Number(dbPart?.sebestoimost ?? 0);
-        }
-        acc.tushum += narx;
-        acc.foyda += narx - sebestoimost;
-      });
-      return acc;
-    }, { tushum: 0, foyda: 0 });
-  }, [buyurtmalar, zapchastlar]);
+  // yig'ilgan tushum, foyda va undan AYIRILGAN summalar (@/lib/zapPool).
+  // Qoldiq = yig'ilgan tushum − ayirilganlar. Kassaga tegmaydi.
+  const { can } = useRole();
+  const canFinance = can('reports'); // egasi / boshliq / sherik
+  const [chiqimlar, setChiqimlar] = useState<ZapPoolChiqim[]>([]);
+  const [chiqimFormOpen, setChiqimFormOpen] = useState(false);
+  const [chiqimSumma, setChiqimSumma] = useState('');
+  const [chiqimIzoh, setChiqimIzoh] = useState('');
+  const [chiqimSaving, setChiqimSaving] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetchZapPoolChiqim()
+      .then((rows) => { if (alive) setChiqimlar(rows); })
+      .catch((e) => console.error('Zapchast puli chiqimlarini yuklashda xatolik:', e));
+    return () => { alive = false; };
+  }, []);
+
+  const kassagaTushmaganHisob = useMemo(
+    () => computeZapPool(buyurtmalar, zapchastlar, chiqimlar),
+    [buyurtmalar, zapchastlar, chiqimlar],
+  );
+
+  const handleChiqimSaqlash = async () => {
+    const summa = Number(stripToDigits(chiqimSumma)) || 0;
+    if (summa <= 0) { toast.error('Summani kiriting'); return; }
+    setChiqimSaving(true);
+    try {
+      const row = await createZapPoolChiqim(summa, chiqimIzoh.trim());
+      setChiqimlar((prev) => [row, ...prev]);
+      setChiqimSumma('');
+      setChiqimIzoh('');
+      setChiqimFormOpen(false);
+      toast.success(`${summa.toLocaleString()} so'm ayirildi`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Saqlanmadi');
+    } finally {
+      setChiqimSaving(false);
+    }
+  };
+
+  const handleChiqimOchirish = async (row: ZapPoolChiqim) => {
+    const prev = chiqimlar;
+    setChiqimlar((list) => list.filter((c) => c.id !== row.id)); // optimistik
+    try {
+      await deleteZapPoolChiqim(row.id);
+      toast.success('Qaytarildi');
+    } catch (e) {
+      setChiqimlar(prev);
+      toast.error(e instanceof Error ? e.message : "O'chirilmadi");
+    }
+  };
   const [mounted, setMounted] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
@@ -175,31 +205,115 @@ export default function PartsContent() {
         </button>
       </div>
 
-      {/* ── KASSAGA TUSHMAGAN ZAPCHAST PULI (TUSHUM + FOYDA) ── */}
-      <div className="mb-6 p-5 bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shrink-0">
-            <Box size={20} className="text-amber-500" />
-          </div>
-          <div>
-            <div className="text-[11px] font-black text-amber-500/80 uppercase tracking-widest">Kassaga tushmagan zapchast puli</div>
-            <div className="text-[11px] text-slate-500 font-medium mt-0.5">Buyurtmalarda galochka qo'yilgan zapchastlar tushum/foydasi</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-8">
-          <div className="text-right">
-            <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Tushum</div>
-            <div className="text-[22px] font-black text-amber-400 tracking-tight whitespace-nowrap">
-              {kassagaTushmaganHisob.tushum.toLocaleString()} <span className="text-[11px] text-slate-500 uppercase">so'm</span>
+      {/* ── KASSAGA TUSHMAGAN ZAPCHAST PULI (QOLDIQ + FOYDA + AYIRISH) ── */}
+      <div className="mb-6 p-5 bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shrink-0">
+              <Box size={20} className="text-amber-500" />
+            </div>
+            <div>
+              <div className="text-[11px] font-black text-amber-500/80 uppercase tracking-widest">Kassaga tushmagan zapchast puli</div>
+              <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                Buyurtmalarda galochka qo&apos;yilgan zapchastlar
+                {kassagaTushmaganHisob.chiqim > 0 && (
+                  <> · yig&apos;ilgan {kassagaTushmaganHisob.tushum.toLocaleString()} − ayirilgan {kassagaTushmaganHisob.chiqim.toLocaleString()}</>
+                )}
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Foyda</div>
-            <div className="text-[22px] font-black text-emerald-400 tracking-tight whitespace-nowrap">
-              {kassagaTushmaganHisob.foyda.toLocaleString()} <span className="text-[11px] text-slate-500 uppercase">so'm</span>
+          <div className="flex items-center gap-8 flex-wrap">
+            <div className="text-right">
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">
+                {kassagaTushmaganHisob.chiqim > 0 ? 'Qoldiq' : 'Tushum'}
+              </div>
+              <div className="text-[22px] font-black text-amber-400 tracking-tight whitespace-nowrap">
+                {kassagaTushmaganHisob.qoldiq.toLocaleString()} <span className="text-[11px] text-slate-500 uppercase">so&apos;m</span>
+              </div>
             </div>
+            <div className="text-right">
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Foyda</div>
+              <div className="text-[22px] font-black text-emerald-400 tracking-tight whitespace-nowrap">
+                {kassagaTushmaganHisob.foyda.toLocaleString()} <span className="text-[11px] text-slate-500 uppercase">so&apos;m</span>
+              </div>
+            </div>
+            {canFinance && (
+              <button
+                onClick={() => setChiqimFormOpen(v => !v)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[12px] font-bold hover:bg-amber-500/20 transition-all active:scale-95"
+              >
+                <MinusCircle size={15} /> Ayirish
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Ayirish formasi — summa + izoh */}
+        {canFinance && chiqimFormOpen && (
+          <div className="mt-4 pt-4 border-t border-amber-500/15 flex items-end gap-3 flex-wrap">
+            <div className="w-[180px]">
+              <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Summa *</label>
+              <input
+                value={chiqimSumma}
+                onChange={(e) => setChiqimSumma(formatDigits(e.target.value))}
+                onKeyDown={(e) => { if (e.key === 'Enter') void handleChiqimSaqlash(); }}
+                placeholder="0"
+                autoFocus
+                style={S.input}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Izoh</label>
+              <input
+                value={chiqimIzoh}
+                onChange={(e) => setChiqimIzoh(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') void handleChiqimSaqlash(); }}
+                placeholder="Masalan: ta'minotchiga berildi"
+                style={S.input}
+              />
+            </div>
+            <button
+              onClick={() => void handleChiqimSaqlash()}
+              disabled={chiqimSaving}
+              className="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-[12px] font-black hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50"
+            >
+              {chiqimSaving ? 'Saqlanmoqda...' : 'Ayirish'}
+            </button>
+            <button
+              onClick={() => { setChiqimFormOpen(false); setChiqimSumma(''); setChiqimIzoh(''); }}
+              className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-[12px] font-bold hover:text-white transition-all"
+            >
+              Bekor
+            </button>
+          </div>
+        )}
+
+        {/* Ayirilganlar tarixi */}
+        {chiqimlar.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-amber-500/15">
+            <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
+              Ayirilganlar ({chiqimlar.length})
+            </div>
+            <div className="max-h-44 overflow-y-auto custom-scrollbar pr-1 space-y-1.5">
+              {chiqimlar.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 text-[12px] py-1">
+                  <span className="text-slate-500 w-[74px] shrink-0">{c.sana.slice(8, 10)}.{c.sana.slice(5, 7)}.{c.sana.slice(0, 4)}</span>
+                  <span className="font-black text-amber-400 w-[120px] shrink-0 text-right">− {c.summa.toLocaleString()}</span>
+                  <span className="text-slate-400 flex-1 truncate">{c.izoh || '—'}</span>
+                  {canFinance && (
+                    <button
+                      onClick={() => void handleChiqimOchirish(c)}
+                      title="O'chirish — summa qoldiqqa qaytadi"
+                      className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── FILTERS PANEL ── */}
