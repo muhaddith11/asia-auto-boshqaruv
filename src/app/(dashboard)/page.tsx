@@ -35,7 +35,7 @@ export default function Dashboard() {
 
   const stats = [
     { title: 'Jami Buyurtmalar', value: buyurtmalar.length, icon: ClipboardList, color: 'var(--cyan)', path: '/orders' },
-    { title: 'Tayyor Buyurtmalar', value: readyOrders.length, icon: CheckCircle2, color: 'var(--green)', path: '/orders?status=tayyor' },
+    { title: 'Tayyor Buyurtmalar', value: readyOrders.length, icon: CheckCircle2, color: '#a855f7', path: '/orders?status=tayyor' },
     { title: 'Aktiv Buyurtmalar', value: activeOrders.length, icon: Clock, color: 'var(--accent)', path: '/orders' },
     { title: 'Ishchilar', value: xodimlar.length, icon: Users, color: 'var(--orange)', path: '/workers' },
     { title: 'Kassa Jami', value: (kassa.naqd + kassa.karta).toLocaleString() + ' so\'m', icon: Banknote, color: 'var(--green)', path: '/reports/business' },

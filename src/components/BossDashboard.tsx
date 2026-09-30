@@ -67,7 +67,7 @@ export default function BossDashboard() {
     { label: 'Bugungi sof foyda', value: daily.sofFoyda, icon: isLoss ? TrendingDown : TrendingUp, color: isLoss ? 'var(--red)' : 'var(--green)', href: '/reports/daily' },
     { label: 'Potentsial foyda', value: potentialProfit, icon: Target, color: '#8b5cf6', href: '/orders' },
     { label: 'Kassa jami', value: kassa.naqd + kassa.karta, icon: Wallet, color: 'var(--accent)', href: '/reports/business' },
-    { label: 'Tayyor buyurtmalar', value: readyCount, icon: CheckCircle2, color: 'var(--green)', href: '/orders?status=tayyor', isCount: true },
+    { label: 'Tayyor buyurtmalar', value: readyCount, icon: CheckCircle2, color: '#a855f7', href: '/orders?status=tayyor', isCount: true },
     { label: 'Faol buyurtmalar', value: activeCount, icon: ClipboardList, color: 'var(--cyan)', href: '/orders', isCount: true },
     { label: 'Qarzdorlik jami', value: qarzJami, icon: CreditCard, color: 'var(--orange)', href: '/orders?status=tulanmagan' },
   ];

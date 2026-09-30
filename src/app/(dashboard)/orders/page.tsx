@@ -38,7 +38,8 @@ const ALL_STATUSES = ['', ...Object.keys(STATUS_CONFIG)];
 // botda xodim/boshliqqa ko'rinmaydi — endi aynan ADMIN ularga javobgar. Shuning
 // uchun admin ro'yxatida "To'lanmagan" ichida yo'qolib ketmasligi uchun alohida
 // yashil "Tayyor" holat sifatida ko'rsatiladi va shu bo'yicha filtrlash mumkin.
-const READY_STATUS = { label: 'Tayyor', bg: 'rgba(34,197,94,0.15)', color: '#22c55e' };
+// "Tayyor" — "To'langan" (yashil) bilan chalkashmasligi uchun binafsha rang.
+const READY_STATUS = { label: 'Tayyor', bg: 'rgba(168,85,247,0.15)', color: '#a855f7' };
 const isReadyOrder = (b: Buyurtma) =>
   b.bosqich === 'tayyor' && b.holat !== 'tulangan' && !isCancelledHolat(b.holat);
 
