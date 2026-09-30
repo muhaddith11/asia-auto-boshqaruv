@@ -27,12 +27,16 @@ export async function GET(req: NextRequest) {
     // Xodim ilovani ochganda muddati o'tgan chek xabarlari tozalanadi (serverless'da setInterval ishonchsiz)
     after(() => cleanupExpiredMessagesThrottled());
 
-    // Xodimning o'z tugallanmagan mashinalari (topshirilmagan)
+    // Xodimning o'z tugallanmagan mashinalari.
+    // "Tayyor" (chek chiqarilgan) mashinalar bu ro'yxatda KO'RINMAYDI — chek
+    // chiqqandan so'ng buyurtma ADMIN javobgarligiga o'tadi (topshirish/to'lov
+    // admin panelida bo'ladi), shuning uchun xodim ham, boshliq ham ko'rmaydi.
     const { data: myCars, error: myErr } = await supabase
       .from('orders')
       .select(CAR_FIELDS)
       .eq('qabul_xodim_id', worker.id)
       .not('bosqich', 'is', null)
+      .neq('bosqich', 'tayyor')
       .neq('bosqich', 'topshirildi')
       .neq('bosqich', 'bekor_qilindi')
       .order('qabul_vaqti', { ascending: false });
@@ -44,12 +48,15 @@ export async function GET(req: NextRequest) {
 
     let allCars = null;
     if (worker.is_boss) {
-      // Boshliq — faqat ustaxonadagi (faol) mashinalar. Topshirilgan VA bekor
-      // qilingan mashinalar ustaxonada yo'q (ketgan) → ro'yxatda ko'rinmaydi.
+      // Boshliq — faqat ish jarayonidagi (faol) mashinalar. "Tayyor" (chek
+      // chiqarilgan) mashinalar boshliqqa ham KO'RINMAYDI — ular admin
+      // javobgarligiga o'tadi. Topshirilgan VA bekor qilingan mashinalar ham
+      // ro'yxatda yo'q (ketgan/yakunlangan).
       const { data: all, error: allErr } = await supabase
         .from('orders')
         .select(CAR_FIELDS)
         .not('bosqich', 'is', null)
+        .neq('bosqich', 'tayyor')
         .neq('bosqich', 'topshirildi')
         .neq('bosqich', 'bekor_qilindi')
         .order('qabul_vaqti', { ascending: false })

@@ -198,7 +198,7 @@ export default function BotUIPage() {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || `Server xatosi: ${res.status}`);
-      toast.success(`Chek chiqdi ✅ Mashina "tayyor" — endi topshirishingiz mumkin. Chek #${j.id}`);
+      toast.success(`Chek chiqdi ✅ Buyurtma "tayyor" — endi admin qabul qiladi. Chek #${j.id}`);
       store.reset();
       setSelectedCar(null);
       await finishHome();
