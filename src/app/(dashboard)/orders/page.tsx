@@ -33,6 +33,15 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }
 
 const ALL_STATUSES = ['', ...Object.keys(STATUS_CONFIG)];
 
+// "Tayyor" — bot-ui'da xodim chek chiqargan, mijozga topshirishga/to'lovga tayyor
+// buyurtma (bosqich='tayyor', hali to'lanmagan va bekor emas). Bu buyurtmalar
+// botda xodim/boshliqqa ko'rinmaydi — endi aynan ADMIN ularga javobgar. Shuning
+// uchun admin ro'yxatida "To'lanmagan" ichida yo'qolib ketmasligi uchun alohida
+// yashil "Tayyor" holat sifatida ko'rsatiladi va shu bo'yicha filtrlash mumkin.
+const READY_STATUS = { label: 'Tayyor', bg: 'rgba(34,197,94,0.15)', color: '#22c55e' };
+const isReadyOrder = (b: Buyurtma) =>
+  b.bosqich === 'tayyor' && b.holat !== 'tulangan' && !isCancelledHolat(b.holat);
+
 const S = {
   input: {
     width: '100%',
@@ -86,7 +95,7 @@ export default function OrdersPage() {
     }
     // Boshliq bosh sahifasidan (masalan "To'lanmagan" kartasi) kelinsa — status bo'yicha filtr
     const statusParam = params.get('status');
-    if (statusParam && STATUS_CONFIG[statusParam]) {
+    if (statusParam && (statusParam === 'tayyor' || STATUS_CONFIG[statusParam])) {
       setF(prev => ({ ...prev, status: statusParam }));
       setApplied(prev => ({ ...prev, status: statusParam }));
     }
@@ -103,7 +112,8 @@ export default function OrdersPage() {
     if (applied.mashina && !b.mashina.toLowerCase().includes(applied.mashina.toLowerCase())) return false;
     if (applied.raqam  && !b.raqam.toLowerCase().includes(applied.raqam.toLowerCase())) return false;
     if (applied.vin    && !b.vin?.toLowerCase().includes(applied.vin.toLowerCase()))  return false;
-    if (applied.status && b.holat !== applied.status)                         return false;
+    if (applied.status === 'tayyor') { if (!isReadyOrder(b)) return false; }
+    else if (applied.status && b.holat !== applied.status)                     return false;
     // Sana bo'yicha filtr (YYYY-MM-DD)
     if (applied.from || applied.to) {
       const raw = b.createdAt || b.sana || '';
@@ -216,6 +226,7 @@ export default function OrdersPage() {
             }}
           >
             <option value="">Barcha statuslar</option>
+            <option value="tayyor">Tayyor (chek chiqarilgan)</option>
             {Object.entries(STATUS_CONFIG).map(([k, v]) => (
               <option key={k} value={k}>{v.label}</option>
             ))}
@@ -318,6 +329,7 @@ export default function OrdersPage() {
               onChange={e => setF({ ...f, status: e.target.value })}
             >
               <option value="">Barcha statuslar</option>
+              <option value="tayyor">Tayyor (chek chiqarilgan)</option>
               {Object.entries(STATUS_CONFIG).map(([k, v]) => (
                 <option key={k} value={k}>{v.label}</option>
               ))}
@@ -412,7 +424,9 @@ export default function OrdersPage() {
                 </thead>
                 <tbody>
                   {paginated.map((b, idx) => {
-                    const sc = STATUS_CONFIG[b.holat] || { label: b.holat, bg: 'transparent', color: 'var(--text3)' };
+                    const sc = isReadyOrder(b)
+                      ? READY_STATUS
+                      : (STATUS_CONFIG[b.holat] || { label: b.holat, bg: 'transparent', color: 'var(--text3)' });
                     const profit = b.pribil || 0;
                     const srv = b.srv || 0;
                     // isCancelledHolat — 'bekor qilingan' (dashboard) VA 'bekor' (bot-ui)

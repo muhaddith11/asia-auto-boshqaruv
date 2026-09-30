@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useRole } from '@/lib/useRole';
 import { isCancelledHolat } from '@/lib/stock';
-import { Users, ClipboardList, Package, Banknote, Clock, ExternalLink } from 'lucide-react';
+import { Users, ClipboardList, Package, Banknote, Clock, ExternalLink, CheckCircle2 } from 'lucide-react';
 import AiForecast from '@/components/AiForecast';
 import BossDashboard from '@/components/BossDashboard';
 import Link from 'next/link';
@@ -28,10 +28,14 @@ export default function Dashboard() {
   // ham bekor deb hisoblaydi (@/lib/stock), aks holda botdan bekor qilingan
   // buyurtma "aktiv" deb noto'g'ri sanaladi.
   const activeOrders = buyurtmalar.filter(o => o.holat !== 'tulangan' && !isCancelledHolat(o.holat));
+  // "Tayyor" — botda chek chiqarilgan, mijozga topshirishga/to'lovga tayyor
+  // buyurtmalar. Botda xodim/boshliqqa ko'rinmaydi — admin shularга javobgar.
+  const readyOrders = buyurtmalar.filter(o => o.bosqich === 'tayyor' && o.holat !== 'tulangan' && !isCancelledHolat(o.holat));
   const recentOrders = [...buyurtmalar].sort((a, b) => b.id - a.id).slice(0, 6);
 
   const stats = [
     { title: 'Jami Buyurtmalar', value: buyurtmalar.length, icon: ClipboardList, color: 'var(--cyan)', path: '/orders' },
+    { title: 'Tayyor Buyurtmalar', value: readyOrders.length, icon: CheckCircle2, color: 'var(--green)', path: '/orders?status=tayyor' },
     { title: 'Aktiv Buyurtmalar', value: activeOrders.length, icon: Clock, color: 'var(--accent)', path: '/orders' },
     { title: 'Ishchilar', value: xodimlar.length, icon: Users, color: 'var(--orange)', path: '/workers' },
     { title: 'Kassa Jami', value: (kassa.naqd + kassa.karta).toLocaleString() + ' so\'m', icon: Banknote, color: 'var(--green)', path: '/reports/business' },
@@ -42,7 +46,7 @@ export default function Dashboard() {
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex flex-col gap-6 lg:gap-8">
         
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
           {stats.map((stat, i) => (
             <Link key={i} href={stat.path} className="stat-card" style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
