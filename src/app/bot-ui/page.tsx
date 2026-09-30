@@ -6,7 +6,7 @@ import { useBotOrderStore } from '@/store/useBotOrderStore';
 import StepServices from '@/components/bot-ui/StepServices';
 import StepParts from '@/components/bot-ui/StepParts';
 import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
-import { Loader2, Eye, RefreshCw, ChevronRight, Trophy, Package, Home } from 'lucide-react';
+import { Loader2, Eye, RefreshCw, ChevronRight, Trophy, Package, Home, CheckCircle2 } from 'lucide-react';
 import PhoneLogin from '@/components/bot-ui/PhoneLogin';
 import AcceptForm from '@/components/bot-ui/AcceptForm';
 import CarDetail from '@/components/bot-ui/CarDetail';
@@ -28,10 +28,12 @@ export default function BotUIPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authUser, setAuthUser] = useState<any>(null);
-  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; is_boss: boolean; name: string; bolim: string }>({
+  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; readyCars: Car[] | null; is_boss: boolean; is_admin: boolean; name: string; bolim: string }>({
     myCars: [],
     allCars: null,
+    readyCars: null,
     is_boss: false,
+    is_admin: false,
     name: '',
     bolim: 'ustaxona',
   });
@@ -113,14 +115,17 @@ export default function BotUIPage() {
       if (res.ok) {
         const myCars = res.myCars || [];
         const allCars = res.allCars || null;
+        const readyCars = res.readyCars || null;
         setCarsData({
           myCars,
           allCars,
+          readyCars,
           is_boss: !!res.worker?.is_boss,
+          is_admin: !!res.worker?.is_admin,
           name: res.worker?.ism || '',
           bolim: res.worker?.bolim || 'ustaxona',
         });
-        return { myCars, allCars };
+        return { myCars, allCars, readyCars };
       }
     } catch {
       /* jim */
@@ -137,7 +142,7 @@ export default function BotUIPage() {
     if (!selectedCar) return;
     const res = await loadCars();
     if (!res) return;
-    const all = [...res.myCars, ...(res.allCars || [])];
+    const all = [...res.myCars, ...(res.allCars || []), ...(res.readyCars || [])];
     const updated = all.find((c) => c.id === selectedCar.id);
     if (updated) setSelectedCar(updated);
     else {
@@ -259,6 +264,7 @@ export default function BotUIPage() {
                       );
                     })()}
                     {carsData.is_boss && <span className="text-amber-400 font-semibold">· Boshliq</span>}
+                    {carsData.is_admin && <span className="text-emerald-400 font-semibold">· Admin</span>}
                   </p>
                 )}
               </div>
@@ -308,6 +314,55 @@ export default function BotUIPage() {
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-500" />
               </button>
+
+              {/* Admin — tayyor (chek chiqarilgan) buyurtmalar: mijozga topshirishga tayyor */}
+              {carsData.is_admin && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Tayyor buyurtmalar ({(carsData.readyCars || []).length})
+                    </h2>
+                    <button onClick={loadCars} className="text-gray-400 hover:text-white p-1" title="Yangilash">
+                      <RefreshCw className={`w-4 h-4 ${loadingCars ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+
+                  {(carsData.readyCars || []).length === 0 && !loadingCars && (
+                    <div className="text-gray-500 text-center py-6 text-sm bg-gray-800/50 border border-gray-700 rounded-xl">
+                      Topshirishga tayyor buyurtma yo'q
+                    </div>
+                  )}
+
+                  <div className="space-y-2.5">
+                    {(carsData.readyCars || []).map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setSelectedCar(c);
+                          setView('detail');
+                        }}
+                        className="w-full text-left bg-emerald-500/5 border border-emerald-500/30 hover:border-emerald-500/50 rounded-xl p-4 flex items-center justify-between gap-2 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-bold truncate">
+                            {c.mashina} {c.raqam && <span className="text-gray-400 font-normal">· {c.raqam}</span>}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300">
+                              ✅ Tayyor
+                            </span>
+                            {c.qabul_xodim_nomi && (
+                              <span className="text-xs text-gray-500">👤 {c.qabul_xodim_nomi}</span>
+                            )}
+                            <span className="text-xs text-gray-500">{fmtTime(c.tayyor_vaqti)}</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-emerald-500/70 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Tugallanmagan ishlar (qator-qator) */}
               <div>

@@ -68,8 +68,26 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Admin — "tayyor" (chek chiqarilgan, hali topshirilmagan) buyurtmalarga
+    // javobgar. Faqat adminga barcha tayyor mashinalar ko'rsatiladi (bo'limdan
+    // qat'i nazar), u mijozga topshiradi. Xodim/boshliq bu ro'yxatni ko'rmaydi.
+    let readyCars = null;
+    if (worker.is_admin) {
+      const { data: ready, error: readyErr } = await supabase
+        .from('orders')
+        .select(CAR_FIELDS)
+        .eq('bosqich', 'tayyor')
+        .order('tayyor_vaqti', { ascending: false })
+        .limit(200);
+      if (readyErr) {
+        console.error('cars readyErr:', readyErr);
+      } else {
+        readyCars = ready;
+      }
+    }
+
     // Ish sessiyalari — kartada "hozir ishlayapman" holati va jami vaqtni ko'rsatish uchun.
-    const carIds = [...new Set([...(myCars || []), ...(allCars || [])].map((c: { id: number }) => c.id))];
+    const carIds = [...new Set([...(myCars || []), ...(allCars || []), ...(readyCars || [])].map((c: { id: number }) => c.id))];
     const sessionsByOrder = new Map<number, { totalMinutes: number; openSince: string | null }>();
     if (carIds.length > 0) {
       const { data: sessions } = await supabase
@@ -119,9 +137,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      worker: { id: worker.id, ism: worker.ism, is_boss: !!worker.is_boss, bolim: worker.bolim || 'ustaxona' },
+      worker: { id: worker.id, ism: worker.ism, is_boss: !!worker.is_boss, is_admin: !!worker.is_admin, bolim: worker.bolim || 'ustaxona' },
       myCars: withSessions(myCars),
       allCars: allCars ? withSessions(allCars) : null,
+      readyCars: readyCars ? withSessions(readyCars) : null,
     });
   } catch (err) {
     console.error('cars API error:', err);

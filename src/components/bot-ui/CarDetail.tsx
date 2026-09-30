@@ -76,7 +76,9 @@ export default function CarDetail({ car, identity, onDone, onStay, onComplete, o
   // Vaqt yig'ilgan, lekin hozir ketmayapti — masalan zapchast kutilgach
   // sessiya avtomatik yopilgan, usta ishga qaytishi kerak.
   const toxtagan = !openSince && baseMinutes > 0;
-  const canTrackTime = car.bosqich !== 'topshirildi' && car.bosqich !== 'bekor_qilindi';
+  // "Tayyor" bosqichida ish tugagan (chek chiqarilgan) — endi faqat admin uni
+  // topshiradi, shuning uchun ish vaqti hisoblagichi ko'rsatilmaydi.
+  const canTrackTime = car.bosqich !== 'topshirildi' && car.bosqich !== 'bekor_qilindi' && car.bosqich !== 'tayyor';
 
   const openEdit = () => {
     setEditRaqam(car.raqam || '');
