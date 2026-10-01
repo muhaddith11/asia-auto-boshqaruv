@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
     if (getErr || !order) {
       return NextResponse.json({ ok: false, error: 'Mashina topilmadi.' }, { status: 404 });
     }
-    if (order.qabul_xodim_id !== worker.id && !worker.is_boss) {
+    // Egasi (qabul qilgan xodim), boshliq VA admin amal qila oladi. Admin aynan
+    // "tayyor" buyurtmalarni mijozga topshirish uchun o'ziniki bo'lmagan
+    // mashinaga ham amal qiladi.
+    if (order.qabul_xodim_id !== worker.id && !worker.is_boss && !worker.is_admin) {
       return NextResponse.json({ ok: false, error: 'Bu mashina sizniki emas.' }, { status: 403 });
     }
 

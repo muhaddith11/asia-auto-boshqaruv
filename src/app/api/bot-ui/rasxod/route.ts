@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     if (getErr || !order) {
       return NextResponse.json({ ok: false, error: 'Mashina topilmadi.' }, { status: 404 });
     }
-    if (order.qabul_xodim_id !== worker.id && !worker.is_boss) {
+    if (order.qabul_xodim_id !== worker.id && !worker.is_boss && !worker.is_admin) {
       return NextResponse.json({ ok: false, error: 'Bu mashina sizniki emas.' }, { status: 403 });
     }
     if (order.holat === 'tulangan') {

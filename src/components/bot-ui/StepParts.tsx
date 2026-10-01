@@ -328,10 +328,12 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
       </div>
       )}
 
-      {/* Qo'lda yangi zapchast/filtr qo'shish */}
+      {/* Qo'lda qo'shish — FAQAT yog' bo'limi uchun (ro'yxatda yo'q filtr).
+          Ustaxona zapchastlari qo'lda kiritilmaydi — faqat ro'yxatdan tanlanadi. */}
+      {isYog && (
       <div className="bg-gray-800 rounded-xl p-5 border border-gray-700 mt-4">
         <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
-          <PlusCircle className="w-4 h-4 text-orange-400" /> {isYog ? "Ro'yxatda yo'q filtr qo'shish" : "Qo'lda Zapchast Qo'shish"}
+          <PlusCircle className="w-4 h-4 text-orange-400" /> Ro'yxatda yo'q filtr qo'shish
         </h3>
 
         <div className="space-y-4">
@@ -378,6 +380,7 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
           </button>
         </div>
       </div>
+      )}
 
       <div className="flex gap-3 mt-6">
         <button
