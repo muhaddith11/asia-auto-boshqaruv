@@ -91,11 +91,14 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
   };
 
   const handleAddCustom = () => {
-    if (!customName || !customPrice) return;
+    if (!customName.trim()) return;
+    // Narx yozilmasa — xizmat narxsiz qo'shiladi, narxni keyin admin qo'yadi.
+    const noPrice = !customPrice;
     store.addService({
-      name: customName,
-      price: Number(customPrice),
-      isCustom: true
+      name: customName.trim(),
+      price: noPrice ? 0 : Number(customPrice),
+      isCustom: true,
+      noPrice,
     });
     setCustomName('');
     setCustomPrice('');
@@ -214,7 +217,11 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
               <div key={i} className="flex justify-between items-center bg-gray-800 p-3 rounded-xl border border-gray-700">
                 <div>
                   <p className="text-sm">{svc.name}</p>
-                  <p className="text-xs text-blue-400">{Number(svc.price).toLocaleString()} UZS</p>
+                  {svc.noPrice ? (
+                    <p className="text-xs text-amber-400">Narxi admin tomonidan qo'yiladi</p>
+                  ) : (
+                    <p className="text-xs text-blue-400">{Number(svc.price).toLocaleString()} UZS</p>
+                  )}
                 </div>
                 <button
                   onClick={() => store.removeService(i)}
@@ -244,19 +251,20 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
           <div className="flex gap-2">
             <input
               type="text" inputMode="numeric"
-              placeholder="Narxi (UZS)"
+              placeholder="Narxi (UZS) — ixtiyoriy"
               className="flex-1 bg-gray-900 border border-gray-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={formatDigits(customPrice)}
               onChange={e => setCustomPrice(stripToDigits(e.target.value))}
             />
             <button
               onClick={handleAddCustom}
-              disabled={!customName || !customPrice}
+              disabled={!customName.trim()}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-950/40 text-white p-2 px-4 rounded-lg disabled:opacity-50 transition-colors"
             >
               Qo'shish
             </button>
           </div>
+          <p className="text-xs text-gray-500">Narxni bilmasangiz bo'sh qoldiring — chekni admin narx qo'yib chiqaradi.</p>
         </div>
       </div>
 

@@ -49,6 +49,10 @@ export async function POST(req: NextRequest) {
     const worker_id = worker.id;
     const workerName = worker.ism;
 
+    // Narxsiz xizmat bor → chek xodimga chiqmaydi, buyurtma admin botiga o'tadi,
+    // admin narx qo'yib chek chiqaradi (/api/bot-ui/price).
+    const hasUnpriced = !!orderId && (services || []).some((s: any) => s.noPrice);
+
     const servicesTotal = services?.reduce((sum: number, s: any) => sum + Number(s.price), 0) || 0;
     // Zapchast narxi miqdorga KO'PAYTIRILMAYDI — narx qanday kiritilgan bo'lsa, shundayligicha.
     // Miqdor (quantity) faqat ma'lumot uchun saqlanadi.
@@ -58,7 +62,8 @@ export async function POST(req: NextRequest) {
     const orderServices = [];
     for (const s of (services || [])) {
       let sId = s.id;
-      if (s.isCustom) {
+      // Narxsiz xizmat katalogga yozilmaydi (narx 0 bo'lib qolmasin) — admin narx qo'ygach yoziladi.
+      if (s.isCustom && !s.noPrice) {
         try {
           const { data: newS } = await supabase.from('services_list').insert({
             name: s.name,
@@ -73,7 +78,9 @@ export async function POST(req: NextRequest) {
       orderServices.push({
         id: sId,
         nom: s.name,
-        narx: Number(s.price),
+        narx: Number(s.price) || 0,
+        ...(s.noPrice ? { narxsiz: true } : {}),
+        isCustom: !!s.isCustom,
         workerId: worker.id,
         zarplata: Math.round(Number(s.price) * (worker.foiz || 0) / 100)
       });
@@ -216,6 +223,79 @@ export async function POST(req: NextRequest) {
           ...receiptParts,
         ];
         receiptPartsTotal = mergedZapTotal;
+      }
+
+
+      if (hasUnpriced) {
+        // ── NARX KUTILMOQDA: chek chiqmaydi, printerga ketmaydi (print_status qo'yilmaydi).
+        const holdLog = Array.isArray(existing.status_log) ? existing.status_log : [];
+        holdLog.push({ bosqich: 'narx_kutilmoqda', vaqt: nowIso, xodim_id: worker.id, izoh: 'Narxsiz xizmat — admin narx qoyadi' });
+        const { print_status: _ps, ...holdFields } = completionFields;
+        void _ps;
+        const { data: held, error: holdErr } = await supabase
+          .from('orders')
+          .update({
+            ...holdFields,
+            zaps: mergedZaps,
+            zap: mergedZapTotal,
+            total: mergedTotal,
+            final: mergedTotal,
+            pribil: mergedTotal - zarplataTotal - mergedCost,
+            bosqich: 'narx_kutilmoqda',
+            status_log: holdLog,
+          })
+          .eq('id', orderId)
+          .select();
+        if (holdErr) {
+          console.error('Hold update error:', holdErr);
+          return NextResponse.json({ ok: false, error: 'Saqlashda xatolik: ' + holdErr.message }, { status: 500 });
+        }
+        await supabase
+          .from('work_sessions')
+          .update({ ended_at: nowIso, auto_closed: true })
+          .eq('order_id', orderId)
+          .is('ended_at', null);
+        if (held?.[0]) {
+          await archiveRemovedZaps(held[0], diffRemovedZaps(prevZaps, mergedZaps), 'tahrirlandi');
+        }
+        await applyStockDelta(null, { zaps: stockZaps, holat: 'tulanmagan' });
+
+        // Adminlarga xabar
+        const holdSrv = orderServices
+          .map((x: any, i: number) => `${i + 1}. ${x.nom} - ${x.narxsiz ? '❓ NARX KERAK' : Number(x.narx).toLocaleString() + ' UZS'}`)
+          .join('\n');
+        const holdZapLines = receiptParts
+          .map((p, i) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${Number(p.price).toLocaleString()} UZS`)
+          .join('\n');
+        const holdZap = receiptParts.length > 0
+          ? `\n⚙️ ZAPCHASTLAR:\n${holdZapLines}\n🔹 Zapchastlar jami: ${mergedZapTotal.toLocaleString()} UZS\n`
+          : '';
+        const knownSrvTotal = orderServices.reduce((sum: number, x: any) => sum + (x.narxsiz ? 0 : Number(x.narx) || 0), 0);
+        const note = `💲 NARX KUTILMOQDA (chek hali chiqmagan)
+
+👤 Usta: ${workerName}
+📞 Tel: ${worker.tel || workerPhone || '-'}
+
+🚗 Avto: ${receiptCar}
+🔢 Davlat raqami: ${receiptPlate || '-'}
+🛣 Probeg: ${probeg ? probeg + ' km' : '-'}
+🕒 Sana: ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}
+
+🛠 XIZMATLAR:
+${holdSrv}
+🔹 Narxi ma'lum xizmatlar: ${knownSrvTotal.toLocaleString()} UZS
+${holdZap}
+(Buyurtma id: #${orderId})
+
+Botda "Narx kutayotganlar" bo'limidan narx qo'yib, chekni chiqaring.`;
+        const targets = new Set<string>();
+        if (adminId) targets.add(String(adminId));
+        const { data: admins } = await supabase.from('workers').select('telegram').eq('is_admin', true);
+        for (const a of admins || []) if (a.telegram) targets.add(String(a.telegram));
+        for (const t of targets) {
+          try { await bot.telegram.sendMessage(t, note); } catch (e) { console.warn('Admin tg xabar ketmadi:', e); }
+        }
+        return NextResponse.json({ ok: true, id: orderId, pending: true });
       }
 
       const log = Array.isArray(existing.status_log) ? existing.status_log : [];

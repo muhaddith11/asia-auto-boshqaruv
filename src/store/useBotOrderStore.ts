@@ -6,7 +6,7 @@ interface BotOrderState {
   probeg: string;
   plateNumber: string;
   customerPhone: string;
-  services: { name: string; price: number | string; isCustom?: boolean }[];
+  services: { name: string; price: number | string; isCustom?: boolean; noPrice?: boolean }[];
   // id/source — real manba (ombor `parts` yoki `oil_prices`) yozuvini ko'rsatadi,
   // shunda server (submit) tannarxni ISHONCHLI manbadan (bazadan) o'qiy oladi,
   // klient yuborgan narxga emas. isCustom bo'lsa ikkalasi ham bo'lmaydi.
@@ -20,7 +20,7 @@ interface BotOrderState {
   }[];
 
   setCarInfo: (info: Partial<BotOrderState>) => void;
-  addService: (service: { name: string; price: number | string; isCustom?: boolean }) => void;
+  addService: (service: { name: string; price: number | string; isCustom?: boolean; noPrice?: boolean }) => void;
   removeService: (idx: number) => void;
   addPart: (part: {
     name: string;

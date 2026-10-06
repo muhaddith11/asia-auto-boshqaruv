@@ -6,7 +6,7 @@ import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 export const dynamic = 'force-dynamic';
 
 const CAR_FIELDS =
-  'id, ism, mashina, raqam, tel, bosqich, holat, bolim, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at, zaps, oil_recommendation';
+  'id, ism, mashina, raqam, tel, bosqich, holat, bolim, qabul_xodim_id, qabul_xodim_nomi, qabul_vaqti, zapchast_nomi, zapchast_vaqti, tayyor_vaqti, topshirilgan_vaqti, created_at, zaps, oil_recommendation, services, zap';
 
 // Xodim uchun — o'zining tugallanmagan mashinalari.
 // Boshliq uchun — qo'shimcha: barcha xodimlarning barcha (faol) mashinalari.
@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
       .eq('qabul_xodim_id', worker.id)
       .not('bosqich', 'is', null)
       .neq('bosqich', 'tayyor')
+      .neq('bosqich', 'narx_kutilmoqda')
       .neq('bosqich', 'topshirildi')
       .neq('bosqich', 'bekor_qilindi')
       .order('qabul_vaqti', { ascending: false });
@@ -57,6 +58,7 @@ export async function GET(req: NextRequest) {
         .select(CAR_FIELDS)
         .not('bosqich', 'is', null)
         .neq('bosqich', 'tayyor')
+        .neq('bosqich', 'narx_kutilmoqda')
         .neq('bosqich', 'topshirildi')
         .neq('bosqich', 'bekor_qilindi')
         .order('qabul_vaqti', { ascending: false })
@@ -86,8 +88,21 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Admin — narx kutayotgan buyurtmalar (xodim narxsiz xizmat kiritgan).
+    let pricingCars = null;
+    if (worker.is_admin) {
+      const { data: pricing, error: pErr } = await supabase
+        .from('orders')
+        .select(CAR_FIELDS)
+        .eq('bosqich', 'narx_kutilmoqda')
+        .order('qabul_vaqti', { ascending: false })
+        .limit(200);
+      if (pErr) console.error('cars pricingErr:', pErr);
+      else pricingCars = pricing;
+    }
+
     // Ish sessiyalari — kartada "hozir ishlayapman" holati va jami vaqtni ko'rsatish uchun.
-    const carIds = [...new Set([...(myCars || []), ...(allCars || []), ...(readyCars || [])].map((c: { id: number }) => c.id))];
+    const carIds = [...new Set([...(myCars || []), ...(allCars || []), ...(readyCars || []), ...(pricingCars || [])].map((c: { id: number }) => c.id))];
     const sessionsByOrder = new Map<number, { totalMinutes: number; openSince: string | null }>();
     if (carIds.length > 0) {
       const { data: sessions } = await supabase
@@ -141,6 +156,7 @@ export async function GET(req: NextRequest) {
       myCars: withSessions(myCars),
       allCars: allCars ? withSessions(allCars) : null,
       readyCars: readyCars ? withSessions(readyCars) : null,
+      pricingCars: pricingCars ? withSessions(pricingCars) : null,
     });
   } catch (err) {
     console.error('cars API error:', err);

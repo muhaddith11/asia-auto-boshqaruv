@@ -52,6 +52,8 @@ export interface Car {
   rasxodlar: RasxodLine[]; // shu mashinaga kiritilgan rasxodlar
   rasxod_jami: number; // rasxodlar yig'indisi (kassadan ayirilgan)
   oil_recommendation: OilRecommendationSnapshot | null; // qabulda AI skanerlagan yog' tavsiyasi (bo'lsa)
+  services?: { id?: number; nom: string; narx: number; narxsiz?: boolean }[]; // chek uchun xizmatlar
+  zap?: number; // zapchastlar jami (narx kutayotgan buyurtmalarda ko'rsatiladi)
 }
 
 // URL (?phone=), Telegram foydalanuvchi id, yoki brauzer login — shu tartibda.
@@ -134,6 +136,20 @@ export async function addRasxod(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ orderId, items, ...idBody(identity) }),
+  });
+  return res.json();
+}
+
+// Admin: narxsiz xizmatlarga narx qo'yib, chekni chiqaradi (printerga ketadi).
+export async function setServicePrices(
+  identity: Identity,
+  orderId: number,
+  prices: { index: number; narx: number }[]
+) {
+  const res = await fetch('/api/bot-ui/price', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, prices, ...idBody(identity) }),
   });
   return res.json();
 }
@@ -333,6 +349,7 @@ export const STAGES: Record<string, { label: string; emoji: string; color: strin
   qabul_qilindi: { label: 'Qabul qilindi', emoji: '🟡', color: '#eab308' },
   tamirlanmoqda: { label: "Ta'mirlanmoqda", emoji: '🔧', color: '#3b82f6' },
   zapchast_kutilmoqda: { label: 'Zapchast kutilyapti', emoji: '📦', color: '#f97316' },
+  narx_kutilmoqda: { label: 'Narx kutilyapti', emoji: '💲', color: '#a855f7' },
   tayyor: { label: 'Tayyor', emoji: '✅', color: '#22c55e' },
   topshirildi: { label: 'Topshirildi', emoji: '🚗', color: '#64748b' },
   bekor_qilindi: { label: 'Bekor qilindi', emoji: '❌', color: '#f43f5e' },

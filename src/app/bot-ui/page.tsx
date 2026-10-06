@@ -9,6 +9,7 @@ import ReceiptPreview from '@/components/bot-ui/ReceiptPreview';
 import { Loader2, Eye, RefreshCw, ChevronRight, Trophy, Package, Home, CheckCircle2 } from 'lucide-react';
 import PhoneLogin from '@/components/bot-ui/PhoneLogin';
 import AcceptForm from '@/components/bot-ui/AcceptForm';
+import PriceEntry from '@/components/bot-ui/PriceEntry';
 import CarDetail from '@/components/bot-ui/CarDetail';
 import BossMonitor from '@/components/bot-ui/BossMonitor';
 import PointsView from '@/components/bot-ui/PointsView';
@@ -17,7 +18,7 @@ import OilPriceAdmin from '@/components/bot-ui/OilPriceAdmin';
 import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
 import { bolimMeta } from '@/lib/departments';
 
-type View = 'home' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog' | 'oilPrices';
+type View = 'home' | 'price' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog' | 'oilPrices';
 
 export default function BotUIPage() {
   const [view, setView] = useState<View>('home');
@@ -28,10 +29,11 @@ export default function BotUIPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authUser, setAuthUser] = useState<any>(null);
-  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; readyCars: Car[] | null; is_boss: boolean; is_admin: boolean; name: string; bolim: string }>({
+  const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; readyCars: Car[] | null; pricingCars: Car[] | null; is_boss: boolean; is_admin: boolean; name: string; bolim: string }>({
     myCars: [],
     allCars: null,
     readyCars: null,
+    pricingCars: null,
     is_boss: false,
     is_admin: false,
     name: '',
@@ -116,16 +118,18 @@ export default function BotUIPage() {
         const myCars = res.myCars || [];
         const allCars = res.allCars || null;
         const readyCars = res.readyCars || null;
+        const pricingCars = res.pricingCars || null;
         setCarsData({
           myCars,
           allCars,
           readyCars,
+          pricingCars,
           is_boss: !!res.worker?.is_boss,
           is_admin: !!res.worker?.is_admin,
           name: res.worker?.ism || '',
           bolim: res.worker?.bolim || 'ustaxona',
         });
-        return { myCars, allCars, readyCars };
+        return { myCars, allCars, readyCars, pricingCars };
       }
     } catch {
       /* jim */
@@ -142,7 +146,7 @@ export default function BotUIPage() {
     if (!selectedCar) return;
     const res = await loadCars();
     if (!res) return;
-    const all = [...res.myCars, ...(res.allCars || []), ...(res.readyCars || [])];
+    const all = [...res.myCars, ...(res.allCars || []), ...(res.readyCars || []), ...(res.pricingCars || [])];
     const updated = all.find((c) => c.id === selectedCar.id);
     if (updated) setSelectedCar(updated);
     else {
@@ -203,7 +207,9 @@ export default function BotUIPage() {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || `Server xatosi: ${res.status}`);
-      toast.success(`Chek chiqdi ✅ Buyurtma "tayyor" — endi admin qabul qiladi. Chek #${j.id}`);
+      if (j.pending) {
+        toast.success("Narxsiz xizmat bor — buyurtma adminga yuborildi 💲");
+      } else toast.success(`Chek chiqdi ✅ Buyurtma "tayyor" — endi admin qabul qiladi. Chek #${j.id}`);
       store.reset();
       setSelectedCar(null);
       await finishHome();
@@ -314,6 +320,37 @@ export default function BotUIPage() {
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-500" />
               </button>
+
+              {/* Admin — narx kutayotgan buyurtmalar */}
+              {carsData.is_admin && (carsData.pricingCars || []).length > 0 && (
+                <div>
+                  <h2 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">
+                    💲 Narx kutayotganlar ({(carsData.pricingCars || []).length})
+                  </h2>
+                  <div className="space-y-2.5">
+                    {(carsData.pricingCars || []).map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setSelectedCar(c);
+                          setView('price');
+                        }}
+                        className="w-full text-left bg-purple-500/5 border border-purple-500/30 hover:border-purple-500/50 rounded-xl p-4 flex items-center justify-between gap-2 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-bold truncate">
+                            {c.mashina} {c.raqam && <span className="text-gray-400 font-normal">· {c.raqam}</span>}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            👤 {c.qabul_xodim_nomi} · {(c.services || []).filter((s) => s.narxsiz).length} ta narxsiz xizmat
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-purple-400/70 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Admin — tayyor (chek chiqarilgan) buyurtmalar: mijozga topshirishga tayyor */}
               {carsData.is_admin && (
@@ -441,6 +478,11 @@ export default function BotUIPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* ══ ADMIN: NARX QO'YISH ══ */}
+          {view === 'price' && selectedCar && (
+            <PriceEntry car={selectedCar} identity={resolveIdentity(authUser)} onDone={finishHome} onBack={() => setView('home')} />
           )}
 
           {/* ══ MASHINA KARTASI — holat o'zgartirish / topshirish ══ */}
