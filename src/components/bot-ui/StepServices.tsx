@@ -217,9 +217,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
               <div key={i} className="flex justify-between items-center bg-gray-800 p-3 rounded-xl border border-gray-700">
                 <div>
                   <p className="text-sm">{svc.name}</p>
-                  {svc.noPrice ? (
-                    <p className="text-xs text-amber-400">Narxi admin tomonidan qo'yiladi</p>
-                  ) : (
+                  {!svc.noPrice && (
                     <p className="text-xs text-blue-400">{Number(svc.price).toLocaleString()} UZS</p>
                   )}
                 </div>
@@ -251,7 +249,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
           <div className="flex gap-2">
             <input
               type="text" inputMode="numeric"
-              placeholder="Narxi (UZS) — ixtiyoriy"
+              placeholder="Narxi (UZS)"
               className="flex-1 bg-gray-900 border border-gray-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={formatDigits(customPrice)}
               onChange={e => setCustomPrice(stripToDigits(e.target.value))}
@@ -264,7 +262,6 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
               Qo'shish
             </button>
           </div>
-          <p className="text-xs text-gray-500">Narxni bilmasangiz bo'sh qoldiring — chekni admin narx qo'yib chiqaradi.</p>
         </div>
       </div>
 

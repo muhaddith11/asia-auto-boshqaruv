@@ -262,7 +262,7 @@ export async function POST(req: NextRequest) {
 
         // Adminlarga xabar
         const holdSrv = orderServices
-          .map((x: any, i: number) => `${i + 1}. ${x.nom} - ${x.narxsiz ? '❓ NARX KERAK' : Number(x.narx).toLocaleString() + ' UZS'}`)
+          .map((x: any, i: number) => `${i + 1}. ${x.nom}${x.narxsiz ? '' : ' - ' + Number(x.narx).toLocaleString() + ' UZS'}`)
           .join('\n');
         const holdZapLines = receiptParts
           .map((p, i) => `${i + 1}. ${p.name} (${p.quantity} dp) - ${Number(p.price).toLocaleString()} UZS`)
@@ -270,8 +270,7 @@ export async function POST(req: NextRequest) {
         const holdZap = receiptParts.length > 0
           ? `\n⚙️ ZAPCHASTLAR:\n${holdZapLines}\n🔹 Zapchastlar jami: ${mergedZapTotal.toLocaleString()} UZS\n`
           : '';
-        const knownSrvTotal = orderServices.reduce((sum: number, x: any) => sum + (x.narxsiz ? 0 : Number(x.narx) || 0), 0);
-        const note = `💲 NARX KUTILMOQDA (chek hali chiqmagan)
+        const note = `🧾 ELEKTRON CHEK
 
 👤 Usta: ${workerName}
 📞 Tel: ${worker.tel || workerPhone || '-'}
@@ -283,11 +282,8 @@ export async function POST(req: NextRequest) {
 
 🛠 XIZMATLAR:
 ${holdSrv}
-🔹 Narxi ma'lum xizmatlar: ${knownSrvTotal.toLocaleString()} UZS
 ${holdZap}
-(Buyurtma id: #${orderId})
-
-Botda "Narx kutayotganlar" bo'limidan narx qo'yib, chekni chiqaring.`;
+(Buyurtma id: #${orderId})`;
         const targets = new Set<string>();
         if (adminId) targets.add(String(adminId));
         const { data: admins } = await supabase.from('workers').select('telegram').eq('is_admin', true);

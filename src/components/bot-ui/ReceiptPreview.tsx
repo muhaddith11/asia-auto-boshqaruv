@@ -18,7 +18,6 @@ export default function ReceiptPreview({ car, onPrev, onSubmit, isSubmitting }: 
   const totalParts = store.parts.reduce((sum, p) => sum + Number(p.price || 0), 0);
   // Oldin kiritilgan rasxod — server chek chiqarganda avtomatik qo'shadi, shuning
   // uchun bu yerda ham ko'rsatib, haqiqiy yakuniy summani oldindan ko'rsatamiz.
-  const hasUnpriced = store.services.some((x) => x.noPrice);
   const rasxodTotal = car?.rasxod_jami || 0;
   const totalAmount = store.getTotalAmount() + rasxodTotal;
 
@@ -60,9 +59,7 @@ export default function ReceiptPreview({ car, onPrev, onSubmit, isSubmitting }: 
               <div key={i} className="flex justify-between items-start border-b border-gray-700/50 pb-3 last:border-0 last:pb-0">
                 <span className="text-gray-200 text-sm">{i + 1}. {s.name}</span>
                 <span className="text-gray-300 font-mono text-sm whitespace-nowrap ml-4">
-                  {s.noPrice ? (
-                    <span className="text-xs text-amber-400">narx kutilyapti</span>
-                  ) : (
+                  {!s.noPrice && (
                     <>{Number(s.price).toLocaleString()} <span className="text-xs text-gray-500">UZS</span></>
                   )}
                 </span>
@@ -131,12 +128,6 @@ export default function ReceiptPreview({ car, onPrev, onSubmit, isSubmitting }: 
         </div>
       )}
 
-      {hasUnpriced && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200 leading-relaxed">
-          💲 Narxsiz xizmat bor — chek sizga chiqmaydi. Buyurtma <b>adminga</b> o'tadi, admin narx qo'yib chekni printerdan chiqaradi.
-        </div>
-      )}
-
       {/* Total Amount */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
         <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
@@ -163,7 +154,7 @@ export default function ReceiptPreview({ car, onPrev, onSubmit, isSubmitting }: 
             <span className="animate-pulse">Yuborilmoqda...</span>
           ) : (
             <>
-              <CheckCircle2 className="w-6 h-6" /> {hasUnpriced ? 'Adminga yuborish' : "Saqlash va Jo'natish"}
+              <CheckCircle2 className="w-6 h-6" /> Saqlash va Jo'natish
             </>
           )}
         </button>

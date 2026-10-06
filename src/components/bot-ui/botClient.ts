@@ -349,7 +349,7 @@ export const STAGES: Record<string, { label: string; emoji: string; color: strin
   qabul_qilindi: { label: 'Qabul qilindi', emoji: '🟡', color: '#eab308' },
   tamirlanmoqda: { label: "Ta'mirlanmoqda", emoji: '🔧', color: '#3b82f6' },
   zapchast_kutilmoqda: { label: 'Zapchast kutilyapti', emoji: '📦', color: '#f97316' },
-  narx_kutilmoqda: { label: 'Narx kutilyapti', emoji: '💲', color: '#a855f7' },
+  narx_kutilmoqda: { label: 'Narx kutilyapti', emoji: '💲', color: '#94a3b8' },
   tayyor: { label: 'Tayyor', emoji: '✅', color: '#22c55e' },
   topshirildi: { label: 'Topshirildi', emoji: '🚗', color: '#64748b' },
   bekor_qilindi: { label: 'Bekor qilindi', emoji: '❌', color: '#f43f5e' },

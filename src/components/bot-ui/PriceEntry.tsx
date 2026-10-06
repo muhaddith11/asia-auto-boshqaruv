@@ -55,13 +55,13 @@ export default function PriceEntry({ car, identity, onDone, onBack }: Props) {
       <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-1">
         <div className="text-lg font-bold">{car.mashina}</div>
         {car.raqam && <div className="text-sm text-gray-300">🔢 {car.raqam}</div>}
-        <div className="text-xs text-purple-300">👤 {car.qabul_xodim_nomi} · narx kutilyapti</div>
+        <div className="text-xs text-gray-400">👤 {car.qabul_xodim_nomi}</div>
       </div>
 
       <div className="space-y-3">
         {services.map((s, i) =>
           s.narxsiz ? (
-            <div key={i} className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 space-y-2">
+            <div key={i} className="bg-gray-800 border border-gray-700 rounded-xl p-3 space-y-2">
               <div className="text-sm font-semibold text-gray-100">{s.nom}</div>
               <div className="relative">
                 <input
@@ -69,7 +69,7 @@ export default function PriceEntry({ car, identity, onDone, onBack }: Props) {
                   value={formatDigits(vals[i] || '')}
                   onChange={(e) => setVals((v) => ({ ...v, [i]: stripToDigits(e.target.value) }))}
                   placeholder="Narxi"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-xl py-3 px-4 pr-14 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-xl py-3 px-4 pr-14 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">UZS</span>
               </div>
@@ -84,7 +84,7 @@ export default function PriceEntry({ car, identity, onDone, onBack }: Props) {
       </div>
 
       <div className="flex items-center justify-between rounded-xl bg-gray-800 border border-gray-700 px-4 py-3">
-        <span className="text-sm text-gray-400">Umumiy (zapchast/rasxod bilan)</span>
+        <span className="text-sm text-gray-400">Umumiy</span>
         <span className="font-black tabular-nums">{total.toLocaleString('ru-RU')} UZS</span>
       </div>
 

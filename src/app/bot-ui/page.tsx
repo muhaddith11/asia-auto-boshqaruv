@@ -207,9 +207,7 @@ export default function BotUIPage() {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || `Server xatosi: ${res.status}`);
-      if (j.pending) {
-        toast.success("Narxsiz xizmat bor — buyurtma adminga yuborildi 💲");
-      } else toast.success(`Chek chiqdi ✅ Buyurtma "tayyor" — endi admin qabul qiladi. Chek #${j.id}`);
+      toast.success(`Chek chiqdi ✅ Buyurtma "tayyor" — endi admin qabul qiladi. Chek #${j.id}`);
       store.reset();
       setSelectedCar(null);
       await finishHome();
@@ -324,7 +322,7 @@ export default function BotUIPage() {
               {/* Admin — narx kutayotgan buyurtmalar */}
               {carsData.is_admin && (carsData.pricingCars || []).length > 0 && (
                 <div>
-                  <h2 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">
+                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
                     💲 Narx kutayotganlar ({(carsData.pricingCars || []).length})
                   </h2>
                   <div className="space-y-2.5">
@@ -335,17 +333,17 @@ export default function BotUIPage() {
                           setSelectedCar(c);
                           setView('price');
                         }}
-                        className="w-full text-left bg-purple-500/5 border border-purple-500/30 hover:border-purple-500/50 rounded-xl p-4 flex items-center justify-between gap-2 transition-colors"
+                        className="w-full text-left bg-gray-800 border border-gray-700 hover:border-gray-600 rounded-xl p-4 flex items-center justify-between gap-2 transition-colors"
                       >
                         <div className="min-w-0">
                           <div className="font-bold truncate">
                             {c.mashina} {c.raqam && <span className="text-gray-400 font-normal">· {c.raqam}</span>}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                            👤 {c.qabul_xodim_nomi} · {(c.services || []).filter((s) => s.narxsiz).length} ta narxsiz xizmat
+                            👤 {c.qabul_xodim_nomi}
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-purple-400/70 shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
                       </button>
                     ))}
                   </div>
