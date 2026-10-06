@@ -57,6 +57,18 @@ describe('buildLedgerRows', () => {
     expect(rows[0]._amount).toBe(45000); // summasi statistikada TO'LIQ qoladi
   });
 
+  it("to'langan buyurtmaning rasxod qatori hisobotdan tushib ketadi, to'lanmaganiniki qoladi", () => {
+    const ops = [
+      op({ id: 21, type: 'expense', amount: 45000, category: "Buyurtma bo'yicha to'lov", comment: 'Rasxod: Tormoz (Buyurtma #7)', source: 'Ustaxona' }),
+      op({ id: 22, type: 'expense', amount: 30000, category: "Buyurtma bo'yicha to'lov", comment: 'Rasxod: Moy (Buyurtma #8)', source: 'Ustaxona' }),
+    ];
+    const rows = buildLedgerRows(
+      [order({ id: 7, holat: 'tulangan' }), order({ id: 8, holat: 'tulanmagan' })],
+      ops, [], [],
+    );
+    expect(rows.map((r) => r._id)).toEqual(['22']);
+  });
+
   it("qo'lda kiritilgan 'Buyurtma bo'yicha to'lov' (rasxod EMAS) _isRasxod=false qoladi", () => {
     const rows = buildLedgerRows(
       [],

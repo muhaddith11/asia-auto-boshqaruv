@@ -108,6 +108,10 @@ export function buildLedgerRows(
       const raw = op.created_at || op.createdAt || op.date || '';
       const { date, display } = dateParts(raw, op.date || '');
       const izoh = op.comment || '';
+      const isRasxod = hasOrder && izoh.startsWith('Rasxod: ');
+      // Buyurtma to'langach, uning rasxod qatorlari hisobotdan tushib ketadi
+      // (rasxod pul buyurtma yakuniy summasi ichida kassaga qaytgan).
+      if (isRasxod && orderById.get(orderId)?.holat === 'tulangan') continue;
       rows.push({
         _id: String(op.id),
         _date: date,
@@ -122,7 +126,7 @@ export function buildLedgerRows(
         _orderId: hasOrder ? orderId : null,
         // Bot-ui'ning /api/bot-ui/rasxod route'i shu shaklda comment yozadi
         // (src/app/api/bot-ui/rasxod/route.ts) — boshqa hech kim bunday izoh yozmaydi.
-        _isRasxod: hasOrder && izoh.startsWith('Rasxod: '),
+        _isRasxod: isRasxod,
       });
     }
 
