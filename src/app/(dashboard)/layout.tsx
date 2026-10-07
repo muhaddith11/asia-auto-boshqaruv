@@ -37,7 +37,7 @@ export default function DashboardLayout({
 
       <div className="main-content-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <GlobalNavbar onMenuToggle={() => setSidebarOpen(p => !p)} />
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           {children}
         </main>
       </div>

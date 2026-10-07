@@ -250,6 +250,15 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
           </div>
         </Link>
 
+        {boss && (
+          <Link href="/statistika" style={{ textDecoration: 'none' }} onClick={handleNavClick}>
+            <div className={`nav-item ${pathname === '/statistika' ? 'active' : ''}`}>
+              <BarChart3 size={16} />
+              <span>Statistika</span>
+            </div>
+          </Link>
+        )}
+
         {/* Grouped Nav */}
         <div style={{ marginTop: 8 }}>
           {visibleGroups.map((group) => {

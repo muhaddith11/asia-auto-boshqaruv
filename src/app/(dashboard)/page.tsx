@@ -7,7 +7,7 @@ import { useRole } from '@/lib/useRole';
 import { isCancelledHolat } from '@/lib/stock';
 import { Users, ClipboardList, Package, Banknote, Clock, ExternalLink, CheckCircle2 } from 'lucide-react';
 import AiForecast from '@/components/AiForecast';
-import BossDashboard from '@/components/BossDashboard';
+import BossBusinessReport from '@/components/BossBusinessReport';
 import Link from 'next/link';
 
 export default function Dashboard() {
@@ -19,10 +19,9 @@ export default function Dashboard() {
 
   if (!mounted || !ready) return null;
 
-  // Boshliq — ixcham bosh sahifa: faqat hisob-kitob, buyurtmalar va eng muhim
-  // narsalar. Huquqi cheklanmagan (istalgan sahifaga o'ta oladi), faqat birinchi
-  // ekran soddalashtirilgan.
-  if (boss) return <BossDashboard />;
+  // Boshliq — bosh sahifada faqat hisobot. Qolgan hamma narsa (kassa, qarzdorlar,
+  // oxirgi buyurtmalar, AI tahlil) alohida /statistika sahifasida.
+  if (boss) return <BossBusinessReport />;
 
   // isCancelledHolat — 'bekor qilingan' (dashboard) VA 'bekor' (bot-ui) ikkalasini
   // ham bekor deb hisoblaydi (@/lib/stock), aks holda botdan bekor qilingan

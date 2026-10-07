@@ -411,6 +411,8 @@ html, body {
 .main-content-layout {
   transition: margin-left 0.3s ease;
   margin-left: 240px;
+  /* Keng jadval ekrandan chiqib ketmasin: ichki jadval o'zi skroll bo'ladi */
+  min-width: 0;
 }
 
 @media (max-width: 1023px) {
