@@ -6,7 +6,7 @@ import { buildLedgerRows } from '@/lib/businessLedger';
 import { attachOrderProfit, computeBossStats, orderPartLines } from '@/lib/bossProfit';
 import { monthRange, quickRange, type QuickRangeKind } from '@/lib/dateRange';
 import { exportToCSV } from '@/lib/export';
-import { TrendingDown, Target, Banknote, Receipt, FileSpreadsheet, Package } from 'lucide-react';
+import { Target, Banknote, Receipt, FileSpreadsheet, Package } from 'lucide-react';
 import type { Buyurtma } from '@/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -201,25 +201,6 @@ export default function BossBusinessReport() {
           <Term sign="−" label="Ish xaqi" value={stats.ishXaqi} color="#a78bfa" />
           <Term sign="−" label="Ishxona xarajati" value={stats.ishxonaXarajat} color="#fb7185" />
         </div>
-      </div>
-
-      {/* CHIQIMLAR TAFSILOTI */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
-        {[
-          { label: "To'langan ish xaqi", value: stats.ishXaqi, icon: <Banknote size={20} />, color: '#a78bfa', hint: 'Kassadan chiqqan maoshlar' },
-          { label: 'Ishxona xarajati', value: stats.ishxonaXarajat, icon: <TrendingDown size={20} />, color: '#fb7185', hint: 'Ijara, kommunal, asbob va h.k.' },
-        ].map((s, i) => (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{ padding: 8, borderRadius: 8, background: `${s.color}15`, color: s.color }}>{s.icon}</div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase' }}>{s.label}</span>
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: 'white' }}>
-              {fmt(s.value)} <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>UZS</span>
-            </div>
-            <div style={{ fontSize: 10.5, color: 'var(--text4)', marginTop: 6 }}>{s.hint}</div>
-          </div>
-        ))}
       </div>
 
       {/* ISHCHILAR BO'YICHA MAOSH */}

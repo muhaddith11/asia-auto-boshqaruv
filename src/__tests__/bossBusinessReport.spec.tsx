@@ -88,10 +88,10 @@ describe("Boshliq — Ishxona bo'yicha hisobot", () => {
     expect(row).toContain('− 200 000'); // zapchast sifatida ayirilgan
     expect(row).toContain('600 000');   // 800 000 − 200 000
 
-    // "Ishxona xarajati" kartasida rasxod YO'Q (faqat 100 000 antifriz)
-    const xarajatCard = screen.getByText(/Ijara, kommunal/).parentElement as HTMLElement;
-    expect(norm(xarajatCard.textContent)).toContain('100 000');
-    expect(norm(xarajatCard.textContent)).not.toContain('300 000');
+    // Tepadagi "Ishxona xarajati" qismida rasxod YO'Q (faqat 100 000 antifriz)
+    const xarajat = screen.getByText(/^Ishxona xarajati$/).parentElement as HTMLElement;
+    expect(norm(xarajat.textContent)).toContain('100 000');
+    expect(norm(xarajat.textContent)).not.toContain('300 000');
 
     // Rasxod amaliyoti pastdagi ro'yxatda ham takrorlanmaydi
     expect(screen.queryByText(/Rasxod: Injektr/)).toBeNull();
