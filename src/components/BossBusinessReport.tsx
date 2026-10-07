@@ -98,6 +98,17 @@ export default function BossBusinessReport() {
     [filtered],
   );
 
+  // Ishchilar bo'yicha to'langan maosh (davr ichida) — har xodim va jami.
+  const ishchilar = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const x of filtered) {
+      if (x._category !== 'Ish xaqi') continue;
+      const nom = x._mijoz || 'Xodim';
+      m.set(nom, (m.get(nom) || 0) + (Number(x._amount) || 0));
+    }
+    return Array.from(m, ([nom, summa]) => ({ nom, summa })).sort((a, b) => b.summa - a.summa);
+  }, [filtered]);
+
   const handleExport = () => {
     if (orderRows.length === 0) { toast.error("Eksport uchun ma'lumot yo'q"); return; }
     exportToCSV('boshliq_buyurtmalar', orderRows.map(({ row, order, parts, zapchast, foyda }) => ({
@@ -209,6 +220,35 @@ export default function BossBusinessReport() {
             <div style={{ fontSize: 10.5, color: 'var(--text4)', marginTop: 6 }}>{s.hint}</div>
           </div>
         ))}
+      </div>
+
+      {/* ISHCHILAR BO'YICHA MAOSH */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 28 }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Banknote size={18} color="var(--text3)" />
+          <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>ISHCHILAR XARAJATI</span>
+          <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{ishchilar.length} ta xodim</span>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <tbody>
+            {ishchilar.length === 0 ? (
+              <tr><td style={{ padding: 32, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun maosh to&apos;lanmagan</td></tr>
+            ) : ishchilar.map((w) => (
+              <tr key={w.nom} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '10px 20px', fontSize: 13, fontWeight: 700, color: 'white' }}>{w.nom}</td>
+                <td style={{ padding: '10px 20px', fontSize: 13, fontWeight: 800, textAlign: 'right', color: '#a78bfa', whiteSpace: 'nowrap' }}>{fmt(w.summa)}</td>
+              </tr>
+            ))}
+          </tbody>
+          {ishchilar.length > 0 && (
+            <tfoot>
+              <tr>
+                <td style={{ padding: '12px 20px', fontSize: 12.5, fontWeight: 900, color: 'var(--text3)' }}>MAOSH JAMI</td>
+                <td style={{ padding: '12px 20px', fontSize: 12.5, fontWeight: 900, textAlign: 'right', color: '#a78bfa', whiteSpace: 'nowrap' }}>{fmt(stats.ishXaqi)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
       </div>
 
       {/* BUYURTMALAR + ZAPCHASTLAR + HAR BIRINING FOYDASI */}
