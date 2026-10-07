@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     for (const p of prices) {
       const svc = services[p.index];
       const narx = Math.round(Number(p.narx) || 0);
-      if (svc && svc.narxsiz && narx > 0) {
+      if (svc && svc.narxsiz && p.narx !== null && p.narx !== undefined && String(p.narx) !== '' && narx >= 0) {
         svc.narx = narx;
         delete svc.narxsiz;
       }

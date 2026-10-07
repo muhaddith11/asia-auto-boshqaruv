@@ -19,7 +19,7 @@ export default function PriceEntry({ car, identity, onDone, onBack }: Props) {
   const [busy, setBusy] = useState(false);
 
   const unpriced = services.map((s, i) => ({ s, i })).filter((x) => x.s.narxsiz);
-  const allFilled = unpriced.every((x) => Number(vals[x.i]) > 0);
+  const allFilled = unpriced.every((x) => (vals[x.i] ?? '') !== '');
   const pricedSum = services.reduce((sum, s) => sum + (s.narxsiz ? 0 : Number(s.narx) || 0), 0);
   const enteredSum = unpriced.reduce((sum, x) => sum + (Number(vals[x.i]) || 0), 0);
   const total = pricedSum + enteredSum + (car.zap || 0) + (car.rasxod_jami || 0);
