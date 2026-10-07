@@ -68,8 +68,9 @@ describe("Boshliq — Ishxona bo'yicha hisobot", () => {
     // 1 800 000 kirim − 700 000 zapchast − 300 000 ish xaqi − 100 000 xarajat
     const hero = screen.getByText(/Ishxona foydasi/i).closest('div')?.parentElement as HTMLElement;
     expect(norm(hero.textContent)).toContain('700 000');
-    // Kirim yo'qolmaydi — formula qatorida ko'rinib turadi
-    expect(norm(hero.textContent)).toContain('1 800 000');
+    // Kirim zapchast/rasxod pulisiz (1 800 000 − 700 000) ko'rsatiladi, "Zapchast" qatori yo'q
+    expect(norm(hero.textContent)).toContain('1 100 000');
+    expect(norm(hero.textContent)).not.toMatch(/zapchast/i);
   });
 
   it("boshliq misoli: 1 000 000 lik buyurtma, 500 000 zapchast → foyda 500 000", () => {

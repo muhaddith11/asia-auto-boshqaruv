@@ -6,14 +6,14 @@ import { buildLedgerRows } from '@/lib/businessLedger';
 import { attachOrderProfit, computeBossStats, orderPartLines } from '@/lib/bossProfit';
 import { monthRange, quickRange, type QuickRangeKind } from '@/lib/dateRange';
 import { exportToCSV } from '@/lib/export';
-import { TrendingDown, Target, Banknote, Receipt, FileSpreadsheet, Package, Wrench } from 'lucide-react';
+import { TrendingDown, Target, Banknote, Receipt, FileSpreadsheet, Package } from 'lucide-react';
 import type { Buyurtma } from '@/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Boshliq uchun "Ishxona bo'yicha" hisobot.
 //
 // ASOSIY RAQAM — kirim emas, ISHXONA FOYDASI:
-//     Foyda = Kirim − Zapchast − To'langan ish xaqi − Ishxona xarajati
+//     Foyda = Kirim (zapchast va rasxod puli chiqarilgan) − To'langan ish xaqi − Ishxona xarajati
 // Formula va uning "nega hech narsa ikki marta ayirilmaydi" izohi: @/lib/bossProfit.
 //
 // Qatorlar manbasi — @/lib/businessLedger (egasining /reports/business sahifasi
@@ -186,8 +186,7 @@ export default function BossBusinessReport() {
           {fmt(stats.foyda)} <span style={{ fontSize: 13, color: 'var(--text3)', fontWeight: 600 }}>UZS</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 14px', marginTop: 14, alignItems: 'baseline' }}>
-          <Term label="Kirim" value={stats.kirim} color="#e2e8f0" />
-          <Term sign="−" label="Zapchast" value={stats.zapchast} color="#f59e0b" />
+          <Term label="Kirim" value={stats.kirim - stats.zapchast} color="#e2e8f0" />
           <Term sign="−" label="Ish xaqi" value={stats.ishXaqi} color="#a78bfa" />
           <Term sign="−" label="Ishxona xarajati" value={stats.ishxonaXarajat} color="#fb7185" />
         </div>
@@ -196,7 +195,6 @@ export default function BossBusinessReport() {
       {/* CHIQIMLAR TAFSILOTI */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
         {[
-          { label: 'Zapchast xarajati', value: stats.zapchast, icon: <Wrench size={20} />, color: '#f59e0b', hint: 'Buyurtmalardagi zapchast puli' },
           { label: "To'langan ish xaqi", value: stats.ishXaqi, icon: <Banknote size={20} />, color: '#a78bfa', hint: 'Kassadan chiqqan maoshlar' },
           { label: 'Ishxona xarajati', value: stats.ishxonaXarajat, icon: <TrendingDown size={20} />, color: '#fb7185', hint: 'Ijara, kommunal, asbob va h.k.' },
         ].map((s, i) => (
