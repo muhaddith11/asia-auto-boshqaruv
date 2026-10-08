@@ -162,11 +162,11 @@ export default function WorkerHistoryModal({ worker, onClose }: Props) {
                         </td>
                         <td style={tdStyle}>
                           <span style={{
-                            background: m.method === 'shtraf' ? 'rgba(244,63,94,0.15)' : m.method === 'bonus' ? 'rgba(251,191,36,0.15)' : m.method === 'karta' ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)',
-                            color: m.method === 'shtraf' ? '#fb7185' : m.method === 'bonus' ? '#fbbf24' : m.method === 'karta' ? '#60a5fa' : '#34d399',
+                            background: m.method === 'shtraf' ? 'rgba(244,63,94,0.15)' : m.method === 'bonus' ? 'rgba(251,191,36,0.15)' : m.method === 'karta' ? 'rgba(59,130,246,0.15)' : m.method === 'tashqi' ? 'rgba(148,163,184,0.15)' : 'rgba(16,185,129,0.15)',
+                            color: m.method === 'shtraf' ? '#fb7185' : m.method === 'bonus' ? '#fbbf24' : m.method === 'karta' ? '#60a5fa' : m.method === 'tashqi' ? '#94a3b8' : '#34d399',
                             padding: '2px 8px', borderRadius: 20, fontSize: 10, fontWeight: 700
                           }}>
-                            {m.method === 'shtraf' ? 'Shtraf' : m.method === 'bonus' ? 'Bonus' : m.method === 'karta' ? 'Karta' : 'Naqd'}
+                            {m.method === 'shtraf' ? 'Shtraf' : m.method === 'bonus' ? 'Bonus' : m.method === 'karta' ? 'Karta' : m.method === 'tashqi' ? 'Kassadan tashqari' : 'Naqd'}
                           </span>
                         </td>
                         <td style={{ ...tdStyle, color: '#94a3b8' }}>{m.izoh || '—'}</td>

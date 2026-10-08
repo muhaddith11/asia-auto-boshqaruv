@@ -127,7 +127,10 @@ export interface MaoshTarixi {
   summa: number;
   davr?: string; // YYYY-MM — faqat optimistik create/shtraf yo'lida beriladi, DB'da saqlanmaydi
   sana: string;
-  method: 'naqd' | 'karta' | 'shtraf' | 'bonus'; // 'shtraf'/'bonus' — kassaga/hisobotga tegmaydi, faqat maoshdan ayiriladi/qo'shiladi
+  // 'shtraf'/'bonus' — kassaga/hisobotga tegmaydi, faqat maoshdan ayiriladi/qo'shiladi.
+  // 'tashqi' — xodimga kassadan EMAS, boshqa manbadan berilgan: kassaga/ishxona hisobotiga
+  // tegmaydi, lekin xodimga to'langan sanaladi va tarixda turadi.
+  method: 'naqd' | 'karta' | 'shtraf' | 'bonus' | 'tashqi';
   izoh?: string;
   createdAt: string;
 }

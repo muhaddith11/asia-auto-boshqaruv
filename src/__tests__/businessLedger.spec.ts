@@ -90,6 +90,15 @@ describe('buildLedgerRows', () => {
     expect(rows[0]).toMatchObject({ _amount: 500000, _positive: false, _mijoz: 'Sardor', _category: 'Ish xaqi' });
   });
 
+  it("kassadan tashqari ('tashqi') maosh hisobotga kirmaydi", () => {
+    const salaries: LedgerSalaryLike[] = [
+      { id: 1, xodimId: 1, summa: 500000, method: 'naqd', sana: '2026-09-01' },
+      { id: 2, xodimId: 1, summa: 31034000, method: 'tashqi', sana: '2026-09-02' },
+    ];
+    const rows = buildLedgerRows([], [], salaries, [{ id: 1, ism: 'Sardor' }]);
+    expect(rows.map((r) => r._amount)).toEqual([500000]);
+  });
+
   it('eng yangi sana birinchi keladi', () => {
     const rows = buildLedgerRows(
       [],

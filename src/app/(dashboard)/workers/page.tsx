@@ -124,7 +124,7 @@ export default function WorkersPage() {
     // "Korxona xodimi" rolidagi ishchilar oyligi sherik foydadan ayiriladi
     const korxonaIds = new Set(xodimlar.filter(w => w.role === 'korxona').map(w => Number(w.id)));
     const sherikOylikXarajat = maoshTarixi
-      .filter(m => korxonaIds.has(Number(m.xodimId)) && m.method !== 'shtraf' && m.method !== 'bonus')
+      .filter(m => korxonaIds.has(Number(m.xodimId)) && m.method !== 'shtraf' && m.method !== 'bonus' && m.method !== 'tashqi')
       .reduce((s, m) => s + (m.summa || 0), 0);
 
     return Math.max(0, orderProfit + boshqaKirim - ishxonaXarajat - sherikOylikXarajat);

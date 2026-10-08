@@ -10,7 +10,7 @@
 // aynan mos, faqat O(n) ga optimallashtirilgan va _orderId/_isRasxod qo'shilgan):
 //  1) Kassa operatsiyalari (asosiy moliya manbasi);
 //  2) To'langan, lekin to'lov operatsiyasi topilmagan buyurtmalar (zaxira);
-//  3) Maoshlar — shtraf/bonus bundan mustasno (ular kassaga tegmaydi).
+//  3) Maoshlar — shtraf/bonus va 'tashqi' (kassadan berilmagan) bundan mustasno.
 //
 // Test: businessLedger.spec.ts
 // ─────────────────────────────────────────────────────────────────────────────
@@ -153,9 +153,11 @@ export function buildLedgerRows(
 
     // 3. Maoshlar. Shtraf/bonus kirmaydi — ular kassaga tegmaydi, faqat maoshdan
     // ayiriladi/qo'shiladi. Bonus kiritilsa, chiqim sifatida IKKI marta hisoblanardi.
+    // 'tashqi' — xodimga kassadan emas, boshqa manbadan berilgan: ishxona chiqimi
+    // emas, shuning uchun hisobotga kirmaydi (xodim tarixida esa turadi).
     const workerById = new Map<number, LedgerWorkerLike>(xodimlar.map((w) => [Number(w.id), w]));
     for (const m of maoshTarixi) {
-      if (m.method === 'shtraf' || m.method === 'bonus') continue;
+      if (m.method === 'shtraf' || m.method === 'bonus' || m.method === 'tashqi') continue;
       const raw = m.createdAt || m.sana || '';
       const { date, display } = dateParts(raw, m.sana || '');
       rows.push({
