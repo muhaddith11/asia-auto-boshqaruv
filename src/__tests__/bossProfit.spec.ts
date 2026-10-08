@@ -122,6 +122,23 @@ describe('computeBossStats', () => {
     expect(computeBossStats(rows, 0).ishxonaXarajat).toBe(200000);
   });
 
+  it("aylanmadan tashqari sof chiqimi foydadan ayiriladi (kirimi bo'lsa chiqimdan ayriladi)", () => {
+    const rows: LedgerRow[] = [
+      row({ _id: '1', _amount: 1000000, _positive: true }),
+      row({ _id: '2', _amount: 100000, _positive: false, _category: 'Ishxona' }),
+    ];
+    const tashqari: LedgerRow[] = [
+      row({ _id: '3', _amount: 300000, _positive: false, _category: 'Aylanmadan tashqari' }),
+      row({ _id: '4', _amount: 50000, _positive: true, _category: 'Aylanmadan tashqari' }),
+    ];
+    const s = computeBossStats(rows, 0, tashqari);
+    expect(s.tashqari).toBe(250000);        // 300 000 − 50 000
+    expect(s.ishxonaXarajat).toBe(100000);  // alohida, ikki marta sanalmaydi
+    expect(s.foyda).toBe(650000);           // 1 000 000 − 100 000 − 250 000
+    // Berilmasa — avvalgidek
+    expect(computeBossStats(rows, 0).foyda).toBe(900000);
+  });
+
   it("zarar bo'lsa manfiy foyda ko'rsatadi (yashirmaydi)", () => {
     const rows: LedgerRow[] = [
       row({ _id: '1', _amount: 500000, _positive: true }),

@@ -4,7 +4,7 @@
 //
 // Boshliq ko'radigan ASOSIY raqam endi KIRIM emas, ISHXONA FOYDASI:
 //
-//   Foyda = Kirim − Zapchast − To'langan ish xaqi − Ishxona xarajati
+//   Foyda = Kirim − Zapchast − To'langan ish xaqi − Ishxona xarajati − Aylanmadan tashqari
 //
 // Har bir qism nimani anglatadi va NEGA hech narsa ikki marta ayirilmaydi:
 //
@@ -30,6 +30,11 @@
 //
 // 4) ISHXONA XARAJATI — qolgan barcha chiqimlar (ijara, kommunal, asbob,
 //    soliq va h.k.) — rasxod operatsiyalaridan tashqari (2-bandga qarang).
+//
+// 5) AYLANMADAN TASHQARI — "Aylanmadan tashqari" kategoriyasidagi operatsiyalar
+//    (kassadan chiqqan, lekin ishxona xarajati sifatida yozilmagan pul). Sof
+//    chiqim (chiqim − kirim) foydadan ayiriladi; ular alohida ro'yxatdan keladi,
+//    shuning uchun yuqoridagi bandlar bilan ikki marta sanalmaydi.
 //
 // Test: bossProfit.spec.ts
 // ─────────────────────────────────────────────────────────────────────────────
@@ -164,12 +169,13 @@ export interface BossStats {
   zapchast: number;       // o'sha kirim ichidagi zapchast puli
   ishXaqi: number;        // to'langan maoshlar
   ishxonaXarajat: number; // qolgan chiqimlar (rasxod operatsiyalaridan tashqari)
+  tashqari: number;       // aylanmadan tashqari sof chiqim (chiqim − kirim)
   foyda: number;          // ISHXONA FOYDASI
 }
 
 // Statistika. `zapchast` — attachOrderProfit bergan qatorlardan yig'iladi
 // (shu sababli jadvaldagi ustun bilan raqam har doim bir xil).
-export function computeBossStats(filtered: LedgerRow[], zapchast: number): BossStats {
+export function computeBossStats(filtered: LedgerRow[], zapchast: number, tashqariRows: LedgerRow[] = []): BossStats {
   let kirim = 0;
   let ishXaqi = 0;
   let ishxonaXarajat = 0;
@@ -186,11 +192,19 @@ export function computeBossStats(filtered: LedgerRow[], zapchast: number): BossS
     }
   }
 
+  // Aylanmadan tashqari — davr bo'yicha allaqachon filtrlangan qatorlar
+  let tashqari = 0;
+  for (const r of tashqariRows) {
+    const amount = Number(r._amount) || 0;
+    tashqari += r._positive ? -amount : amount;
+  }
+
   return {
     kirim,
     zapchast,
     ishXaqi,
     ishxonaXarajat,
-    foyda: kirim - zapchast - ishXaqi - ishxonaXarajat,
+    tashqari,
+    foyda: kirim - zapchast - ishXaqi - ishxonaXarajat - tashqari,
   };
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, within } from '@testing-library/react';
 
 // Boshliqning "Ishxona bo'yicha" hisoboti — EKRANDA ko'rinadigan raqamlar.
 // Asosiy talab: katta raqam KIRIM emas, ISHXONA FOYDASI bo'lishi va
@@ -11,6 +11,7 @@ const mockState = vi.hoisted(() => ({
   ishxonaOperatsiyalar: [] as unknown[],
   maoshTarixi: [] as unknown[],
   xodimlar: [] as unknown[],
+  tashqariOperatsiyalar: [] as unknown[],
 }));
 
 vi.mock('@/store/useStore', () => ({
@@ -56,6 +57,7 @@ beforeEach(() => {
     { id: 201, xodimId: 3, summa: 300000, method: 'naqd', sana: '2026-09-13', createdAt: '2026-09-13T10:00:00.000Z' },
   ];
   mockState.xodimlar = [{ id: 3, ism: 'Anvar' }];
+  mockState.tashqariOperatsiyalar = [];
 });
 
 afterEach(() => { vi.useRealTimers(); });
@@ -71,6 +73,20 @@ describe("Boshliq — Ishxona bo'yicha hisobot", () => {
     // Kirim zapchast/rasxod pulisiz (1 800 000 − 700 000) ko'rsatiladi, "Zapchast" qatori yo'q
     expect(norm(hero.textContent)).toContain('1 100 000');
     expect(norm(hero.textContent)).not.toMatch(/zapchast/i);
+  });
+
+  it("aylanmadan tashqari chiqim ko'rinadi va foydadan ayiriladi", () => {
+    mockState.tashqariOperatsiyalar = [
+      { id: 301, type: 'expense', method: 'naqd', amount: 150000, category: 'Aylanmadan tashqari', source: 'manual', comment: 'shaxsiy xarajat', date: '2026-09-14', created_at: '2026-09-14T10:00:00.000Z' },
+    ];
+    render(<BossBusinessReport />);
+    const hero = screen.getByText(/Ishxona foydasi/i).closest('div')?.parentElement as HTMLElement;
+    // 700 000 − 150 000
+    expect(norm(hero.textContent)).toContain('550 000');
+    const term = within(hero).getByText(/^Aylanmadan tashqari$/).parentElement as HTMLElement;
+    expect(norm(term.textContent)).toContain('150 000');
+    // Pastdagi ro'yxatda ham ko'rinadi
+    expect(screen.getByText('shaxsiy xarajat')).toBeTruthy();
   });
 
   it("boshliq misoli: 1 000 000 lik buyurtma, 500 000 zapchast → foyda 500 000", () => {

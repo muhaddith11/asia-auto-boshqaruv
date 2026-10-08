@@ -13,7 +13,7 @@ import type { Buyurtma } from '@/types';
 // Boshliq uchun "Ishxona bo'yicha" hisobot.
 //
 // ASOSIY RAQAM — kirim emas, ISHXONA FOYDASI:
-//     Foyda = Kirim (zapchast va rasxod puli chiqarilgan) − To'langan ish xaqi − Ishxona xarajati
+//     Foyda = Kirim (zapchast va rasxod puli chiqarilgan) − To'langan ish xaqi − Ishxona xarajati − Aylanmadan tashqari
 // Formula va uning "nega hech narsa ikki marta ayirilmaydi" izohi: @/lib/bossProfit.
 //
 // Qatorlar manbasi — @/lib/businessLedger (egasining /reports/business sahifasi
@@ -38,7 +38,7 @@ function Term({ label, value, color, sign }: { label: string; value: number; col
 }
 
 export default function BossBusinessReport() {
-  const { buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar } = useStore();
+  const { buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar, tashqariOperatsiyalar } = useStore();
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [activeQuick, setActiveQuick] = useState('oy');
@@ -57,6 +57,14 @@ export default function BossBusinessReport() {
   const filtered = useMemo(
     () => allRows.filter((r) => (!filterFrom || r._date >= filterFrom) && (!filterTo || r._date <= filterTo)),
     [allRows, filterFrom, filterTo],
+  );
+
+  // Aylanmadan tashqari operatsiyalar — asosiy ro'yxatdan ajratib saqlanadi, shu
+  // sababli alohida qator qilib olinadi va foydadan ayiriladi (bossProfit.ts, 5-band).
+  const extFiltered = useMemo(
+    () => buildLedgerRows([], tashqariOperatsiyalar || [], [], [])
+      .filter((r) => (!filterFrom || r._date >= filterFrom) && (!filterTo || r._date <= filterTo)),
+    [tashqariOperatsiyalar, filterFrom, filterTo],
   );
 
   const orderById = useMemo(() => new Map<number, Buyurtma>(buyurtmalar.map((b) => [Number(b.id), b])), [buyurtmalar]);
@@ -83,7 +91,7 @@ export default function BossBusinessReport() {
   );
 
   const zapchastJami = useMemo(() => orderRows.reduce((s, r) => s + r.zapchast, 0), [orderRows]);
-  const stats = useMemo(() => computeBossStats(filtered, zapchastJami), [filtered, zapchastJami]);
+  const stats = useMemo(() => computeBossStats(filtered, zapchastJami, extFiltered), [filtered, zapchastJami, extFiltered]);
 
   const jami = useMemo(() => ({
     tolov: orderRows.reduce((s, r) => s + r.row._amount, 0),
@@ -94,8 +102,9 @@ export default function BossBusinessReport() {
   // ham, statistikada ham ko'rinmaydi — ular yuqorida o'z buyurtmasining
   // "Zapchast" ustunida allaqachon ayirilgan (ikki marta ayirilmasligi uchun).
   const otherRows = useMemo(
-    () => filtered.filter((r) => r._category !== "Buyurtma to'lovi" && !r._isRasxod),
-    [filtered],
+    () => [...filtered.filter((r) => r._category !== "Buyurtma to'lovi" && !r._isRasxod), ...extFiltered]
+      .sort((a, b) => new Date(b._rawDate || b._date).getTime() - new Date(a._rawDate || a._date).getTime()),
+    [filtered, extFiltered],
   );
 
   // Ishchilar bo'yicha to'langan maosh (davr ichida) — har xodim va jami.
@@ -200,6 +209,7 @@ export default function BossBusinessReport() {
           <Term label="Kirim" value={stats.kirim - stats.zapchast} color="#e2e8f0" />
           <Term sign="−" label="Ish xaqi" value={stats.ishXaqi} color="#a78bfa" />
           <Term sign="−" label="Ishxona xarajati" value={stats.ishxonaXarajat} color="#fb7185" />
+          <Term sign="−" label="Aylanmadan tashqari" value={stats.tashqari} color="#fb7185" />
         </div>
       </div>
 
