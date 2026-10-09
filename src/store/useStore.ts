@@ -54,6 +54,38 @@ const FRESH_MS = 10_000;
 let inFlight: Promise<void> | null = null;
 let lastLoadedAt = 0;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Buyurtma tahriri bilan fon yuklash orasidagi POYGA.
+//
+// Muammo: tahrirni saqlaganda (updateBuyurtma) ro'yxat darrov yangilanadi, server
+// esa buni bir oz vaqt yozadi. Shu orada orders sahifasi loadInitialData() ni
+// ishga tushirsa, serverdan ESKI qator keladi va yangi qiymatlarni (masalan
+// zapchastning "Alohida" galochkasini) bosib ketadi. Qayta ochsangiz galochka
+// yo'q ko'rinadi; qayta saqlasangiz — bazadagi to'g'ri qiymat ham yo'qoladi.
+//
+// Yechim: har bir buyurtma uchun mahalliy yozuv vaqtini eslab qolamiz.
+// Yuklash boshlanganda hali yozilayotgan (yoki shundan keyin yozilgan)
+// buyurtmalar uchun serverdan kelgan qator o'rniga mahalliy qator saqlanadi.
+// ─────────────────────────────────────────────────────────────────────────────
+const orderWrites = new Map<number, { pending: number; doneAt: number }>();
+
+function keepLocalOrderWrites(server: Buyurtma[], local: Buyurtma[], loadStartedAt: number): Buyurtma[] {
+  if (orderWrites.size === 0) return server;
+  const localById = new Map<number, Buyurtma>(local.map((b) => [Number(b.id), b]));
+  const merged = server.map((o) => {
+    const w = orderWrites.get(Number(o.id));
+    if (w && (w.pending > 0 || w.doneAt >= loadStartedAt)) {
+      return localById.get(Number(o.id)) ?? o;
+    }
+    return o;
+  });
+  // Eskirgan yozuvlarni tozalaymiz (server javobi endi ishonchli)
+  for (const [id, w] of orderWrites) {
+    if (w.pending === 0 && w.doneAt < loadStartedAt) orderWrites.delete(id);
+  }
+  return merged;
+}
+
 interface AutoServisStore {
   mijozlar: Mijoz[];
   xodimlar: Xodim[];
@@ -509,6 +541,12 @@ export const useStore = create<AutoServisStore>()(
         // Rollback uchun asl holatni saqlaymiz
         const original = get().buyurtmalar.find(b => Number(b.id) === Number(id));
 
+        // Fon yuklash bu buyurtmani eski server nusxasi bilan bosib ketmasligi uchun
+        // yozuv boshlanganini belgilaymiz (yuqoridagi orderWrites izohiga qarang).
+        const write = orderWrites.get(Number(id)) ?? { pending: 0, doneAt: 0 };
+        write.pending += 1;
+        orderWrites.set(Number(id), write);
+
         // Eslatma: ombor balansi endi SERVER tomonda (/api/orders/[id] POST)
         // eski->yangi holat farqiga qarab yangilanadi — bekor qilish, tahrirlash
         // va soni o'zgarishi izchil ishlaydi. Bu yerda client tomonda tegilmaydi.
@@ -532,6 +570,9 @@ export const useStore = create<AutoServisStore>()(
               buyurtmalar: state.buyurtmalar.map((b) => Number(b.id) === Number(id) ? original : b)
             }));
           }
+        } finally {
+          write.pending -= 1;
+          write.doneAt = Date.now();
         }
       },
       deleteBuyurtma: (id) => {
@@ -728,6 +769,8 @@ export const useStore = create<AutoServisStore>()(
         if (!force && Date.now() - lastLoadedAt < FRESH_MS) return;
 
         inFlight = (async () => {
+          // Shu paytdan keyin yozilgan buyurtmalar uchun server nusxasi eskirgan bo'lishi mumkin
+          const loadStartedAt = Date.now();
           try {
             // Use allSettled to prevent one failing API from blocking others
             const results = await Promise.allSettled([
@@ -772,7 +815,7 @@ export const useStore = create<AutoServisStore>()(
             set((state) => ({
               ...state,
               mijozlar: clients || [],
-              buyurtmalar: orders || [],
+              buyurtmalar: keepLocalOrderWrites(orders || [], state.buyurtmalar, loadStartedAt),
               xodimlar: workers || [],
               zapchastlar: parts || [],
               mashinalar: mashinalarList,
