@@ -203,7 +203,8 @@ export default function OrdersPage() {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)', minHeight: '100vh' }}>
 
       {/* ── PAGE HEADER ── */}
-      <div style={{
+      {/* ord-* klasslar: telefonda qatorlarga bo'linadi (globals.css) */}
+      <div className="ord-head" style={{
         padding: '20px 28px 0',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
       }}>
@@ -215,7 +216,7 @@ export default function OrdersPage() {
             Barcha buyurtmalarni boshqarish — {buyurtmalar.length} ta jami
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div className="ord-head-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {/* Status quick filter */}
           <select
             value={applied.status}
@@ -252,7 +253,7 @@ export default function OrdersPage() {
       </div>
 
       {/* ── FILTERS PANEL ── */}
-      <div style={{
+      <div className="ord-filters" style={{
         margin: '16px 28px 0',
         background: 'var(--surface)',
         border: '1px solid var(--border)',
@@ -267,7 +268,7 @@ export default function OrdersPage() {
         </div>
 
         {/* Row 1: 4 fields */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
+        <div className="ord-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
           <div>
             <label style={S.label}>Telefon raqami</label>
             <div style={{ position: 'relative' }}>
@@ -311,7 +312,7 @@ export default function OrdersPage() {
         </div>
 
         {/* Row 2: VIN + Status + Sana + Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto auto', gap: 12, alignItems: 'flex-end' }}>
+        <div className="ord-grid ord-grid-row2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto auto', gap: 12, alignItems: 'flex-end' }}>
           <div>
             <label style={S.label}>VIN kod</label>
             <div style={{ position: 'relative' }}>
@@ -373,7 +374,7 @@ export default function OrdersPage() {
       </div>
 
       {/* ── TABLE ── */}
-      <div style={{ flex: 1, overflowX: 'auto', padding: '16px 28px 28px' }}>
+      <div className="ord-table-wrap" style={{ flex: 1, overflowX: 'auto', padding: '16px 28px 28px' }}>
         {filtered.length === 0 ? (
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',

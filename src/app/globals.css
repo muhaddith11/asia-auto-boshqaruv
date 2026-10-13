@@ -478,6 +478,26 @@ html, body {
   .br-izoh { min-width: 160px; }
 }
 
+/* ── BUYURTMALAR SAHIFASI (orders/page.tsx) ──────────────────
+   Sarlavha tugmalari va filtr qatorlari bitta qatorda ekrandan chiqib ketardi,
+   telefon esa butun sahifani kichraytirib ko'rsatardi. */
+@media (max-width: 1023px) {
+  .ord-head { flex-wrap: wrap; gap: 12px; }
+  .ord-grid-row2 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 640px) {
+  .ord-head { padding: 16px 12px 0 !important; }
+  .ord-head-actions { width: 100%; flex-wrap: wrap; }
+  .ord-head-actions > select { flex: 1 1 100%; }
+  .ord-head-actions > button, .ord-head-actions > a { flex: 1; justify-content: center; }
+  .ord-filters { margin: 12px 12px 0 !important; padding: 14px !important; }
+  .ord-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+  .ord-grid > button { justify-content: center; }
+  /* iOS bo'sh sana maydonini balandliksiz chizadi */
+  .ord-filters input[type="date"] { -webkit-appearance: none; appearance: none; min-height: 38px; }
+  .ord-table-wrap { padding: 12px 12px 20px !important; }
+}
+
 
 /* === BOT-UI SPACING BACKFILL (scoped to .tg-scope) ===
    The unlayered `* { margin:0; padding:0 }` reset near the top of this file
