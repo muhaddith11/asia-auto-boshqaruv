@@ -88,9 +88,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Admin — narx kutayotgan buyurtmalar (xodim narxsiz xizmat kiritgan).
+    // Admin VA boshliq — narx kutayotgan buyurtmalar (xodim narxsiz xizmat
+    // kiritgan). Ikkalasidan qaysi biri birinchi narx qo'ysa, o'sha chek chiqaradi.
     let pricingCars = null;
-    if (worker.is_admin) {
+    if (worker.is_admin || worker.is_boss) {
       const { data: pricing, error: pErr } = await supabase
         .from('orders')
         .select(CAR_FIELDS)

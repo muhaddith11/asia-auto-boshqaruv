@@ -319,8 +319,8 @@ export default function BotUIPage() {
                 <ChevronRight className="w-5 h-5 text-gray-500" />
               </button>
 
-              {/* Admin — narx kutayotgan buyurtmalar */}
-              {carsData.is_admin && (carsData.pricingCars || []).length > 0 && (
+              {/* Admin va boshliq — narx kutayotgan buyurtmalar */}
+              {(carsData.is_admin || carsData.is_boss) && (carsData.pricingCars || []).length > 0 && (
                 <div>
                   <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
                     💲 Narx kutayotganlar ({(carsData.pricingCars || []).length})
@@ -478,7 +478,7 @@ export default function BotUIPage() {
             </div>
           )}
 
-          {/* ══ ADMIN: NARX QO'YISH ══ */}
+          {/* ══ ADMIN / BOSHLIQ: NARX QO'YISH ══ */}
           {view === 'price' && selectedCar && (
             <PriceEntry car={selectedCar} identity={resolveIdentity(authUser)} onDone={finishHome} onBack={() => setView('home')} />
           )}

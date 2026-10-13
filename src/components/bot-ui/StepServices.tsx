@@ -92,7 +92,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
 
   const handleAddCustom = () => {
     if (!customName.trim()) return;
-    // Narx yozilmasa — xizmat narxsiz qo'shiladi, narxni keyin admin qo'yadi.
+    // Narx yozilmasa — xizmat narxsiz qo'shiladi, narxni keyin admin yoki boshliq qo'yadi.
     const noPrice = !customPrice;
     store.addService({
       name: customName.trim(),

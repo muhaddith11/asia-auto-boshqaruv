@@ -140,7 +140,7 @@ export async function addRasxod(
   return res.json();
 }
 
-// Admin: narxsiz xizmatlarga narx qo'yib, chekni chiqaradi (printerga ketadi).
+// Admin yoki boshliq: narxsiz xizmatlarga narx qo'yib, chekni chiqaradi (printerga ketadi).
 export async function setServicePrices(
   identity: Identity,
   orderId: number,

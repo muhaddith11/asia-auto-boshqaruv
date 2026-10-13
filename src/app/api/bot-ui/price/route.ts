@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || '');
 const adminId = process.env.ADMIN_TELEGRAM_ID;
 
-// Admin narxsiz xizmatlarga narx qo'yib chekni chiqaradi: buyurtma "tayyor" bo'ladi
-// va print_status='pending' bilan printerga ketadi.
+// Admin yoki boshliq narxsiz xizmatlarga narx qo'yib chekni chiqaradi: buyurtma
+// "tayyor" bo'ladi va print_status='pending' bilan printerga ketadi.
 export async function POST(req: NextRequest) {
   try {
     const { orderId, prices, workerPhone, mechanicChatId } = (await req.json()) as {
@@ -21,9 +21,10 @@ export async function POST(req: NextRequest) {
     };
 
     const admin = await identifyWorker(workerPhone, mechanicChatId);
-    if (!admin || !admin.is_admin) {
-      return NextResponse.json({ ok: false, error: 'Faqat admin narx qo\'ya oladi.' }, { status: 403 });
+    if (!admin || !(admin.is_admin || admin.is_boss)) {
+      return NextResponse.json({ ok: false, error: 'Faqat admin yoki boshliq narx qo\'ya oladi.' }, { status: 403 });
     }
+    const kim = admin.is_admin ? 'Admin' : 'Boshliq';
     if (!orderId || !Array.isArray(prices)) {
       return NextResponse.json({ ok: false, error: "Ma'lumot to'liq emas." }, { status: 400 });
     }
@@ -86,9 +87,11 @@ export async function POST(req: NextRequest) {
 
     const nowIso = new Date().toISOString();
     const log = Array.isArray(order.status_log) ? order.status_log : [];
-    log.push({ bosqich: 'tayyor', vaqt: nowIso, xodim_id: admin.id, izoh: 'Admin narx qo\'yib chek chiqardi' });
+    log.push({ bosqich: 'tayyor', vaqt: nowIso, xodim_id: admin.id, izoh: `${kim} narx qo'yib chek chiqardi` });
 
-    const { error } = await supabase
+    // bosqich sharti — admin va boshliq bir vaqtda narx qo'ysa, ikkinchisi chekni
+    // qayta chiqarib (printerga ikki marta) yubormasligi uchun.
+    const { data: updated, error } = await supabase
       .from('orders')
       .update({
         services,
@@ -104,10 +107,15 @@ export async function POST(req: NextRequest) {
         print_status: 'pending',
         status_log: log,
       })
-      .eq('id', orderId);
+      .eq('id', orderId)
+      .eq('bosqich', 'narx_kutilmoqda')
+      .select('id');
     if (error) {
       console.error('price update error:', error);
       return NextResponse.json({ ok: false, error: 'Saqlashda xatolik: ' + error.message }, { status: 500 });
+    }
+    if (!updated || updated.length === 0) {
+      return NextResponse.json({ ok: false, error: 'Bu buyurtmaga allaqachon narx qo\'yilgan.' }, { status: 409 });
     }
 
     // Telegram cheki (submit bilan bir xil ko'rinish)

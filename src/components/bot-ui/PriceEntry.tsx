@@ -12,7 +12,7 @@ interface Props {
   onBack: () => void;
 }
 
-// Admin: xodim narxsiz kiritgan xizmatlarga narx qo'yadi va chekni chiqaradi.
+// Admin yoki boshliq: xodim narxsiz kiritgan xizmatlarga narx qo'yadi va chekni chiqaradi.
 export default function PriceEntry({ car, identity, onDone, onBack }: Props) {
   const services = car.services || [];
   const [vals, setVals] = useState<Record<number, string>>({});

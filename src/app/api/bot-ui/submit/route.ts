@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
       if (hasUnpriced) {
         // ── NARX KUTILMOQDA: chek chiqmaydi, printerga ketmaydi (print_status qo'yilmaydi).
         const holdLog = Array.isArray(existing.status_log) ? existing.status_log : [];
-        holdLog.push({ bosqich: 'narx_kutilmoqda', vaqt: nowIso, xodim_id: worker.id, izoh: 'Narxsiz xizmat — admin narx qoyadi' });
+        holdLog.push({ bosqich: 'narx_kutilmoqda', vaqt: nowIso, xodim_id: worker.id, izoh: 'Narxsiz xizmat — admin yoki boshliq narx qoyadi' });
         const { print_status: _ps, ...holdFields } = completionFields;
         void _ps;
         const { data: held, error: holdErr } = await supabase
@@ -260,7 +260,7 @@ export async function POST(req: NextRequest) {
         }
         await applyStockDelta(null, { zaps: stockZaps, holat: 'tulanmagan' });
 
-        // Adminlarga xabar
+        // Admin va boshliqlarga xabar — ikkalasi ham narx qo'yib chek chiqara oladi
         const holdSrv = orderServices
           .map((x: any, i: number) => `${i + 1}. ${x.nom}${x.narxsiz ? '' : ' - ' + Number(x.narx).toLocaleString() + ' UZS'}`)
           .join('\n');
@@ -286,7 +286,7 @@ ${holdZap}
 (Buyurtma id: #${orderId})`;
         const targets = new Set<string>();
         if (adminId) targets.add(String(adminId));
-        const { data: admins } = await supabase.from('workers').select('telegram').eq('is_admin', true);
+        const { data: admins } = await supabase.from('workers').select('telegram').or('is_admin.eq.true,is_boss.eq.true');
         for (const a of admins || []) if (a.telegram) targets.add(String(a.telegram));
         for (const t of targets) {
           try { await bot.telegram.sendMessage(t, note); } catch (e) { console.warn('Admin tg xabar ketmadi:', e); }
