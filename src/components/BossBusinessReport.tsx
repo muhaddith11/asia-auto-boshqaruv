@@ -150,7 +150,7 @@ export default function BossBusinessReport() {
   };
 
   return (
-    <div style={{ flex: 1, padding: '28px 28px 60px', background: 'var(--bg)', color: 'white', minHeight: '100vh' }}>
+    <div className="br-page" style={{ flex: 1, padding: '28px 28px 60px', background: 'var(--bg)', color: 'white', minHeight: '100vh' }}>
       {/* HEADER */}
       <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
@@ -168,16 +168,16 @@ export default function BossBusinessReport() {
       </div>
 
       {/* MUDDAT */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 24, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ minWidth: 160 }}>
+      <div className="br-filter" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 24, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="br-filter-date" style={{ minWidth: 160 }}>
           <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'var(--text3)', marginBottom: 6, textTransform: 'uppercase' }}>Muddat (dan)</label>
           <input type="date" value={filterFrom} onChange={(e) => { setActiveQuick(''); setFilterFrom(e.target.value); }} style={inputStyle} />
         </div>
-        <div style={{ minWidth: 160 }}>
+        <div className="br-filter-date" style={{ minWidth: 160 }}>
           <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'var(--text3)', marginBottom: 6, textTransform: 'uppercase' }}>Muddat (gacha)</label>
           <input type="date" value={filterTo} onChange={(e) => { setActiveQuick(''); setFilterTo(e.target.value); }} style={inputStyle} />
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="br-quick" style={{ display: 'flex', gap: 8 }}>
           {['hafta', 'oy', 'yil'].map((q) => (
             <button key={q} onClick={() => {
               setActiveQuick(q);
@@ -194,7 +194,7 @@ export default function BossBusinessReport() {
       </div>
 
       {/* ASOSIY RAQAM — ISHXONA FOYDASI (kirim emas) */}
-      <div style={{
+      <div className="br-hero" style={{
         background: 'linear-gradient(135deg, rgba(59,130,246,0.14) 0%, rgba(16,185,129,0.08) 100%)',
         border: '1px solid rgba(59,130,246,0.28)', borderRadius: 18, padding: '24px 28px', marginBottom: 16,
       }}>
@@ -202,7 +202,7 @@ export default function BossBusinessReport() {
           <div style={{ padding: 8, borderRadius: 10, background: 'rgba(59,130,246,0.18)', color: '#3b82f6' }}><Target size={20} /></div>
           <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Ishxona foydasi</span>
         </div>
-        <div style={{ fontSize: 40, fontWeight: 900, color: stats.foyda >= 0 ? '#10b981' : '#fb7185', lineHeight: 1.05 }}>
+        <div className="br-hero-value" style={{ fontSize: 40, fontWeight: 900, color: stats.foyda >= 0 ? '#10b981' : '#fb7185', lineHeight: 1.05 }}>
           {fmt(stats.foyda)} <span style={{ fontSize: 13, color: 'var(--text3)', fontWeight: 600 }}>UZS</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 14px', marginTop: 14, alignItems: 'baseline' }}>
@@ -215,12 +215,12 @@ export default function BossBusinessReport() {
 
       {/* ISHCHILAR BO'YICHA MAOSH */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 28 }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="br-head" style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <Banknote size={18} color="var(--text3)" />
-          <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>ISHCHILAR XARAJATI</span>
+          <span className="br-head-title" style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>ISHCHILAR XARAJATI</span>
           <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{ishchilar.length} ta xodim</span>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table className="br-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
             {ishchilar.length === 0 ? (
               <tr><td style={{ padding: 32, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>Bu davr uchun maosh to&apos;lanmagan</td></tr>
@@ -244,10 +244,10 @@ export default function BossBusinessReport() {
 
       {/* BUYURTMALAR + ZAPCHASTLAR + HAR BIRINING FOYDASI */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 28 }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div className="br-head" style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <Package size={18} color="var(--accent)" />
-          <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>BUYURTMALAR VA ISHLATILGAN ZAPCHASTLAR</span>
-          <span style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Foyda = to&apos;lov − zapchast (ish xaqi va ishxona xarajati yuqorida, umumiy hisobda)</span>
+          <span className="br-head-title" style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>BUYURTMALAR VA ISHLATILGAN ZAPCHASTLAR</span>
+          <span className="br-head-hint" style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Foyda = to&apos;lov − zapchast (ish xaqi va ishxona xarajati yuqorida, umumiy hisobda)</span>
           <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{orderRows.length} ta buyurtma</span>
         </div>
         {/* Balandlik chegaralangan (ichkarida o'z skrolli bilan) — aks holda 100+
@@ -255,7 +255,7 @@ export default function BossBusinessReport() {
             yuborib, boshliq uni deyarli topolmasdi. Sarlavha va "Jami" qatori
             "sticky" — skroll qilganda ham ko'rinib turadi. */}
         <div style={{ overflow: 'auto', maxHeight: 560 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="br-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
                 {['Sana', 'Mijoz', 'Mashina', 'Xizmat', 'Ishlatilgan zapchastlar', 'Zapchast', "To'lov", 'Foyda', 'Holat'].map((h) => (
@@ -322,14 +322,14 @@ export default function BossBusinessReport() {
       {/* CHIQIMLAR VA BOSHQA AMALIYOTLAR — buyurtmalar jadvalidan keyin (eski
           joyida), lekin endi ustun sarlavhalari va yozuvlar soni bilan. */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="br-head" style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <Receipt size={18} color="var(--text3)" />
-          <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>CHIQIMLAR VA BOSHQA AMALIYOTLAR</span>
-          <span style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Ishxona xarajati, maosh, o&apos;tkazma va h.k. — buyurtmaga bog&apos;liq emas</span>
+          <span className="br-head-title" style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>CHIQIMLAR VA BOSHQA AMALIYOTLAR</span>
+          <span className="br-head-hint" style={{ fontSize: 10.5, color: 'var(--text3)', marginLeft: 12 }}>Ishxona xarajati, maosh, o&apos;tkazma va h.k. — buyurtmaga bog&apos;liq emas</span>
           <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{otherRows.length} ta amaliyot</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="br-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
                 {['Sana', 'Kategoriya', 'Izoh', 'Summa'].map((h, i) => (
@@ -344,9 +344,9 @@ export default function BossBusinessReport() {
                 <tr key={r._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '10px 20px', fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>{r._displayDate}</td>
                   <td style={{ padding: '10px 20px' }}>
-                    <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'var(--surface2)', color: 'var(--text2)' }}>{r._category}</span>
+                    <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'var(--surface2)', color: 'var(--text2)', whiteSpace: 'nowrap' }}>{r._category}</span>
                   </td>
-                  <td style={{ padding: '10px 20px', fontSize: 12, color: 'var(--text2)' }}>{r._izoh || '—'}</td>
+                  <td className="br-izoh" style={{ padding: '10px 20px', fontSize: 12, color: 'var(--text2)' }}>{r._izoh || '—'}</td>
                   <td style={{ padding: '10px 20px', fontSize: 13, fontWeight: 800, textAlign: 'right', color: r._positive ? '#10b981' : '#fb7185', whiteSpace: 'nowrap' }}>
                     {r._positive ? '+' : '−'} {fmt(r._amount)}
                   </td>

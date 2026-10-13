@@ -424,6 +424,60 @@ html, body {
   }
 }
 
+/* ── GLOBAL NAVBAR (GlobalNavbar.tsx) ─────────────────────────
+   Kompyuterda bitta qator. Telefonda bitta qatorga sig'maydi (siqilib qolardi),
+   shuning uchun: 1-qator menyu + tugmalar, 2-qator balanslar, 3-qator kassa amallari. */
+.gnav {
+  height: 73px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+}
+.gnav-left { display: flex; align-items: center; gap: 10px; width: 220px; }
+.gnav-balances { display: flex; align-items: center; gap: 12px; }
+.gnav-chip { display: flex; align-items: center; gap: 8px; padding: 5px 12px; }
+.gnav-right, .gnav-cash, .gnav-actions { display: flex; align-items: center; gap: 10px; }
+
+@media (max-width: 1023px) {
+  .gnav {
+    height: auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "left actions" "bal bal";
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .gnav-left { grid-area: left; width: auto; gap: 8px; }
+  .gnav-right { display: contents; }
+  .gnav-actions { grid-area: actions; justify-self: end; gap: 8px; }
+  .gnav-actions > button { padding: 7px 10px !important; }
+  .gnav-balances { grid-area: bal; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .gnav-chip { justify-content: center; padding: 6px 8px; min-width: 0; }
+  .gnav-chip > svg { display: none; }
+  .gnav-chip > div { text-align: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .gnav-cash { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .gnav-cash > button { justify-content: center; padding: 8px 6px !important; }
+  .gnav-divider, .gnav-label { display: none; }
+}
+
+/* ── BOSHLIQ HISOBOTI (BossBusinessReport.tsx), telefon ──────
+   Komponent inline stilda yozilgan, shuning uchun bu yerda !important. */
+@media (max-width: 640px) {
+  .br-page { padding: 16px 12px 40px !important; }
+  .br-filter { padding: 14px !important; }
+  .br-filter-date { flex: 1 1 130px; min-width: 0 !important; }
+  .br-quick { width: 100%; }
+  .br-quick > button { flex: 1; }
+  .br-hero { padding: 18px 16px !important; }
+  .br-hero-value { font-size: 30px !important; }
+  .br-head { padding: 14px 16px !important; }
+  .br-head-title { flex: 1 1 0; min-width: 0; font-size: 13px !important; }
+  .br-head-hint { flex-basis: 100%; order: 3; margin-left: 0 !important; }
+  .br-table th, .br-table td { padding: 10px 12px !important; }
+  .br-izoh { min-width: 160px; }
+}
+
 
 /* === BOT-UI SPACING BACKFILL (scoped to .tg-scope) ===
    The unlayered `* { margin:0; padding:0 }` reset near the top of this file
