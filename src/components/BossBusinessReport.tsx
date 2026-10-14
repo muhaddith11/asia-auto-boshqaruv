@@ -6,7 +6,8 @@ import { buildLedgerRows } from '@/lib/businessLedger';
 import { attachOrderProfit, computeBossStats, orderPartLines } from '@/lib/bossProfit';
 import { monthRange, quickRange, type QuickRangeKind } from '@/lib/dateRange';
 import { exportToCSV } from '@/lib/export';
-import { Target, Banknote, Receipt, FileSpreadsheet, Package } from 'lucide-react';
+import { fetchDaftar } from '@/lib/rasxodDaftarClient';
+import { Target, Banknote, Receipt, FileSpreadsheet, FileText, Loader2, Package } from 'lucide-react';
 import type { Buyurtma } from '@/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,6 +43,7 @@ export default function BossBusinessReport() {
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [activeQuick, setActiveQuick] = useState('oy');
+  const [wordBusy, setWordBusy] = useState(false);
 
   useEffect(() => {
     const { from, to } = monthRange();
@@ -144,6 +146,34 @@ export default function BossBusinessReport() {
     toast.success(`${orderRows.length} ta buyurtma eksport qilindi`);
   };
 
+  // Tanlangan davr (oy) uchun Word hisobot: oylik raqamlar + barcha xodimlar bo'yicha
+  // ish xaqi + aylanmadan tashqari operatsiyalar + qaytadigan rasxodlar. Raqamlar shu
+  // sahifada ko'rinib turganlarning o'zi (qayta hisoblanmaydi).
+  const handleWord = async () => {
+    if (wordBusy) return;
+    setWordBusy(true);
+    try {
+      // Hujjat kutubxonasi (docx) faqat shu yerda yuklanadi — sahifa ochilishini sekinlashtirmaydi.
+      const [mod, daftar] = await Promise.all([import('@/lib/monthlyReportDocx'), fetchDaftar()]);
+      const input = mod.buildReportInput({
+        from: filterFrom,
+        to: filterTo,
+        stats,
+        ishchilar,
+        extRows: extFiltered,
+        maoshTarixi,
+        xodimlar,
+        daftar,
+      });
+      await mod.downloadMonthlyReport(input);
+      toast.success('Word hisobot yuklab olindi');
+    } catch (err) {
+      toast.error("Hisobotni tayyorlab bo'lmadi: " + (err instanceof Error ? err.message : 'xatolik'));
+    } finally {
+      setWordBusy(false);
+    }
+  };
+
   const inputStyle: React.CSSProperties = {
     background: '#121721', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
     padding: '8px 12px', fontSize: 12, color: 'white', outline: 'none', width: '100%',
@@ -157,14 +187,26 @@ export default function BossBusinessReport() {
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Ishxona bo&apos;yicha</h1>
           <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>Zapchast, ish xaqi va xarajatlar chiqarilgandan keyingi sof foyda</p>
         </div>
-        <button onClick={handleExport} style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'rgba(16,185,129,0.12)', color: '#10b981',
-          border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10,
-          padding: '9px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-        }}>
-          <FileSpreadsheet size={15} /> Excel
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button onClick={handleWord} disabled={wordBusy} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(16,185,129,0.12)', color: '#10b981',
+            border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10,
+            padding: '9px 18px', fontSize: 12, fontWeight: 700,
+            cursor: wordBusy ? 'wait' : 'pointer', opacity: wordBusy ? 0.7 : 1,
+          }}>
+            {wordBusy ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} />}
+            {wordBusy ? 'Tayyorlanmoqda…' : 'Word hisobot'}
+          </button>
+          <button onClick={handleExport} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(16,185,129,0.12)', color: '#10b981',
+            border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10,
+            padding: '9px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+          }}>
+            <FileSpreadsheet size={15} /> Excel
+          </button>
+        </div>
       </div>
 
       {/* MUDDAT */}

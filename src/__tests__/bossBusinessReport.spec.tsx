@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, within } from '@testing-library/react';
+import { render, screen, cleanup, within, fireEvent, waitFor } from '@testing-library/react';
 
 // Boshliqning "Ishxona bo'yicha" hisoboti — EKRANDA ko'rinadigan raqamlar.
 // Asosiy talab: katta raqam KIRIM emas, ISHXONA FOYDASI bo'lishi va
@@ -17,6 +17,21 @@ const mockState = vi.hoisted(() => ({
 vi.mock('@/store/useStore', () => ({
   useStore: () => mockState,
 }));
+
+// "Word hisobot" tugmasi: rasxod daftari, hujjat yaratuvchi va xabarlar soxtalashtiriladi
+const docMocks = vi.hoisted(() => ({
+  fetchDaftar: vi.fn(),
+  buildReportInput: vi.fn(),
+  downloadMonthlyReport: vi.fn(),
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
+}));
+vi.mock('@/lib/rasxodDaftarClient', () => ({ fetchDaftar: docMocks.fetchDaftar }));
+vi.mock('@/lib/monthlyReportDocx', () => ({
+  buildReportInput: docMocks.buildReportInput,
+  downloadMonthlyReport: docMocks.downloadMonthlyReport,
+}));
+vi.mock('react-hot-toast', () => ({ default: { error: docMocks.toastError, success: docMocks.toastSuccess } }));
 
 const { default: BossBusinessReport } = await import('@/components/BossBusinessReport');
 
@@ -58,6 +73,12 @@ beforeEach(() => {
   ];
   mockState.xodimlar = [{ id: 3, ism: 'Anvar' }];
   mockState.tashqariOperatsiyalar = [];
+
+  docMocks.fetchDaftar.mockReset().mockResolvedValue([{ id: 1 }]);
+  docMocks.buildReportInput.mockReset().mockReturnValue({ fileBase: 'Hisobot_test' });
+  docMocks.downloadMonthlyReport.mockReset().mockResolvedValue(undefined);
+  docMocks.toastError.mockReset();
+  docMocks.toastSuccess.mockReset();
 });
 
 afterEach(() => { vi.useRealTimers(); });
@@ -141,5 +162,39 @@ describe("Boshliq — Ishxona bo'yicha hisobot", () => {
     expect(jami).toContain('− 700 000');  // zapchast: 500 000 + 200 000
     expect(jami).toContain('1 800 000');  // to'lov
     expect(jami).toContain('1 100 000');  // foyda: 500 000 + 600 000
+  });
+  it('"Word hisobot" tugmasi ekrandagi raqamlar va rasxod daftari bilan hujjat tayyorlab yuklaydi', async () => {
+    render(<BossBusinessReport />);
+    fireEvent.click(screen.getByRole('button', { name: /Word hisobot/i }));
+
+    await waitFor(() => expect(docMocks.downloadMonthlyReport).toHaveBeenCalledTimes(1));
+    expect(docMocks.fetchDaftar).toHaveBeenCalledTimes(1);
+
+    const args = docMocks.buildReportInput.mock.calls[0][0] as {
+      from: string; to: string;
+      stats: { foyda: number; ishXaqi: number };
+      ishchilar: Array<{ nom: string; summa: number }>;
+      daftar: unknown[];
+    };
+    expect(args.from).toBe('2026-09-01'); // sana qotirilgan: 15-sentyabr → joriy oy
+    expect(args.to).toBe('2026-09-30');
+    expect(args.stats.foyda).toBe(700000); // ekrandagi "Ishxona foydasi" bilan bir xil
+    expect(args.stats.ishXaqi).toBe(300000);
+    expect(args.ishchilar).toEqual([{ nom: 'Anvar', summa: 300000 }]);
+    expect(args.daftar).toEqual([{ id: 1 }]);
+    expect(docMocks.downloadMonthlyReport).toHaveBeenCalledWith({ fileBase: 'Hisobot_test' });
+    await waitFor(() => expect(docMocks.toastSuccess).toHaveBeenCalled());
+  });
+
+  it("rasxod daftarini yuklab bo'lmasa — xato xabari chiqadi, yarim hujjat yuklanmaydi", async () => {
+    docMocks.fetchDaftar.mockRejectedValue(new Error('Server xatosi'));
+    render(<BossBusinessReport />);
+    fireEvent.click(screen.getByRole('button', { name: /Word hisobot/i }));
+
+    await waitFor(() => expect(docMocks.toastError).toHaveBeenCalledTimes(1));
+    expect(String(docMocks.toastError.mock.calls[0][0])).toContain('Server xatosi');
+    expect(docMocks.downloadMonthlyReport).not.toHaveBeenCalled();
+    // tugma yana bosiladigan holatga qaytadi
+    await waitFor(() => expect((screen.getByRole('button', { name: /Word hisobot/i }) as HTMLButtonElement).disabled).toBe(false));
   });
 });

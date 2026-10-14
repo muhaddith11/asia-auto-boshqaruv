@@ -73,6 +73,8 @@ export interface LedgerRow {
   // ba'zi ko'rinishlarda (boshliq) alohida qator sifatida RO'YXATDAN yashiriladi,
   // chunki u allaqachon o'sha buyurtmaning o'z zap/final summasida hisobga olingan.
   _isRasxod: boolean;
+  // Kassa operatsiyasini kim/qayerga yozgani (op.source) — faqat operatsiya qatorlarida.
+  _source?: string;
 }
 
 function opOrderId(op: LedgerOpLike): number {
@@ -127,6 +129,7 @@ export function buildLedgerRows(
         // Bot-ui'ning /api/bot-ui/rasxod route'i shu shaklda comment yozadi
         // (src/app/api/bot-ui/rasxod/route.ts) — boshqa hech kim bunday izoh yozmaydi.
         _isRasxod: isRasxod,
+        _source: op.source || '',
       });
     }
 
