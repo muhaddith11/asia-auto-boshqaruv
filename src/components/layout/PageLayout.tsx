@@ -20,22 +20,24 @@ export default function PageLayout({
 }: PageLayoutProps) {
   const horizontalPadding = typeof px === 'number' ? `${px}px` : px;
 
+  // pl-* klasslar: telefonda paddinglar kichrayadi, sarlavha va tugmalar
+  // qatorlarga bo'linadi (globals.css). Kompyuterdagi ko'rinish shu inline stillarda.
   return (
     <div className="flex-1 flex flex-col bg-background min-h-screen">
-      
+
       {/* ── CONSTANT HEADER ── */}
-      <header 
-        className="pt-8 pb-4 flex items-start justify-between shrink-0"
+      <header
+        className="pl-head pt-8 pb-4 flex items-start justify-between shrink-0"
         style={{ paddingLeft: horizontalPadding, paddingRight: horizontalPadding }}
       >
-        <div>
-          <h1 className="text-[20px] font-bold text-white tracking-tight leading-none">{title}</h1>
+        <div className="pl-title-block">
+          <h1 className="pl-title text-[20px] font-bold text-white tracking-tight leading-none">{title}</h1>
           {subtitle && (
             <p className="text-[12px] text-slate-400 font-medium mt-2">{subtitle}</p>
           )}
         </div>
         {headerActions && (
-          <div className="flex items-center gap-3">
+          <div className="pl-head-actions flex items-center gap-3">
             {headerActions}
           </div>
         )}
@@ -43,16 +45,16 @@ export default function PageLayout({
 
       {/* ── FILTER / STATS PANEL (Floating Frame) ── */}
       {filterPanel && (
-        <div 
-          className="shrink-0"
-          style={{ 
-            paddingLeft: horizontalPadding, 
+        <div
+          className="pl-filter-wrap shrink-0"
+          style={{
+            paddingLeft: horizontalPadding,
             paddingRight: horizontalPadding,
             marginTop: 8 // Small gap before the frame
           }}
         >
-          <div 
-            className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden"
+          <div
+            className="pl-filter bg-surface border border-border rounded-2xl shadow-sm overflow-hidden"
             style={{ padding: 32 }}
           >
             {filterPanel}
@@ -61,8 +63,8 @@ export default function PageLayout({
       )}
 
       {/* ── MAIN CONTENT AREA ── */}
-      <main 
-        className="flex-1 overflow-auto"
+      <main
+        className="pl-main flex-1 overflow-auto"
         style={{ 
           paddingLeft: horizontalPadding, 
           paddingRight: horizontalPadding, 

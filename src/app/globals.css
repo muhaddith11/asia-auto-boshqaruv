@@ -498,6 +498,97 @@ html, body {
   .ord-table-wrap { padding: 12px 12px 20px !important; }
 }
 
+/* ── TELEFON UCHUN UMUMIY YORDAMCHILAR (m-*) ─────────────────
+   m-table — jadval kartasi: overflow-hidden ustunlarni kesib qo'yardi va
+             jadvalni yonga surib bo'lmasdi; endi kartaning ichi yonga suriladi.
+   m-btn-row — tugmalar qatori: telefonda butun enni teng bo'lib oladi.
+   m-pager — sahifalash: ko'p sahifada keyingi qatorga o'tadi.
+   Hammasi faqat media query ichida — kompyuterdagi ko'rinish o'zgarmaydi. */
+@media (max-width: 1023px) {
+  .m-table { overflow-x: auto !important; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .m-pager { flex-wrap: wrap; }
+}
+@media (max-width: 640px) {
+  .m-table th, .m-table td { padding: 12px 14px !important; }
+  .m-btn-row { gap: 8px !important; }
+  .m-btn-row > button { flex: 1 1 0; display: flex; align-items: center; justify-content: center; padding-top: 10px; padding-bottom: 10px; }
+}
+
+/* ── PageLayout (layout/PageLayout.tsx) ───────────────────────
+   Mijozlar, xodimlar, hisobotlar va boshqa sahifalar shu qolipda.
+   Telefonda: sarlavha alohida qatorda, tugmalar uning ostida, paddinglar kichik. */
+@media (max-width: 1023px) {
+  .pl-head { flex-wrap: wrap; gap: 12px; }
+}
+@media (max-width: 640px) {
+  .pl-head { padding: 16px 12px 0 !important; }
+  .pl-title-block { flex: 1 1 100%; min-width: 0; }
+  .pl-title { font-size: 18px !important; line-height: 1.25 !important; }
+  .pl-head-actions { flex: 1 1 100%; flex-wrap: wrap; gap: 8px !important; }
+  .pl-head-actions > div { flex: 1 1 100%; flex-wrap: wrap; gap: 8px !important; }
+  .pl-head-actions button { flex: 1 1 auto; justify-content: center; padding-top: 10px; padding-bottom: 10px; }
+  .pl-filter-wrap { padding-left: 12px !important; padding-right: 12px !important; }
+  .pl-filter { padding: 14px !important; }
+  .pl-filter .grid { gap: 12px !important; }
+  .pl-main { padding: 16px 12px 28px !important; }
+}
+
+/* ── MIJOZLAR HISOBOTI (clients/reports/page.tsx), telefon ── */
+@media (max-width: 640px) {
+  .cr-filter { padding: 14px !important; margin-bottom: 16px; }
+  .cr-filter .grid { gap: 12px !important; }
+  .cr-actions { margin-top: 14px; }
+}
+
+/* ── XODIMLAR (workers/page.tsx), telefon ────────────────────
+   Kartadagi 4 ta tugma bitta qatorga sig'masdi ("O'chirish" chiqib ketardi);
+   planshetda ham kartalar 2 ustunda tor bo'lgani uchun 1023px gacha. */
+@media (max-width: 640px) {
+  .wk-tabs { margin-bottom: 12px; }
+}
+@media (max-width: 1023px) {
+  .wk-actions { flex-wrap: wrap; gap: 8px !important; }
+  .wk-actions > div { flex: 1 1 100%; }
+  .wk-actions > div > button { flex: 1 1 0; display: flex; justify-content: center; }
+}
+
+/* ── AYLANMADAN TASHQARI (reports/external/page.tsx), telefon ──
+   Sarlavha tugmalari sahifani ekrandan kengaytirib yuborardi (PageLayout tuzatadi). */
+@media (max-width: 640px) {
+  .ext-filter { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px !important; }
+  .ext-quick { grid-column: 1 / -1; }
+  .ext-quick > div > button:not(:last-child) { flex: 1 1 0; }
+  /* iOS bo'sh sana maydonini balandliksiz chizadi */
+  .ext-filter input[type="date"] { -webkit-appearance: none; appearance: none; min-height: 34px; }
+  .ext-body { gap: 16px !important; }
+  .ext-stats { gap: 10px !important; }
+  .ext-stat { padding: 14px 16px !important; gap: 14px !important; }
+  .ext-stat > div:first-child { width: 44px; height: 44px; }
+  .ext-stat-num { font-size: 18px !important; }
+}
+
+/* ── EHTIYOT QISMLAR (PartsContent.tsx), telefon ───────────── */
+@media (max-width: 640px) {
+  .pc-page { padding: 16px 12px 28px !important; }
+  .pc-head { flex-wrap: wrap; gap: 12px; margin-bottom: 16px !important; }
+  .pc-title-block { flex: 1 1 100%; min-width: 0; }
+  .pc-title { font-size: 20px !important; line-height: 1.25 !important; }
+  .pc-head > button { flex: 1 1 100%; justify-content: center; padding-top: 10px; padding-bottom: 10px; }
+  .pc-pool { padding: 14px !important; margin-bottom: 16px; }
+  .pc-pool-vals { width: 100%; gap: 12px !important; }
+  .pc-pool-vals > div { flex: 1 1 0; min-width: 0; text-align: left; }
+  .pc-pool-vals > button { flex: 1 1 100%; justify-content: center; }
+  .pc-pool-num { font-size: 18px !important; }
+  .pc-chiqim-form > div { flex: 1 1 100%; width: auto; min-width: 0; }
+  .pc-chiqim-form > button { flex: 1 1 0; }
+  .pc-filter { padding: 14px !important; margin-bottom: 16px !important; }
+  .pc-filter-row { flex-wrap: wrap; gap: 12px !important; }
+  .pc-filter-row > .grid { flex: 1 1 100%; gap: 12px !important; }
+  .pc-filter-btns { flex: 1 1 100%; }
+  .pc-filter-btns > button:first-child { flex: 1 1 0; }
+  .pc-table-area { padding: 0 !important; }
+}
+
 
 /* === BOT-UI SPACING BACKFILL (scoped to .tg-scope) ===
    The unlayered `* { margin:0; padding:0 }` reset near the top of this file
