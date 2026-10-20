@@ -128,7 +128,7 @@ export default function ClientReportsPage() {
       subtitle="Mijozlarning faolligi, foyda ulushi va debitorlik qarzlari tahlili."
     >
       {/* ── FILTERS PANEL ── */}
-      <div className="p-6 bg-surface border border-border rounded-2xl shadow-sm mb-6">
+      <div className="cr-filter p-6 bg-surface border border-border rounded-2xl shadow-sm mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-1">
             <label style={S.label}>Mijoz ismi</label>
@@ -173,7 +173,7 @@ export default function ClientReportsPage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-5">
+        <div className="m-btn-row cr-actions flex justify-end gap-2 mt-5">
            <button 
               onClick={applyFilters}
               className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-lg text-[12px] transition-all active:scale-95 shadow-lg shadow-indigo-500/10"
@@ -197,7 +197,7 @@ export default function ClientReportsPage() {
             <p className="text-[14px] font-bold">Hisobot uchun ma'lumotlar topilmadi</p>
           </div>
         ) : (
-          <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+          <div className="m-table bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
             <table className="w-full text-left text-[12px] whitespace-nowrap">
               <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
                 <tr>

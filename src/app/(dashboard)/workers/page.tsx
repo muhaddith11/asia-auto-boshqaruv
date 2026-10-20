@@ -268,7 +268,7 @@ export default function WorkersPage() {
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 items-end">
+          <div className="m-btn-row flex justify-end gap-2 items-end">
             <button
               onClick={applyFilters}
               className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-lg text-[12px] transition-all active:scale-95 shadow-lg shadow-blue-500/10"
@@ -287,7 +287,7 @@ export default function WorkersPage() {
     >
       <div className="flex-1">
         {/* Bo'lim bo'yicha filtr — Ustaxona / Yog' quyish */}
-        <div className="flex flex-wrap gap-2 mb-5">
+        <div className="wk-tabs flex flex-wrap gap-2 mb-5">
           <button
             onClick={() => setBolimFilter('all')}
             className={`text-[12px] font-bold px-4 py-2 rounded-lg border transition-all ${
@@ -420,7 +420,7 @@ export default function WorkersPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="wk-actions mt-4 flex items-center justify-between gap-3">
                     <div className="flex gap-2">
                       <button onClick={() => setSalaryWorker(x)} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold flex items-center gap-2 text-[12px]">
                         <Banknote size={14} /> Maosh

@@ -200,7 +200,7 @@ export default function ClientsContent() {
             </div>
           </div>
           
-          <div className="col-span-full flex justify-end gap-2 mt-4">
+          <div className="m-btn-row col-span-full flex justify-end gap-2 mt-4">
             <button 
               onClick={applyFilters}
               className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-lg text-[12px] transition-all active:scale-95 shadow-lg shadow-indigo-500/10"
@@ -225,7 +225,7 @@ export default function ClientsContent() {
             <p className="text-[11px] mt-1 opacity-60">Qidiruv shartlarini o'zgartirib ko'ring</p>
           </div>
         ) : (
-          <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
+          <div className="m-table bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-left text-[12px] whitespace-nowrap">
               <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
                 <tr>

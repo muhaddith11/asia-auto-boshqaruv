@@ -141,7 +141,7 @@ export default function ExternalOperationsPage() {
         </div>
       }
       filterPanel={
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, alignItems: 'flex-end' }}>
+        <div className="ext-filter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, alignItems: 'flex-end' }}>
           {/* Qidiruv */}
           <div>
             <label style={lbl}>Qidiruv</label>
@@ -194,7 +194,7 @@ export default function ExternalOperationsPage() {
           </div>
 
           {/* Tezkor tugmalar */}
-          <div>
+          <div className="ext-quick">
             <label style={lbl}>Tezkor</label>
             <div style={{ display: 'flex', gap: 6 }}>
               {[
@@ -235,9 +235,9 @@ export default function ExternalOperationsPage() {
         </div>
       }
     >
-      <div className="flex-1 flex flex-col gap-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center gap-5 backdrop-blur-xl">
+      <div className="ext-body flex-1 flex flex-col gap-8">
+        <div className="ext-stats grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div className="ext-stat bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center gap-5 backdrop-blur-xl">
               <div className="w-14 h-14 rounded-2xl bg-emerald-500/5 flex items-center justify-center text-emerald-500 border border-emerald-500/10">
                  <div className="bg-emerald-500/10 p-2.5 rounded-xl">
                     <ChevronUp size={24} />
@@ -245,12 +245,12 @@ export default function ExternalOperationsPage() {
               </div>
               <div>
                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-1">Jami Kirim</div>
-                 <div className="text-[22px] font-black text-emerald-500 tracking-tight">
+                 <div className="ext-stat-num text-[22px] font-black text-emerald-500 tracking-tight">
                     {totalIncome.toLocaleString()} <span className="text-[12px] opacity-60 font-bold ml-1 uppercase">uzs</span>
                  </div>
               </div>
            </div>
-           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center gap-5 backdrop-blur-xl">
+           <div className="ext-stat bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center gap-5 backdrop-blur-xl">
               <div className="w-14 h-14 rounded-2xl bg-red-500/5 flex items-center justify-center text-red-500 border border-red-500/10">
                  <div className="bg-red-500/10 p-2.5 rounded-xl">
                     <ChevronDown size={24} />
@@ -258,12 +258,12 @@ export default function ExternalOperationsPage() {
               </div>
               <div>
                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-1">Jami Chiqim</div>
-                 <div className="text-[22px] font-black text-red-500 tracking-tight">
+                 <div className="ext-stat-num text-[22px] font-black text-red-500 tracking-tight">
                     {totalExpense.toLocaleString()} <span className="text-[12px] opacity-60 font-bold ml-1 uppercase">uzs</span>
                  </div>
               </div>
            </div>
-           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center gap-5 backdrop-blur-xl">
+           <div className="ext-stat bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center gap-5 backdrop-blur-xl">
               <div className="w-14 h-14 rounded-2xl bg-indigo-500/5 flex items-center justify-center text-indigo-500 border border-indigo-500/10">
                  <div className="bg-indigo-500/10 p-2.5 rounded-xl">
                     <BarChart3 size={24} />
@@ -271,7 +271,7 @@ export default function ExternalOperationsPage() {
               </div>
               <div>
                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-1">Sof Farq</div>
-                 <div className="text-[22px] font-black text-white tracking-tight">
+                 <div className="ext-stat-num text-[22px] font-black text-white tracking-tight">
                     {(totalIncome - totalExpense).toLocaleString()} <span className="text-[12px] opacity-40 font-bold ml-1 uppercase">uzs</span>
                  </div>
               </div>
@@ -285,7 +285,7 @@ export default function ExternalOperationsPage() {
               <p className="text-lg font-bold text-slate-600">Operatsiyalar topilmadi</p>
             </div>
           ) : (
-            <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-xl">
+            <div className="m-table bg-surface border border-border rounded-2xl overflow-hidden shadow-xl">
               <table className="w-full text-left text-[14px] whitespace-nowrap">
                 <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
                   <tr>
@@ -362,7 +362,7 @@ export default function ExternalOperationsPage() {
           )}
 
           {filteredOps.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-center gap-2 mt-6 pb-4">
+            <div className="m-pager flex items-center justify-center gap-2 mt-6 pb-4">
               <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
                 className="px-4 py-2 rounded-lg bg-surface border border-border text-slate-400 text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-all">
                 Oldingi

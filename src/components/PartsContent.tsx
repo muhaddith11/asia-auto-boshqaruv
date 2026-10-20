@@ -185,12 +185,13 @@ export default function PartsContent() {
   });
 
   return (
-    <div className="flex-1 flex flex-col bg-transparent min-h-screen p-10">
+    <div className="pc-page flex-1 flex flex-col bg-transparent min-h-screen p-10">
       
       {/* ── PAGE HEADER ── */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-[24px] font-black text-white tracking-tight leading-none">Ehtiyot qismlar</h1>
+      {/* pc-* klasslar: telefonda ixchamroq joylashuv (globals.css) */}
+      <div className="pc-head flex items-start justify-between mb-8">
+        <div className="pc-title-block">
+          <h1 className="pc-title text-[24px] font-black text-white tracking-tight leading-none">Ehtiyot qismlar</h1>
           <p className="text-[13px] text-slate-500 font-medium mt-2">Ombordagi mavjud zapchastlarni boshqarish va narxlarni kuzatish.</p>
         </div>
         <button 
@@ -206,7 +207,7 @@ export default function PartsContent() {
       </div>
 
       {/* ── KASSAGA TUSHMAGAN ZAPCHAST PULI (QOLDIQ + FOYDA + AYIRISH) ── */}
-      <div className="mb-6 p-5 bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl">
+      <div className="pc-pool mb-6 p-5 bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shrink-0">
@@ -222,18 +223,18 @@ export default function PartsContent() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-8 flex-wrap">
+          <div className="pc-pool-vals flex items-center gap-8 flex-wrap">
             <div className="text-right">
               <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">
                 {kassagaTushmaganHisob.chiqim > 0 ? 'Qoldiq' : 'Tushum'}
               </div>
-              <div className="text-[22px] font-black text-amber-400 tracking-tight whitespace-nowrap">
+              <div className="pc-pool-num text-[22px] font-black text-amber-400 tracking-tight whitespace-nowrap">
                 {kassagaTushmaganHisob.qoldiq.toLocaleString()} <span className="text-[11px] text-slate-500 uppercase">so&apos;m</span>
               </div>
             </div>
             <div className="text-right">
               <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Foyda</div>
-              <div className="text-[22px] font-black text-emerald-400 tracking-tight whitespace-nowrap">
+              <div className="pc-pool-num text-[22px] font-black text-emerald-400 tracking-tight whitespace-nowrap">
                 {kassagaTushmaganHisob.foyda.toLocaleString()} <span className="text-[11px] text-slate-500 uppercase">so&apos;m</span>
               </div>
             </div>
@@ -250,7 +251,7 @@ export default function PartsContent() {
 
         {/* Ayirish formasi — summa + izoh */}
         {canFinance && chiqimFormOpen && (
-          <div className="mt-4 pt-4 border-t border-amber-500/15 flex items-end gap-3 flex-wrap">
+          <div className="pc-chiqim-form mt-4 pt-4 border-t border-amber-500/15 flex items-end gap-3 flex-wrap">
             <div className="w-[180px]">
               <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Summa *</label>
               <input
@@ -317,8 +318,8 @@ export default function PartsContent() {
       </div>
 
       {/* ── FILTERS PANEL ── */}
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl mb-8 backdrop-blur-xl">
-        <div className="flex items-center gap-6">
+      <div className="pc-filter p-6 bg-white/[0.02] border border-white/5 rounded-2xl mb-8 backdrop-blur-xl">
+        <div className="pc-filter-row flex items-center gap-6">
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label style={S.label}>Qidiruv</label>
@@ -365,7 +366,7 @@ export default function PartsContent() {
             </div>
           </div>
 
-          <div className="flex gap-2 self-end pb-0.5">
+          <div className="pc-filter-btns flex gap-2 self-end pb-0.5">
              <button 
                 onClick={applyFilters}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl text-[12px] transition-all active:scale-95 shadow-lg shadow-emerald-500/10 uppercase tracking-widest"
@@ -384,7 +385,7 @@ export default function PartsContent() {
       </div>
 
       {/* ── PARTS TABLE ── */}
-      <div className="flex-1 px-7 py-5 overflow-auto">
+      <div className="pc-table-area flex-1 px-7 py-5 overflow-auto">
         {filteredParts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-slate-500 bg-surface/30 border border-dashed border-border rounded-xl">
             <Package size={48} className="mb-4 opacity-20" />
@@ -392,7 +393,7 @@ export default function PartsContent() {
             <p className="text-[11px] mt-1 opacity-60">Qidiruv shartlarini o'zgartirib ko'ring</p>
           </div>
         ) : (
-          <div className="bg-surface border border-border rounded-xl overflow-hidden">
+          <div className="m-table bg-surface border border-border rounded-xl overflow-hidden">
             <table className="w-full text-left text-[12px] whitespace-nowrap">
               <thead className="bg-[#1e212b] text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-border">
                 <tr>
@@ -479,7 +480,7 @@ export default function PartsContent() {
         )}
 
         {filteredParts.length > ITEMS_PER_PAGE && (
-          <div className="flex items-center justify-center gap-2 mt-6 pb-2">
+          <div className="m-pager flex items-center justify-center gap-2 mt-6 pb-2">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
               className="px-4 py-2 rounded-lg bg-surface border border-border text-slate-400 text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-all">
               Oldingi
