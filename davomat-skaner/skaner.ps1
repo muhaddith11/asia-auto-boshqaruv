@@ -60,7 +60,9 @@ function Get-OnlineDevices($net) {
     for ($i = 0; $i -lt 254; $i++) {
         if ($tasks[$i].Status -eq 'RanToCompletion' -and $tasks[$i].Result.Status -eq 'Success') { $pinged["$base.$($i + 1)"] = $true }
     }
-    Start-Sleep -Seconds 2
+    # Uxlab yotgan telefon ARP'ga 2-5 soniyada javob beradi: 2 soniya kutilganda
+    # telefonlar uzilib-uzilib ko'rinardi, 6 soniyada har skanda ko'rinadi.
+    Start-Sleep -Seconds 6
 
     $devices = @()
     foreach ($n in (Get-NetNeighbor -AddressFamily IPv4 -InterfaceIndex $net.IfIndex -ErrorAction SilentlyContinue)) {
@@ -80,8 +82,15 @@ function Invoke-Scan {
         Log "Ishxona tarmog'i emas - o'tkazib yuborildi"
         return
     }
-    $devices = Get-OnlineDevices $net
-    $body = @{ devices = @($devices) } | ConvertTo-Json -Depth 4 -Compress
+    # Daqiqada ikki marta tekshiramiz: telefon qisqa uyg'onganini ham ushlash uchun.
+    $byMac = @{}
+    foreach ($d in (Get-OnlineDevices $net)) { $byMac[$d.mac] = $d }
+    if (-not $Once) {
+        Start-Sleep -Seconds 20
+        foreach ($d in (Get-OnlineDevices $net)) { $byMac[$d.mac] = $d }
+    }
+    $devices = @($byMac.Values)
+    $body = @{ devices = $devices } | ConvertTo-Json -Depth 4 -Compress
     $res = Invoke-RestMethod -Uri "$($Config.server.TrimEnd('/'))/api/attendance/scan" -Method Post `
         -Headers @{ 'x-scanner-key' = $Config.key } -ContentType 'application/json; charset=utf-8' `
         -Body ([Text.Encoding]::UTF8.GetBytes($body)) -TimeoutSec 30
