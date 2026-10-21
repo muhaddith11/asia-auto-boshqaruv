@@ -91,6 +91,7 @@ const navGroups: NavGroup[] = [
       { title: 'Xodim qo\'shish', href: '/workers/new' },
       { title: 'Xodimlar ro\'yxati', href: '/workers' },
       { title: 'Xodimlar hisoboti', href: '/workers/reports' },
+      { title: 'Davomat', href: '/workers/attendance' },
       { title: 'Ballar boshqaruvi', href: '/workers/points' },
       { title: 'Xizmat vaqt normalari', href: '/workers/norms' },
       { title: 'Mashina klasslari', href: '/workers/car-classes' }
@@ -131,7 +132,7 @@ interface SidebarProps {
 // qo'shish va xodim CRUD kabi operatsion bo'limlar yashiriladi — u baribir URL
 // orqali o'sha sahifalarga kira oladi, faqat menyuda ko'rinmaydi.
 const BOSS_VISIBLE_GROUPS = ['orders', 'finance', 'workers'];
-const BOSS_WORKERS_HREFS = ['/workers/reports'];
+const BOSS_WORKERS_HREFS = ['/workers/reports', '/workers/attendance'];
 
 const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
   const pathname = usePathname();
