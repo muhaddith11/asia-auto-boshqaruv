@@ -198,3 +198,45 @@ describe('DELETE /api/orders/[id] — buyurtma o\'chirilganda zapchastlar arxivl
     expect(archiveInserts()).toHaveLength(0);
   });
 });
+
+describe('DELETE /api/orders/[id] — rasxod puli kassaga qaytadi', () => {
+  async function del() {
+    const req = new NextRequest('http://localhost/api/orders/2163', { method: 'DELETE' });
+    return route.DELETE(req, { params: Promise.resolve({ id: '2163' }) });
+  }
+
+  it('chek chiqarilgan (to\'lanmagan) buyurtma o\'chirilsa — barcha rasxod naqd kassaga qaytadi', async () => {
+    mockState.responses.orders = { data: [{ ...orderRow, zaps: [filtr, taxi, yoqilgi] }], error: null };
+    const res = await del();
+    expect(res.status).toBe(200);
+
+    expect(kassaUpserts()).toHaveLength(1);
+    expect(kassaUpserts()[0][0]).toMatchObject({ id: 1, naqd: 1_115_000, karta: 500_000 });
+    expect(opsInserts()).toHaveLength(1);
+    expect(opsInserts()[0][0][0]).toMatchObject({ type: 'income', method: 'naqd', amount: 115_000, source: 'tizim' });
+    expect(String(opsInserts()[0][0][0].comment)).toContain('#2163');
+  });
+
+  it('rasxodsiz buyurtma o\'chirilsa — kassaga tegilmaydi', async () => {
+    mockState.responses.orders = { data: [{ ...orderRow, zaps: [filtr] }], error: null };
+    await del();
+    expect(kassaUpserts()).toHaveLength(0);
+    expect(opsInserts()).toHaveLength(0);
+  });
+
+  it('bekor qilingan buyurtma o\'chirilsa — qayta qaytarilmaydi (bekor qilishda qaytgan)', async () => {
+    for (const holat of ['bekor', 'bekor qilingan']) {
+      mockState.responses.orders = { data: [{ ...orderRow, holat, zaps: [taxi] }], error: null };
+      await del();
+    }
+    expect(kassaUpserts()).toHaveLength(0);
+    expect(opsInserts()).toHaveLength(0);
+  });
+
+  it('to\'langan buyurtma o\'chirilsa — qaytarilmaydi (mijoz to\'lovi rasxodni qoplagan)', async () => {
+    mockState.responses.orders = { data: [{ ...orderRow, holat: 'tulangan', zaps: [taxi] }], error: null };
+    await del();
+    expect(kassaUpserts()).toHaveLength(0);
+    expect(opsInserts()).toHaveLength(0);
+  });
+});

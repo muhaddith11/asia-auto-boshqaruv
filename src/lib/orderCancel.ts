@@ -64,6 +64,29 @@ export async function refundRasxodOnCancel(
   await creditRasxodToKassa(rasxodTotal, `Rasxod qaytarildi — bekor qilindi (Buyurtma #${orderId})`);
 }
 
+// Buyurtma BUTUNLAY o'chirilganda (dashboard DELETE) unga kiritilgan rasxod
+// summasi naqd kassaga qaytariladi — aks holda kassadan ayirilgan pul izsiz
+// yo'qolardi (masalan xodim botda rasxod qilib chek chiqargan, admin o'chirgan).
+//
+// Qaytarilmaydi:
+//  • buyurtma bekor qilingan bo'lsa — rasxod bekor qilishda allaqachon qaytgan;
+//  • to'langan bo'lsa — mijoz to'lovi (final ichida rasxod ham bor) kassaga
+//    tushgan, o'chirish to'lovni bekor qilmaydi, qaytarish ikki marta sanaydi.
+export async function refundRasxodOnDelete(
+  orderId: number,
+  zaps: ZapLike[] | null | undefined,
+  holat: string | null | undefined,
+): Promise<void> {
+  if (isCancelledHolat(holat) || holat === 'tulangan') return;
+
+  const rasxodTotal = (zaps || [])
+    .filter((z) => z?.rasxod === true || z?.kat === 'Rasxod')
+    .reduce((s, z) => s + (Number(z.narx ?? z.summa) || 0), 0);
+  if (rasxodTotal <= 0) return;
+
+  await creditRasxodToKassa(rasxodTotal, `Rasxod qaytarildi — buyurtma o'chirildi (Buyurtma #${orderId})`);
+}
+
 // Buyurtma tahrirlanganda rasxod qatori OLIB TASHLANSA (o'chirilsa), uning summasi
 // naqd kassaga qaytariladi — aks holda pul kassadan ayirilgan holda qolib, izsiz
 // yo'qolardi (rasxod kiritilganda summa darrov kassadan ayirilgan, bot-ui/rasxod).

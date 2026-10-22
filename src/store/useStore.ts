@@ -578,8 +578,14 @@ export const useStore = create<AutoServisStore>()(
       deleteBuyurtma: (id) => {
         // Eslatma: o'chirilgan buyurtmadagi zapchastlar (bekor qilinmagan bo'lsa)
         // omborga qaytishi endi SERVER tomonda (/api/orders/[id] DELETE) bajariladi.
+        // Rasxod puli ham server tomonda kassaga qaytadi — navbar kassasi darrov
+        // yangilanishi uchun shunday buyurtmadan keyin ma'lumotni qayta yuklaymiz.
+        const order = get().buyurtmalar.find((b) => Number(b.id) === Number(id));
+        const hadRasxod = (order?.zaps || []).some((z) => z?.rasxod === true || z?.kat === 'Rasxod');
         set((state) => ({ buyurtmalar: state.buyurtmalar.filter((b) => Number(b.id) != Number(id)) }));
-        deleteOrder(id).catch((err) => {
+        deleteOrder(id).then(() => {
+          if (hadRasxod) get().loadInitialData(true);
+        }).catch((err) => {
           console.error("❌ Buyurtmani o'chirishda xatolik:", err);
           toast.error("Buyurtma bazadan o'chirilmadi. Ro'yxat yangilanmoqda.");
           get().loadInitialData(true);
