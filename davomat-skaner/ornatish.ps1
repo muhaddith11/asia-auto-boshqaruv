@@ -22,6 +22,10 @@ $Action = New-ScheduledTaskAction `
 
 $Trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
 
+# Har 5 daqiqada: skaner yopilib qolgan bo'lsa (uyqudan keyin, xato bilan) qayta
+# yoqiladi. Ishlab turgan bo'lsa - IgnoreNew, yangi nusxa ochilmaydi.
+$Watchdog = New-ScheduledTaskTrigger -Once -At (Get-Date).Date -RepetitionInterval (New-TimeSpan -Minutes 5)
+
 # Laptop zaryadsiz ishlasa ham to'xtamasin (Windows standarti - to'xtatadi).
 $Settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit ([TimeSpan]::Zero) `
@@ -32,7 +36,7 @@ $Settings = New-ScheduledTaskSettingsSet `
     -StartWhenAvailable `
     -MultipleInstances IgnoreNew
 
-Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings `
+Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger, $Watchdog -Settings $Settings `
     -Description "Asia Auto Service - davomat skaneri (WiFi)" -Force | Out-Null
 
 Start-ScheduledTask -TaskName $TaskName
