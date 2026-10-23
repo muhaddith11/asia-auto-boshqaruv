@@ -298,8 +298,9 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
 
           {/* SECTION 1: Asosiy ma'lumotlar */}
-          <div style={S.card}>
-            <div style={S.cardHeader}>
+          {/* overflow: visible — mijoz ro'yxati karta chegarasida kesilib qolmasin */}
+          <div style={{ ...S.card, overflow: 'visible' }}>
+            <div style={{ ...S.cardHeader, borderRadius: '14px 14px 0 0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <User size={16} color="var(--accent)" />
                 <span className="text-[12px] font-black text-white uppercase tracking-wider">Mijoz va Mashina</span>
