@@ -1,8 +1,9 @@
 'use client';
 import React, { useRef } from 'react';
-import { X, Printer, Download, Share2 } from 'lucide-react';
+import { X, Printer, Download, Share2, Loader2 } from 'lucide-react';
 import { Buyurtma } from '@/types';
 import { useStore } from '@/store/useStore';
+import { triggerDownload } from '@/lib/export';
 import toast from 'react-hot-toast';
 
 interface InvoiceModalProps {
@@ -14,6 +15,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const updateBuyurtma = useStore((state) => state.updateBuyurtma);
   const [isPrinting, setIsPrinting] = React.useState(false);
+  const [busy, setBusy] = React.useState<'save' | 'share' | null>(null);
 
   const handleAgentPrint = async () => {
     setIsPrinting(true);
@@ -24,6 +26,60 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
       toast.error('Xatolik yuz berdi');
     } finally {
       setTimeout(() => setIsPrinting(false), 2000);
+    }
+  };
+
+  const fileName = `chek-${order.id}.png`;
+
+  // Oynadagi chekni o'zini PNG'ga aylantiradi (kutubxona tugma bosilganda yuklanadi)
+  const makeReceiptPng = async () => {
+    if (!printRef.current) throw new Error('Chek topilmadi');
+    const { toBlob } = await import('html-to-image');
+    const blob = await toBlob(printRef.current, {
+      pixelRatio: 3,
+      backgroundColor: '#fff',
+      style: { boxShadow: 'none', borderRadius: '0' },
+    });
+    if (!blob) throw new Error('Rasm yaratilmadi');
+    return blob;
+  };
+
+  const handleSave = async () => {
+    setBusy('save');
+    try {
+      triggerDownload(await makeReceiptPng(), fileName);
+      toast.success('Chek saqlandi');
+    } catch {
+      toast.error('Chekni saqlab bo\'lmadi');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleShare = async () => {
+    setBusy('share');
+    try {
+      const blob = await makeReceiptPng();
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      // Avval nusxalaymiz: ulashish oynasi ochilgach sahifa fokusni yo'qotadi.
+      // Windows oynasida Telegram chiqmasa ham, rasm chatga joylashga tayyor turadi.
+      const copied = typeof ClipboardItem !== 'undefined' && await navigator.clipboard
+        ?.write([new ClipboardItem({ 'image/png': blob })])
+        .then(() => true, () => false);
+      if (copied) toast.success('Chek nusxalandi — chatga joylashtiring (Ctrl+V)');
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Chek #${order.id}` });
+      } else if (!copied) {
+        triggerDownload(blob, fileName);
+        toast.success('Chek saqlandi — faylni chatga yuboring');
+      }
+    } catch (err) {
+      // Foydalanuvchi ulashish oynasini yopsa AbortError keladi — bu xato emas
+      if ((err as Error).name !== 'AbortError') toast.error('Chekni jo\'natib bo\'lmadi');
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -80,6 +136,7 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             style={{
               background: '#fff',
               width: 300,
+              alignSelf: 'flex-start', // oynaga cho'zilmasin — uzun chek kesilib qoladi
               fontFamily: 'Arial, sans-serif',
               color: '#111',
               boxShadow: '0 4px 32px rgba(0,0,0,0.13)',
@@ -238,11 +295,23 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             <Printer size={22} strokeWidth={2.5} />
             {isPrinting ? 'PRINTERGA YUBORILDI...' : 'CHECKNI CHIQARISH (AVTOMAT)'}
           </button>
-          <button className="w-16 h-16 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl flex items-center justify-center transition-all">
-            <Download size={22} />
+          <button
+            onClick={handleSave}
+            disabled={busy !== null}
+            title="Saqlash (PNG)"
+            aria-label="Chekni saqlash"
+            className="w-16 h-16 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl flex items-center justify-center transition-all disabled:opacity-60"
+          >
+            {busy === 'save' ? <Loader2 size={22} className="animate-spin" /> : <Download size={22} />}
           </button>
-          <button className="w-16 h-16 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl flex items-center justify-center transition-all">
-            <Share2 size={22} />
+          <button
+            onClick={handleShare}
+            disabled={busy !== null}
+            title="Jo'natish"
+            aria-label="Chekni jo'natish"
+            className="w-16 h-16 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl flex items-center justify-center transition-all disabled:opacity-60"
+          >
+            {busy === 'share' ? <Loader2 size={22} className="animate-spin" /> : <Share2 size={22} />}
           </button>
         </div>
 
