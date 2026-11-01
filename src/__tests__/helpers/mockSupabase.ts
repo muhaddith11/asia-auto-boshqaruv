@@ -12,7 +12,7 @@ export interface MockResult {
 
 const CHAIN_METHODS = [
   'select', 'insert', 'update', 'upsert', 'delete',
-  'order', 'gte', 'lte', 'eq', 'in', 'is', 'not', 'or', 'range', 'limit',
+  'order', 'gt', 'gte', 'lte', 'eq', 'neq', 'in', 'is', 'not', 'or', 'range', 'limit',
 ] as const;
 
 // insert/update/upsert ga uzatilgan argumentlarni ushlab qolish uchun

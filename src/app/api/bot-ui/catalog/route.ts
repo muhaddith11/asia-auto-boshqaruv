@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -41,32 +42,27 @@ function toProperCase(str: string) {
 
 async function buildCatalog() {
   // ── Parallel fetch: cars + all service pages at once ────────────────────
-  const PAGE = 1000;
-  // Biz 3330+ xizmat borligini bilamiz, 5 ta page parallel yuklaymiz
-  const pageCount = 5;
+  const serviceColumns = 'brand, car_model, name, price';
 
-  const [carsResult, partsResult, ...serviceChunks] = await Promise.all([
+  const [carsResult, partsResult, services] = await Promise.all([
     supabase.from('cars_list').select('brand, name').range(0, 5000).order('brand', { ascending: true }),
     // Botda faqat SAYTdan kiritilgan zapchastlar (source='site') ko'rinadi.
     // Botdan qo'lda kiritilganlar (source='bot') ro'yxatga chiqmaydi.
     // Omborda qolmagan (balance <= 0) zapchastlar ham mijozga taklif qilinmaydi.
     supabase.from('parts').select('id, nom, narx, mashina').neq('source', 'bot').gt('balance', 0).order('nom', { ascending: true }).range(0, 10000),
-    ...Array.from({ length: pageCount }, (_, i) =>
-      supabase.from('services_list')
-        .select('brand, car_model, name, price')
+    // Bo'lak soni jadval hajmidan olinadi: qo'lda yozilsa, jadval o'sganda
+    // eng yangi xizmatlar (yangi mashinalar) botdan jim tushib qoladi.
+    fetchAllRows<any>((from, to, withCount) =>
+      (withCount
+        ? supabase.from('services_list').select(serviceColumns, { count: 'exact' })
+        : supabase.from('services_list').select(serviceColumns))
         .order('id', { ascending: true })
-        .range(i * PAGE, (i + 1) * PAGE - 1)
-    ),
+        .range(from, to)),
   ]);
 
   if (carsResult.error) throw carsResult.error;
 
   const cars = carsResult.data ?? [];
-  const services: any[] = [];
-  for (const chunk of serviceChunks) {
-    if (chunk.error) throw chunk.error;
-    if (chunk.data) services.push(...chunk.data);
-  }
 
   // ── Build catalog ────────────────────────────────────────────────────────
   const normalizedCatalog: any = {};

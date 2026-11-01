@@ -23,6 +23,7 @@ vi.mock('@/lib/supabaseClient', async () => {
 const { GET: ordersGET } = await import('@/app/api/orders/route');
 const { GET: operationsGET } = await import('@/app/api/operations/route');
 const { GET: servicesGET } = await import('@/app/api/services/route');
+const { GET: catalogGET, invalidateCatalogCache } = await import('@/app/api/bot-ui/catalog/route');
 
 beforeEach(() => {
   for (const key of Object.keys(mockState.responses)) delete mockState.responses[key];
@@ -148,5 +149,41 @@ describe('/api/services GET — bo\'laklab yuklash', () => {
     mockState.responses.services_list = { data: null, error: { message: 'db down' } };
     const res = await servicesGET(new Request('http://localhost/api/services'));
     expect(res.status).toBe(500);
+  });
+});
+
+describe('/api/bot-ui/catalog GET — bo\'laklab yuklash', () => {
+  // Katalog serverda keshlanadi — testlar bir-birining natijasini olmasin
+  beforeEach(() => invalidateCatalogCache());
+
+  it('5000 dan ortiq xizmatda eng yangi mashina ham katalogda qoladi', async () => {
+    const t = chunkedTable(5200, (i) => ({
+      id: i,
+      brand: 'BMW',
+      car_model: i === 5199 ? 'M5' : '530 I',
+      name: `xizmat-${i}`,
+      price: 1000,
+    }));
+    mockState.responses.services_list = t.responder;
+    mockState.responses.cars_list = { data: [{ brand: 'BMW', name: 'M5' }], error: null };
+    mockState.responses.parts = { data: [], error: null };
+
+    const json = await (await catalogGET()).json();
+
+    expect(json.count.raw_services).toBe(5200);
+    expect(json.catalog.BMW.M5).toEqual([{ name: 'xizmat-5199', price: 1000 }]);
+    expect(t.seen).toHaveLength(6);
+  });
+
+  it('bo\'lak xatosi 500 qaytaradi (qisman katalog berilmaydi)', async () => {
+    mockState.responses.services_list = (ctx) => ctx.index === 0
+      ? { data: Array.from({ length: 1000 }, (_, i) => ({ id: i })), error: null, count: 2000 }
+      : { data: null, error: { message: 'chunk failed' } };
+    mockState.responses.cars_list = { data: [], error: null };
+    mockState.responses.parts = { data: [], error: null };
+
+    const res = await catalogGET();
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe('chunk failed');
   });
 });
