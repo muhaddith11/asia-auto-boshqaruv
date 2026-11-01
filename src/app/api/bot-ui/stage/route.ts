@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 import { findClientNameByPhone } from '@/lib/findClient';
 import { applyStockDelta } from '@/lib/stock';
 import { refundRasxodOnCancel } from '@/lib/orderCancel';
@@ -13,20 +13,17 @@ type Action = 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | '
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, action, zapchastNomi, raqam, tel, workerPhone, mechanicChatId } = body as {
+    const { orderId, action, zapchastNomi, raqam, tel } = body as {
       orderId: number;
       action: Action;
       zapchastNomi?: string;
       raqam?: string;
       tel?: string;
-      workerPhone?: string;
-      mechanicChatId?: string;
     };
 
-    const worker = await identifyWorker(workerPhone, mechanicChatId);
-    if (!worker) {
-      return NextResponse.json({ ok: false, error: 'Xodim topilmadi.' }, { status: 403 });
-    }
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
     if (!orderId || !action) {
       return NextResponse.json({ ok: false, error: "Ma'lumot to'liq emas." }, { status: 400 });
     }

@@ -1,8 +1,16 @@
 // Bot-ui klient tomoni: xodim identifikatsiyasi, API chaqiruvlari va bosqich meta.
 
+// Xodim bu token bilan tanib olinadi (u /api/bot-ui/session'dan keladi).
 export interface Identity {
-  workerPhone: string;
-  mechanicChatId: string | number | undefined;
+  token: string;
+}
+
+// localStorage'da saqlanadigan kirish ma'lumoti.
+export interface BotAuthUser {
+  token: string;
+  id: number;
+  phone: string;
+  name: string;
 }
 
 // Mashinaga qilingan bitta rasxod (xarajat) — buyurtma zaps ichidan ajratilgan.
@@ -56,40 +64,50 @@ export interface Car {
   zap?: number; // zapchastlar jami (narx kutayotgan buyurtmalarda ko'rsatiladi)
 }
 
-// URL (?phone=), Telegram foydalanuvchi id, yoki brauzer login — shu tartibda.
-export function resolveIdentity(authUser: any): Identity {
-  let workerPhone = '';
-  let mechanicChatId: string | number | undefined;
-  if (typeof window !== 'undefined') {
-    const p = new URLSearchParams(window.location.search).get('phone');
-    if (p) workerPhone = p;
-    const tgId = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id;
-    if (tgId) mechanicChatId = tgId;
-  }
-  if (!workerPhone) workerPhone = authUser?.phone || '';
-  if (!mechanicChatId) mechanicChatId = authUser?.telegram || undefined;
-  return { workerPhone, mechanicChatId };
+export function resolveIdentity(authUser: BotAuthUser | null): Identity {
+  return { token: authUser?.token || '' };
 }
 
-function idBody(identity: Identity) {
-  return { workerPhone: identity.workerPhone, mechanicChatId: identity.mechanicChatId };
+// Token eskirgan yoki bekor bo'lgan bo'lsa, sahifa kirish oynasiga qaytadi.
+async function botFetch(identity: Identity, url: string, init: RequestInit = {}) {
+  const res = await fetch(url, { ...init, headers: { ...init.headers, 'x-bot-token': identity.token } });
+  if (res.status === 401 && typeof window !== 'undefined') window.dispatchEvent(new Event('bot-auth-lost'));
+  return res;
+}
+
+const postJson = (body: unknown): RequestInit => ({
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
+
+// Telegram ichida: imzolangan initData token'ga almashtiriladi.
+export async function createTelegramSession(initData: string) {
+  const res = await fetch('/api/bot-ui/session', postJson({ initData }));
+  return res.json();
+}
+
+// Brauzerda: kod Telegram'ga yuboriladi, keyin raqam + kod token'ga almashtiriladi.
+export async function requestLoginCode(phone: string) {
+  await fetch('/api/bot-ui/login-code', postJson({ phone }));
+}
+
+export async function loginWithCode(phone: string, code: string) {
+  const res = await fetch('/api/bot-ui/session', postJson({ phone, code }));
+  return res.json();
+}
+
+export function submitOrder(identity: Identity, order: Record<string, unknown>) {
+  return botFetch(identity, '/api/bot-ui/submit', postJson(order));
 }
 
 export async function fetchCars(identity: Identity) {
-  const params = new URLSearchParams();
-  if (identity.workerPhone) params.set('phone', identity.workerPhone);
-  if (identity.mechanicChatId) params.set('tg', String(identity.mechanicChatId));
-  params.set('t', String(Date.now()));
-  const res = await fetch(`/api/bot-ui/cars?${params.toString()}`);
+  const res = await botFetch(identity, `/api/bot-ui/cars?t=${Date.now()}`);
   return res.json();
 }
 
 export async function fetchPoints(identity: Identity) {
-  const params = new URLSearchParams();
-  if (identity.workerPhone) params.set('phone', identity.workerPhone);
-  if (identity.mechanicChatId) params.set('tg', String(identity.mechanicChatId));
-  params.set('t', String(Date.now()));
-  const res = await fetch(`/api/bot-ui/points?${params.toString()}`);
+  const res = await botFetch(identity, `/api/bot-ui/points?t=${Date.now()}`);
   return res.json();
 }
 
@@ -103,11 +121,7 @@ export async function acceptCar(
     oilRecommendation?: OilRecommendationSnapshot | null;
   }
 ) {
-  const res = await fetch('/api/bot-ui/accept', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...data, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/accept', postJson({ ...data }));
   return res.json();
 }
 
@@ -117,11 +131,7 @@ export async function updateStage(
   action: 'zapchast_kerak' | 'zapchast_keldi' | 'tayyor' | 'topshirildi' | 'bekor',
   zapchastNomi?: string
 ) {
-  const res = await fetch('/api/bot-ui/stage', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, action, zapchastNomi, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/stage', postJson({ orderId, action, zapchastNomi }));
   return res.json();
 }
 
@@ -132,11 +142,7 @@ export async function addRasxod(
   orderId: number,
   items: { nom: string; summa: number }[]
 ) {
-  const res = await fetch('/api/bot-ui/rasxod', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, items, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/rasxod', postJson({ orderId, items }));
   return res.json();
 }
 
@@ -146,21 +152,13 @@ export async function setServicePrices(
   orderId: number,
   prices: { index: number; narx: number }[]
 ) {
-  const res = await fetch('/api/bot-ui/price', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, prices, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/price', postJson({ orderId, prices }));
   return res.json();
 }
 
 // Ish vaqtini o'lchash — tezlik bali aynan shunga qarab beriladi.
 export async function toggleWorkSession(identity: Identity, orderId: number, action: 'start' | 'stop') {
-  const res = await fetch('/api/bot-ui/work-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, action, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/work-session', postJson({ orderId, action }));
   return res.json();
 }
 
@@ -178,43 +176,25 @@ export interface SparePart {
   created_at?: string;
 }
 
-function identityQuery(identity: Identity) {
-  const params = new URLSearchParams();
-  if (identity.workerPhone) params.set('phone', identity.workerPhone);
-  if (identity.mechanicChatId) params.set('tg', String(identity.mechanicChatId));
-  return params;
-}
-
 export async function fetchSpareParts(identity: Identity) {
-  const params = identityQuery(identity);
-  params.set('t', String(Date.now()));
-  const res = await fetch(`/api/bot-ui/spare-parts?${params.toString()}`);
+  const res = await botFetch(identity, `/api/bot-ui/spare-parts?t=${Date.now()}`);
   return res.json();
 }
 
 // id berilsa tahrirlaydi, aks holda yangi qo'shadi.
 export async function saveSparePart(identity: Identity, part: Partial<SparePart>, id?: number) {
   const url = id ? `/api/bot-ui/spare-parts/${id}` : '/api/bot-ui/spare-parts';
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...part, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, url, postJson({ ...part }));
   return res.json();
 }
 
 export async function deleteSparePartApi(identity: Identity, id: number) {
-  const params = identityQuery(identity);
-  const res = await fetch(`/api/bot-ui/spare-parts/${id}?${params.toString()}`, { method: 'DELETE' });
+  const res = await botFetch(identity, `/api/bot-ui/spare-parts/${id}`, { method: 'DELETE' });
   return res.json();
 }
 
 export async function uploadSparePartImage(identity: Identity, dataUrl: string) {
-  const res = await fetch('/api/bot-ui/spare-parts/upload', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ dataUrl, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/spare-parts/upload', postJson({ dataUrl }));
   return res.json();
 }
 
@@ -230,26 +210,19 @@ export interface OilPrice {
 }
 
 export async function fetchOilPrices(identity: Identity) {
-  const params = identityQuery(identity);
-  params.set('t', String(Date.now()));
-  const res = await fetch(`/api/bot-ui/oil-prices?${params.toString()}`);
+  const res = await botFetch(identity, `/api/bot-ui/oil-prices?t=${Date.now()}`);
   return res.json();
 }
 
 // id berilsa tahrirlaydi, aks holda yangi qo'shadi.
 export async function saveOilPrice(identity: Identity, price: Partial<OilPrice>, id?: number) {
   const url = id ? `/api/bot-ui/oil-prices/${id}` : '/api/bot-ui/oil-prices';
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...price, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, url, postJson({ ...price }));
   return res.json();
 }
 
 export async function deleteOilPriceApi(identity: Identity, id: number) {
-  const params = identityQuery(identity);
-  const res = await fetch(`/api/bot-ui/oil-prices/${id}?${params.toString()}`, { method: 'DELETE' });
+  const res = await botFetch(identity, `/api/bot-ui/oil-prices/${id}`, { method: 'DELETE' });
   return res.json();
 }
 
@@ -274,11 +247,7 @@ export interface OilScanRecommendation {
 }
 
 export async function scanOilCar(identity: Identity, dataUrl: string) {
-  const res = await fetch('/api/bot-ui/oil-scan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ dataUrl, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/oil-scan', postJson({ dataUrl }));
   return res.json() as Promise<{
     ok: boolean;
     error?: string;
@@ -336,11 +305,7 @@ export async function updateCarInfo(
   orderId: number,
   info: { raqam: string; tel: string }
 ) {
-  const res = await fetch('/api/bot-ui/stage', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, action: 'tahrirlash', raqam: info.raqam, tel: info.tel, ...idBody(identity) }),
-  });
+  const res = await botFetch(identity, '/api/bot-ui/stage', postJson({ orderId, action: 'tahrirlash', raqam: info.raqam, tel: info.tel }));
   return res.json();
 }
 

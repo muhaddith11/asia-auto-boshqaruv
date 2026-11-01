@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { fetchAllRows } from '@/lib/fetchAllRows';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -16,7 +17,10 @@ function mapAppToDB(body: any) {
 }
 
 // GET: Fetch all services or filter by car_model
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+  const guard = await requireSection(req, 'services');
+  if (guard.denied) return guard.denied;
+
   try {
     const { searchParams } = new URL(req.url);
     const carModel = searchParams.get('car_model');
@@ -56,7 +60,10 @@ export async function GET(req: Request) {
 }
 
 // POST: Upsert services (supports batch)
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const guard = await requireSection(req, 'services');
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await req.json();
     

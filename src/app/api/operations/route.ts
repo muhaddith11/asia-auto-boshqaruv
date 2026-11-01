@@ -2,10 +2,15 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { fetchAllRows } from '@/lib/fetchAllRows';
+import { changeKassa, operationDelta, type KassaBalance } from '@/lib/kassa';
+import { FULL_ACCESS, requireRole, requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const guard = await requireSection(request, 'reports');
+  if (guard.denied) return guard.denied;
+
   const sp = request.nextUrl.searchParams;
   const from = sp.get('from');
   const to = sp.get('to');
@@ -51,9 +56,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireRole(request, FULL_ACCESS);
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await request.json();
-    
+
     // Bazada borligi aniq bo'lgan ustunlarni saralab olamiz
     const cleanBody: any = {
       date: body.date,
@@ -82,6 +90,19 @@ export async function POST(request: NextRequest) {
        }, { status: 500 });
     }
 
+    // Yozuv va kassa birga: kassa o'zgarmasa yozuv ham qolmaydi.
+    const delta = operationDelta(cleanBody);
+    let kassa: KassaBalance | null = null;
+    if (delta) {
+      try {
+        kassa = await changeKassa(delta);
+      } catch (kassaErr) {
+        console.error("❌ Operatsiya: kassa yangilanmadi:", kassaErr);
+        await supabase.from('operations').delete().eq('id', data.id);
+        return NextResponse.json({ error: 'Kassa yangilanmadi' }, { status: 500 });
+      }
+    }
+
     // Audit javobni kuttirmaydi — javob yuborilgandan keyin yoziladi.
     after(() =>
       logAudit({
@@ -89,11 +110,11 @@ export async function POST(request: NextRequest) {
         action: cleanBody.type === 'transfer' ? 'transfer' : 'create',
         entity: 'operation',
         entityId: data?.id,
-        details: { type: cleanBody.type, amount: cleanBody.amount, category: cleanBody.category, method: cleanBody.method },
+        details: { type: cleanBody.type, amount: cleanBody.amount, category: cleanBody.category, method: cleanBody.method, kassa: kassa ?? undefined },
       })
     );
 
-    return NextResponse.json(data);
+    return NextResponse.json({ ...data, kassa });
   } catch (err: any) {
     console.error("❌ Operations Handler Error:", err);
     return NextResponse.json({ error: err.message || 'Invalid request' }, { status: 400 });

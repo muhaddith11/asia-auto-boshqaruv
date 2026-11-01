@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { notifyOrderReady } from '@/lib/telegramNotify';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -9,6 +10,9 @@ export const revalidate = 0;
 // Buyurtma "tayyor" xabarini Telegram guruhga qo'lda yuborish.
 // Buyurtmalar sahifasidagi "SMS yuborish" tugmasi shu endpointni chaqiradi.
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireSection(request, 'orders');
+  if (guard.denied) return guard.denied;
+
   try {
     const { id: idStr } = await context.params;
     const id = Number(idStr);

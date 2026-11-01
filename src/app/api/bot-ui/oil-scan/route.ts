@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 import { normalizeBolim } from '@/lib/departments';
 import { recognizeCarPhoto, recommendOil } from '@/lib/geminiOilVision';
 import { getCachedOilRecommendation, saveOilRecommendation } from '@/lib/oilRecommendationsRepo';
@@ -7,16 +7,15 @@ import { getCachedOilRecommendation, saveOilRecommendation } from '@/lib/oilReco
 export const dynamic = 'force-dynamic';
 
 // Texpasport/birka rasmidan mashinani tanish + yog' tavsiyasi.
-// Faqat yog' bo'limi xodimi (yoki boshliq) — Kirish: JSON { dataUrl, workerPhone, mechanicChatId }.
+// Faqat yog' bo'limi xodimi (yoki boshliq) — Kirish: JSON { dataUrl }.
 // Chiqish: { ok, recognized, recommendation, fromCache }.
 export async function POST(request: NextRequest) {
   try {
-    const { dataUrl, workerPhone, mechanicChatId } = await request.json();
+    const { dataUrl } = await request.json();
 
-    const worker = await identifyWorker(workerPhone, mechanicChatId);
-    if (!worker) {
-      return NextResponse.json({ ok: false, error: 'Siz tizimda xodim sifatida topilmadingiz.' }, { status: 403 });
-    }
+    const guard = await requireBotWorker(request);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
     if (!worker.is_boss && normalizeBolim(worker.bolim) !== 'yog') {
       return NextResponse.json({ ok: false, error: "Bu funksiya faqat yog' bo'limi uchun." }, { status: 403 });
     }

@@ -1,4 +1,5 @@
 import supabase from '@/lib/supabaseClient';
+import { changeKassa } from '@/lib/kassa';
 import { isCancelledHolat } from '@/lib/stock';
 import { removedRasxodTotal, type ZapLike as ArchiveZapLike } from '@/lib/zapArchive';
 
@@ -10,21 +11,11 @@ interface ZapLike {
 }
 
 // Rasxod summasini naqd kassaga qaytaradi va `operations`ga KIRIM yozuvi qo'shadi.
-// Absolyut qiymat bilan yoziladi — /api/orders/[id]/payment bilan bir xil semantika.
 // Asosiy amalni BLOKLAMAYDI — xatolik bo'lsa faqat konsolga yozadi.
 async function creditRasxodToKassa(amount: number, comment: string): Promise<void> {
   try {
     const nowIso = new Date().toISOString();
-    const { data: kassa } = await supabase.from('kassa').select('naqd, karta').eq('id', 1).maybeSingle();
-    const naqd = Number(kassa?.naqd || 0) + amount;
-    const karta = Number(kassa?.karta || 0);
-    const { error: kassaErr } = await supabase
-      .from('kassa')
-      .upsert({ id: 1, naqd, karta, updated_at: nowIso });
-    if (kassaErr) {
-      console.error('creditRasxodToKassa kassa error:', kassaErr);
-      return;
-    }
+    await changeKassa({ naqd: amount, karta: 0 });
 
     await supabase.from('operations').insert([{
       date: nowIso.split('T')[0],

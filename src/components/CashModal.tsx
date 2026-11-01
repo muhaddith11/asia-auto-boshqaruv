@@ -44,7 +44,7 @@ const S = {
 };
 
 export default function CashModal({ type, onClose }: CashModalProps) {
-  const { updateKassa, addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh, addShtraf, buyurtmalar, updateBuyurtma } = useStore();
+  const { addTashqariOperatsiya, addIshxonaOperatsiya, mijozlar, xodimlar, addMaosh, addShtraf, buyurtmalar, updateBuyurtma } = useStore();
 
   const [formData, setFormData] = useState({
     amount: '',
@@ -76,7 +76,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
     setSaving(true);
     try {
       if (formData.category === "Ish xaqi" || (formData.category === "🆕 Yangi kategoriya qo'shish" && formData.customCategory === "Ish xaqi")) {
-        // addMaosh o'zi ichida kassani boshqaradi va rollback qiladi
+        // Kassani server o'zgartiradi, addMaosh xatoda rollback qiladi
         const worker = xodimlar.find(x => x.ism === formData.source);
         await addMaosh({
           sana: new Date().toISOString().split('T')[0],
@@ -97,7 +97,7 @@ export default function CashModal({ type, onClose }: CashModalProps) {
           izoh: formData.comment || 'Shtraf',
           sana: new Date().toISOString().split('T')[0],
         });
-        // updateKassa YO'Q, operatsiya YO'Q — faqat maoshdan ayiriladi
+        // Kassa va operatsiya YO'Q — faqat maoshdan ayiriladi
 
       } else if (formData.category === "Buyurtma bo'yicha to'lov") {
         const targetOrder = buyurtmalar.find(b => String(b.id) === formData.orderId);
@@ -123,9 +123,8 @@ export default function CashModal({ type, onClose }: CashModalProps) {
           comment: `${formData.comment} (Buyurtma #${formData.orderId})`,
           source: formData.source || 'manual', orderId: formData.orderId
         };
-        // Avval operatsiyani saqlash, keyin kassani yangilash
+        // Kassani server operatsiya bilan birga o'zgartiradi
         await addIshxonaOperatsiya(op as any);
-        updateKassa(formData.method, amount, 'sub');
 
       } else {
         const op = {
@@ -135,14 +134,12 @@ export default function CashModal({ type, onClose }: CashModalProps) {
           comment: formData.comment,
           source: formData.source || 'manual'
         };
-        // Avval operatsiyani bazaga saqlash
+        // Kassani server operatsiya bilan birga o'zgartiradi
         if (finalCategory === 'Aylanmadan tashqari') {
           await addTashqariOperatsiya(op as any);
         } else {
           await addIshxonaOperatsiya(op as any);
         }
-        // Operatsiya muvaffaqiyatli saqlangandan KEYIN kassani yangilash
-        updateKassa(formData.method, amount, type === 'income' ? 'add' : 'sub');
       }
 
       onClose();

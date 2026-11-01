@@ -22,7 +22,37 @@ export async function requireSection(request: NextRequest, section: Section): Pr
   return { session, denied: null };
 }
 
+// Pul va o'chirish amallari — faqat egasi va boshliq.
+export const FULL_ACCESS: Role[] = ['egasi', 'boshliq'];
+
+export async function requireRole(request: NextRequest, roles: Role[]): Promise<GuardResult> {
+  const session = await verifySessionToken(request.cookies.get('auth_session')?.value);
+  if (!session) {
+    return { session: null, denied: NextResponse.json({ error: 'Avtorizatsiya talab qilinadi' }, { status: 401 }) };
+  }
+  if (!roles.includes(session.role as Role)) {
+    return { session: null, denied: NextResponse.json({ error: "Bu amal uchun ruxsat yo'q" }, { status: 403 }) };
+  }
+  return { session, denied: null };
+}
+
 // JSON obyekt bo'lmasa (yaroqsiz JSON, massiv, bo'sh tana) — null.
+export const PAYMENT_DENIED_MESSAGE = "To'lovni faqat egasi yoki boshliq belgilaydi";
+
+interface OrderMoneyFields {
+  paid?: unknown;
+  holat?: unknown;
+}
+
+// Buyurtmani tahrirlash xodimga ochiq, lekin to'langan summa va "tulangan" holati
+// faqat egasi/boshliq qo'lida (o'zgarmagan qiymatni qayta yuborish mumkin).
+export function isPaymentChangeDenied(role: string, next: OrderMoneyFields, prev: OrderMoneyFields | null): boolean {
+  if (FULL_ACCESS.includes(role as Role)) return false;
+  const paidChanged = next.paid !== undefined && Number(next.paid || 0) !== Number(prev?.paid || 0);
+  const holatChanged = next.holat !== undefined && next.holat !== prev?.holat;
+  return paidChanged || (holatChanged && (next.holat === 'tulangan' || prev?.holat === 'tulangan'));
+}
+
 export async function readJsonObject(request: NextRequest): Promise<Record<string, unknown> | null> {
   try {
     const body = await request.json();

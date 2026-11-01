@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,10 @@ const standardServices = [
   { name: "📱 Prilojeniye (Ilovalar) o'rnatish", price: 300000 }
 ];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const guard = await requireSection(request, 'backup');
+  if (guard.denied) return guard.denied;
+
   const log: string[] = [];
 
   try {

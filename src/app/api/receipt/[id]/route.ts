@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { escapeHtml } from '@/lib/export';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +12,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const guard = await requireSection(req, 'orders');
+  if (guard.denied) return guard.denied;
+
   const { id } = await params;
   const logoBase64 = LOGO_B64;
 
@@ -38,7 +43,7 @@ export async function GET(
 
   const srvRows = services.map((s: any) => `
     <div class="item">
-      <span class="item-name">${s.nom || s.name || ''}</span>
+      <span class="item-name">${escapeHtml(s.nom || s.name)}</span>
       <span class="item-price">${Number(s.narx || s.price || 0).toLocaleString('ru-RU')}</span>
     </div>`).join('');
 
@@ -47,7 +52,7 @@ export async function GET(
     const price = Number(p.narx || p.price || 0);
     return `
     <div class="item">
-      <span class="item-name">${p.nom || p.name || ''}</span>
+      <span class="item-name">${escapeHtml(p.nom || p.name)}</span>
       <span class="item-price">${price.toLocaleString('ru-RU')}</span>
     </div>`;
   }).join('');
@@ -215,9 +220,9 @@ export async function GET(
   <div class="r-meta">
     <div class="meta-row"><span class="meta-label">BUYURTMA</span><span class="meta-val">#${order.id}</span></div>
     <div class="meta-row"><span class="meta-label">SANA</span><span class="meta-val">${now}</span></div>
-    <div class="meta-row"><span class="meta-label">MIJOZ</span><span class="meta-val">${order.ism || ''}</span></div>
-    ${order.raqam ? `<div class="meta-row"><span class="meta-label">RAQAM</span><span class="meta-val">${String(order.raqam).toUpperCase()}</span></div>` : ''}
-    <div class="meta-row"><span class="meta-label">MASHINA</span><span class="meta-val">${order.mashina || ''}</span></div>
+    <div class="meta-row"><span class="meta-label">MIJOZ</span><span class="meta-val">${escapeHtml(order.ism)}</span></div>
+    ${order.raqam ? `<div class="meta-row"><span class="meta-label">RAQAM</span><span class="meta-val">${escapeHtml(String(order.raqam).toUpperCase())}</span></div>` : ''}
+    <div class="meta-row"><span class="meta-label">MASHINA</span><span class="meta-val">${escapeHtml(order.mashina)}</span></div>
   </div>
 
   <!-- XIZMATLAR -->

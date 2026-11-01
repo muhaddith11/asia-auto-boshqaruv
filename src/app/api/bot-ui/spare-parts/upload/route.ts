@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyBoss } from '@/lib/botWorker';
+import { requireBotBoss } from '@/lib/botAuth';
 import { uploadPartImageFromDataUrl } from '@/lib/sparePartsRepo';
 import { PART_IMAGES_BUCKET, storagePathFromUrl } from '@/lib/partImages';
 
 export const dynamic = 'force-dynamic';
 
-// Rasm yuklash — faqat boshliq. Kirish: JSON { dataUrl, workerPhone, mechanicChatId }
+// Rasm yuklash — faqat boshliq. Kirish: JSON { dataUrl }
 export async function POST(request: NextRequest) {
   try {
-    const { dataUrl, workerPhone, mechanicChatId } = await request.json();
-    const boss = await identifyBoss(workerPhone, mechanicChatId);
-    if (!boss) return NextResponse.json({ ok: false, error: "Ruxsat yo'q (faqat boshliq)" }, { status: 403 });
+    const { dataUrl } = await request.json();
+    const guard = await requireBotBoss(request);
+    if (guard.denied) return guard.denied;
     const { url, path } = await uploadPartImageFromDataUrl(dataUrl);
     return NextResponse.json({ ok: true, url, path });
   } catch (e: any) {
@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Bitta rasmni o'chirish — faqat boshliq. Kirish: JSON { url, workerPhone, mechanicChatId }
+// Bitta rasmni o'chirish — faqat boshliq. Kirish: JSON { url }
 export async function DELETE(request: NextRequest) {
   if (!supabase) return NextResponse.json({ ok: false, error: 'Supabase sozlanmagan' }, { status: 500 });
   try {
-    const { url, workerPhone, mechanicChatId } = await request.json();
-    const boss = await identifyBoss(workerPhone, mechanicChatId);
-    if (!boss) return NextResponse.json({ ok: false, error: "Ruxsat yo'q (faqat boshliq)" }, { status: 403 });
+    const { url } = await request.json();
+    const guard = await requireBotBoss(request);
+    if (guard.denied) return guard.denied;
     const path = storagePathFromUrl(url);
     if (!path) return NextResponse.json({ ok: false, error: "Noto'g'ri rasm URL" }, { status: 400 });
     const { error } = await supabase.storage.from(PART_IMAGES_BUCKET).remove([path]);

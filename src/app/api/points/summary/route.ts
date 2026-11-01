@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { tashkentPeriod } from '@/lib/points/period';
 import { POINTS_SOM_PER_BALL } from '@/lib/points/config';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,9 @@ interface WorkerAgg {
 }
 
 export async function GET(req: NextRequest) {
+  const guard = await requireSection(req, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const period =
       new URL(req.url).searchParams.get('period') || tashkentPeriod(new Date().toISOString());

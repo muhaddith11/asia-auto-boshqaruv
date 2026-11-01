@@ -5,6 +5,7 @@ import { applyStockDelta } from '@/lib/stock';
 import { refundRasxodOnCancel, refundRasxodOnDelete, refundRemovedRasxod } from '@/lib/orderCancel';
 import { diffRemovedZaps } from '@/lib/zapArchive';
 import { archiveRemovedZaps } from '@/lib/zapArchiveRepo';
+import { requireSection, requireRole, FULL_ACCESS, isPaymentChangeDenied, PAYMENT_DENIED_MESSAGE } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -51,6 +52,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 }
 
 async function handleUpdate(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireSection(request, 'orders');
+  if (guard.denied) return guard.denied;
+
   try {
     const { id: idStr } = await context.params;
     const id = Number(idStr);
@@ -80,7 +84,11 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
 
     // Ombor balansini to'g'ri hisoblash uchun update'dan OLDINGI holatni o'qib olamiz
     // (eski zaps va holat). Delta = yangi_effektiv - eski_effektiv.
-    const { data: prevRow } = await supabase.from('orders').select('zaps, holat').eq('id', id).maybeSingle();
+    const { data: prevRow } = await supabase.from('orders').select('zaps, holat, paid').eq('id', id).maybeSingle();
+
+    if (isPaymentChangeDenied(guard.session.role, dbBody, prevRow)) {
+      return NextResponse.json({ error: PAYMENT_DENIED_MESSAGE }, { status: 403 });
+    }
 
     const { data, error } = await supabase.from('orders').update(dbBody).eq('id', id).select();
 
@@ -145,6 +153,9 @@ async function handleUpdate(request: NextRequest, context: { params: Promise<{ i
 }
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireRole(request, FULL_ACCESS);
+  if (guard.denied) return guard.denied;
+
   try {
     const { id: idStr } = await context.params;
     const id = Number(idStr);

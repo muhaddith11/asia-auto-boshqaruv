@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 import { tashkentPeriod } from '@/lib/points/period';
 
 export const dynamic = 'force-dynamic';
@@ -8,17 +8,9 @@ export const dynamic = 'force-dynamic';
 // Xodim uchun — o'z ball tarixi, shu oygi jamlanma va shu oy bo'yicha reyting.
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const phone = searchParams.get('phone');
-    const tg = searchParams.get('tg');
-
-    const worker = await identifyWorker(phone, tg);
-    if (!worker) {
-      return NextResponse.json(
-        { ok: false, error: 'Siz tizimda xodim sifatida topilmadingiz.' },
-        { status: 403 }
-      );
-    }
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
 
     const { data: history, error } = await supabase
       .from('points_ledger')

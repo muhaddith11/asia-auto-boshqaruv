@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 
 export default function DataLoader() {
-  const { loadInitialData } = useStore();
+  const { loadInitialData, refreshKassa } = useStore();
 
   useEffect(() => {
     // Bot-ui (xodim buyurtma oqimi) dashboard ma'lumotlarini talab qilmaydi va
@@ -19,6 +19,13 @@ export default function DataLoader() {
     loadInitialData().catch((err) => {
       console.error('❌ Avtoservis Pro: Ma\'lumotlarni yuklashda xatolik:', err);
     });
+
+    // Tab uzoq ochiq turganda bot yoki boshqa tab kassani o'zgartirgan bo'lishi mumkin.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshKassa();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

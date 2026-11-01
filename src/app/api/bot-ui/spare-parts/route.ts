@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { identifyBoss, identifyWorker } from '@/lib/botWorker';
+import { requireBotBoss, requireBotWorker } from '@/lib/botAuth';
 import { listSpareParts, createSparePart } from '@/lib/sparePartsRepo';
 
 export const dynamic = 'force-dynamic';
@@ -11,9 +11,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const worker = await identifyWorker(searchParams.get('phone'), searchParams.get('tg'));
-    if (!worker) return NextResponse.json({ ok: false, error: "Ruxsat yo'q" }, { status: 403 });
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
     if (!worker.is_boss) return NextResponse.json({ ok: true, parts: [], is_boss: false });
     const parts = await listSpareParts(null);
     return NextResponse.json({ ok: true, parts, is_boss: true });
@@ -25,8 +25,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const boss = await identifyBoss(body.workerPhone, body.mechanicChatId);
-    if (!boss) return NextResponse.json({ ok: false, error: "Ruxsat yo'q (faqat boshliq)" }, { status: 403 });
+    const guard = await requireBotBoss(req);
+    if (guard.denied) return guard.denied;
     if (!String(body.nom || '').trim() && !String(body.artikul || '').trim()) {
       return NextResponse.json({ ok: false, error: 'Nom yoki detal nomeri kerak' }, { status: 400 });
     }

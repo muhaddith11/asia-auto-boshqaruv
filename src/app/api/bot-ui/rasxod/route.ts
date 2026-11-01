@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
+import { changeKassa, type KassaBalance } from '@/lib/kassa';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,17 +24,14 @@ interface RasxodItemIn {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, items, workerPhone, mechanicChatId } = body as {
+    const { orderId, items } = body as {
       orderId: number;
       items: RasxodItemIn[];
-      workerPhone?: string;
-      mechanicChatId?: string;
     };
 
-    const worker = await identifyWorker(workerPhone, mechanicChatId);
-    if (!worker) {
-      return NextResponse.json({ ok: false, error: 'Xodim topilmadi.' }, { status: 403 });
-    }
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
     if (!orderId) {
       return NextResponse.json({ ok: false, error: "Ma'lumot to'liq emas." }, { status: 400 });
     }
@@ -121,19 +119,12 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 2) Kassadan (naqd) ayirish ──────────────────────────────────────────
-    // Absolyut qiymat bilan yoziladi — /api/orders/[id]/payment bilan bir xil semantika.
-    const { data: kassa } = await supabase.from('kassa').select('naqd, karta').eq('id', 1).maybeSingle();
-    const naqd = Number(kassa?.naqd || 0) - total;
-    const karta = Number(kassa?.karta || 0);
-    const { error: kassaErr } = await supabase
-      .from('kassa')
-      .upsert({ id: 1, naqd, karta, updated_at: nowIso });
-    if (kassaErr) {
+    let kassa: KassaBalance;
+    try {
+      kassa = await changeKassa({ naqd: 0 - total, karta: 0 });
+    } catch (kassaErr) {
       console.error('rasxod kassa update error:', kassaErr);
-      return NextResponse.json(
-        { ok: false, error: 'Kassa yangilanmadi: ' + kassaErr.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ ok: false, error: 'Kassa yangilanmadi' }, { status: 500 });
     }
 
     // ── 3) Har bir rasxod uchun CHIQIM operatsiyasi ─────────────────────────
@@ -160,7 +151,7 @@ export async function POST(req: NextRequest) {
       total,
       zap: nextZap,
       final: nextFinal,
-      kassa: { naqd, karta },
+      kassa,
     });
   } catch (err) {
     console.error('rasxod API error:', err);

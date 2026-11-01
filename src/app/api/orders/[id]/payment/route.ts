@@ -2,6 +2,8 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
 import { applyStockDelta } from '@/lib/stock';
+import { changeKassa, invertDelta, operationDelta, type KassaBalance } from '@/lib/kassa';
+import { FULL_ACCESS, requireRole } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -15,19 +17,19 @@ export const revalidate = 0;
 // kutardi.
 //
 // Endi hammasi bitta so'rovda:
-//   1-bosqich (parallel): eski holatni o'qish + kassa yozish + operatsiya yozish
-//   2-bosqich:            buyurtmani yangilash
-//   javobdan keyin:       ombor deltasi + audit (`after` — javobni kuttirmaydi)
+//   1-bosqich: eski holatni o'qish (buyurtma yo'q bo'lsa pulga tegilmaydi)
+//   2-bosqich: operatsiya yozish, kassani o'zgartirish
+//   3-bosqich: buyurtmani yangilash (yiqilsa 2-bosqich orqaga qaytariladi)
+//   javobdan keyin: ombor deltasi + audit (`after` — javobni kuttirmaydi)
 //
-// Kassa qiymatlari klientdan ABSOLYUT ko'rinishda keladi (naqd/karta) —
-// ilgarigi /api/kassa POST bilan bir xil semantika, xatti-harakat o'zgarmaydi.
+// Kassaga tushadigan summa `operation`dan olinadi. Eski tablar yuboradigan
+// absolyut `kassa` maydoni o'qilmaydi (@/lib/kassa).
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface PaymentBody {
   holat?: string;
   final?: number;
   paid?: number;
-  kassa?: { naqd: number; karta: number } | null;
   operation?: {
     date: string;
     type: string;
@@ -40,6 +42,9 @@ interface PaymentBody {
 }
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireRole(request, FULL_ACCESS);
+  if (guard.denied) return guard.denied;
+
   try {
     const { id: idStr } = await context.params;
     const id = Number(idStr);
@@ -54,42 +59,58 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       return NextResponse.json({ error: "To'lov uchun ma'lumot yuborilmagan" }, { status: 400 });
     }
 
-    // ── 1-bosqich: bir-biriga bog'liq bo'lmagan uchta ish parallel ketadi ──
-    const [prevRes, kassaRes, opRes] = await Promise.all([
-      // Ombor deltasi uchun buyurtmaning eski holati (update'dan OLDIN o'qilishi shart)
-      // + `final` skidka bilan o'zgarsa foyda/maosh qayta hisoblanishi uchun kerakli maydonlar.
-      supabase.from('orders').select('zaps, holat, srv, total, services, zarplata, pribil').eq('id', id).maybeSingle(),
-      body.kassa
-        ? supabase
-            .from('kassa')
-            .upsert({ id: 1, naqd: body.kassa.naqd, karta: body.kassa.karta, updated_at: new Date().toISOString() })
-            .select()
-            .single()
-        : Promise.resolve({ data: null, error: null }),
-      body.operation
-        ? supabase
-            .from('operations')
-            .insert([{
-              date: body.operation.date,
-              type: body.operation.type,
-              method: body.operation.method || 'naqd',
-              amount: body.operation.amount,
-              category: body.operation.category,
-              comment: body.operation.comment || '',
-              source: body.operation.source || 'buyurtma',
-            }])
-            .select()
-            .single()
-        : Promise.resolve({ data: null, error: null }),
-    ]);
-
-    if (kassaRes.error) {
-      console.error('❌ To\'lov: kassa yangilanmadi:', kassaRes.error);
-      return NextResponse.json({ error: 'Kassa yangilanmadi: ' + kassaRes.error.message }, { status: 500 });
+    // ── 1-bosqich: eski holat ──
+    // Ombor deltasi uchun buyurtmaning eski holati (update'dan OLDIN o'qilishi shart)
+    // + `final` skidka bilan o'zgarsa foyda/maosh qayta hisoblanishi uchun kerakli maydonlar.
+    const prevRes = await supabase
+      .from('orders')
+      .select('zaps, holat, srv, total, services, zarplata, pribil')
+      .eq('id', id)
+      .maybeSingle();
+    if (prevRes.error) {
+      console.error('❌ To\'lov: buyurtma o\'qilmadi:', prevRes.error);
+      return NextResponse.json({ error: 'Buyurtma o\'qilmadi: ' + prevRes.error.message }, { status: 500 });
     }
+    if (!prevRes.data) {
+      return NextResponse.json({ error: 'Buyurtma topilmadi' }, { status: 404 });
+    }
+
+    // ── 2-bosqich: operatsiya va kassa ──
+    const opRes = body.operation
+      ? await supabase
+          .from('operations')
+          .insert([{
+            date: body.operation.date,
+            type: body.operation.type,
+            method: body.operation.method || 'naqd',
+            amount: body.operation.amount,
+            category: body.operation.category,
+            comment: body.operation.comment || '',
+            source: body.operation.source || 'buyurtma',
+          }])
+          .select()
+          .single()
+      : { data: null, error: null };
     if (opRes.error) {
       console.error('❌ To\'lov: operatsiya yozilmadi:', opRes.error);
       return NextResponse.json({ error: 'Operatsiya yozilmadi: ' + opRes.error.message }, { status: 500 });
+    }
+
+    const removeOperation = async () => {
+      const opId = (opRes.data as { id?: number } | null)?.id;
+      if (opId) await supabase.from('operations').delete().eq('id', opId);
+    };
+
+    const delta = body.operation ? operationDelta(body.operation) : null;
+    let kassa: KassaBalance | null = null;
+    if (delta) {
+      try {
+        kassa = await changeKassa(delta);
+      } catch (kassaErr) {
+        console.error('❌ To\'lov: kassa yangilanmadi:', kassaErr);
+        await removeOperation();
+        return NextResponse.json({ error: 'Kassa yangilanmadi' }, { status: 500 });
+      }
     }
 
     // `final` skidka (to'lov paytidagi "Qo'shimcha skidka") bilan pasaytirilganda
@@ -126,7 +147,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       }
     }
 
-    // ── 2-bosqich: buyurtmani yangilash ──
+    // ── 3-bosqich: buyurtmani yangilash ──
     const { data: updated, error: orderErr } = await supabase
       .from('orders')
       .update(orderPatch)
@@ -136,6 +157,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     if (orderErr) {
       console.error('❌ To\'lov: buyurtma yangilanmadi:', orderErr);
+      // Pul buyurtmaga bog'lanmagan holda qolmasin.
+      if (delta) await changeKassa(invertDelta(delta)).catch((e) => console.error('❌ To\'lov: kassa qaytarilmadi:', e));
+      await removeOperation();
       return NextResponse.json({ error: 'Buyurtma yangilanmadi: ' + orderErr.message }, { status: 500 });
     }
 
@@ -157,7 +181,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         action: 'payment',
         entity: 'order',
         entityId: id,
-        details: { changes: orderPatch, kassa: body.kassa ?? undefined, amount: body.operation?.amount },
+        details: { changes: orderPatch, kassa: kassa ?? undefined, amount: body.operation?.amount },
       });
       if (opRes.data) {
         await logAudit({
@@ -170,7 +194,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       }
     });
 
-    return NextResponse.json({ order, kassa: kassaRes.data, operation: opRes.data });
+    return NextResponse.json({ order, kassa, operation: opRes.data });
   } catch (err) {
     console.error("❌ To'lov handler xatosi:", err);
     return NextResponse.json({ error: err instanceof Error ? err.message : "Noto'g'ri so'rov" }, { status: 400 });

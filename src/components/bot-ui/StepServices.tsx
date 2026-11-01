@@ -45,7 +45,7 @@ export default function StepServices({ catalog, bolim, identity, onNext, onPrev 
     })();
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isYog, identity?.workerPhone, identity?.mechanicChatId]);
+  }, [isYog, identity?.token]);
 
   const selectedOilId = useMemo(
     () => store.parts.find((p) => p.source === 'oil_prices')?.id ?? null,

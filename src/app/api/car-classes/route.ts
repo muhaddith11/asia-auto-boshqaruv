@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { normalizeCarKey } from '@/lib/points/norms';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,6 +52,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const guard = await requireSection(req, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await req.json();
     const { brand_asl, car_model_asl, klass, koeffitsient } = body as {
@@ -102,6 +106,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const guard = await requireSection(req, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const id = new URL(req.url).searchParams.get('id');
     if (!id) return NextResponse.json({ ok: false, error: 'id kerak' }, { status: 400 });

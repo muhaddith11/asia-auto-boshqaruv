@@ -44,7 +44,7 @@ export default function StepParts({ catalog, identity, isBoss, bolim, car, onNex
     })();
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isYog, identity?.workerPhone, identity?.mechanicChatId]);
+  }, [isYog, identity?.token]);
 
   const isFilterSelected = (id: number) => store.parts.some((p) => p.source === 'oil_prices' && p.id === id);
   const toggleFilter = (f: OilPrice) => {

@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { startBotPolling, getPollingStatus } from '@/bot-poller';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const guard = await requireSection(request, 'backup');
+  if (guard.denied) return guard.denied;
+
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const startPoller = process.env.START_POLLER;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
@@ -45,7 +49,10 @@ export async function GET() {
   });
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const guard = await requireSection(request, 'backup');
+  if (guard.denied) return guard.denied;
+
   const startPoller = process.env.START_POLLER;
   
   if (startPoller !== 'true') {

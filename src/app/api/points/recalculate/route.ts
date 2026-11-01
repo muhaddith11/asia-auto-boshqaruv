@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { runDailyScoring } from '@/lib/points/scorer';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -12,7 +13,10 @@ export const maxDuration = 60;
 //
 // Nega kerak: Vercel cron'i ishlamay qolsa ham egasi ballni yangilay olsin.
 // Hisoblash idempotent — bir ishni ikki marta yozmaydi, xohlagancha bosish mumkin.
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const guard = await requireSection(request, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const result = await runDailyScoring();
     return NextResponse.json({ ok: true, ...result });

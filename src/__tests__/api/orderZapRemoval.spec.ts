@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
 import type { CapturedCalls, MockResponder } from '../helpers/mockSupabase';
+import { authedRequest } from '../helpers/authRequest';
 
 const mockState = vi.hoisted(() => ({
   responses: {} as Record<string, MockResponder>,
@@ -37,8 +37,7 @@ beforeEach(() => {
   for (const obj of [mockState.responses, mockState.calls, mockState.counters]) {
     for (const key of Object.keys(obj)) delete (obj as Record<string, unknown>)[key];
   }
-  // kassada 1 000 000 naqd, 500 000 karta
-  mockState.responses.kassa = { data: { naqd: 1_000_000, karta: 500_000 }, error: null };
+  mockState.responses['rpc:kassa_ozgartir'] = { data: [{ naqd: 1_115_000, karta: 500_000 }], error: null };
 });
 
 // PATCH: birinchi `orders` so'rovi — eski holatni o'qish, ikkinchisi — update().select().
@@ -50,7 +49,7 @@ function setupPatch(prev: { zaps: unknown[]; holat: string }, after: Record<stri
 }
 
 async function patch(body: unknown) {
-  const req = new NextRequest('http://localhost/api/orders/2163', {
+  const req = authedRequest('http://localhost/api/orders/2163', {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
@@ -58,7 +57,8 @@ async function patch(body: unknown) {
   return route.PATCH(req, { params: Promise.resolve({ id: '2163' }) });
 }
 
-const kassaUpserts = () => (mockState.calls.kassa?.upsert ?? []) as Array<[{ naqd: number; karta: number }]>;
+// Kassa endi absolyut yozilmaydi: bazaga faqat farq (delta) yuboriladi.
+const kassaChanges = () => (mockState.calls.rpc?.kassa_ozgartir ?? []) as Array<[{ p_naqd: number; p_karta: number }]>;
 const opsInserts = () => (mockState.calls.operations?.insert ?? []) as Array<[Array<Record<string, unknown>>]>;
 type ArchiveRow = Record<string, unknown> & { zap: Record<string, unknown> };
 const archiveInserts = () => (mockState.calls.zap_archive?.insert ?? []) as Array<[ArchiveRow[]]>;
@@ -69,8 +69,8 @@ describe('PATCH /api/orders/[id] — rasxod qatori o\'chirilganda kassaga qaytar
     const res = await patch({ zaps: [filtr], holat: 'tulanmagan' });
     expect(res.status).toBe(200);
 
-    expect(kassaUpserts()).toHaveLength(1);
-    expect(kassaUpserts()[0][0]).toMatchObject({ id: 1, naqd: 1_015_000, karta: 500_000 });
+    expect(kassaChanges()).toHaveLength(1);
+    expect(kassaChanges()[0][0]).toEqual({ p_naqd: 15_000, p_karta: 0 });
 
     expect(opsInserts()).toHaveLength(1);
     expect(opsInserts()[0][0][0]).toMatchObject({ type: 'income', method: 'naqd', amount: 15000, source: 'tizim' });
@@ -81,44 +81,43 @@ describe('PATCH /api/orders/[id] — rasxod qatori o\'chirilganda kassaga qaytar
   it('bir nechta rasxod olib tashlansa — jami summa bir marta qaytadi', async () => {
     setupPatch({ zaps: [taxi, yoqilgi, filtr], holat: 'tulanmagan' });
     await patch({ zaps: [filtr] });
-    expect(kassaUpserts()).toHaveLength(1);
-    expect(kassaUpserts()[0][0].naqd).toBe(1_115_000);
+    expect(kassaChanges()).toHaveLength(1);
+    expect(kassaChanges()[0][0].p_naqd).toBe(115_000);
   });
 
   it('oddiy zapchast olib tashlansa kassaga tegilmaydi', async () => {
     setupPatch({ zaps: [filtr, taxi], holat: 'tulanmagan' });
     await patch({ zaps: [taxi] });
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
     expect(opsInserts()).toHaveLength(0);
   });
 
   it('rasxod joyida qolsa (faqat "alohida"/miqdor o\'zgardi) — kassaga tegilmaydi', async () => {
     setupPatch({ zaps: [filtr, taxi], holat: 'tulanmagan' });
     await patch({ zaps: [{ ...filtr, alohida: true, qty: 2 }, { ...taxi, vaqt: undefined }] });
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
     expect(archiveInserts()).toHaveLength(0);
   });
 
   it('shu saqlashning o\'zida bekor qilinsa — pul FAQAT BIR MARTA qaytadi (butun eski rasxod, ikki marta emas)', async () => {
     setupPatch({ zaps: [taxi, yoqilgi], holat: 'tulanmagan' }, { holat: 'bekor qilingan' });
     await patch({ zaps: [yoqilgi], holat: 'bekor qilingan' });
-    expect(kassaUpserts()).toHaveLength(1);
+    expect(kassaChanges()).toHaveLength(1);
     // Bekor qilish yo'li eski ro'yxatdagi BARCHA rasxodni (15 000 + 100 000) qaytaradi.
-    expect(kassaUpserts()[0][0].naqd).toBe(1_115_000);
+    expect(kassaChanges()[0][0].p_naqd).toBe(115_000);
     expect(opsInserts()).toHaveLength(1);
   });
 
   it('allaqachon bekor qilingan buyurtmadan rasxod olib tashlansa — qayta qaytarilmaydi (bekor qilishda qaytgan)', async () => {
     setupPatch({ zaps: [taxi], holat: 'bekor qilingan' }, { holat: 'bekor qilingan' });
     await patch({ zaps: [], holat: 'bekor qilingan' });
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
     expect(opsInserts()).toHaveLength(0);
   });
 
   it('kassa yozilmasa (xatolik) saqlash baribir muvaffaqiyatli, arxiv esa yoziladi', async () => {
     setupPatch({ zaps: [taxi], holat: 'tulanmagan' });
-    // kassa: o'qish ishlaydi, upsert xato beradi
-    mockState.responses.kassa = { data: { naqd: 1_000_000, karta: 0 }, error: { message: 'kassa down' } };
+    mockState.responses['rpc:kassa_ozgartir'] = { data: null, error: { message: 'kassa down' } };
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const res = await patch({ zaps: [] });
     errSpy.mockRestore();
@@ -161,7 +160,7 @@ describe('PATCH /api/orders/[id] — olib tashlangan qatorlar arxivga yoziladi',
     setupPatch({ zaps: [filtr, taxi], holat: 'tulanmagan' });
     await patch({ holat: 'tulangan' });
     expect(archiveInserts()).toHaveLength(0);
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
   });
 
   it('arxivga yozib bo\'lmasa ham buyurtma saqlanadi (asosiy amal bloklanmaydi)', async () => {
@@ -177,7 +176,7 @@ describe('PATCH /api/orders/[id] — olib tashlangan qatorlar arxivga yoziladi',
 
 describe('DELETE /api/orders/[id] — buyurtma o\'chirilganda zapchastlar arxivlanadi', () => {
   async function del() {
-    const req = new NextRequest('http://localhost/api/orders/2163', { method: 'DELETE' });
+    const req = authedRequest('http://localhost/api/orders/2163', { method: 'DELETE' });
     return route.DELETE(req, { params: Promise.resolve({ id: '2163' }) });
   }
 
@@ -201,7 +200,7 @@ describe('DELETE /api/orders/[id] — buyurtma o\'chirilganda zapchastlar arxivl
 
 describe('DELETE /api/orders/[id] — rasxod puli kassaga qaytadi', () => {
   async function del() {
-    const req = new NextRequest('http://localhost/api/orders/2163', { method: 'DELETE' });
+    const req = authedRequest('http://localhost/api/orders/2163', { method: 'DELETE' });
     return route.DELETE(req, { params: Promise.resolve({ id: '2163' }) });
   }
 
@@ -210,8 +209,8 @@ describe('DELETE /api/orders/[id] — rasxod puli kassaga qaytadi', () => {
     const res = await del();
     expect(res.status).toBe(200);
 
-    expect(kassaUpserts()).toHaveLength(1);
-    expect(kassaUpserts()[0][0]).toMatchObject({ id: 1, naqd: 1_115_000, karta: 500_000 });
+    expect(kassaChanges()).toHaveLength(1);
+    expect(kassaChanges()[0][0]).toEqual({ p_naqd: 115_000, p_karta: 0 });
     expect(opsInserts()).toHaveLength(1);
     expect(opsInserts()[0][0][0]).toMatchObject({ type: 'income', method: 'naqd', amount: 115_000, source: 'tizim' });
     expect(String(opsInserts()[0][0][0].comment)).toContain('#2163');
@@ -220,7 +219,7 @@ describe('DELETE /api/orders/[id] — rasxod puli kassaga qaytadi', () => {
   it('rasxodsiz buyurtma o\'chirilsa — kassaga tegilmaydi', async () => {
     mockState.responses.orders = { data: [{ ...orderRow, zaps: [filtr] }], error: null };
     await del();
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
     expect(opsInserts()).toHaveLength(0);
   });
 
@@ -229,14 +228,14 @@ describe('DELETE /api/orders/[id] — rasxod puli kassaga qaytadi', () => {
       mockState.responses.orders = { data: [{ ...orderRow, holat, zaps: [taxi] }], error: null };
       await del();
     }
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
     expect(opsInserts()).toHaveLength(0);
   });
 
   it('to\'langan buyurtma o\'chirilsa — qaytarilmaydi (mijoz to\'lovi rasxodni qoplagan)', async () => {
     mockState.responses.orders = { data: [{ ...orderRow, holat: 'tulangan', zaps: [taxi] }], error: null };
     await del();
-    expect(kassaUpserts()).toHaveLength(0);
+    expect(kassaChanges()).toHaveLength(0);
     expect(opsInserts()).toHaveLength(0);
   });
 });

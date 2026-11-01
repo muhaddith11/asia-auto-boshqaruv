@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const guard = await requireSection(request, 'backup');
+  if (guard.denied) return guard.denied;
+
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
     return NextResponse.json({ ok: false, error: 'TELEGRAM_BOT_TOKEN missing' });

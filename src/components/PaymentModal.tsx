@@ -68,11 +68,6 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
     const newKassaPart = Math.min(newPaidTotal, kassaEligibleTotal);
     const kassaIncrementNow = Math.max(0, newKassaPart - prevKassaPart);
 
-    const prevKassa = useStore.getState().kassa;
-    const nextKassa = kassaIncrementNow > 0
-      ? { ...prevKassa, [method]: prevKassa[method] + kassaIncrementNow }
-      : null;
-
     const op = kassaIncrementNow > 0 ? {
       date: new Date().toISOString(), // To'liq vaqt (ISO format)
       type: 'income' as const,
@@ -85,7 +80,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
 
     try {
       // Buyurtma + kassa + operatsiya — BITTA so'rovda (uchta ketma-ket
-      // borib-kelish o'rniga). Server ichida ham parallel bajariladi.
+      // borib-kelish o'rniga). Kassaga tushadigan summani server `operation`dan oladi.
       const res = await fetch(`/api/orders/${order.id}/payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,7 +88,6 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
           holat: newHolat,
           final: totalToPay,
           paid: newPaidTotal,
-          kassa: nextKassa,
           operation: op,
         })
       });

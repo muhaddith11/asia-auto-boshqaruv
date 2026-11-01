@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { logAudit } from '@/lib/audit';
+import { FULL_ACCESS, requireRole, requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const guard = await requireSection(request, 'reports');
+  if (guard.denied) return guard.denied;
+
   const { id } = await params;
   const { data, error } = await supabase.from('operations').select('*').eq('id', id).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -18,6 +22,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const guard = await requireRole(request, FULL_ACCESS);
+  if (guard.denied) return guard.denied;
+
   const { id } = await params;
   const { error } = await supabase.from('operations').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -5,8 +5,8 @@ import type { Role } from './auth';
 // import qilinmasligi kerak — faqat /api/auth route'larida ishlatiladi.
 // Shu sababli parollar brauzer bundle'iga tushmaydi.
 //
-// Parolni env orqali ham berish mumkin (masalan OWNER_PASSWORD), aks holda
-// quyidagi default ishlatiladi. Ishlatishdan oldin parollarni o'zgartiring!
+// Parollar FAQAT env'dan olinadi: OWNER_PASSWORD, BOSS_PASSWORD, PARTNER_PASSWORD,
+// WORKER_PASSWORD. Paroli berilmagan akkaunt bilan kirib bo'lmaydi.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface ServerAccount {
@@ -17,15 +17,16 @@ export interface ServerAccount {
 }
 
 export const ACCOUNTS: ServerAccount[] = [
-  { login: 'asiaauto', parol: process.env.OWNER_PASSWORD  || 'salom123',  role: 'egasi',  ism: 'Egasi' },
+  { login: 'asiaauto', parol: process.env.OWNER_PASSWORD || '', role: 'egasi', ism: 'Egasi' },
   // Boshliq — egasi bilan bir xil huquq, ixcham ko'rinish. BOSS_PASSWORD berilmasa
-  // egasi paroli ishlaydi — shu sabab yangi (zaifroq) standart parol qo'shilmaydi.
-  { login: 'boshliq',  parol: process.env.BOSS_PASSWORD || process.env.OWNER_PASSWORD || 'salom123', role: 'boshliq', ism: 'Boshliq' },
-  { login: 'sherik',   parol: process.env.PARTNER_PASSWORD || 'sherik123', role: 'sherik', ism: 'Sherik' },
-  { login: 'xodim',    parol: process.env.WORKER_PASSWORD  || 'xodim123',  role: 'xodim',  ism: 'Xodim' },
+  // egasi paroli ishlaydi.
+  { login: 'boshliq',  parol: process.env.BOSS_PASSWORD || process.env.OWNER_PASSWORD || '', role: 'boshliq', ism: 'Boshliq' },
+  { login: 'sherik',   parol: process.env.PARTNER_PASSWORD || '', role: 'sherik', ism: 'Sherik' },
+  { login: 'xodim',    parol: process.env.WORKER_PASSWORD || '', role: 'xodim', ism: 'Xodim' },
 ];
 
 export function findAccount(login: string, parol: string): ServerAccount | null {
+  if (!parol) return null;
   const l = (login || '').trim().toLowerCase();
   return ACCOUNTS.find(a => a.login.toLowerCase() === l && a.parol === parol) ?? null;
 }

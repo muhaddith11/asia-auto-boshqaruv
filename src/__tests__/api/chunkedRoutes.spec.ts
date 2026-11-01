@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { authedRequest } from '../helpers/authRequest';
 import type { MockResponder, MockCallContext, CapturedCalls } from '../helpers/mockSupabase';
 
 /**
@@ -23,7 +23,8 @@ vi.mock('@/lib/supabaseClient', async () => {
 const { GET: ordersGET } = await import('@/app/api/orders/route');
 const { GET: operationsGET } = await import('@/app/api/operations/route');
 const { GET: servicesGET } = await import('@/app/api/services/route');
-const { GET: catalogGET, invalidateCatalogCache } = await import('@/app/api/bot-ui/catalog/route');
+const { GET: catalogGET } = await import('@/app/api/bot-ui/catalog/route');
+const { invalidateCatalogCache } = await import('@/lib/catalogCache');
 
 beforeEach(() => {
   for (const key of Object.keys(mockState.responses)) delete mockState.responses[key];
@@ -57,7 +58,7 @@ describe('/api/orders GET — bo\'laklab yuklash', () => {
     const t = chunkedTable(2500, (i) => ({ id: i, total: 100, final: 90 }));
     mockState.responses.orders = t.responder;
 
-    const res = await ordersGET(new NextRequest('http://localhost/api/orders'));
+    const res = await ordersGET(authedRequest('http://localhost/api/orders'));
     expect(res.status).toBe(200);
     const json = await res.json();
 
@@ -78,7 +79,7 @@ describe('/api/orders GET — bo\'laklab yuklash', () => {
     const t = chunkedTable(3, (i) => ({ id: i, total: 0, final: 0 }));
     mockState.responses.orders = t.responder;
 
-    const json = await (await ordersGET(new NextRequest('http://localhost/api/orders'))).json();
+    const json = await (await ordersGET(authedRequest('http://localhost/api/orders'))).json();
     expect(json).toHaveLength(3);
     expect(t.seen).toHaveLength(1);
   });
@@ -88,14 +89,14 @@ describe('/api/orders GET — bo\'laklab yuklash', () => {
       ? { data: Array.from({ length: 1000 }, (_, i) => ({ id: i })), error: null, count: 2000 }
       : { data: null, error: { message: 'chunk failed' } };
 
-    const res = await ordersGET(new NextRequest('http://localhost/api/orders'));
+    const res = await ordersGET(authedRequest('http://localhost/api/orders'));
     expect(res.status).toBe(500);
     expect((await res.json()).error).toBe('chunk failed');
   });
 
   it('page parametri bilan eski pagination xulqi buzilmagan', async () => {
     mockState.responses.orders = { data: [{ id: 1, total: 100, final: 100 }], error: null, count: 45 };
-    const json = await (await ordersGET(new NextRequest('http://localhost/api/orders?page=2&limit=10'))).json();
+    const json = await (await ordersGET(authedRequest('http://localhost/api/orders?page=2&limit=10'))).json();
     expect(json.total).toBe(45);
     expect(json.totalPages).toBe(5);
   });
@@ -106,7 +107,7 @@ describe('/api/operations GET — bo\'laklab yuklash', () => {
     const t = chunkedTable(1808, (i) => ({ id: i, amount: i, source: 'manual' }));
     mockState.responses.operations = t.responder;
 
-    const json = await (await operationsGET(new NextRequest('http://localhost/api/operations'))).json();
+    const json = await (await operationsGET(authedRequest('http://localhost/api/operations'))).json();
     expect(json).toHaveLength(1808);
     expect(json.map((r: any) => r.id)).toEqual(Array.from({ length: 1808 }, (_, i) => i));
     expect(t.seen).toHaveLength(2);
@@ -114,7 +115,7 @@ describe('/api/operations GET — bo\'laklab yuklash', () => {
 
   it('bo\'lak xatosi 500 qaytaradi', async () => {
     mockState.responses.operations = { data: null, error: { message: 'timeout' } };
-    const res = await operationsGET(new NextRequest('http://localhost/api/operations'));
+    const res = await operationsGET(authedRequest('http://localhost/api/operations'));
     expect(res.status).toBe(500);
   });
 });
@@ -124,7 +125,7 @@ describe('/api/services GET — bo\'laklab yuklash', () => {
     const t = chunkedTable(4164, (i) => ({ id: i, name: `xizmat-${i}`, brand: 'UMUMIY' }));
     mockState.responses.services_list = t.responder;
 
-    const json = await (await servicesGET(new Request('http://localhost/api/services'))).json();
+    const json = await (await servicesGET(authedRequest('http://localhost/api/services'))).json();
     expect(json).toHaveLength(4164);
     expect(json[0].name).toBe('xizmat-0');
     expect(json[4163].name).toBe('xizmat-4163');
@@ -141,13 +142,13 @@ describe('/api/services GET — bo\'laklab yuklash', () => {
       count: ctx.withCount ? 1000 : undefined,
     });
 
-    const json = await (await servicesGET(new Request('http://localhost/api/services'))).json();
+    const json = await (await servicesGET(authedRequest('http://localhost/api/services'))).json();
     expect(json).toHaveLength(10);
   });
 
   it('xatolikda 500 qaytaradi', async () => {
     mockState.responses.services_list = { data: null, error: { message: 'db down' } };
-    const res = await servicesGET(new Request('http://localhost/api/services'));
+    const res = await servicesGET(authedRequest('http://localhost/api/services'));
     expect(res.status).toBe(500);
   });
 });

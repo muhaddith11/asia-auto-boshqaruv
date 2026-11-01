@@ -4,6 +4,7 @@ import { Telegraf } from 'telegraf';
 import { logAudit } from '@/lib/audit';
 import { applyStockDelta } from '@/lib/stock';
 import { fetchAllRows } from '@/lib/fetchAllRows';
+import { requireSection, isPaymentChangeDenied, PAYMENT_DENIED_MESSAGE } from '@/lib/routeGuard';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -45,6 +46,9 @@ function mapAppToDB(body: any) {
 }
 
 export async function GET(request: NextRequest) {
+  const guard = await requireSection(request, 'orders');
+  if (guard.denied) return guard.denied;
+
   const sp = request.nextUrl.searchParams;
   const from = sp.get('from');
   const to = sp.get('to');
@@ -97,6 +101,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireSection(request, 'orders');
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await request.json();
 
@@ -116,6 +123,10 @@ export async function POST(request: NextRequest) {
         dbBody[key] = dbBodyRaw[key];
       }
     });
+
+    if (isPaymentChangeDenied(guard.session.role, dbBody, null)) {
+      return NextResponse.json({ error: PAYMENT_DENIED_MESSAGE }, { status: 403 });
+    }
 
     const { data, error } = await supabase.from('orders').insert([dbBody]).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
