@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/store/useStore';
 import { computeDailyReport } from '@/lib/dailyReport';
+import { kassaFoyda } from '@/lib/realizedProfit';
 import { isCancelledHolat } from '@/lib/stock';
 import AiForecast from '@/components/AiForecast';
 import { ClipboardList, Wallet, TrendingUp, TrendingDown, CreditCard, Receipt, Target, CheckCircle2 } from 'lucide-react';
@@ -47,8 +48,9 @@ export default function BossDashboard() {
         // "Tayyor" — botda chek chiqarilgan, mijozga topshirishga/to'lovga tayyor.
         if (b.bosqich === 'tayyor') readyCount++;
         // Potentsial foyda — hali to'lanmagan, faol buyurtmalardagi foyda (pribil).
-        // Mijoz to'lasa, shu summa ishxona foydasiga qo'shiladi.
-        potentialProfit += Math.max(0, Number(b.pribil) || 0);
+        // Mijoz to'lasa, shu summa ishxona foydasiga qo'shiladi (alohida zapchast
+        // foydasi kirmaydi — kassaFoyda).
+        potentialProfit += kassaFoyda(b);
       }
       const qarz = (b.final || 0) - (b.paid || 0);
       if (b.holat !== 'tulangan' && qarz > 0) {
