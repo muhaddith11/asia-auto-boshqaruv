@@ -25,13 +25,22 @@
 // Misol (#1439 Zeekr 007): foyda 21 720 600, 2026-09-28 da 20 000 000
 // to'langan → hisobga 20 000 000 kiradi → sherik (30%) 6 000 000 oladi.
 //
+// ALOHIDA ZAPCHAST (qaror, 2026-11-02): "alohida" belgilangan zapchast puli
+// kassaga tushmaydi (zapPool.ts), shuning uchun uning foydasi sherik ulushiga
+// KIRMAYDI — kassaFoyda() buyurtma foydasining faqat kassadagi qismini beradi.
+//
 // Test: realizedProfit.spec.ts
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { zapNarx, type BossZapLike } from './bossProfit';
 import { isCancelledHolat } from './stock';
 
 // Qisman to'lovlar shu kundan (va keyin) hisobga olinadi — YYYY-MM-DD.
 export const QISMAN_TOLOV_BOSHLANISHI = '2026-09-28';
+
+export interface RealizedZapLike extends BossZapLike {
+  sebestoimost?: number;
+}
 
 export interface RealizedProfitOrderLike {
   id?: number | string;
@@ -40,6 +49,8 @@ export interface RealizedProfitOrderLike {
   final?: number;
   total?: number;
   paid?: number;
+  zarplata?: number;
+  zaps?: RealizedZapLike[] | null;
 }
 
 export interface PaymentOpLike {
@@ -91,6 +102,22 @@ export function buildQismanTolovMap(
   return map;
 }
 
+// Buyurtma foydasining KASSAGA TUSHGAN qismi. Foyda kassaga tushadigan summadan
+// (yakuniy narx − alohida zapchast puli − usta ulushi − kassadagi zapchast
+// tannarxi) oshmaydi. `min` shart: 2026-08-29 gacha yozilgan foydadan alohida
+// zapchast narxi allaqachon ayirilgan, ularni ikkinchi marta ayirib bo'lmaydi.
+export function kassaFoyda(order: RealizedProfitOrderLike | null | undefined): number {
+  const pribil = Math.max(0, Number(order?.pribil) || 0);
+  const zaps = (order?.zaps || []).filter((z): z is RealizedZapLike => !!z);
+  if (!zaps.some((z) => z.alohida === true)) return pribil;
+
+  const alohidaPuli = zaps.reduce((s, z) => (z.alohida === true ? s + zapNarx(z) : s), 0);
+  const kassaTannarx = zaps.reduce((s, z) => (z.alohida === true ? s : s + (Number(z.sebestoimost) || 0)), 0);
+  const final = Number(order?.final ?? order?.total) || 0;
+  const zarplata = Number(order?.zarplata) || 0;
+  return Math.min(pribil, Math.max(0, final - alohidaPuli - zarplata - kassaTannarx));
+}
+
 // Shu buyurtmadan foyda hisobiga kiradigan summa.
 // `qismanTolov` — buildQismanTolovMap'dan olingan, sana chegarasidan keyingi
 // to'lov summasi. Berilmasa (yoki 0) qisman to'lov hisobga olinmaydi.
@@ -100,8 +127,8 @@ export function realizedProfit(
   qismanTolov?: number,
 ): number {
   if (!order || isCancelledHolat(order.holat)) return 0;
-  const pribil = Math.max(0, Number(order.pribil) || 0);
-  if (pribil === 0) return 0;
-  if (order.holat === 'tulangan') return pribil;
-  return Math.min(Math.max(0, Number(qismanTolov) || 0), pribil);
+  const foyda = kassaFoyda(order);
+  if (foyda === 0) return 0;
+  if (order.holat === 'tulangan') return foyda;
+  return Math.min(Math.max(0, Number(qismanTolov) || 0), foyda);
 }

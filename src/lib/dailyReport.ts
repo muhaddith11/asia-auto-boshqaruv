@@ -25,6 +25,7 @@
 // o'zgartirsangiz testlar buziladi — avval biznes qoidasini tasdiqlang.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { kassaFoyda, type RealizedZapLike } from './realizedProfit';
 import { isCancelledHolat } from './stock';
 
 // Ulush olmaydigan xodimlar oyligining kunlik ulushi (boshliq ko'rsatmasi).
@@ -45,6 +46,8 @@ export interface DailyOrderLike {
   zap?: number;
   final?: number;
   total?: number;
+  zarplata?: number;
+  zaps?: RealizedZapLike[] | null;
   services: DailyServiceLike[];
 }
 
@@ -206,11 +209,9 @@ export function computeDailyReport(
   const workOrders = uniqueOrders
     .filter((b) => !isCancelledHolat(b.holat) && b.sana === selectedDate);
 
-  // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi
-  const yalpiFoyda = dayOrders.reduce(
-    (s, b) => s + Math.max(0, Number(b.pribil) || 0),
-    0,
-  );
+  // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi.
+  // Alohida zapchast foydasi kirmaydi: u pul kassaga tushmagan (kassaFoyda).
+  const yalpiFoyda = dayOrders.reduce((s, b) => s + kassaFoyda(b), 0);
 
   // 2) "Boshqa" kategoriyali kirimlar sherik/ishxona foydasiga qo'shiladi
   const boshqaKirim = ishxonaOperatsiyalar

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  buildQismanTolovMap, realizedProfit, QISMAN_TOLOV_BOSHLANISHI,
+  buildQismanTolovMap, kassaFoyda, realizedProfit, QISMAN_TOLOV_BOSHLANISHI,
   type PaymentOpLike,
 } from '@/lib/realizedProfit';
 
@@ -85,5 +85,60 @@ describe('realizedProfit', () => {
     expect(realizedProfit({ holat: 'tulangan', pribil: -500000, final: 100000 })).toBe(0);
     expect(realizedProfit({ holat: 'tulangan', final: 100000 })).toBe(0);
     expect(realizedProfit(null)).toBe(0);
+  });
+});
+
+// Qaror (2026-11-02): "alohida" zapchast puli kassaga tushmaydi, shuning uchun
+// uning foydasi sherik ulushiga KIRMAYDI. Raqamlar haqiqiy buyurtmalardan.
+describe('realizedProfit — alohida zapchast', () => {
+  const svecha = { narx: 150000, sebestoimost: 72000, alohida: true };
+
+  it('#2609: faqat alohida zapchast sotilgan — foyda hisobga kirmaydi', () => {
+    const b = { holat: 'tulangan', pribil: 78000, final: 150000, zarplata: 0, zaps: [svecha] };
+    expect(kassaFoyda(b)).toBe(0);
+    expect(realizedProfit(b)).toBe(0);
+  });
+
+  it('#2608: xizmat foydasi qoladi, zapchast ustamasi (39 200) chiqadi', () => {
+    const b = {
+      holat: 'tulangan', pribil: 187700, final: 210000, zarplata: 1500,
+      zaps: [
+        { narx: 50000, sebestoimost: 16800, alohida: true },
+        { narx: 10000, sebestoimost: 4000, alohida: true },
+      ],
+    };
+    expect(realizedProfit(b)).toBe(148500);
+  });
+
+  it('#2600: rasxod tannarxi ayirilgan holda qoladi, tannarxsiz alohida to\'liq chiqadi', () => {
+    const b = {
+      holat: 'tulangan', pribil: 978000, final: 1150000, zarplata: 102000,
+      zaps: [
+        { narx: 70000, sebestoimost: 70000, rasxod: true },
+        { narx: 400000, sebestoimost: 0, alohida: true },
+      ],
+    };
+    expect(realizedProfit(b)).toBe(578000);
+  });
+
+  it('#1890: eski buyurtma foydasida zapchast puli yo\'q — ikkinchi marta ayirilmaydi', () => {
+    const b = {
+      holat: 'tulangan', pribil: 127500, final: 550000, zarplata: 22500,
+      zaps: [{ narx: 400000, sebestoimost: 0, alohida: true }],
+    };
+    expect(realizedProfit(b)).toBe(127500);
+  });
+
+  it('qisman to\'lov kassa foydasidan oshmaydi', () => {
+    const b = { holat: 'tulanmagan', pribil: 187700, final: 210000, zarplata: 1500,
+      zaps: [{ narx: 60000, sebestoimost: 20800, alohida: true }] };
+    expect(realizedProfit(b, 200000)).toBe(148500);
+    expect(realizedProfit(b, 100000)).toBe(100000);
+  });
+
+  it('alohida zapchast bo\'lmasa foyda aynan saqlanadi', () => {
+    const b = { holat: 'tulangan', pribil: 500000, final: 800000, zarplata: 100000,
+      zaps: [{ narx: 300000, sebestoimost: 200000 }] };
+    expect(realizedProfit(b)).toBe(500000);
   });
 });

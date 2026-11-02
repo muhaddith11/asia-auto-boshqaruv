@@ -230,6 +230,20 @@ describe('computeDailyReport', () => {
   it('eksport konstantasi 600 000', () => {
     expect(KUNLIK_BELGILANGAN_XARAJAT).toBe(600_000);
   });
+
+  it("alohida zapchast foydasi kassaga tushmagani uchun yalpi foydaga kirmaydi", () => {
+    const orders = [
+      order(2609, DAY, 78_000, [], {
+        final: 150_000, zarplata: 0,
+        zaps: [{ narx: 150_000, sebestoimost: 72_000, alohida: true }],
+      }),
+      order(10, DAY, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }]),
+    ];
+    const r = computeDailyReport(orders, [], [sherik(2, 30)], DAY, 0);
+    expect(r.ordersCount).toBe(2);
+    expect(r.yalpiFoyda).toBe(1_200_000);
+    expect(r.sherikUlushiJami).toBe(360_000);
+  });
 });
 
 // ── To'lov sanasi (kassa asosida) — buyurtma yaratilgan emas, to'langan kuni ──
