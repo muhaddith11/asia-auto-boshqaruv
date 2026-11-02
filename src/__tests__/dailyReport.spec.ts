@@ -11,7 +11,7 @@ import {
 } from '@/lib/dailyReport';
 
 // Bu testlar kundalik hisob-kitob mantig'ini "muzlatadi". Biznes qoidasi:
-//   Kunlik sof foyda = Σpribil(bugun to'langan) + Boshqa kirim − xarajat − 600 000
+//   Kunlik sof foyda = Σfoyda(bugun tushgan puldan) + Boshqa kirim − xarajat − 600 000
 //   Sherik ulushi = max(0, sof foyda) × foiz%;  Ishxona = sof foyda − sherik ulushi
 //   Usta ishlab topgani = zarplata × (final−zap)/srv  (chegirma proporsional)
 
@@ -60,7 +60,7 @@ describe('computePeriodFoyda', () => {
   const FROM = '2026-07-01';
   const TO = '2026-07-31';
 
-  it("to'langan buyurtmalar foydasini yakuniy to'lov kuni bo'yicha yig'adi", () => {
+  it("foyda pul tushgan kunlarga bo'linadi: oyma-oy yig'indisi buyurtma foydasiga teng (#2587)", () => {
     const orders = [
       order(1, '2026-06-30', 4_800_000, []),            // iyunda ochilgan, iyulda yopilgan
       order(2, DAY, 300_000, []),
@@ -72,7 +72,33 @@ describe('computePeriodFoyda', () => {
       payOp(2, DAY),
       payOp(3, '2026-06-20'),
     ];
-    expect(computePeriodFoyda(orders, ops, FROM, TO)).toBe(5_100_000);
+    expect(computePeriodFoyda(orders, ops, FROM, TO)).toBe(2_700_000);
+    expect(computePeriodFoyda(orders, ops, '2026-06-01', '2026-06-30')).toBe(3_300_000);
+    expect(computePeriodFoyda(orders, ops, '', '')).toBe(6_000_000);
+  });
+
+  it("buyurtma foydasi tugagach tushgan pul foydaga qo'shilmaydi", () => {
+    const orders = [order(1, OTHER, 1_000_000, [], { final: 2_000_000 })];
+    const ops = [payOp(1, OTHER, 1_500_000), payOp(1, DAY, 500_000)];
+    expect(computePeriodFoyda(orders, ops, OTHER, OTHER)).toBe(1_000_000);
+    expect(computePeriodFoyda(orders, ops, DAY, DAY)).toBe(0);
+  });
+
+  it("qisman to'langan ochiq buyurtmaning tushgan puli o'sha kuni foydaga kiradi (#1439)", () => {
+    const orders = [order(1439, OTHER, 21_720_600, [], { holat: 'tulanmagan', final: 30_350_000 })];
+    expect(computePeriodFoyda(orders, [payOp(1439, DAY, 20_000_000)], FROM, TO)).toBe(20_000_000);
+  });
+
+  it("to'liq to'langan buyurtmada to'lovdan ortgan foyda oxirgi to'lov kuniga tushadi", () => {
+    const orders = [order(1, OTHER, 900_000, [], { final: 1_000_000 })];
+    const ops = [payOp(1, OTHER, 500_000), payOp(1, DAY, 100_000)];
+    expect(computePeriodFoyda(orders, ops, OTHER, OTHER)).toBe(500_000);
+    expect(computePeriodFoyda(orders, ops, DAY, DAY)).toBe(400_000);
+  });
+
+  it("puli tushgandan keyin bekor qilingan buyurtma kirmaydi", () => {
+    const orders = [order(1, DAY, 300_000, [], { holat: 'bekor qilingan' })];
+    expect(computePeriodFoyda(orders, [payOp(1, DAY)], FROM, TO)).toBe(0);
   });
 
   it("to'lanmagan va bekor qilingan buyurtma kirmaydi", () => {
@@ -328,6 +354,14 @@ describe('computeDailyReport — to\'lov sanasi (cash basis)', () => {
 
     expect(computeDailyReport(orders, ops, workers, DAY).ordersCount).toBe(0);
     expect(computeDailyReport(orders, ops, workers, NEXT).ordersCount).toBe(1);
+  });
+
+  it('bir necha to\'lov — foyda har kunga o\'sha kungi puldan yoziladi', () => {
+    const orders = [order(35, OTHER, 1_200_000, [{ workerId: 1, narx: 2_000_000, zarplata: 800_000 }])];
+    const ops = [payOp(35, DAY, 1_000_000), payOp(35, NEXT, 1_000_000)];
+
+    expect(computeDailyReport(orders, ops, workers, DAY).yalpiFoyda).toBe(1_000_000);
+    expect(computeDailyReport(orders, ops, workers, NEXT).yalpiFoyda).toBe(200_000);
   });
 
   it('to\'lov operatsiyasi orderId maydoni orqali ham bog\'lanadi (comment\'siz)', () => {
