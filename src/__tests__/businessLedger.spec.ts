@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { buildLedgerRows, type LedgerOpLike, type LedgerOrderLike, type LedgerSalaryLike, type LedgerWorkerLike } from '@/lib/businessLedger';
+import { buildLedgerRows, computeXarajatJami, type LedgerOpLike, type LedgerOrderLike, type LedgerSalaryLike, type LedgerWorkerLike } from '@/lib/businessLedger';
 
 // Bu testlar /reports/business (Ishxona bo'yicha) va boshliqning buyurtma-markazli
 // hisoboti IKKALASI ham ishlatadigan qator qurish mantig'ini "muzlatadi". Ikkala
-// ko'rinish ham shu funksiyadan foydalanadi — shuning uchun ularning
-// Daromad/Xarajat raqamlari har doim bir xil bo'lishi kafolatlanadi.
+// ko'rinish ham shu funksiyadan foydalanadi — shuning uchun ularning qatorlari
+// va kirimi har doim bir xil bo'lishi kafolatlanadi.
 
 const op = (overrides: Partial<LedgerOpLike>): LedgerOpLike => ({
   id: 1, type: 'income', amount: 1000, date: '2026-09-01', ...overrides,
@@ -13,7 +13,51 @@ const order = (overrides: Partial<LedgerOrderLike>): LedgerOrderLike => ({
   id: 1, holat: 'tulangan', sana: '2026-09-01', final: 1000, ...overrides,
 });
 
+describe('computeXarajatJami', () => {
+  const FROM = '2026-11-01';
+  const TO = '2026-11-30';
+  const ops: LedgerOpLike[] = [
+    op({ id: 1, type: 'expense', amount: 6960000, category: 'Ishxona', date: '2026-11-02' }),
+    op({ id: 2, type: 'expense', amount: 70000, category: "Buyurtma bo'yicha to'lov", comment: 'Rasxod: Pampers (Buyurtma #2600)', date: '2026-11-02' }),
+    op({ id: 3, type: 'expense', amount: 500000, category: 'Aylanmadan tashqari', date: '2026-11-02' }),
+    op({ id: 4, type: 'income', amount: 8460000, category: "Buyurtma to'lovi", date: '2026-11-02' }),
+    op({ id: 5, type: 'transfer', amount: 1000000, date: '2026-11-02' }),
+    op({ id: 6, type: 'expense', amount: 9000000, category: 'Ishxona', date: '2026-10-31' }),
+  ];
+  const salaries: LedgerSalaryLike[] = [
+    { id: 1, xodimId: 1, summa: 2040000, method: 'naqd', sana: '2026-11-02' },
+    { id: 2, xodimId: 1, summa: 300000, method: 'shtraf', sana: '2026-11-02' },
+    { id: 3, xodimId: 1, summa: 400000, method: 'tashqi', sana: '2026-11-02' },
+  ];
+
+  it("noyabr raqamlari: hamma chiqim yig'iladi, kirim va perevod kirmaydi", () => {
+    expect(computeXarajatJami(ops, salaries, FROM, TO)).toEqual({
+      ishxona: 6960000, ishXaqi: 2040000, rasxod: 70000, tashqari: 500000, jami: 9570000,
+    });
+  });
+
+  it("muddat berilmasa — butun tarix", () => {
+    expect(computeXarajatJami(ops, salaries, '', '').jami).toBe(18570000);
+  });
+});
+
 describe('buildLedgerRows', () => {
+  it("to'lovsiz buyurtmaning alohida zapchast puli kirimga yozilmaydi (#2609)", () => {
+    const rows = buildLedgerRows(
+      [order({ id: 2609, final: 150000, zaps: [{ nom: 'Svecha', narx: 150000, alohida: true }] })], [], [], [],
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ _orderId: 2609, _amount: 0, _positive: true });
+    expect(rows[0]._izoh).toContain('Alohida zapchast');
+  });
+
+  it("to'lovsiz buyurtmada faqat alohida bo'lmagan qism kirimga yoziladi", () => {
+    const rows = buildLedgerRows(
+      [order({ id: 7, final: 500000, zaps: [{ narx: 200000, alohida: true }, { narx: 100000 }] })], [], [], [],
+    );
+    expect(rows[0]._amount).toBe(300000);
+  });
+
   it('operatsiyani kirim/chiqim qatoriga aylantiradi', () => {
     const rows = buildLedgerRows([], [op({ id: 5, type: 'expense', amount: 50000, category: 'Ishxona' })], [], []);
     expect(rows).toHaveLength(1);

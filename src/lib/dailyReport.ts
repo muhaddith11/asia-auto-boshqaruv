@@ -182,6 +182,26 @@ export function buildPaymentTimeMap(ishxonaOperatsiyalar: DailyOpLike[]): Map<st
   return map;
 }
 
+// Davr ichida xizmatlardan kelgan jami foyda — kunlik hisobotdagi yalpi foydaning
+// davr bo'yicha yig'indisi (`from`/`to` bo'sh bo'lsa — chegarasiz). Buyurtma
+// foydasi TO'LIQ holda yakuniy to'lov kuniga yoziladi, shuning uchun oldingi
+// davrda qisman to'langan buyurtma bu raqamni shu davr kirimidan oshirishi mumkin.
+export function computePeriodFoyda(
+  buyurtmalar: DailyOrderLike[],
+  ishxonaOperatsiyalar: DailyOpLike[],
+  from: string,
+  to: string,
+): number {
+  const paymentDayByOrder = buildPaymentDayMap(ishxonaOperatsiyalar);
+  const uniqueOrders = Array.from(new Map(buyurtmalar.map((b) => [b.id, b])).values());
+  return uniqueOrders.reduce((s, b) => {
+    if (b.holat !== 'tulangan') return s;
+    const day = paymentDayByOrder.get(String(b.id)) ?? b.sana;
+    if ((from && day < from) || (to && day > to)) return s;
+    return s + kassaFoyda(b);
+  }, 0);
+}
+
 export function computeDailyReport(
   buyurtmalar: DailyOrderLike[],
   ishxonaOperatsiyalar: DailyOpLike[],

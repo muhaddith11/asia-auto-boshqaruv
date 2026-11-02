@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeDailyReport,
+  computePeriodFoyda,
   buildPaymentDayMap,
   buildPaymentTimeMap,
   KUNLIK_BELGILANGAN_XARAJAT,
@@ -54,6 +55,52 @@ function order(
     ...extra,
   };
 }
+
+describe('computePeriodFoyda', () => {
+  const FROM = '2026-07-01';
+  const TO = '2026-07-31';
+
+  it("to'langan buyurtmalar foydasini yakuniy to'lov kuni bo'yicha yig'adi", () => {
+    const orders = [
+      order(1, '2026-06-30', 4_800_000, []),            // iyunda ochilgan, iyulda yopilgan
+      order(2, DAY, 300_000, []),
+      order(3, '2026-06-20', 900_000, []),              // iyunda yopilgan
+    ];
+    const ops = [
+      payOp(1, '2026-06-30', 2_400_000),
+      payOp(1, DAY, 2_400_000),
+      payOp(2, DAY),
+      payOp(3, '2026-06-20'),
+    ];
+    expect(computePeriodFoyda(orders, ops, FROM, TO)).toBe(5_100_000);
+  });
+
+  it("to'lanmagan va bekor qilingan buyurtma kirmaydi", () => {
+    const orders = [
+      order(1, DAY, 300_000, [], { holat: 'tulanmagan' }),
+      order(2, DAY, 300_000, [], { holat: 'bekor qilingan' }),
+      order(3, DAY, 300_000, [], { holat: 'bekor' }),
+    ];
+    expect(computePeriodFoyda(orders, [], FROM, TO)).toBe(0);
+  });
+
+  it("alohida zapchast foydasi kirmaydi (#2609)", () => {
+    const svecha = { nom: 'Svecha', narx: 150_000, sebestoimost: 72_000, alohida: true };
+    const orders = [order(2609, DAY, 78_000, [], { final: 150_000, total: 150_000, zarplata: 0, zaps: [svecha] })];
+    expect(computePeriodFoyda(orders, [], FROM, TO)).toBe(0);
+  });
+
+  it("kunlik hisobotdagi yalpi foyda bilan bir xil", () => {
+    const orders = [order(1, DAY, 300_000, []), order(2, OTHER, 200_000, [])];
+    const ops = [payOp(1, DAY), payOp(2, DAY)];
+    expect(computePeriodFoyda(orders, ops, DAY, DAY)).toBe(computeDailyReport(orders, ops, [], DAY).yalpiFoyda);
+  });
+
+  it("muddat berilmasa — butun tarix", () => {
+    const orders = [order(1, '2026-01-05', 100_000, []), order(2, DAY, 300_000, [])];
+    expect(computePeriodFoyda(orders, [], '', '')).toBe(400_000);
+  });
+});
 
 describe('computeDailyReport', () => {
   it("bo'sh kun — faqat belgilangan xarajat ayiriladi (zarar)", () => {
