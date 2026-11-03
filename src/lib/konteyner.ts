@@ -76,8 +76,85 @@ export interface JavonPart {
   javon_tur?: string | null;
 }
 
-export function partTur(p: JavonPart): JavonTur {
+export function partTur(p: { nom: string; javon_tur?: string | null }): JavonTur {
   return isJavonTur(p.javon_tur) ? p.javon_tur : taxminTur(p.nom);
+}
+
+// Tashqaridan olib kelinib to'g'ridan-to'g'ri javonga qo'yilgan zapchast
+// (konteyner_items jadvali, db/konteyner_items.sql). Ombor qoldig'iga kirmaydi.
+// narx — 1 donasining narxi (so'm), ogirlik — 1 donasining og'irligi (kg).
+export interface QolItem {
+  id: number;
+  javon: string;
+  nom: string;
+  narx: number | string | null;
+  soni: number | string;
+  ogirlik: number | string | null;
+  izoh: string | null;
+  javon_tur: string | null;
+  created_at?: string;
+}
+
+export type QolItemInput = Partial<Pick<QolItem, 'javon' | 'nom' | 'izoh' | 'javon_tur'>> & {
+  narx?: number | null; soni?: number; ogirlik?: number | null;
+};
+
+// "150 000", "1,5" kabi qo'lda yozilgan sonlarni o'qiydi. Bo'sh — null, xato — NaN.
+export function sonniOqi(v: unknown): number | null {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  const s = String(v).replace(/[\s ]/g, '').replace(',', '.');
+  if (!s) return null;
+  return /^\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+}
+
+// POST (yangi=true) da javon, nom, soni majburiy; PATCH da faqat kelgan maydonlar.
+export function tekshirQolItem(body: Record<string, unknown>, yangi: boolean): { data: QolItemInput } | { error: string } {
+  const data: QolItemInput = {};
+  const bor = (k: string) => k in body && body[k] !== undefined;
+
+  if (yangi || bor('javon')) {
+    if (!isJavon(body.javon)) return { error: "Javon raqami noto'g'ri (masalan: B2-3)" };
+    data.javon = body.javon;
+  }
+  if (yangi || bor('nom')) {
+    const nom = typeof body.nom === 'string' ? body.nom.trim() : '';
+    if (!nom) return { error: 'Zapchast nomini yozing' };
+    if (nom.length > 200) return { error: 'Nomi juda uzun' };
+    data.nom = nom;
+  }
+  if (yangi || bor('soni')) {
+    const soni = sonniOqi(body.soni);
+    if (soni === null || Number.isNaN(soni) || soni <= 0 || soni > 100000) return { error: "Sonini to'g'ri kiriting" };
+    data.soni = soni;
+  }
+  if (bor('narx')) {
+    const narx = sonniOqi(body.narx);
+    if (Number.isNaN(narx) || (narx !== null && narx > 1e12)) return { error: "Narxini to'g'ri kiriting" };
+    data.narx = narx;
+  }
+  if (bor('ogirlik')) {
+    const og = sonniOqi(body.ogirlik);
+    if (Number.isNaN(og) || (og !== null && og > 100000)) return { error: "Og'irligini to'g'ri kiriting" };
+    data.ogirlik = og;
+  }
+  if (bor('izoh')) {
+    const izoh = body.izoh === null ? '' : typeof body.izoh === 'string' ? body.izoh.trim() : null;
+    if (izoh === null) return { error: "Izoh noto'g'ri" };
+    if (izoh.length > 1000) return { error: 'Izoh juda uzun' };
+    data.izoh = izoh || null;
+  }
+  if (bor('javon_tur')) {
+    if (body.javon_tur !== null && !isJavonTur(body.javon_tur)) return { error: "Zapchast turi noto'g'ri" };
+    data.javon_tur = body.javon_tur as string | null;
+  }
+  if (!yangi && !Object.keys(data).length) return { error: "O'zgartirish yo'q" };
+  return { data };
+}
+
+export function qolSoni(it: Pick<QolItem, 'soni'>): number {
+  const n = Number(it.soni);
+  return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
 export function qoldiq(p: JavonPart): number {
@@ -87,15 +164,21 @@ export function qoldiq(p: JavonPart): number {
 
 export interface SahnaItem { name: string; cat: JavonTur; qty: number }
 
-// 3D sahnaga: faqat javonga qo'yilgan va omborda qoldig'i bor zapchastlar.
-// Tugagan (0) zapchast javonda ro'yxatda qoladi, lekin 3D da ko'rinmaydi.
-export function sahnaInventari(parts: JavonPart[]): Record<string, SahnaItem[]> {
+// 3D sahnaga: javonga qo'yilgan va omborda qoldig'i bor zapchastlar + qo'lda
+// qo'yilganlar. Tugagan (0) ombor zapchasti javonda ro'yxatda qoladi, 3D da yo'q.
+export function sahnaInventari(parts: JavonPart[], qolItems: QolItem[] = []): Record<string, SahnaItem[]> {
   const inv: Record<string, SahnaItem[]> = {};
   for (const p of parts) {
     if (!isJavon(p.javon)) continue;
     const qty = Math.ceil(qoldiq(p));
     if (!qty) continue;
     (inv[p.javon] ||= []).push({ name: p.nom, cat: partTur(p), qty });
+  }
+  for (const it of qolItems) {
+    if (!isJavon(it.javon)) continue;
+    const qty = Math.ceil(qolSoni(it));
+    if (!qty) continue;
+    (inv[it.javon] ||= []).push({ name: it.nom, cat: partTur(it), qty });
   }
   for (const k of Object.keys(inv)) inv[k].sort((a, b) => a.name.localeCompare(b.name));
   return inv;
