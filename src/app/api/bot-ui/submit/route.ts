@@ -5,6 +5,7 @@ import { applyStockDelta } from '@/lib/stock';
 import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 import { diffRemovedZaps } from '@/lib/zapArchive';
 import { archiveRemovedZaps } from '@/lib/zapArchiveRepo';
+import { chekNusxaChatlari } from '@/lib/chekRecipients';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -286,7 +287,7 @@ ${holdZap}
 (Buyurtma id: #${orderId})`;
         const targets = new Set<string>();
         if (adminId) targets.add(String(adminId));
-        const { data: admins } = await supabase.from('workers').select('telegram').or('is_admin.eq.true,is_boss.eq.true');
+        const { data: admins } = await supabase.from('workers').select('telegram').or('is_admin.eq.true,is_boss.eq.true,chek_nusxa.eq.true');
         for (const a of admins || []) if (a.telegram) targets.add(String(a.telegram));
         for (const t of targets) {
           try { await bot.telegram.sendMessage(t, note); } catch (e) { console.warn('Admin tg xabar ketmadi:', e); }
@@ -401,14 +402,16 @@ ${zapList}
       ? baseReceipt
       : baseReceipt + `\n\n(Ushbu chek 24 soatdan so'ng avtomatik tozalanadi)`;
 
-    // Send to Admin — hech qachon o'chirilmaydi
-    if (adminId) {
-      try { await bot.telegram.sendMessage(adminId, adminMsg); }
+    // Admin va chek_nusxa xodimlariga — hech qachon o'chirilmaydi
+    const nusxaChatlari = await chekNusxaChatlari();
+    for (const t of nusxaChatlari) {
+      try { await bot.telegram.sendMessage(t, adminMsg); }
       catch (e) { console.warn("Admin tg xabar ketmadi:", e); }
     }
 
-    // Send to Mechanic and log for auto-deletion (boshliqning o'ziga chiqargan cheki o'chirilmaydi)
-    if (mechanicChatId && mechanicChatId.toString() !== adminId) {
+    // Send to Mechanic and log for auto-deletion (boshliqning o'ziga chiqargan cheki o'chirilmaydi;
+    // doimiy nusxa olgan xodim o'z chekini ikkinchi marta olmaydi)
+    if (mechanicChatId && !nusxaChatlari.has(mechanicChatId.toString())) {
       try {
         const sentMsg = await bot.telegram.sendMessage(mechanicChatId, mechanicMsg);
 

@@ -3,11 +3,11 @@ import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
 import { identifyWorker } from '@/lib/botWorker';
 import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
+import { chekNusxaChatlari } from '@/lib/chekRecipients';
 
 export const dynamic = 'force-dynamic';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || '');
-const adminId = process.env.ADMIN_TELEGRAM_ID;
 
 // Admin yoki boshliq narxsiz xizmatlarga narx qo'yib chekni chiqaradi: buyurtma
 // "tayyor" bo'ladi va print_status='pending' bilan printerga ketadi.
@@ -145,10 +145,11 @@ ${zapList}
 
 (Ushbu chek id: #${orderId})`;
 
-    if (adminId) {
-      try { await bot.telegram.sendMessage(adminId, receipt); } catch (e) { console.warn('Admin tg xabar ketmadi:', e); }
+    const nusxaChatlari = await chekNusxaChatlari();
+    for (const t of nusxaChatlari) {
+      try { await bot.telegram.sendMessage(t, receipt); } catch (e) { console.warn('Admin tg xabar ketmadi:', e); }
     }
-    if (owner?.telegram && String(owner.telegram) !== String(adminId)) {
+    if (owner?.telegram && !nusxaChatlari.has(String(owner.telegram))) {
       try {
         const sent = await bot.telegram.sendMessage(owner.telegram, owner.is_boss ? receipt : receipt + `\n\n(Ushbu chek 24 soatdan so'ng avtomatik tozalanadi)`);
         if (!owner.is_boss) {
