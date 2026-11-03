@@ -20,6 +20,7 @@ import { sendSMS, getStatusMessage } from '@/services/smsService';
 import { exportToCSV } from '@/lib/export';
 import { isCancelledHolat } from '@/lib/stock';
 import { buildPaymentTimeMap } from '@/lib/dailyReport';
+import { kassaFoyda } from '@/lib/realizedProfit';
 import { FileSpreadsheet } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -164,7 +165,7 @@ export default function OrdersPage() {
       { key: 'final', label: "To'lov" },
       { key: 'paid', label: "To'langan" },
       { key: 'zarplata', label: 'Maosh' },
-      { key: 'pribil', label: 'Foyda' },
+      { key: 'pribil', label: 'Foyda', format: (b) => kassaFoyda(b) },
       { key: 'sana', label: 'Sana', format: (b) => (b.createdAt || b.sana || '').split('T')[0] },
     ]);
     toast.success(`${filtered.length} ta buyurtma eksport qilindi`);
@@ -429,7 +430,7 @@ export default function OrdersPage() {
                     const sc = isReadyOrder(b)
                       ? READY_STATUS
                       : (STATUS_CONFIG[b.holat] || { label: b.holat, bg: 'transparent', color: 'var(--text3)' });
-                    const profit = b.pribil || 0;
+                    const profit = kassaFoyda(b);
                     const srv = b.srv || 0;
                     // isCancelledHolat — 'bekor qilingan' (dashboard) VA 'bekor' (bot-ui)
                     // ikkalasini ham biladi, aks holda botdan bekor qilingan buyurtmaga

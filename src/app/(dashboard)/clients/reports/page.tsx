@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
+import { kassaFoyda } from '@/lib/realizedProfit';
 import { isCancelledHolat } from '@/lib/stock';
 import {
   Users,
@@ -87,7 +88,7 @@ export default function ClientReportsPage() {
     const unpaidOrders = orders.filter(b => b.holat !== 'tulangan' && !isCancelledHolat(b.holat));
 
     const totalSpent    = paidOrders.reduce((sum, b) => sum + (b.final || 0), 0);
-    const totalProfit   = paidOrders.reduce((sum, b) => sum + (b.pribil || 0), 0);
+    const totalProfit   = paidOrders.reduce((sum, b) => sum + kassaFoyda(b), 0);
     const servicesCount = orders.reduce((sum, b) => sum + b.services.length, 0);
     // Nechta mashina qilingani — bekor qilinmagan buyurtmalar soni
     const carsCount     = orders.filter(b => !isCancelledHolat(b.holat)).length;

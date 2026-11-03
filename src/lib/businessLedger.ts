@@ -3,8 +3,8 @@
 //
 // `/reports/business` (barcha rollar uchun to'liq amaliyotlar jadvali) va
 // boshliqning buyurtma-markazli hisoboti (BossBusinessReport) IKKALASI ham shu
-// yerdan foydalanadi — shu sababli ikkalasining Daromad/Xarajat/Foyda raqamlari
-// har doim BIR XIL chiqadi (ikki joyda mustaqil hisoblanмаydi).
+// yerdan foydalanadi — shu sababli ikkalasining qatorlari va kirimi har doim
+// BIR XIL chiqadi (ikki joyda mustaqil hisoblanмаydi).
 //
 // Qatorlar uch manbadan yig'iladi (reports/business/page.tsx'dagi asl mantiqqa
 // aynan mos, faqat O(n) ga optimallashtirilgan va _orderId/_isRasxod qo'shilgan):
@@ -14,6 +14,8 @@
 //
 // Test: businessLedger.spec.ts
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { orderKassaTotal, type BossZapLike } from './bossProfit';
 
 export interface LedgerOpLike {
   id: number | string;
@@ -36,6 +38,7 @@ export interface LedgerOrderLike {
   ism?: string;
   mashina?: string;
   final?: number;
+  zaps?: BossZapLike[] | null;
   sana?: string;
   createdAt?: string;
   created_at?: string;
@@ -133,20 +136,24 @@ export function buildLedgerRows(
       });
     }
 
-    // 2. To'langan buyurtmalar — faqat to'lov operatsiyasi yo'qlari (aks holda ikki marta sanaladi)
+    // 2. To'langan buyurtmalar — faqat to'lov operatsiyasi yo'qlari (aks holda ikki marta sanaladi).
+    // Alohida zapchast puli kassaga tushmagan, shu sababli kirimga yozilmaydi:
+    // faqat alohida zapchastdan iborat buyurtma ro'yxatda 0 summa bilan turadi.
     for (const b of buyurtmalar) {
       if (b.holat !== 'tulangan' || opOrderIds.has(Number(b.id))) continue;
       const raw = b.createdAt || b.created_at || b.sana || '';
       const { date, display } = dateParts(raw, b.sana || '');
+      const kassaSumma = orderKassaTotal(b);
+      const alohida = (Number(b.final) || 0) - kassaSumma;
       rows.push({
         _id: String(b.id),
         _date: date,
         _displayDate: display,
         _rawDate: raw,
         _category: "Buyurtma to'lovi",
-        _izoh: `Buyurtma #${b.id} - ${b.mashina || ''}`,
+        _izoh: `Buyurtma #${b.id} - ${b.mashina || ''}${alohida > 0 ? ` | Alohida zapchast: ${alohida.toLocaleString()}` : ''}`,
         _mijoz: b.ism || '',
-        _amount: Number(b.final) || 0,
+        _amount: kassaSumma,
         _method: 'NAQD',
         _positive: true,
         _orderId: Number(b.id),
@@ -186,4 +193,35 @@ export function buildLedgerRows(
     .map((r) => ({ r, t: new Date(r._rawDate || r._date).getTime() }))
     .sort((a, b) => b.t - a.t)
     .map((x) => x.r);
+}
+
+export interface XarajatJami {
+  ishxona: number;  // qo'lda kiritilgan ishxona chiqimlari
+  ishXaqi: number;  // kassadan berilgan maoshlar
+  rasxod: number;   // xodimlar bot orqali mashinaga sarflagani
+  tashqari: number; // aylanmadan tashqari chiqimlar
+  jami: number;
+}
+
+// Davr ichida kassadan chiqqan BARCHA xarajat (`from`/`to` bo'sh bo'lsa — chegarasiz).
+// `ops` ga ishxona VA aylanmadan tashqari operatsiyalari birga beriladi. Perevod
+// xarajat emas. buildLedgerRows'ga buyurtmalar ataylab berilmaydi: to'langan
+// buyurtmaning rasxodi ro'yxatdan yashirilgani bilan pul kassadan chiqqan.
+export function computeXarajatJami(
+  ops: LedgerOpLike[],
+  maoshTarixi: LedgerSalaryLike[],
+  from: string,
+  to: string,
+): XarajatJami {
+  const res: XarajatJami = { ishxona: 0, ishXaqi: 0, rasxod: 0, tashqari: 0, jami: 0 };
+  const rows = buildLedgerRows([], ops.filter((op) => op.type === 'expense'), maoshTarixi, []);
+  for (const r of rows) {
+    if ((from && r._date < from) || (to && r._date > to)) continue;
+    if (r._category === 'Ish xaqi') res.ishXaqi += r._amount;
+    else if (r._category === 'Aylanmadan tashqari') res.tashqari += r._amount;
+    else if (r._isRasxod) res.rasxod += r._amount;
+    else res.ishxona += r._amount;
+    res.jami += r._amount;
+  }
+  return res;
 }

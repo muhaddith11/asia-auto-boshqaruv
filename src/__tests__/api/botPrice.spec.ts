@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import type { CapturedCalls, MockResponder } from '../helpers/mockSupabase';
 
@@ -10,6 +10,7 @@ const mockState = vi.hoisted(() => ({
   calls: {} as CapturedCalls,
   counters: {} as Record<string, number>,
   worker: null as null | { id: number; ism: string; is_admin: boolean; is_boss: boolean },
+  sent: [] as string[],
 }));
 
 vi.mock('@/lib/supabaseClient', async () => {
@@ -21,7 +22,9 @@ vi.mock('next/server', async (importOriginal) => {
   return { ...actual, after: () => {} };
 });
 vi.mock('telegraf', () => ({
-  Telegraf: class { telegram = { sendMessage: async () => ({ message_id: 1 }) }; },
+  Telegraf: class {
+    telegram = { sendMessage: async (chatId: string | number) => { mockState.sent.push(String(chatId)); return { message_id: 1 }; } };
+  },
 }));
 vi.mock('@/lib/messageCleanup', () => ({ cleanupExpiredMessagesThrottled: () => {} }));
 vi.mock('@/lib/botAuth', () => ({ requireBotWorker: async () => ({ worker: mockState.worker, denied: null }) }));
@@ -38,6 +41,7 @@ beforeEach(() => {
   for (const obj of [mockState.responses, mockState.calls, mockState.counters]) {
     for (const key of Object.keys(obj)) delete (obj as Record<string, unknown>)[key];
   }
+  mockState.sent.length = 0;
   // 1-so'rov — buyurtmani o'qish, 2-so'rov — shartli update().select('id')
   mockState.responses.orders = ({ index }) =>
     index === 0 ? { data: pendingOrder, error: null } : { data: [{ id: 2431 }], error: null };
@@ -89,5 +93,40 @@ describe('Narxsiz xizmatga narx qo\'yish (bot)', () => {
       index === 0 ? { data: pendingOrder, error: null } : { data: [], error: null };
     const res = await price();
     expect(res.status).toBe(409);
+  });
+});
+
+describe('Chek nusxasi (admin + chek_nusxa xodimlari)', () => {
+  const oldAdmin = process.env.ADMIN_TELEGRAM_ID;
+  beforeEach(() => {
+    process.env.ADMIN_TELEGRAM_ID = '500';
+    mockState.worker = { id: 1, ism: 'admin', is_admin: true, is_boss: false };
+  });
+  afterEach(() => {
+    if (oldAdmin === undefined) delete process.env.ADMIN_TELEGRAM_ID;
+    else process.env.ADMIN_TELEGRAM_ID = oldAdmin;
+  });
+
+  // 1-so'rov — usta (owner), 2-so'rov — chek_nusxa xodimlari ro'yxati
+  const workersWith = (ownerTg: string) => ({ index }: { index: number }) =>
+    index === 0
+      ? { data: { foiz: 20, ism: 'Anvar', tel: null, telegram: ownerTg, is_boss: false }, error: null }
+      : { data: [{ telegram: '600' }], error: null };
+  const deleteRows = () => (mockState.calls.bot_messages_to_delete?.insert || []).map((a) => a[0] as { chat_id: number });
+
+  it('Umarxon (chek_nusxa) ham chekni oladi va uning nusxasi o\'chirilmaydi', async () => {
+    mockState.responses.workers = workersWith('700');
+    const res = await price();
+    expect(res.status).toBe(200);
+    expect(mockState.sent.sort()).toEqual(['500', '600', '700']);
+    expect(deleteRows().map((r) => r.chat_id)).toEqual([700]);
+  });
+
+  it('usta o\'zi chek_nusxa bo\'lsa — bir marta oladi, o\'chirilmaydi', async () => {
+    mockState.responses.workers = workersWith('600');
+    const res = await price();
+    expect(res.status).toBe(200);
+    expect(mockState.sent.sort()).toEqual(['500', '600']);
+    expect(deleteRows()).toEqual([]);
   });
 });

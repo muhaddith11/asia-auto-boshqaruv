@@ -9,11 +9,12 @@
 // IKKI XIL ASOS (muhim biznes qoidasi):
 //
 // 1) SHERIK va ISHXONA foydasi — KASSA ASOSIDA (cash basis):
-//    Buyurtma qaysi kuni PULI KASSAGA TUSHGANiga (to'langaniga) qarab. To'lov
-//    paytida yaratiladigan kassa operatsiyasi (source 'buyurtma', comment
+//    Buyurtma foydasi PULI KASSAGA TUSHGAN kunlarga yoziladi. To'lov paytida
+//    yaratiladigan kassa operatsiyasi (source 'buyurtma', comment
 //    "Buyurtma #<id>") sanasi = to'lov kuni. Bir buyurtma bir necha kun bo'lib
-//    to'lansa — yakuniy (eng oxirgi) to'lov kuni. To'lov operatsiyasi topilmasa
-//    (100% chegirma yoki eski ma'lumot) — yaratilgan sanaga (`sana`) qaytiladi.
+//    to'lansa — har kunga o'sha kungi puldan foyda yoziladi (orderFoydaByDay).
+//    To'lov operatsiyasi topilmasa (100% chegirma yoki eski ma'lumot) —
+//    yaratilgan sanaga (`sana`) qaytiladi.
 //
 // 2) USTALAR ish haqi — ISH KUNI ASOSIDA (payment irrelevant):
 //    Usta ishni qilgan kuni (buyurtma `sana`si) ulushini oladi — mijoz
@@ -25,6 +26,7 @@
 // o'zgartirsangiz testlar buziladi — avval biznes qoidasini tasdiqlang.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { kassaFoyda, type RealizedZapLike } from './realizedProfit';
 import { isCancelledHolat } from './stock';
 
 // Ulush olmaydigan xodimlar oyligining kunlik ulushi (boshliq ko'rsatmasi).
@@ -45,6 +47,8 @@ export interface DailyOrderLike {
   zap?: number;
   final?: number;
   total?: number;
+  zarplata?: number;
+  zaps?: RealizedZapLike[] | null;
   services: DailyServiceLike[];
 }
 
@@ -179,6 +183,79 @@ export function buildPaymentTimeMap(ishxonaOperatsiyalar: DailyOpLike[]): Map<st
   return map;
 }
 
+interface OrderPayment {
+  day: string;
+  amount: number;
+}
+
+// Buyurtma id → uning to'lovlari, kun bo'yicha tartiblangan.
+function buildOrderPayments(ishxonaOperatsiyalar: DailyOpLike[]): Map<string, OrderPayment[]> {
+  const map = new Map<string, OrderPayment[]>();
+  for (const op of ishxonaOperatsiyalar) {
+    if (op.type !== 'income') continue;
+    const isOrderPayment = op.source === 'buyurtma' || op.category === "Buyurtma to'lovi";
+    if (!isOrderPayment) continue;
+    const oid = paymentOrderId(op);
+    if (oid == null || Number.isNaN(oid)) continue;
+    const day = opDay(op);
+    if (!day) continue;
+    const key = String(oid);
+    const list = map.get(key);
+    const payment = { day, amount: Number(op.amount) || 0 };
+    if (list) list.push(payment);
+    else map.set(key, [payment]);
+  }
+  for (const list of map.values()) list.sort((a, b) => a.day.localeCompare(b.day));
+  return map;
+}
+
+// Buyurtma foydasini to'lov kunlariga bo'ladi. Qoida realizedProfit.ts bilan bir
+// xil: tushgan pul avval foyda sifatida sanaladi, buyurtma foydasi tugagach
+// ortig'i qo'shilmaydi. To'liq to'langan buyurtmaning yozilmay qolgan foydasi
+// oxirgi to'lov kuniga (to'lov topilmasa `sana`ga) tushadi. Bekor qilingani sanalmaydi.
+function orderFoydaByDay(b: DailyOrderLike, payments: OrderPayment[]): Map<string, number> {
+  const byDay = new Map<string, number>();
+  if (isCancelledHolat(b.holat)) return byDay;
+
+  const foyda = kassaFoyda(b);
+  let tushgan = 0;
+  let yozilgan = 0;
+  for (const p of payments) {
+    tushgan += p.amount;
+    const ulush = Math.min(tushgan, foyda) - yozilgan;
+    if (ulush > 0) {
+      byDay.set(p.day, (byDay.get(p.day) || 0) + ulush);
+      yozilgan += ulush;
+    }
+  }
+
+  if (b.holat === 'tulangan' && yozilgan < foyda) {
+    const day = payments.length > 0 ? payments[payments.length - 1].day : b.sana;
+    byDay.set(day, (byDay.get(day) || 0) + foyda - yozilgan);
+  }
+  return byDay;
+}
+
+// Davr ichida xizmatlardan kelgan jami foyda — kunlik hisobotdagi yalpi foydaning
+// davr bo'yicha yig'indisi (`from`/`to` bo'sh bo'lsa — chegarasiz).
+export function computePeriodFoyda(
+  buyurtmalar: DailyOrderLike[],
+  ishxonaOperatsiyalar: DailyOpLike[],
+  from: string,
+  to: string,
+): number {
+  const payments = buildOrderPayments(ishxonaOperatsiyalar);
+  const uniqueOrders = Array.from(new Map(buyurtmalar.map((b) => [b.id, b])).values());
+  let jami = 0;
+  for (const b of uniqueOrders) {
+    for (const [day, foyda] of orderFoydaByDay(b, payments.get(String(b.id)) || [])) {
+      if ((from && day < from) || (to && day > to)) continue;
+      jami += foyda;
+    }
+  }
+  return jami;
+}
+
 export function computeDailyReport(
   buyurtmalar: DailyOrderLike[],
   ishxonaOperatsiyalar: DailyOpLike[],
@@ -195,7 +272,7 @@ export function computeDailyReport(
   // Takrorlanmas buyurtmalar (id bo'yicha)
   const uniqueOrders = Array.from(new Map(buyurtmalar.map((b) => [b.id, b])).values());
 
-  // FOYDA uchun (sherik/ishxona) — faqat shu kunga TO'LANGAN buyurtmalar
+  // Shu kuni TO'LIQ yopilgan buyurtmalar soni uchun
   // (kassaga pul tushgan kuni bo'yicha, yaratilgan kuni bo'yicha emas).
   const dayOrders = uniqueOrders
     .filter((b) => b.holat === 'tulangan' && orderDay(b) === selectedDate);
@@ -206,11 +283,10 @@ export function computeDailyReport(
   const workOrders = uniqueOrders
     .filter((b) => !isCancelledHolat(b.holat) && b.sana === selectedDate);
 
-  // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi
-  const yalpiFoyda = dayOrders.reduce(
-    (s, b) => s + Math.max(0, Number(b.pribil) || 0),
-    0,
-  );
+  // 1) Xizmatlardan yalpi foyda (pribil) — usta ulushi ayirilgandan keyingi.
+  // Shu kuni tushgan pulga to'g'ri keladigan qismi olinadi. Alohida zapchast
+  // foydasi kirmaydi: u pul kassaga tushmagan (kassaFoyda).
+  const yalpiFoyda = computePeriodFoyda(uniqueOrders, ishxonaOperatsiyalar, selectedDate, selectedDate);
 
   // 2) "Boshqa" kategoriyali kirimlar sherik/ishxona foydasiga qo'shiladi
   const boshqaKirim = ishxonaOperatsiyalar

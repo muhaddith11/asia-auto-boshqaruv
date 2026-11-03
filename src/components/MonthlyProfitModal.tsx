@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { X, TrendingUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { bolimMeta, normalizeBolim } from '@/lib/departments';
+import { kassaFoyda } from '@/lib/realizedProfit';
 
 interface Props {
   onClose: () => void;
@@ -64,7 +65,7 @@ export default function MonthlyProfitModal({ onClose }: Props) {
         });
       } else if (b.qabul_xodim_id && foizById.has(Number(b.qabul_xodim_id))) {
         const wid = Number(b.qabul_xodim_id);
-        const orderPribil = Math.max(0, Number(b.pribil) || 0);
+        const orderPribil = kassaFoyda(b);
         const foiz = foizById.get(wid) || 0;
         const companyProfit = Math.round(orderPribil * (1 - foiz / 100));
         bump(wid, companyProfit, b.id);

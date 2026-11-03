@@ -5,7 +5,8 @@ import { useStore } from '@/store/useStore';
 import { useRole } from '@/lib/useRole';
 import BossBusinessReport from '@/components/BossBusinessReport';
 import { exportToCSV } from '@/lib/export';
-import { buildLedgerRows } from '@/lib/businessLedger';
+import { buildLedgerRows, computeXarajatJami } from '@/lib/businessLedger';
+import { computePeriodFoyda } from '@/lib/dailyReport';
 import { monthRange, quickRange, type QuickRangeKind } from '@/lib/dateRange';
 import {
   Filter,
@@ -14,6 +15,7 @@ import {
   TrendingDown,
   Target,
   Wallet,
+  Wrench,
   Receipt,
   Clock,
   FileSpreadsheet
@@ -31,6 +33,7 @@ export default function BusinessReportPage() {
 
   const buyurtmalar = store?.buyurtmalar || [];
   const ishxonaOperatsiyalar = store?.ishxonaOperatsiyalar || [];
+  const tashqariOperatsiyalar = store?.tashqariOperatsiyalar || [];
   const kassa = store?.kassa || { naqd: 0, karta: 0 };
   const maoshTarixi = store?.maoshTarixi || [];
   const xodimlar = store?.xodimlar || [];
@@ -53,7 +56,7 @@ export default function BusinessReportPage() {
 
   // Qator qurish mantig'i endi @/lib/businessLedger'da (sof, testlangan) — boshliq
   // hisoboti (BossBusinessReport) ham AYNAN shu funksiyadan foydalanadi, shuning
-  // uchun ikkala ko'rinishning Daromad/Xarajat raqamlari doim bir xil bo'ladi.
+  // uchun ikkala ko'rinishning qatorlari va kirimi doim bir xil bo'ladi.
   const allRows = useMemo(
     () => buildLedgerRows(buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar),
     [buyurtmalar, ishxonaOperatsiyalar, maoshTarixi, xodimlar],
@@ -72,10 +75,15 @@ export default function BusinessReportPage() {
     return true;
   }), [allRows, filterFrom, filterTo, filterCategory, filterType]);
 
+  // Oynalar faqat muddatga bo'ysunadi: Turi va Kategoriya jadvalni toraytiradi,
+  // aks holda "Kirim" tanlanganda Xarajat 0 bo'lib ko'rinadi.
   const stats = useMemo(() => ({
-    income:  filtered.filter(r => r._positive).reduce((s, r) => s + r._amount, 0),
-    expense: filtered.filter(r => !r._positive).reduce((s, r) => s + r._amount, 0),
-  }), [filtered]);
+    kirim: allRows
+      .filter(r => r._positive && (!filterFrom || r._date >= filterFrom) && (!filterTo || r._date <= filterTo))
+      .reduce((s, r) => s + r._amount, 0),
+    foyda: computePeriodFoyda(buyurtmalar, ishxonaOperatsiyalar, filterFrom, filterTo),
+    xarajat: computeXarajatJami([...ishxonaOperatsiyalar, ...tashqariOperatsiyalar], maoshTarixi, filterFrom, filterTo),
+  }), [allRows, buyurtmalar, ishxonaOperatsiyalar, tashqariOperatsiyalar, maoshTarixi, filterFrom, filterTo]);
 
   const paginated = useMemo(() => filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE), [filtered, currentPage]);
 
@@ -104,6 +112,13 @@ export default function BusinessReportPage() {
   // sahifadagi kabi buildLedgerRows'dan, hech narsa yashirilmaydi — faqat ro'yxat
   // boshqacha ko'rsatiladi).
   if (boss) return <BossBusinessReport />;
+
+  const xarajatTarkibi = ([
+    ['Ishxona', stats.xarajat.ishxona],
+    ['Ish xaqi', stats.xarajat.ishXaqi],
+    ['Rasxod', stats.xarajat.rasxod],
+    ['Tashqari', stats.xarajat.tashqari],
+  ] as const).filter(([, summa]) => summa > 0).map(([nom, summa]) => `${nom} ${summa.toLocaleString()}`).join(' · ');
 
   const inputStyle: React.CSSProperties = {
     background: '#121721',
@@ -188,19 +203,21 @@ export default function BusinessReportPage() {
       {/* STATS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
         {[
-          { label: 'Daromad', value: stats.income, icon: <TrendingUp size={20} />, color: '#10b981' },
-          { label: 'Xarajat', value: stats.expense, icon: <TrendingDown size={20} />, color: '#fb7185' },
-          { label: 'Foyda', value: stats.income - stats.expense, icon: <Target size={20} />, color: '#3b82f6' },
-          { label: 'Kassa', value: kassa.naqd + kassa.karta, icon: <Wallet size={20} />, color: '#f59e0b' },
+          { label: 'Jami kirim', value: stats.kirim, sub: 'Kassaga tushgan pul', icon: <TrendingUp size={20} />, color: '#10b981' },
+          { label: 'Jami foyda', value: stats.foyda, sub: "Xizmatlardan, alohida zapchastsiz", icon: <Wrench size={20} />, color: '#a78bfa' },
+          { label: 'Xarajat', value: stats.xarajat.jami, sub: xarajatTarkibi || 'Xarajat yo\'q', icon: <TrendingDown size={20} />, color: '#fb7185' },
+          { label: 'Foyda', value: stats.kirim - stats.xarajat.jami, sub: 'Jami kirim − xarajat', icon: <Target size={20} />, color: '#3b82f6' },
+          { label: 'Kassa', value: kassa.naqd + kassa.karta, sub: 'Hozirgi qoldiq', icon: <Wallet size={20} />, color: '#f59e0b' },
         ].map((s, i) => (
           <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               <div style={{ padding: 8, borderRadius: 8, background: `${s.color}15`, color: s.color }}>{s.icon}</div>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase' }}>{s.label}</span>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: 'white' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: s.value < 0 ? '#fb7185' : 'white' }}>
               {s.value.toLocaleString()} <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>UZS</span>
             </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text3)', marginTop: 8, lineHeight: 1.45 }}>{s.sub}</div>
           </div>
         ))}
       </div>
