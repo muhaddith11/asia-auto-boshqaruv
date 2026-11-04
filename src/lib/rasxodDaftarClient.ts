@@ -70,3 +70,17 @@ export async function resetDaftarPartialPayment(carId: number, itemId: number): 
   );
   return res.item;
 }
+
+// "Ishxonaga": qoldiq ishxona chiqimi bo'lib yoziladi va naqd kassadan ayiriladi (amount — ayirilgan summa).
+export async function writeOffDaftarItem(carId: number, itemId: number): Promise<{ item: RasxodItem; amount: number }> {
+  return handleJson<{ item: RasxodItem; amount: number }>(
+    await fetch(`${BASE}/${carId}/items/${itemId}/ishxona`, send('POST')),
+  );
+}
+
+// "Ishxonaga"ni qaytarish: chiqim o'chadi, pul kassaga qaytadi (amount — qaytgan summa).
+export async function undoDaftarWriteOff(carId: number, itemId: number): Promise<{ item: RasxodItem; amount: number }> {
+  return handleJson<{ item: RasxodItem; amount: number }>(
+    await fetch(`${BASE}/${carId}/items/${itemId}/ishxona`, send('DELETE')),
+  );
+}

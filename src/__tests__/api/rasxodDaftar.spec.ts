@@ -12,7 +12,7 @@ const mockState = vi.hoisted(() => ({
 
 vi.mock('@/lib/supabaseClient', async () => {
   const { createSupabaseMock } = await import('../helpers/mockSupabase');
-  return { default: createSupabaseMock(mockState.responses, mockState.calls, mockState.counters) };
+  return { default: createSupabaseMock(mockState.responses, mockState.calls, mockState.counters, ['is', 'not']) };
 });
 
 // `after()` so'rov kontekstisiz ishlamaydi — vazifani yig'ib qo'yamiz (audit testida qo'lda ishga tushiriladi).
@@ -27,6 +27,7 @@ const itemsRoute = await import('@/app/api/rasxod-daftar/[id]/items/route');
 const itemRoute = await import('@/app/api/rasxod-daftar/[id]/items/[itemId]/route');
 const tulovRoute = await import('@/app/api/rasxod-daftar/[id]/tulov/route');
 const itemTulovRoute = await import('@/app/api/rasxod-daftar/[id]/items/[itemId]/tulov/route');
+const ishxonaRoute = await import('@/app/api/rasxod-daftar/[id]/items/[itemId]/ishxona/route');
 
 const tokens = {
   boshliq: await createSessionToken('boshliq', 'Boshliq'),
@@ -331,5 +332,213 @@ describe('POST/DELETE /api/rasxod-daftar/[id]/items/[itemId]/tulov (qisman to\'l
     mockState.responses.rasxod_items = { data: [], error: null };
     const notFound = await itemTulovRoute.DELETE(req('/7/items/1/tulov', { method: 'DELETE' }), ctx({ id: '7', itemId: '1' }));
     expect(notFound.status).toBe(404);
+  });
+});
+
+// ── «Ishxonaga»: rasxod qoldig'i 'Ishxona' chiqimi bo'lib naqd kassadan ayiriladi ──
+
+const LOCKED_MSG = /ishxonaga yozilgan/i;
+const ishxonaCtx = ctx({ id: '7', itemId: '1' });
+const ishxonaReq = (method: 'POST' | 'DELETE', role: 'boshliq' | 'xodim' = 'boshliq') =>
+  req('/7/items/1/ishxona', { method, role });
+
+// Kassa: 0 — o'qish (naqd/karta), 1 — upsert.
+const kassaResponder = (naqd: number, karta: number, upsertError?: string) => (c: { index: number }) =>
+  c.index === 0
+    ? { data: { naqd, karta }, error: null }
+    : { data: null, error: upsertError ? { message: upsertError } : null };
+
+describe('POST /api/rasxod-daftar/[id]/items/[itemId]/ishxona', () => {
+  it("qoldiqni 'Ishxona' chiqimi qilib yozadi, qatorni band qiladi va naqd kassadan ayiradi", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0
+        ? { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 400_000 })], error: null }
+        : { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 400_000, ishxona_op_id: 55, ishxona_vaqt: '2026-11-04T10:00:00Z' })], error: null };
+    mockState.responses.rasxod_cars = { data: [{ mashina: 'Zeekr 001', raqam: '601111111' }], error: null };
+    mockState.responses.operations = { data: { id: 55, amount: 600_000 }, error: null };
+    mockState.responses.kassa = kassaResponder(10_000_000, 2_000_000);
+
+    const res = await ishxonaRoute.POST(ishxonaReq('POST'), ishxonaCtx);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ amount: 600_000, item: { id: 1, ishxona_op_id: 55, tulandi: false } });
+
+    const [[op]] = mockState.calls.operations.insert[0] as [Record<string, unknown>[]];
+    expect(op).toEqual({
+      date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      type: 'expense',
+      method: 'naqd',
+      amount: 600_000,
+      category: 'Ishxona',
+      comment: 'Rasxod daftari: Zds — Zeekr 001 601111111',
+      source: 'manual',
+    });
+    const [claim] = mockState.calls.rasxod_items.update[0] as [Record<string, unknown>];
+    expect(claim).toMatchObject({ ishxona_op_id: 55 });
+    expect(Number.isNaN(Date.parse(String(claim.ishxona_vaqt)))).toBe(false);
+    // Band qilish shartli: hali hech kim ishxonaga yozmagan qatorgina
+    expect(mockState.calls.rasxod_items.is).toContainEqual(['ishxona_op_id', null]);
+
+    const [kassa] = mockState.calls.kassa.upsert[0] as [Record<string, unknown>];
+    expect(kassa).toMatchObject({ id: 1, naqd: 9_400_000, karta: 2_000_000 });
+
+    await Promise.all(mockState.afterTasks.map((task) => task()));
+    const [auditRows] = mockState.calls.audit_log.insert[0] as [Record<string, unknown>[]];
+    expect(auditRows[0]).toMatchObject({ action: 'create', entity: 'operation', entity_id: '55' });
+  });
+
+  it("qatorni band qilib bo'lmasa (parallel bosilgan / to'langan) — chiqim o'chiriladi, kassaga tegilmaydi, 400", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0 ? { data: [itemRow(1, { summa: 500_000 })], error: null } : { data: [], error: null };
+    mockState.responses.rasxod_cars = { data: [carRow], error: null };
+    const opCalls: number[] = [];
+    mockState.responses.operations = (c) => {
+      opCalls.push(c.index);
+      return { data: { id: 56 }, error: null };
+    };
+
+    const res = await ishxonaRoute.POST(ishxonaReq('POST'), ishxonaCtx);
+    expect(res.status).toBe(400);
+    expect(opCalls).toEqual([0, 1]); // 0 — insert, 1 — kompensatsiya uchun delete
+    expect(mockState.counters.kassa).toBeUndefined();
+    expect(mockState.afterTasks).toHaveLength(0);
+  });
+
+  it("kassa yangilanmasa — chiqim o'chiriladi, qator ochiladi va 500 qaytadi", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0 ? { data: [itemRow(1, { summa: 500_000 })], error: null } : { data: [itemRow(1, { ishxona_op_id: 57 })], error: null };
+    mockState.responses.rasxod_cars = { data: [carRow], error: null };
+    const opCalls: number[] = [];
+    mockState.responses.operations = (c) => {
+      opCalls.push(c.index);
+      return { data: { id: 57 }, error: null };
+    };
+    mockState.responses.kassa = kassaResponder(1_000_000, 0, 'kassa yozilmadi');
+
+    const res = await ishxonaRoute.POST(ishxonaReq('POST'), ishxonaCtx);
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toMatch(/Kassa yangilanmadi/);
+    expect(opCalls).toEqual([0, 1]);
+    expect(mockState.calls.rasxod_items.update[1]).toEqual([{ ishxona_vaqt: null }]);
+    expect(mockState.afterTasks).toHaveLength(0);
+  });
+
+  it("to'langan, allaqachon ishxonaga yozilgan yoki qoldig'i yo'q qatorni rad etadi (400); topilmasa 404", async () => {
+    const cases = [
+      itemRow(1, { tulandi: true }),
+      itemRow(1, { ishxona_op_id: 3 }),
+      itemRow(1, { summa: 1000, tulangan_summa: 1000 }),
+    ];
+    for (const row of cases) {
+      mockState.responses.rasxod_items = { data: [row], error: null };
+      expect((await ishxonaRoute.POST(ishxonaReq('POST'), ishxonaCtx)).status).toBe(400);
+    }
+    mockState.responses.rasxod_items = { data: [], error: null };
+    expect((await ishxonaRoute.POST(ishxonaReq('POST'), ishxonaCtx)).status).toBe(404);
+    expect(mockState.calls.operations).toBeUndefined();
+    expect(mockState.counters.kassa).toBeUndefined();
+  });
+
+  it("xodim uchun 403, noto'g'ri ID — 400 (bazaga so'rov ketmaydi)", async () => {
+    expect((await ishxonaRoute.POST(ishxonaReq('POST', 'xodim'), ishxonaCtx)).status).toBe(403);
+    expect((await ishxonaRoute.DELETE(ishxonaReq('DELETE', 'xodim'), ishxonaCtx)).status).toBe(403);
+    expect((await ishxonaRoute.POST(req('/7/items/x/ishxona', { method: 'POST' }), ctx({ id: '7', itemId: 'x' }))).status).toBe(400);
+    expect(mockState.counters.rasxod_items).toBeUndefined();
+  });
+});
+
+describe('DELETE /api/rasxod-daftar/[id]/items/[itemId]/ishxona (qaytarish)', () => {
+  it("chiqimni o'chiradi, qatorni ochadi va pulni naqd kassaga qaytaradi", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0
+        ? { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 400_000, ishxona_op_id: 55, ishxona_vaqt: '2026-11-04T10:00:00Z' })], error: null }
+        : { data: [itemRow(1, { summa: 1_000_000, tulangan_summa: 400_000 })], error: null };
+    mockState.responses.operations = { data: [{ id: 55, amount: 600_000 }], error: null };
+    mockState.responses.kassa = kassaResponder(9_400_000, 2_000_000);
+
+    const res = await ishxonaRoute.DELETE(ishxonaReq('DELETE'), ishxonaCtx);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ amount: 600_000, item: { id: 1, ishxona_op_id: null, ishxona_vaqt: null } });
+    expect(mockState.calls.rasxod_items.update[0]).toEqual([{ ishxona_op_id: null, ishxona_vaqt: null }]);
+    const [kassa] = mockState.calls.kassa.upsert[0] as [Record<string, unknown>];
+    expect(kassa).toMatchObject({ id: 1, naqd: 10_000_000, karta: 2_000_000 });
+
+    await Promise.all(mockState.afterTasks.map((task) => task()));
+    const [auditRows] = mockState.calls.audit_log.insert[0] as [Record<string, unknown>[]];
+    expect(auditRows[0]).toMatchObject({ action: 'delete', entity: 'operation', entity_id: '55' });
+  });
+
+  it("chiqim boshqa joydan allaqachon o'chirilgan bo'lsa — qator ochiladi, kassaga tegilmaydi", async () => {
+    mockState.responses.rasxod_items = (c) =>
+      c.index === 0 ? { data: [itemRow(1, { ishxona_op_id: 55 })], error: null } : { data: [itemRow(1)], error: null };
+    mockState.responses.operations = { data: [], error: null };
+
+    const res = await ishxonaRoute.DELETE(ishxonaReq('DELETE'), ishxonaCtx);
+    expect(res.status).toBe(200);
+    expect((await res.json()).amount).toBe(0);
+    expect(mockState.counters.kassa).toBeUndefined();
+  });
+
+  it("ishxonaga yozilmagan qatorni qaytarib bo'lmaydi (400), chiqimga tegilmaydi", async () => {
+    mockState.responses.rasxod_items = { data: [itemRow(1)], error: null };
+    expect((await ishxonaRoute.DELETE(ishxonaReq('DELETE'), ishxonaCtx)).status).toBe(400);
+    expect(mockState.counters.operations).toBeUndefined();
+  });
+});
+
+describe('Ishxonaga yozilgan qator himoyasi (boshqa amallar)', () => {
+  it("«Hammasi to'landi» ishxonaga yozilgan qatorni o'tkazib yuboradi; qaytarishda filtr yo'q", async () => {
+    mockState.responses.rasxod_items = { data: [], error: null };
+    await tulovRoute.POST(req('/7/tulov', { method: 'POST', body: { tulandi: true } }), ctx({ id: '7' }));
+    expect(mockState.calls.rasxod_items.is).toEqual([['ishxona_op_id', null]]);
+
+    delete mockState.calls.rasxod_items;
+    await tulovRoute.POST(req('/7/tulov', { method: 'POST', body: { tulandi: false } }), ctx({ id: '7' }));
+    expect(mockState.calls.rasxod_items.is).toBeUndefined();
+  });
+
+  it("ishxonaga yozilgan qatorni o'chirish yoki summasini o'zgartirish — 400 (tushunarli xabar bilan)", async () => {
+    const locked = (c: { index: number }) =>
+      c.index === 0 ? { data: [], error: null } : { data: [itemRow(1, { ishxona_op_id: 55 })], error: null };
+
+    mockState.responses.rasxod_items = locked;
+    const del = await itemRoute.DELETE(req('/7/items/1', { method: 'DELETE' }), ctx({ id: '7', itemId: '1' }));
+    expect(del.status).toBe(400);
+    expect((await del.json()).error).toMatch(LOCKED_MSG);
+    expect(mockState.calls.rasxod_items.is).toContainEqual(['ishxona_op_id', null]);
+
+    delete mockState.counters.rasxod_items;
+    const patch = await itemRoute.PATCH(req('/7/items/1', { method: 'PATCH', body: { summa: 5000 } }), ctx({ id: '7', itemId: '1' }));
+    expect(patch.status).toBe(400);
+    expect((await patch.json()).error).toMatch(LOCKED_MSG);
+  });
+
+  it("nomini o'zgartirish ishxonaga yozilgan qatorda ham mumkin (filtr qo'shilmaydi)", async () => {
+    mockState.responses.rasxod_items = { data: [itemRow(1, { nom: 'Yangi nom', ishxona_op_id: 55 })], error: null };
+    const res = await itemRoute.PATCH(req('/7/items/1', { method: 'PATCH', body: { nom: 'Yangi nom' } }), ctx({ id: '7', itemId: '1' }));
+    expect(res.status).toBe(200);
+    expect(mockState.calls.rasxod_items.is).toBeUndefined();
+  });
+
+  it("ishxonaga yozilgan qatori bor mashinani o'chirib bo'lmaydi (400), mashinaga tegilmaydi", async () => {
+    mockState.responses.rasxod_items = { data: [{ id: 1 }], error: null };
+    const res = await carRoute.DELETE(req('/7', { method: 'DELETE' }), ctx({ id: '7' }));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(LOCKED_MSG);
+    expect(mockState.calls.rasxod_items.not).toEqual([['ishxona_op_id', 'is', null]]);
+    expect(mockState.counters.rasxod_cars).toBeUndefined();
+  });
+
+  it("ishxonaga yozilgan qatorga qisman to'lov qo'shib bo'lmaydi (400), bekor qilish filtr bilan", async () => {
+    mockState.responses.rasxod_items = { data: [itemRow(1, { ishxona_op_id: 55 })], error: null };
+    const add = await itemTulovRoute.POST(
+      req('/7/items/1/tulov', { method: 'POST', body: { summa: 1000 } }), ctx({ id: '7', itemId: '1' }),
+    );
+    expect(add.status).toBe(400);
+    expect(mockState.calls.rasxod_items?.update).toBeUndefined();
+
+    mockState.responses.rasxod_items = { data: [], error: null };
+    const reset = await itemTulovRoute.DELETE(req('/7/items/1/tulov', { method: 'DELETE' }), ctx({ id: '7', itemId: '1' }));
+    expect(reset.status).toBe(404);
+    expect(mockState.calls.rasxod_items.is).toEqual([['ishxona_op_id', null]]);
   });
 });

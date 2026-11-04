@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { logAudit } from '@/lib/audit';
 import { errorMessage, parseIdParam, readJsonObject, requireSection } from '@/lib/routeGuard';
 import { parseCarInput } from '@/lib/rasxodDaftar';
-import { NotFoundError, deleteCar, updateCar } from '@/lib/rasxodDaftarRepo';
+import { NotFoundError, ValidationError, deleteCar, updateCar } from '@/lib/rasxodDaftarRepo';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +49,7 @@ export async function DELETE(request: NextRequest, context: Context) {
     );
     return NextResponse.json({ ok: true });
   } catch (err) {
-    const status = err instanceof NotFoundError ? 404 : 500;
+    const status = err instanceof NotFoundError ? 404 : err instanceof ValidationError ? 400 : 500;
     return NextResponse.json({ error: errorMessage(err, "Mashina o'chirilmadi") }, { status });
   }
 }

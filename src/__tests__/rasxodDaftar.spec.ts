@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  carStats, fmtSana, isValidSana, itemHolat, joinCarsWithItems, kunFarqi, paidAmount, parseCarInput, parseItemInput,
+  carStats, fmtSana, ishxonaAmount, isIshxona, isValidSana, itemHolat, joinCarsWithItems, kunFarqi, paidAmount, parseCarInput, parseItemInput,
   parseItemsInput, parseSumma, patchCar, qaytishKuni, removeItem, suggestCars, summarizeDaftar, tashkentDate,
   upsertItems, visibleCars,
   type RasxodCar, type RasxodCarRow, type RasxodItem,
@@ -20,12 +20,20 @@ const item = (carId: number, nom: string, summa: number, sana: string, tulanganV
   tulandi: !!tulanganVaqt,
   tulangan_summa: 0,
   tulangan_vaqt: tulanganVaqt ?? null,
+  ishxona_op_id: null,
+  ishxona_vaqt: null,
   created_at: `${sana}T08:00:00.000Z`,
 });
 const partialItem = (carId: number, nom: string, summa: number, sana: string, tulanganSumma: number, tulanganVaqt?: string): RasxodItem => ({
   ...item(carId, nom, summa, sana),
   tulangan_summa: tulanganSumma,
   tulangan_vaqt: tulanganVaqt ?? null,
+});
+// «Ishxonaga» yozilgan qator: qoldig'i 'Ishxona' chiqimi bo'lgan (operations.id = 900).
+const ishxonaItem = (carId: number, nom: string, summa: number, sana: string, tulanganSumma = 0): RasxodItem => ({
+  ...partialItem(carId, nom, summa, sana, tulanganSumma),
+  ishxona_op_id: 900,
+  ishxona_vaqt: '2026-09-15T06:00:00.000Z',
 });
 const carRow = (id: number, extra: Partial<RasxodCarRow> = {}): RasxodCarRow => ({
   id,
@@ -214,7 +222,74 @@ describe('hisob-kitob', () => {
   });
 
   it("bo'sh daftarda nol qiymatlar", () => {
-    expect(summarizeDaftar([], NOW)).toMatchObject({ jami: 0, qoldiq: 0, ortachaQaytish: null, engUzoq: null });
+    expect(summarizeDaftar([], NOW)).toMatchObject({ jami: 0, qoldiq: 0, ishxona: 0, ortachaQaytish: null, engUzoq: null });
+  });
+});
+
+describe('«Ishxonaga» yozilgan rasxodlar', () => {
+  it("isIshxona / ishxonaAmount / itemHolat: ishxonaga faqat to'lanmagan qoldiq yoziladi", () => {
+    const full = ishxonaItem(1, 'A', 300_000, '2026-09-10');
+    const partial = ishxonaItem(1, 'B', 1_000_000, '2026-09-10', 400_000);
+    const open = item(1, 'C', 50_000, '2026-09-10');
+    expect([isIshxona(full), ishxonaAmount(full), itemHolat(full)]).toEqual([true, 300_000, 'ishxona']);
+    expect([isIshxona(partial), ishxonaAmount(partial), itemHolat(partial)]).toEqual([true, 600_000, 'ishxona']);
+    expect([isIshxona(open), ishxonaAmount(open), itemHolat(open)]).toEqual([false, 0, 'kutilmoqda']);
+    // To'langan qator hech qachon "ishxona" emas (server bunga yo'l qo'ymaydi, lekin mantiq ham himoyalangan).
+    const paidWithOp = { ...item(1, 'D', 70_000, '2026-09-10', '2026-09-12T08:00:00Z'), ishxona_op_id: 5 };
+    expect([isIshxona(paidWithOp), ishxonaAmount(paidWithOp), itemHolat(paidWithOp)]).toEqual([false, 0, 'tulandi']);
+  });
+
+  it("carStats: ishxona qoldiqdan chiqadi, alohida jamlanadi va kutish kunini cho'zmaydi", () => {
+    const st = carStats(car(1, [
+      ishxonaItem(1, 'Eski', 300_000, '2026-09-01'),
+      item(1, 'Benzin', 100_000, '2026-09-10'),
+      item(1, 'Moy', 40_000, '2026-09-11', '2026-09-12T08:00:00Z'),
+    ]), NOW);
+    expect(st).toMatchObject({
+      jami: 440_000,
+      tulangan: 40_000,
+      ishxona: 300_000,
+      qoldiq: 100_000,
+      unpaidCount: 1,
+      ishxonaCount: 1,
+      kutishKuni: 6, // 01-sentyabrdagi ishxona qatori emas, 10-sentyabrdagi to'lanmagan qator
+      holat: 'qisman',
+    });
+  });
+
+  it("carStats: hammasi to'langan yoki ishxonaga yozilgan bo'lsa — mashina yopiladi (tulandi)", () => {
+    expect(carStats(car(1, [ishxonaItem(1, 'A', 300_000, '2026-09-01')]), NOW)).toMatchObject({
+      tulangan: 0, ishxona: 300_000, qoldiq: 0, unpaidCount: 0, kutishKuni: null, holat: 'tulandi',
+    });
+    expect(carStats(car(1, [ishxonaItem(1, 'A', 1_000_000, '2026-09-01', 400_000)]), NOW)).toMatchObject({
+      jami: 1_000_000, tulangan: 400_000, ishxona: 600_000, qoldiq: 0, holat: 'tulandi',
+    });
+  });
+
+  it("summarizeDaftar: ishxona alohida, qaytganlar soniga ham, kutayotganlarga ham kirmaydi", () => {
+    const s = summarizeDaftar([
+      car(1, [ishxonaItem(1, 'A', 300_000, '2026-09-01'), item(1, 'B', 100_000, '2026-09-10')]),
+      car(2, [ishxonaItem(2, 'C', 1_000_000, '2026-08-20', 400_000)]),
+      car(3, [item(3, 'D', 50_000, '2026-09-11', '2026-09-15T06:00:00Z')]),
+    ], NOW);
+    expect(s).toMatchObject({
+      jami: 1_450_000,
+      qoldiq: 100_000,
+      unpaidCount: 1,
+      kutayotganMashina: 1,
+      tulangan: 450_000,
+      paidCount: 1,
+      ishxona: 900_000,
+      ishxonaCount: 2,
+      engUzoq: { carId: 1, kun: 6 },
+    });
+  });
+
+  it("ro'yxat: faqat ishxonaga yozilgan mashina «To'langan» tabida, qoldig'i bor — «Kutilmoqda»da", () => {
+    const closed = car(1, [ishxonaItem(1, 'A', 300_000, '2026-09-01')]);
+    const open = car(2, [ishxonaItem(2, 'B', 300_000, '2026-09-01'), item(2, 'C', 10_000, '2026-09-12')]);
+    expect(visibleCars([closed, open], 'tulandi', '', NOW).map((c) => c.id)).toEqual([1]);
+    expect(visibleCars([closed, open], 'kutilmoqda', '', NOW).map((c) => c.id)).toEqual([2]);
   });
 });
 

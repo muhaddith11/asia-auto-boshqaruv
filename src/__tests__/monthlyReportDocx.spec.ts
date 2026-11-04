@@ -19,7 +19,8 @@ const NOW = new Date('2026-10-13T07:00:00.000Z'); // Toshkent: 13.10.2026
 
 function item(p: Partial<RasxodItem> & Pick<RasxodItem, 'id' | 'car_id' | 'nom' | 'summa' | 'sana'>): RasxodItem {
   return {
-    tulandi: false, tulangan_summa: 0, tulangan_vaqt: null, created_at: '2026-09-16T10:00:00.000Z', ...p,
+    tulandi: false, tulangan_summa: 0, tulangan_vaqt: null, ishxona_op_id: null, ishxona_vaqt: null,
+    created_at: '2026-09-16T10:00:00.000Z', ...p,
   };
 }
 

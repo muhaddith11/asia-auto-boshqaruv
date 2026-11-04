@@ -41,6 +41,7 @@ function createChain(
   getResponder: () => MockResponder,
   nextIndex: () => number,
   calls?: CapturedCalls,
+  trackedFilters: readonly string[] = [],
 ): Record<string, unknown> {
   const chain: Record<string, unknown> = {};
   // Shu zanjirdagi so'rov konteksti
@@ -49,7 +50,7 @@ function createChain(
 
   CHAIN_METHODS.forEach((m) => {
     chain[m] = (...args: unknown[]) => {
-      if (calls && (m === 'insert' || m === 'update' || m === 'upsert')) {
+      if (calls && (m === 'insert' || m === 'update' || m === 'upsert' || trackedFilters.includes(m))) {
         calls[table] ??= {};
         calls[table][m] ??= [];
         calls[table][m].push(args);
@@ -92,6 +93,9 @@ export function createSupabaseMock(
   // foydalansangiz, bu obyektni `responses` bilan birga beforeEach da
   // tozalang (aks holda ikkinchi test birinchisining sanog'idan davom etadi).
   counters: Record<string, number> = {},
+  // Qo'shimcha yozib boriladigan filtr metodlari (masalan ['is', 'not']) — shartli
+  // update/delete'ga kerakli filtr qo'shilganini tekshirish uchun. Standart: hech biri.
+  trackedFilters: readonly string[] = [],
 ) {
   return {
     from: (table: string) => createChain(
@@ -99,6 +103,7 @@ export function createSupabaseMock(
       () => responses[table] ?? { data: null, error: null },
       () => (counters[table] = (counters[table] ?? -1) + 1),
       calls,
+      trackedFilters,
     ),
   };
 }

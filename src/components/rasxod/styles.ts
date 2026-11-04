@@ -11,6 +11,7 @@ export const COLOR = {
   green: '#10b981',
   red: '#f43f5e',
   indigo: '#6366f1',
+  violet: '#a78bfa', // ishxonaga yozilgan
   slate: '#64748b',
 };
 

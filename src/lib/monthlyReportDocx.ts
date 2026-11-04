@@ -44,6 +44,8 @@ import { triggerDownload } from '@/lib/export';
 import {
   carStats,
   fmtSana,
+  ishxonaAmount,
+  isIshxona,
   kunFarqi,
   paidAmount,
   qaytishKuni,
@@ -210,6 +212,7 @@ const KEY_BG = 'F3F6FB';
 const GREEN = '1E7B4F';
 const RED = 'B42318';
 const AMBER = '9A5B00';
+const VIOLET = '6D28D9'; // rasxod daftaridan ishxonaga yozilgan
 const FONT = 'Calibri';
 
 const NBSP = ' ';
@@ -521,6 +524,12 @@ function rasxodSection(input: MonthlyReportInput): Array<Paragraph | Table> {
         new TextRun({ text: fmtSum(st.jami), font: FONT, size: 21, bold: true }),
         new TextRun({ text: "     To'langan ", font: FONT, size: 21, color: GRAY }),
         new TextRun({ text: fmtSum(st.tulangan), font: FONT, size: 21, bold: true, color: st.tulangan ? GREEN : undefined }),
+        ...(st.ishxona > 0
+          ? [
+              new TextRun({ text: '     Ishxonaga ', font: FONT, size: 21, color: GRAY }),
+              new TextRun({ text: fmtSum(st.ishxona), font: FONT, size: 21, bold: true, color: VIOLET }),
+            ]
+          : []),
         new TextRun({ text: '     Qoldiq ', font: FONT, size: 21, color: GRAY }),
         new TextRun({ text: fmtSum(st.qoldiq), font: FONT, size: 21, bold: true }),
       ],
@@ -543,6 +552,10 @@ function rasxodSection(input: MonthlyReportInput): Array<Paragraph | Table> {
           const days = qaytishKuni(it);
           holat = [{ text: `To'langan ${paidDay}`, color: GREEN }];
           if (days !== null) holat.push({ text: `  (${days} kunda qaytdi)`, color: GRAY, size: 18 });
+        } else if (isIshxona(it)) {
+          const day = it.ishxona_vaqt ? fmtSana(tashkentDate(new Date(it.ishxona_vaqt))) : DASH;
+          holat = [{ text: `Ishxonaga yozilgan ${day}: ${fmtSum(ishxonaAmount(it))}`, color: VIOLET }];
+          if (paidAmount(it) > 0) holat.push({ text: `  (${fmtSum(paidAmount(it))} to'langan)`, color: GRAY, size: 18 });
         } else if (paidAmount(it) > 0) {
           holat = [{ text: `Qisman: ${fmtSum(paidAmount(it))} to'langan, qoldi ${fmtSum(it.summa - paidAmount(it))}`, color: AMBER }];
         } else {

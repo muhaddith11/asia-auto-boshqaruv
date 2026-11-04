@@ -3,20 +3,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
-  CircleCheck, Clock, FileSpreadsheet, Hourglass, Info, LoaderCircle, NotebookPen, Plus, RotateCcw, Search, Wallet,
+  Building2, CircleCheck, Clock, FileSpreadsheet, Hourglass, Info, LoaderCircle, NotebookPen, Plus, RotateCcw, Search, Wallet,
 } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import { exportToCSV } from '@/lib/export';
 import { formatPhone } from '@/lib/phone';
 import {
-  carStats, fmtSana, itemHolat, kunFarqi, paidAmount, patchCar, qaytishKuni, removeItem, summarizeDaftar, tashkentDate,
-  upsertItems, visibleCars,
+  carStats, fmtSana, ishxonaAmount, itemHolat, kunFarqi, paidAmount, patchCar, qaytishKuni, removeItem, summarizeDaftar,
+  tashkentDate, upsertItems, visibleCars,
   type CarInput, type DaftarTab, type ItemInput, type RasxodCar, type RasxodItem,
 } from '@/lib/rasxodDaftar';
 import {
   addDaftarItem, addDaftarPartialPayment, createDaftarCar, deleteDaftarCar, deleteDaftarItem, fetchDaftar,
-  resetDaftarPartialPayment, setDaftarTulov, updateDaftarCar, updateDaftarItem,
+  resetDaftarPartialPayment, setDaftarTulov, undoDaftarWriteOff, updateDaftarCar, updateDaftarItem, writeOffDaftarItem,
 } from '@/lib/rasxodDaftarClient';
+import { useStore } from '@/store/useStore';
 import RasxodCarCard from './RasxodCarCard';
 import RasxodCarModal from './RasxodCarModal';
 import { btn, COLOR, errorText, fmt, inputStyle } from './styles';
@@ -24,11 +25,19 @@ import { btn, COLOR, errorText, fmt, inputStyle } from './styles';
 // ─────────────────────────────────────────────────────────────────────────────
 // Rasxod daftari — mashinaga qilingan, lekin KASSADAN AYIRILMAGAN rasxodlar.
 // Mashina + rasxodlar yoziladi; mijoz pulni qaytarganda "To'landi" qilinadi.
-// Kassaga hech qachon tegmaydi. Mantiq: @/lib/rasxodDaftar.
+// Kassaga tegmaydi. Yagona istisno — «Ishxonaga»: mijoz qaytarmaydigan rasxod
+// qoldig'i 'Ishxona' chiqimi bo'lib naqd kassadan ayiriladi (qaytarsa bo'ladi).
+// Mantiq: @/lib/rasxodDaftar.
 // ─────────────────────────────────────────────────────────────────────────────
 
 type ModalState = { mode: 'create' } | { mode: 'edit'; car: RasxodCar } | null;
-type ConfirmState = { kind: 'car'; car: RasxodCar } | { kind: 'item'; car: RasxodCar; item: RasxodItem } | null;
+type DeleteTarget = { kind: 'car'; car: RasxodCar } | { kind: 'item'; car: RasxodCar; item: RasxodItem };
+type ConfirmState = DeleteTarget | { kind: 'ishxona'; car: RasxodCar; item: RasxodItem } | null;
+
+// Kassa serverda o'zgardi — store'dagi eski kassa keyingi amalda ustidan yozib yubormasin.
+const refreshStoreKassa = () => {
+  void useStore.getState().loadInitialData(true);
+};
 
 const TABS: { key: DaftarTab; label: string }[] = [
   { key: 'kutilmoqda', label: 'Kutilmoqda' },
@@ -209,7 +218,51 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
     }
   };
 
-  const handleConfirmDelete = async (target: NonNullable<ConfirmState>) => {
+  const handleUndoIshxona = async (car: RasxodCar, item: RasxodItem): Promise<boolean> => {
+    try {
+      const { item: updated, amount } = await undoDaftarWriteOff(car.id, item.id);
+      setCars((prev) => upsertItems(prev ?? [], [updated]));
+      refreshStoreKassa();
+      toast.success(`${item.nom}: ishxona chiqimi bekor qilindi, ${fmt(amount)} so'm naqd kassaga qaytdi`);
+      return true;
+    } catch (err) {
+      toast.error(errorText(err, 'Qaytarilmadi'));
+      return false;
+    }
+  };
+
+  const handleIshxona = async (car: RasxodCar, item: RasxodItem) => {
+    const loading = toast.loading('Ishxonaga yozilmoqda...');
+    try {
+      const { item: updated, amount } = await writeOffDaftarItem(car.id, item.id);
+      setCars((prev) => upsertItems(prev ?? [], [updated]));
+      refreshStoreKassa();
+      // Adashib bosilgan bo'lsa — shu yerning o'zidan qaytarish mumkin.
+      toast.success(
+        (t) => (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span>{`${item.nom}: ${fmt(amount)} so'm ishxona chiqimi bo'ldi (naqd kassadan ayirildi)`}</span>
+            <button
+              type="button"
+              className="rd-btn"
+              onClick={() => {
+                toast.dismiss(t.id);
+                void handleUndoIshxona(car, updated);
+              }}
+              style={btn('neutral', 'sm')}
+            >
+              <RotateCcw size={13} /> Qaytarish
+            </button>
+          </span>
+        ),
+        { id: loading, duration: 7000 },
+      );
+    } catch (err) {
+      toast.error(errorText(err, 'Ishxonaga yozilmadi'), { id: loading });
+    }
+  };
+
+  const handleConfirmDelete = async (target: DeleteTarget) => {
     try {
       if (target.kind === 'car') {
         await deleteDaftarCar(target.car.id);
@@ -241,27 +294,40 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
       { key: 'summa', label: 'Summa', format: (r) => r.item.summa },
       {
         key: 'holat', label: 'Holat',
-        format: (r) => ({ tulandi: "To'langan", qisman: "Qisman to'landi", kutilmoqda: 'Kutilmoqda' })[itemHolat(r.item)],
+        format: (r) => ({
+          tulandi: "To'langan", qisman: "Qisman to'landi", kutilmoqda: 'Kutilmoqda', ishxona: 'Ishxonaga yozilgan',
+        })[itemHolat(r.item)],
       },
       { key: 'tulangan_summa', label: "To'langan summa", format: (r) => paidAmount(r.item) },
+      { key: 'ishxona', label: 'Ishxonaga yozilgan summa', format: (r) => ishxonaAmount(r.item) || '' },
+      {
+        key: 'ishxona_sana', label: 'Ishxonaga yozilgan sana',
+        format: (r) => (r.item.ishxona_vaqt && r.item.ishxona_op_id !== null ? fmtSana(tashkentDate(new Date(r.item.ishxona_vaqt))) : ''),
+      },
       {
         key: 'tulangan', label: "Oxirgi to'lov sana",
         format: (r) => (r.item.tulangan_vaqt ? fmtSana(tashkentDate(new Date(r.item.tulangan_vaqt))) : ''),
       },
       { key: 'qaytish', label: 'Necha kunda qaytdi', format: (r) => qaytishKuni(r.item) ?? '' },
-      { key: 'kutish', label: 'Necha kun kutmoqda', format: (r) => (r.item.tulandi ? '' : kunFarqi(r.item.sana, now)) },
+      {
+        key: 'kutish', label: 'Necha kun kutmoqda',
+        format: (r) => (itemHolat(r.item) === 'tulandi' || itemHolat(r.item) === 'ishxona' ? '' : kunFarqi(r.item.sana, now)),
+      },
     ]);
   };
 
   const engUzoq = summary.engUzoq;
   const engUzoqColor = !engUzoq ? COLOR.slate : engUzoq.kun >= 7 ? COLOR.red : COLOR.amber;
 
-  const confirmTitle = confirm?.kind === 'car' ? "Mashinani o'chirish" : "Rasxodni o'chirish";
+  const confirmTitle = confirm?.kind === 'car' ? "Mashinani o'chirish"
+    : confirm?.kind === 'ishxona' ? 'Ishxonaga yozish' : "Rasxodni o'chirish";
   const confirmMessage = !confirm
     ? ''
     : confirm.kind === 'car'
       ? `${carName(confirm.car)}${confirm.car.raqam && confirm.car.mashina ? ` (${confirm.car.raqam})` : ''} va uning ${confirm.car.items.length} ta rasxodi (jami ${fmt(carStats(confirm.car, now).jami)} so'm) daftardan butunlay o'chiriladi.`
-      : `"${confirm.item.nom}" — ${fmt(confirm.item.summa)} so'm (${fmtSana(confirm.item.sana)}) daftardan o'chiriladi.`;
+      : confirm.kind === 'ishxona'
+        ? ishxonaConfirmText(confirm.car, confirm.item)
+        : `"${confirm.item.nom}" — ${fmt(confirm.item.summa)} so'm (${fmtSana(confirm.item.sana)}) daftardan o'chiriladi.`;
 
   return (
     <>
@@ -304,6 +370,16 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
           unit="UZS"
           hint={`${summary.carCount} ta mashina · ${summary.itemCount} ta rasxod`}
         />
+        {summary.ishxona > 0 && (
+          <StatCard
+            icon={<Building2 size={20} />}
+            color={COLOR.violet}
+            label="Ishxonaga yozilgan"
+            value={fmt(summary.ishxona)}
+            unit="UZS"
+            hint={`${summary.ishxonaCount} ta rasxod · naqd kassadan chiqim`}
+          />
+        )}
         <StatCard
           icon={<Clock size={20} />}
           color={engUzoqColor}
@@ -321,6 +397,9 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
           {'Bu daftar '}
           <b style={{ color: 'white' }}>kassaga tegmaydi</b>
           {": rasxod yozilganda kassadan ayirilmaydi, «To'landi» bosilganda kassaga qo'shilmaydi. Mashinani va qilgan rasxodlaringizni yozib boring — mijoz pulni qaytarganda «To'landi» deb belgilang."}
+          {' Yagona istisno — '}
+          <b style={{ color: COLOR.violet }}>«Ishxonaga»</b>
+          {": mijoz qaytarmaydigan rasxodning qoldig'i ishxona chiqimi bo'lib yoziladi va naqd kassadan ayiriladi (adashib bosilsa — qaytarish tugmasi bor)."}
         </div>
       </div>
 
@@ -404,6 +483,8 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
               onSetTulov={handleSetTulov}
               onAddPartial={handleAddPartial}
               onResetPartial={handleResetPartial}
+              onIshxona={(c, item) => setConfirm({ kind: 'ishxona', car: c, item })}
+              onUndoIshxona={handleUndoIshxona}
             />
           ))}
         </div>
@@ -423,13 +504,28 @@ export default function RasxodDaftar({ header }: { header: React.ReactNode }) {
         isOpen={confirm !== null}
         title={confirmTitle}
         message={confirmMessage}
-        confirmText="O'chirish"
+        confirmText={confirm?.kind === 'ishxona' ? 'Ishxonaga yozish' : "O'chirish"}
+        danger={confirm?.kind !== 'ishxona'}
         onConfirm={() => {
-          if (confirm) void handleConfirmDelete(confirm);
+          if (!confirm) return;
+          if (confirm.kind === 'ishxona') void handleIshxona(confirm.car, confirm.item);
+          else void handleConfirmDelete(confirm);
         }}
         onCancel={() => setConfirm(null)}
       />
     </>
+  );
+}
+
+function ishxonaConfirmText(car: RasxodCar, item: RasxodItem): string {
+  const paid = paidAmount(item);
+  const amount = item.summa - paid;
+  const label = [car.mashina, car.raqam].filter(Boolean).join(' · ') || 'Mashina';
+  return (
+    `"${item.nom}" (${label}) — ${fmt(amount)} so'm` +
+    (paid > 0 ? ` (mijoz to'lagan ${fmt(paid)} so'mdan tashqari qoldiq)` : '') +
+    " «Ishxona» chiqimi bo'lib yoziladi va naqd kassadan ayiriladi. Ishxona foydasi va sherik ulushi ham shunga kamayadi." +
+    ' Rasxod mashinaning qoldig\'idan chiqadi; adashsangiz qatordagi qaytarish tugmasi bilan bekor qilasiz.'
   );
 }
 

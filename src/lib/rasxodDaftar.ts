@@ -7,6 +7,11 @@
 // KASSAGA TEGMAYDI — na rasxod yozilganda, na "to'landi" qilinganda. Bot orqali
 // kiritiladigan rasxoddan (orders.zaps, @/lib/rasxodRecovery) butunlay alohida.
 //
+// YAGONA ISTISNO — "Ishxonaga": mijoz qaytarmaydigan rasxodni ishxona ko'taradi.
+// Qatorning qoldig'i 'Ishxona' chiqimi bo'lib yoziladi va naqd kassadan ayiriladi
+// (ishxona foydasi va sherik ulushi ham shunchaga kamayadi). Qator yopiladi,
+// qoldiqdan chiqadi; qaytarilsa chiqim o'chib, pul kassaga qaytadi.
+//
 // Sof funksiyalar — client ham, server (API validatsiya) ham ishlatadi.
 // Test: rasxodDaftar.spec.ts
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,6 +25,8 @@ export interface RasxodItem {
   tulandi: boolean; // summa TO'LIQ qaytdimi
   tulangan_summa: number; // qisman to'lov: hozirgacha qaytgan qism (tulandi=false bo'lganda ma'noli)
   tulangan_vaqt: string | null; // ISO — oxirgi to'lov (to'liq yoki qisman) vaqti
+  ishxona_op_id: number | null; // ishxonaga yozilgan bo'lsa — o'sha chiqim (operations.id)
+  ishxona_vaqt: string | null; // ISO — ishxonaga yozilgan vaqt
   created_at: string;
 }
 
@@ -220,22 +227,36 @@ export function paidAmount(item: RasxodItem): number {
   return Math.min(Math.max(item.tulangan_summa, 0), item.summa);
 }
 
-export type ItemHolat = 'kutilmoqda' | 'qisman' | 'tulandi';
+export function isIshxona(item: RasxodItem): boolean {
+  return !item.tulandi && item.ishxona_op_id !== null;
+}
+
+// Ishxonaga yozilgan summa — yozilgan paytdagi qoldiq. Ishxonaga yozilgan qatorga
+// to'lov ham, summa o'zgarishi ham yo'q (server rad etadi), shuning uchun u o'zgarmaydi.
+export function ishxonaAmount(item: RasxodItem): number {
+  return isIshxona(item) ? item.summa - paidAmount(item) : 0;
+}
+
+export type ItemHolat = 'kutilmoqda' | 'qisman' | 'tulandi' | 'ishxona';
 
 export function itemHolat(item: RasxodItem): ItemHolat {
   if (item.tulandi) return 'tulandi';
+  if (isIshxona(item)) return 'ishxona';
   return paidAmount(item) > 0 ? 'qisman' : 'kutilmoqda';
 }
 
 // bosh — hali rasxod yozilmagan; qisman — bir qismi qaytgan.
+// tulandi — qoldiq yo'q (mijoz qaytargan va/yoki ishxonaga yozilgan).
 export type CarHolat = 'bosh' | 'kutilmoqda' | 'qisman' | 'tulandi';
 
 export interface CarStats {
   jami: number;
   tulangan: number;
+  ishxona: number; // ishxonaga yozilgan — qoldiqqa kirmaydi
   qoldiq: number;
   itemCount: number;
-  unpaidCount: number;
+  unpaidCount: number; // qaytishi kutilayotgan qatorlar (ishxonaga yozilganlar kirmaydi)
+  ishxonaCount: number;
   holat: CarHolat;
   // Eng eski to'lanmagan rasxoddan beri necha kun (to'lanmaganlar bo'lmasa null).
   kutishKuni: number | null;
@@ -245,14 +266,19 @@ export interface CarStats {
 
 export function carStats(car: RasxodCar, now: Date = new Date()): CarStats {
   const stats: CarStats = {
-    jami: 0, tulangan: 0, qoldiq: 0,
-    itemCount: car.items.length, unpaidCount: 0,
+    jami: 0, tulangan: 0, ishxona: 0, qoldiq: 0,
+    itemCount: car.items.length, unpaidCount: 0, ishxonaCount: 0,
     holat: 'bosh', kutishKuni: null, oxirgiTulov: null,
   };
   for (const item of car.items) {
     stats.jami += item.summa;
     const paid = paidAmount(item);
     stats.tulangan += paid;
+    if (isIshxona(item)) {
+      stats.ishxona += item.summa - paid;
+      stats.ishxonaCount++;
+      continue;
+    }
     stats.qoldiq += item.summa - paid;
     if (item.tulandi) {
       if (item.tulangan_vaqt && (!stats.oxirgiTulov || item.tulangan_vaqt > stats.oxirgiTulov)) {
@@ -264,9 +290,9 @@ export function carStats(car: RasxodCar, now: Date = new Date()): CarStats {
     }
   }
   if (stats.itemCount > 0) {
-    // Jami qoldiq 0 — hammasi qaytdi; hech narsa qaytmagan bo'lsa kutilmoqda;
-    // aks holda (bitta qatorning bir qismi yoki ba'zi qatorlar to'liq qaytgan) — qisman.
-    stats.holat = stats.qoldiq === 0 ? 'tulandi' : stats.tulangan > 0 ? 'qisman' : 'kutilmoqda';
+    // Jami qoldiq 0 — hammasi yopildi; hech narsa qaytmagan (va ishxonaga yozilmagan)
+    // bo'lsa kutilmoqda; aks holda (bir qismi qaytgan yoki ishxonaga yozilgan) — qisman.
+    stats.holat = stats.qoldiq === 0 ? 'tulandi' : stats.tulangan + stats.ishxona > 0 ? 'qisman' : 'kutilmoqda';
   }
   return stats;
 }
@@ -285,6 +311,8 @@ export interface DaftarSummary {
   kutayotganMashina: number;
   tulangan: number;
   paidCount: number;
+  ishxona: number;
+  ishxonaCount: number;
   ortachaQaytish: number | null;
   engUzoq: { carId: number; mashina: string; raqam: string | null; kun: number } | null;
 }
@@ -293,7 +321,7 @@ export function summarizeDaftar(cars: RasxodCar[], now: Date = new Date()): Daft
   const s: DaftarSummary = {
     carCount: cars.length, jami: 0, itemCount: 0,
     qoldiq: 0, unpaidCount: 0, kutayotganMashina: 0,
-    tulangan: 0, paidCount: 0, ortachaQaytish: null, engUzoq: null,
+    tulangan: 0, paidCount: 0, ishxona: 0, ishxonaCount: 0, ortachaQaytish: null, engUzoq: null,
   };
   let daysSum = 0;
   let daysCount = 0;
@@ -305,7 +333,9 @@ export function summarizeDaftar(cars: RasxodCar[], now: Date = new Date()): Daft
     s.qoldiq += st.qoldiq;
     s.unpaidCount += st.unpaidCount;
     s.tulangan += st.tulangan;
-    s.paidCount += st.itemCount - st.unpaidCount;
+    s.paidCount += st.itemCount - st.unpaidCount - st.ishxonaCount;
+    s.ishxona += st.ishxona;
+    s.ishxonaCount += st.ishxonaCount;
     if (st.unpaidCount > 0) s.kutayotganMashina++;
     if (st.kutishKuni !== null && (!s.engUzoq || st.kutishKuni > s.engUzoq.kun)) {
       s.engUzoq = { carId: car.id, mashina: car.mashina, raqam: car.raqam, kun: st.kutishKuni };

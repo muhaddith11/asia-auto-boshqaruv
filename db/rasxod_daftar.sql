@@ -42,3 +42,14 @@ alter table public.rasxod_cars  enable row level security;
 alter table public.rasxod_items enable row level security;
 
 create index if not exists rasxod_items_car_id_idx on public.rasxod_items (car_id);
+
+-- ── "Ishxonaga" (migratsiya rasxod_items_ishxona_chiqim, 2026-11-04) ──
+-- Mijoz qaytarmaydigan rasxodni ishxona ko'taradi: qator qoldig'i `operations`ga
+-- 'Ishxona' chiqimi bo'lib yoziladi va naqd kassadan ayiriladi (DAFTARDAGI
+-- YAGONA kassaga tegadigan amal). Qaytarilsa chiqim o'chadi, pul kassaga qaytadi.
+-- Operatsiya boshqa joydan o'chirilsa ham FK qatorni yana ochiq holatga qaytaradi.
+alter table public.rasxod_items
+  add column if not exists ishxona_op_id bigint references public.operations (id) on delete set null,
+  add column if not exists ishxona_vaqt  timestamptz;
+
+create index if not exists rasxod_items_ishxona_op_id_idx on public.rasxod_items (ishxona_op_id);

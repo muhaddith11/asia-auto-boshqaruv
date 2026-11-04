@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import {
-  Car, Check, CheckCheck, CircleCheck, LoaderCircle, Pencil, Phone, Plus, StickyNote, Trash2, Undo2, User,
+  Building2, Car, Check, CheckCheck, CircleCheck, LoaderCircle, Pencil, Phone, Plus, StickyNote, Trash2, Undo2, User,
 } from 'lucide-react';
 import { formatDigits, stripToDigits } from '@/lib/numberInput';
 import { formatPhone } from '@/lib/phone';
 import {
-  carStats, fmtSana, itemHolat, kunFarqi, paidAmount, parseItemInput, qaytishKuni, tashkentDate,
+  carStats, fmtSana, ishxonaAmount, itemHolat, kunFarqi, paidAmount, parseItemInput, qaytishKuni, tashkentDate,
   type CarHolat, type ItemInput, type RasxodCar, type RasxodItem,
 } from '@/lib/rasxodDaftar';
 import { btn, COLOR, fmt, iconBtn, inputStyle } from './styles';
@@ -26,6 +26,9 @@ export interface CarCardActions {
   // Qisman to'lov: summa qatorning qoldig'iga qo'shiladi (to'liq to'lansa avtomatik "tulandi").
   onAddPartial: (car: RasxodCar, item: RasxodItem, summa: number) => Promise<boolean>;
   onResetPartial: (car: RasxodCar, item: RasxodItem) => Promise<boolean>;
+  // "Ishxonaga": tasdiq so'raladi (ota komponentda), keyin qoldiq kassadan ishxona chiqimi bo'ladi.
+  onIshxona: (car: RasxodCar, item: RasxodItem) => void;
+  onUndoIshxona: (car: RasxodCar, item: RasxodItem) => Promise<boolean>;
 }
 
 interface Props extends CarCardActions {
@@ -45,10 +48,12 @@ const spinner = <LoaderCircle size={14} className="animate-spin" />;
 
 export default function RasxodCarCard({
   car, now, highlighted, onEdit, onDelete, onAddItem, onUpdateItem, onDeleteItem, onSetTulov, onAddPartial, onResetPartial,
+  onIshxona, onUndoIshxona,
 }: Props) {
   const st = carStats(car, now);
   const today = tashkentDate(now);
-  const meta = HOLAT[st.holat];
+  // Qoldiq yo'q, lekin bir qismini ishxona ko'targan — "To'landi" deyish noto'g'ri bo'ladi.
+  const meta = st.holat === 'tulandi' && st.ishxona > 0 ? { label: 'Yopildi', color: COLOR.green } : HOLAT[st.holat];
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [payingId, setPayingId] = useState<number | null>(null);
@@ -114,6 +119,7 @@ export default function RasxodCarCard({
         <div style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
           <Total label="Jami" value={st.jami} color="var(--text)" />
           <Total label="To'langan" value={st.tulangan} color={st.tulangan > 0 ? COLOR.green : 'var(--text3)'} />
+          {st.ishxona > 0 && <Total label="Ishxonaga" value={st.ishxona} color={COLOR.violet} />}
           <Total label="Qoldiq" value={st.qoldiq} color={st.qoldiq > 0 ? COLOR.amber : 'var(--text3)'} />
         </div>
 
@@ -164,16 +170,18 @@ export default function RasxodCarCard({
           const payBusy = busy === `pay-${item.id}`;
           const partialBusy = busy === `partial-${item.id}`;
           const resetBusy = busy === `reset-${item.id}`;
+          const undoIshxonaBusy = busy === `ishxona-${item.id}`;
+          const closed = ih === 'tulandi' || ih === 'ishxona';
           const days = ih === 'tulandi' ? qaytishKuni(item) : kunFarqi(item.sana, now);
           return (
             // Ikki guruh: [sana · nom · summa] va [holat · tugmalar] — tor ekranda ikkinchisi butunlay pastga tushadi.
             <div key={item.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 16px', padding: '10px 20px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ flex: '0 0 78px', fontSize: 12, color: 'var(--text3)', fontVariantNumeric: 'tabular-nums' }}>{fmtSana(item.sana)}</span>
-                <span style={{ flex: '1 1 auto', minWidth: 0, fontSize: 13, fontWeight: 600, color: ih === 'tulandi' ? 'var(--text2)' : 'white', overflowWrap: 'anywhere' }}>
+                <span style={{ flex: '1 1 auto', minWidth: 0, fontSize: 13, fontWeight: 600, color: closed ? 'var(--text2)' : 'white', overflowWrap: 'anywhere' }}>
                   {item.nom}
                 </span>
-                <span style={{ flex: '0 0 auto', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: ih === 'tulandi' ? 'var(--text3)' : 'white', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                <span style={{ flex: '0 0 auto', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: closed ? 'var(--text3)' : 'white', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                   {fmt(item.summa)}
                 </span>
               </div>
@@ -212,6 +220,30 @@ export default function RasxodCarCard({
                         {payBusy ? spinner : <Undo2 size={14} />}
                       </button>
                     </>
+                  ) : ih === 'ishxona' ? (
+                    <>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, color: COLOR.violet, whiteSpace: 'nowrap' }}>
+                        <Building2 size={14} />
+                        Ishxonaga yozildi
+                        {item.ishxona_vaqt ? ` · ${fmtSana(tashkentDate(new Date(item.ishxona_vaqt)))}` : ''}
+                      </span>
+                      {paid > 0 && (
+                        <span style={{ fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>
+                          {fmt(ishxonaAmount(item))} · {fmt(paid)} {"mijoz to'lagan"}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className="rd-btn"
+                        disabled={busy !== null}
+                        onClick={() => run(`ishxona-${item.id}`, () => onUndoIshxona(car, item))}
+                        style={iconBtn()}
+                        title="Adashib bosilgan — ishxona chiqimini bekor qilib, pulni kassaga qaytarish"
+                        aria-label="Ishxona chiqimini qaytarish"
+                      >
+                        {undoIshxonaBusy ? spinner : <Undo2 size={14} />}
+                      </button>
+                    </>
                   ) : (
                     <>
                       {ih === 'qisman' ? (
@@ -232,6 +264,16 @@ export default function RasxodCarCard({
                         title="Mijoz shu rasxodning qolgan pulini ham qaytardi"
                       >
                         {payBusy ? spinner : <Check size={14} />} {ih === 'qisman' ? "Qolganini to'landi" : "To'landi"}
+                      </button>
+                      <button
+                        type="button"
+                        className="rd-btn"
+                        disabled={busy !== null}
+                        onClick={() => onIshxona(car, item)}
+                        style={btn('neutral', 'sm', { color: COLOR.violet })}
+                        title="Mijoz qaytarmaydi — qoldiqni ishxona chiqimi qilib yozish (naqd kassadan ayiriladi)"
+                      >
+                        <Building2 size={13} /> Ishxonaga
                       </button>
                       <button
                         type="button"
@@ -258,7 +300,8 @@ export default function RasxodCarCard({
                       )}
                     </>
                   )}
-                  <span style={{ display: 'inline-flex', gap: 6, marginLeft: 4 }}>
+                  {/* Ishxonaga yozilgan qator kassadagi chiqim bilan bog'langan — avval qaytarish kerak. */}
+                  {ih !== 'ishxona' && <span style={{ display: 'inline-flex', gap: 6, marginLeft: 4 }}>
                     <button
                       type="button"
                       className="rd-btn"
@@ -279,7 +322,7 @@ export default function RasxodCarCard({
                     >
                       <Trash2 size={13} />
                     </button>
-                  </span>
+                  </span>}
                 </div>
               )}
             </div>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { logAudit } from '@/lib/audit';
 import { errorMessage, parseIdParam, readJsonObject, requireSection } from '@/lib/routeGuard';
 import { parseItemInput, tashkentDate } from '@/lib/rasxodDaftar';
-import { NotFoundError, deleteItem, updateItem } from '@/lib/rasxodDaftarRepo';
+import { NotFoundError, ValidationError, deleteItem, updateItem } from '@/lib/rasxodDaftarRepo';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +32,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     );
     return NextResponse.json({ item });
   } catch (err) {
-    const status = err instanceof NotFoundError ? 404 : 500;
+    const status = err instanceof NotFoundError ? 404 : err instanceof ValidationError ? 400 : 500;
     return NextResponse.json({ error: errorMessage(err, 'Rasxod saqlanmadi') }, { status });
   }
 }
@@ -57,7 +57,7 @@ export async function DELETE(request: NextRequest, context: Context) {
     );
     return NextResponse.json({ ok: true });
   } catch (err) {
-    const status = err instanceof NotFoundError ? 404 : 500;
+    const status = err instanceof NotFoundError ? 404 : err instanceof ValidationError ? 400 : 500;
     return NextResponse.json({ error: errorMessage(err, "Rasxod o'chirilmadi") }, { status });
   }
 }
