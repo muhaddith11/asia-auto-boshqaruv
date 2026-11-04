@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,9 @@ function mapAppToDB(body: any) {
 }
 
 export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireSection(request, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const { id: idStr } = await context.params;
     const id = Number(idStr);
@@ -49,6 +53,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 }
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireSection(request, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const { id: idStr } = await context.params;
     const id = Number(idStr);

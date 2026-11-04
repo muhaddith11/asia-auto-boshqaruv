@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,17 +9,14 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, action, workerPhone, mechanicChatId } = body as {
+    const { orderId, action } = body as {
       orderId?: number;
       action?: 'start' | 'stop';
-      workerPhone?: string;
-      mechanicChatId?: string;
     };
 
-    const worker = await identifyWorker(workerPhone, mechanicChatId);
-    if (!worker) {
-      return NextResponse.json({ ok: false, error: 'Xodim topilmadi.' }, { status: 403 });
-    }
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
     if (!orderId || (action !== 'start' && action !== 'stop')) {
       return NextResponse.json({ ok: false, error: "Ma'lumot to'liq emas." }, { status: 400 });
     }

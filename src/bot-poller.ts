@@ -58,7 +58,7 @@ export function startCleanupWorker() {
 async function handleUpdate(update: any) {
   try {
     if (!update.message) return;
-    const { chat, text, contact } = update.message;
+    const { chat, from, text, contact } = update.message;
     const chatId = chat.id.toString();
 
     // /id buyrug'i — joriy chat (guruh) ID sini qaytaradi (TELEGRAM_GROUP_ID uchun)
@@ -80,40 +80,36 @@ async function handleUpdate(update: any) {
 
     if (idError) console.error('Supabase ID Search Error:', idError);
 
-    // Helper: Build persistent keyboard
-    const getPersistentKeyboard = (worker: any) => {
+    // Telegram pastki klaviatura tugmasiga imzoli initData bermaydi (xodim tanilmaydi),
+    // shu sabab faqat inline va Menu tugmalari ishlatiladi. Eski klaviatura shu yerda olinadi.
+    const sendOrderButton = async (message: string) => {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
-      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
-      return {
-        keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]],
-        resize_keyboard: true,
-        persistent: true
-      };
+      await sendTg('sendMessage', { chat_id: chatId, text: message, reply_markup: { remove_keyboard: true } });
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: "🆕 Buyurtma kiritish uchun tugmani bosing:",
+        reply_markup: { inline_keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: `${baseUrl}/bot-ui` } }]] },
+      });
     };
 
-    const enableButtons = async (worker: any) => {
+    const enableButtons = async () => {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3000';
-      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
-      await setChatMenuButton(chatId, webAppUrl);
+      await setChatMenuButton(chatId, `${baseUrl}/bot-ui`);
     };
 
     // --- CASE A: Already recognized worker ---
     if (workerById) {
-      await enableButtons(workerById);
+      await enableButtons();
       
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3005';
-    const webAppUrl = `${baseUrl}/bot-ui?phone=${workerById.tel?.replace(/\D/g, '')}`;
+    const webAppUrl = `${baseUrl}/bot-ui`;
 
     if (text === '/start') {
         const messageText = `✅ Xush kelibsiz, ${workerById.ism}!\nSiz tizimda tanilgansiz.`;
         
         // If HTTPS, use button, otherwise send link
         if (webAppUrl.startsWith('https')) {
-          await sendTg('sendMessage', {
-            chat_id: chatId,
-            text: `${messageText}\nPastdagi ko'k 'Menu' tugmasidan foydalanishingiz mumkin.`,
-            reply_markup: getPersistentKeyboard(workerById)
-          });
+          await sendOrderButton(messageText);
         } else {
           await sendTg('sendMessage', {
             chat_id: chatId,
@@ -122,11 +118,7 @@ async function handleUpdate(update: any) {
         }
       } else {
         if (webAppUrl.startsWith('https')) {
-          await sendTg('sendMessage', {
-            chat_id: chatId,
-            text: "🆕 Yangi buyurtma kiritish uchun pastdagi tugmani bosing.",
-            reply_markup: getPersistentKeyboard(workerById)
-          });
+          await sendOrderButton("Qayta raqam kiritish shart emas.");
         } else {
           await sendTg('sendMessage', {
             chat_id: chatId,
@@ -139,6 +131,15 @@ async function handleUpdate(update: any) {
 
     // --- CASE B: Registration flow (Contact shared) ---
     if (contact) {
+      // Faqat o'z raqami: birovning kontaktini yuborib xodim bo'lib kirib bo'lmaydi.
+      if (!from?.id || contact.user_id !== from.id || chat.id !== from.id) {
+        await sendTg('sendMessage', {
+          chat_id: chatId,
+          text: "Iltimos, pastdagi tugma orqali o'zingizning raqamingizni yuboring.",
+        });
+        return;
+      }
+
       const rawPhone = contact.phone_number;
       const normalizedPhone = rawPhone.replace(/\D/g, '');
       
@@ -173,15 +174,11 @@ async function handleUpdate(update: any) {
           .eq('id', worker.id);
 
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://187.124.128.65:3005';
-        const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace(/\D/g, '')}`;
+        const webAppUrl = `${baseUrl}/bot-ui`;
 
         if (webAppUrl.startsWith('https')) {
-          await enableButtons(worker);
-          await sendTg('sendMessage', {
-            chat_id: chatId,
-            text: `✅ Rahmat, ${worker.ism}!\nEndi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
-            reply_markup: getPersistentKeyboard(worker)
-          });
+          await enableButtons();
+          await sendOrderButton(`✅ Rahmat, ${worker.ism}!\nEndi sizni tanib oldim. Qayta raqam yozish shart emas.`);
         } else {
            await sendTg('sendMessage', {
             chat_id: chatId,

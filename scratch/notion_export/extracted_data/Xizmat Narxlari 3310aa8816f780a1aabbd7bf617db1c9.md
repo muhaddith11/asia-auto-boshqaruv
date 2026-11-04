@@ -173,7 +173,7 @@ aylanmadan tashqari qismiga faqatgina kirim chiqimdan “aylanmadan tashqari” 
 3. admin telegram id sini bilaman 
 4. xozirda xizmatlar va zapchastlarni shunchaki yozishadi chunki xali xizmatlar va zapchastlar ruyhati boyitilmagan
 
-bot tokeni  8529574888:AAHKzCwb-JvEesdUusSX2_Hx0Xm74fbGfTQ
+bot tokeni  <TELEGRAM_BOT_TOKEN>
 
 admin id  8042807902
 

@@ -3,15 +3,13 @@ import type { NextRequest } from 'next/server';
 import { canAccess, type Role, type Section } from '@/lib/auth';
 import { verifySessionToken } from '@/lib/session';
 
-// Auth talab QILINMAYDIGAN API prefiksilar (bot, webhook, login, health, chek).
-// Telegram va print-agent bu endpointlarni cookie'siz chaqiradi.
+// Sessiya cookie'si talab QILINMAYDIGAN API prefiksilar (bot, webhook, login, health).
+// Bu endpointlar cookie'siz chaqiriladi, shuning uchun har biri o'zini o'zi tekshiradi.
 const PUBLIC_API_PREFIXES = [
   '/api/auth',             // login / logout
-  '/api/telegram-webhook', // Telegram webhook
-  '/api/bot',              // bot, bot-ui, bot-test (Telegram Web App)
+  '/api/telegram-webhook', // Telegram webhook — o'z maxfiy kaliti bor
+  '/api/bot-ui',           // Telegram Web App — x-bot-token (botAuth.ts)
   '/api/health',
-  '/api/receipt',          // chek
-  '/api/send-sms',
   '/api/cron',             // Vercel Cron — cookie yubormaydi, o'z CRON_SECRET tekshiruvi bor
   '/api/attendance/scan',  // ishxona WiFi skaneri — o'z scanner_key tekshiruvi bor
 ];
@@ -54,8 +52,6 @@ export async function proxy(request: NextRequest) {
   // ── Ochiq sahifalar ──
   if (
     normalizedPath === '/login' ||
-    normalizedPath === '/tg-webhook' ||
-    normalizedPath.startsWith('/tg-webhook/') ||
     normalizedPath.startsWith('/bot-ui')
   ) {
     return NextResponse.next();

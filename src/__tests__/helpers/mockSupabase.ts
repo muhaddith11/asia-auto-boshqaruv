@@ -105,5 +105,18 @@ export function createSupabaseMock(
       calls,
       trackedFilters,
     ),
+    // rpc javobi `rpc:<funksiya>` kaliti bilan sozlanadi, argumentlar calls.rpc[<funksiya>] da.
+    rpc: async (fn: string, args: Record<string, unknown>): Promise<MockResult> => {
+      if (calls) {
+        calls.rpc ??= {};
+        calls.rpc[fn] ??= [];
+        calls.rpc[fn].push([args]);
+      }
+      const key = `rpc:${fn}`;
+      const responder = responses[key] ?? { data: null, error: null };
+      return typeof responder === 'function'
+        ? responder({ range: null, withCount: false, index: (counters[key] = (counters[key] ?? -1) + 1) })
+        : responder;
+    },
   };
 }

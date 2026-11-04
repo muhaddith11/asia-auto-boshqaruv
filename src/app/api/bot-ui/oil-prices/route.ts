@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { identifyBoss, identifyWorker } from '@/lib/botWorker';
+import { requireBotBoss, requireBotWorker } from '@/lib/botAuth';
 import { normalizeBolim } from '@/lib/departments';
 import { listOilPrices, createOilPrice } from '@/lib/oilPricesRepo';
 
@@ -12,9 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const worker = await identifyWorker(searchParams.get('phone'), searchParams.get('tg'));
-    if (!worker) return NextResponse.json({ ok: false, error: "Ruxsat yo'q" }, { status: 403 });
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
     if (!worker.is_boss && normalizeBolim(worker.bolim) !== 'yog') {
       return NextResponse.json({ ok: true, prices: [] });
     }
@@ -28,8 +28,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const boss = await identifyBoss(body.workerPhone, body.mechanicChatId);
-    if (!boss) return NextResponse.json({ ok: false, error: "Ruxsat yo'q (faqat boshliq)" }, { status: 403 });
+    const guard = await requireBotBoss(req);
+    if (guard.denied) return guard.denied;
     const price = await createOilPrice(body);
     return NextResponse.json({ ok: true, price }, { status: 201 });
   } catch (e: any) {

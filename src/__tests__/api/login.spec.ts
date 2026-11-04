@@ -1,12 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/auth/login/route';
 
-// Eslatma: OWNER_PASSWORD/PARTNER_PASSWORD/WORKER_PASSWORD env o'rnatilmagan bo'lsa,
-// src/lib/auth.server.ts standart parollarga tushadi (asiaauto/salom123 va h.k.).
-// Bu modul-darajasidagi konstanta bo'lgani uchun import vaqtida bir marta o'qiladi —
-// shu sabab testda vi.stubEnv o'rniga aynan shu standart qiymatlardan foydalanamiz
-// (xuddi README'da hujjatlashtirilgani kabi).
+// Test parollari vitest.config.ts dagi test.env'dan keladi. Kodda standart parol yo'q.
 
 function loginRequest(body: unknown) {
   return new NextRequest('http://localhost/api/auth/login', {
@@ -18,7 +14,7 @@ function loginRequest(body: unknown) {
 
 describe('/api/auth/login', () => {
   it("to'g'ri login/parol bilan sessiya yaratadi va httpOnly cookie qo'yadi", async () => {
-    const res = await POST(loginRequest({ login: 'asiaauto', parol: 'salom123' }));
+    const res = await POST(loginRequest({ login: 'asiaauto', parol: 'test-owner-password' }));
     expect(res.status).toBe(200);
 
     const json = await res.json();
@@ -34,7 +30,7 @@ describe('/api/auth/login', () => {
   });
 
   it('login case-insensitive ishlaydi', async () => {
-    const res = await POST(loginRequest({ login: 'ASIAAUTO', parol: 'salom123' }));
+    const res = await POST(loginRequest({ login: 'ASIAAUTO', parol: 'test-owner-password' }));
     expect(res.status).toBe(200);
   });
 
@@ -62,9 +58,18 @@ describe('/api/auth/login', () => {
   });
 
   it("boshqa rol (sherik) uchun ham to'g'ri sessiya yaratadi", async () => {
-    const res = await POST(loginRequest({ login: 'sherik', parol: 'sherik123' }));
+    const res = await POST(loginRequest({ login: 'sherik', parol: 'test-partner-password' }));
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.role).toBe('sherik');
+  });
+
+  it("paroli env'da berilmagan akkaunt bilan kirib bo'lmaydi", async () => {
+    vi.resetModules();
+    vi.stubEnv('WORKER_PASSWORD', '');
+    const { findAccount } = await import('@/lib/auth.server');
+    expect(findAccount('xodim', '')).toBeNull();
+    expect(findAccount('xodim', 'test-worker-password')).toBeNull();
+    vi.unstubAllEnvs();
   });
 });

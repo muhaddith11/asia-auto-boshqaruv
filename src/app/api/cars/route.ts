@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { requireSection } from '@/lib/routeGuard';
 
 export async function GET() {
   try {
@@ -22,7 +23,10 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const guard = await requireSection(req, 'orders');
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await req.json();
     const { data, error } = await supabase

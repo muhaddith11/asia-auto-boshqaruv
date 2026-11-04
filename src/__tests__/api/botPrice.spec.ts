@@ -27,7 +27,7 @@ vi.mock('telegraf', () => ({
   },
 }));
 vi.mock('@/lib/messageCleanup', () => ({ cleanupExpiredMessagesThrottled: () => {} }));
-vi.mock('@/lib/botWorker', () => ({ identifyWorker: async () => mockState.worker }));
+vi.mock('@/lib/botAuth', () => ({ requireBotWorker: async () => ({ worker: mockState.worker, denied: null }) }));
 
 const route = await import('@/app/api/bot-ui/price/route');
 
@@ -52,7 +52,7 @@ beforeEach(() => {
 function price() {
   const req = new NextRequest('http://localhost/api/bot-ui/price', {
     method: 'POST',
-    body: JSON.stringify({ orderId: 2431, prices: [{ index: 0, narx: 300000 }], workerPhone: '+998900000002' }),
+    body: JSON.stringify({ orderId: 2431, prices: [{ index: 0, narx: 300000 }] }),
     headers: { 'Content-Type': 'application/json' },
   });
   return route.POST(req);

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { createSessionToken, verifySessionToken } from '@/lib/session';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { createSessionToken, readToken, signToken, verifySessionToken } from '@/lib/session';
 
 describe('session (Web Crypto HMAC)', () => {
   it('to\'g\'ri token tekshiruvdan o\'tadi va payload qaytadi', async () => {
@@ -26,5 +26,25 @@ describe('session (Web Crypto HMAC)', () => {
     expect(await verifySessionToken('')).toBeNull();
     expect(await verifySessionToken('abc')).toBeNull();
     expect(await verifySessionToken(undefined)).toBeNull();
+  });
+
+  it('bir maqsadga berilgan token boshqa maqsadda o\'tmaydi', async () => {
+    const token = await signToken({ exp: Date.now() + 1000 }, 'bot');
+    expect(await readToken(token, 'bot')).not.toBeNull();
+    expect(await readToken(token)).toBeNull();
+    expect(await readToken(token, 'boshqa')).toBeNull();
+  });
+});
+
+describe('AUTH_SECRET berilmagan holat', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('sessiya yaratilmaydi va eski token o\'tmaydi', async () => {
+    const token = await createSessionToken('egasi', 'Egasi');
+    vi.stubEnv('AUTH_SECRET', '');
+    await expect(createSessionToken('egasi', 'Egasi')).rejects.toThrow();
+    expect(await verifySessionToken(token)).toBeNull();
   });
 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -44,6 +45,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireSection(request, 'workers');
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await request.json();
     const dbBody = mapAppToDB(body);

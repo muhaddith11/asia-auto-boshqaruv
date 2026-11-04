@@ -15,7 +15,7 @@ import BossMonitor from '@/components/bot-ui/BossMonitor';
 import PointsView from '@/components/bot-ui/PointsView';
 import SparePartsAdmin from '@/components/bot-ui/SparePartsAdmin';
 import OilPriceAdmin from '@/components/bot-ui/OilPriceAdmin';
-import { resolveIdentity, fetchCars, stageMeta, fmtTime, Car } from '@/components/bot-ui/botClient';
+import { resolveIdentity, createTelegramSession, submitOrder, fetchCars, stageMeta, fmtTime, Car, type BotAuthUser } from '@/components/bot-ui/botClient';
 import { bolimMeta } from '@/lib/departments';
 
 type View = 'home' | 'price' | 'detail' | 'complete' | 'boss' | 'points' | 'catalog' | 'oilPrices';
@@ -28,7 +28,9 @@ export default function BotUIPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [authUser, setAuthUser] = useState<any>(null);
+  const [authUser, setAuthUser] = useState<BotAuthUser | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [loginHint, setLoginHint] = useState('');
   const [carsData, setCarsData] = useState<{ myCars: Car[]; allCars: Car[] | null; readyCars: Car[] | null; pricingCars: Car[] | null; is_boss: boolean; is_admin: boolean; name: string; bolim: string }>({
     myCars: [],
     allCars: null,
@@ -48,7 +50,7 @@ export default function BotUIPage() {
     if (saved) {
       try {
         const p = JSON.parse(saved);
-        if (p && p.phone) setAuthUser(p);
+        if (p && p.token) setAuthUser(p);
         else localStorage.removeItem('bot_auth_user');
       } catch {
         localStorage.removeItem('bot_auth_user');
@@ -57,6 +59,8 @@ export default function BotUIPage() {
     setLoading(false);
 
     (async () => {
+      let initData = '';
+      let launchedInTelegram = false;
       try {
         const mod = await import('@twa-dev/sdk');
         const WebApp = mod?.default || mod;
@@ -66,9 +70,34 @@ export default function BotUIPage() {
           WebApp.expand();
           WebApp.setHeaderColor('bg_color');
         }
+        initData = WebApp?.initData || '';
+        launchedInTelegram = !!WebApp?.platform && WebApp.platform !== 'unknown';
       } catch {
         console.warn('Telegram WebApp API is not available locally.');
       }
+
+      // Telegram ichida har ochilishda yangi imzo token'ga almashtiriladi.
+      // Tarmoq xatosida saqlangan token bilan davom etamiz.
+      if (initData) {
+        try {
+          const session = await createTelegramSession(initData);
+          if (session.ok) {
+            const user = { token: session.token, id: session.worker.id, phone: session.worker.tel || '', name: session.worker.ism };
+            setAuthUser(user);
+            localStorage.setItem('bot_auth_user', JSON.stringify(user));
+          } else if (session.code === 'not_linked') {
+            localStorage.removeItem('bot_auth_user');
+            setAuthUser(null);
+            setLoginHint("Raqamingiz hali tasdiqlanmagan. Botga /start yozib, raqamingizni yuboring.");
+          }
+        } catch {
+          /* jim */
+        }
+      } else if (launchedInTelegram) {
+        // Eski pastki klaviatura tugmasi: Telegram bu yerda imzo bermaydi.
+        setLoginHint("Bu tugma sizni tanitmaydi. Botdagi ko'k Menu tugmasini bosing yoki botga /start yozing. Kod bilan ham kirishingiz mumkin.");
+      }
+      setAuthChecking(false);
 
       try {
         const res = await fetch(`/api/bot-ui/catalog?t=${Date.now()}`);
@@ -82,6 +111,17 @@ export default function BotUIPage() {
         setLoading(false);
       }
     })();
+  }, []);
+
+  // Server tokenni qabul qilmasa (eskirgan, xodim o'chirilgan) — kirish oynasi.
+  useEffect(() => {
+    const onAuthLost = () => {
+      localStorage.removeItem('bot_auth_user');
+      setAuthUser(null);
+      setView('home');
+    };
+    window.addEventListener('bot-auth-lost', onAuthLost);
+    return () => window.removeEventListener('bot-auth-lost', onAuthLost);
   }, []);
 
   // "Bosh ekranga qo'shish" — Telegram ilovasidagi "⋮" menyusi ba'zi eski
@@ -105,9 +145,7 @@ export default function BotUIPage() {
     ((window as any).Telegram?.WebApp?.initData?.length > 0 ||
       window.location.hash.includes('tgWebAppData') ||
       window.location.hash.includes('tgWebAppVersion'));
-  const hasPhoneParam =
-    typeof window !== 'undefined' && !!new URLSearchParams(window.location.search).get('phone');
-  const authed = isInsideTelegram || hasPhoneParam || !!authUser;
+  const authed = !!authUser;
 
   const loadCars = async () => {
     setLoadingCars(true);
@@ -157,9 +195,9 @@ export default function BotUIPage() {
   };
 
   useEffect(() => {
-    if (!loading && authed) loadCars();
+    if (!loading && !authChecking && authed) loadCars();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, authed, authUser]);
+  }, [loading, authChecking, authed, authUser]);
 
   const handleLogout = () => {
     localStorage.removeItem('bot_auth_user');
@@ -197,14 +235,8 @@ export default function BotUIPage() {
         plateNumber: store.plateNumber,
         services: store.services,
         parts: store.parts,
-        workerPhone: identity.workerPhone,
-        mechanicChatId: identity.mechanicChatId,
       };
-      const res = await fetch('/api/bot-ui/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const res = await submitOrder(identity, payload);
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || `Server xatosi: ${res.status}`);
       toast.success(`Chek chiqdi ✅ Buyurtma "tayyor" — endi admin qabul qiladi. Chek #${j.id}`);
@@ -218,7 +250,7 @@ export default function BotUIPage() {
     }
   };
 
-  if (loading) {
+  if (loading || authChecking) {
     return (
       <div className="tg-scope flex bg-gray-900 text-white min-h-screen items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
@@ -230,6 +262,7 @@ export default function BotUIPage() {
     return (
       <div className="tg-scope min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <PhoneLogin
+          hint={loginHint}
           onAuth={(user) => {
             setAuthUser(user);
             localStorage.setItem('bot_auth_user', JSON.stringify(user));
@@ -283,7 +316,7 @@ export default function BotUIPage() {
                   <Home className="w-4 h-4" />
                 </button>
               )}
-              {authUser && (
+              {!isInsideTelegram && (
                 <button
                   onClick={handleLogout}
                   className="text-xs text-gray-400 hover:text-gray-200 border border-gray-700 hover:border-gray-600 rounded-xl px-3 py-1.5 transition-colors"

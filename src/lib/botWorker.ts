@@ -10,6 +10,7 @@ export interface BotWorker {
   ism: string;
   tel: string | null;
   foiz: number | null;
+  status: string | null;
   role: string | null;
   is_boss: boolean | null;
   is_admin: boolean | null; // "tayyor" buyurtmalarga javobgar xodim (chek chiqargandan keyin)
@@ -45,20 +46,11 @@ export async function findWorkerByTelegram(
   return (data as BotWorker) || null;
 }
 
-// Avval telefon, keyin Telegram bo'yicha — bot oqimidagi standart tartib.
-export async function identifyWorker(
-  phone: string | undefined | null,
-  telegramId: string | number | undefined | null
-): Promise<BotWorker | null> {
-  return (await findWorkerByPhone(phone)) || (await findWorkerByTelegram(telegramId));
+// Imzolangan bot tokenidagi id bo'yicha xodimni topadi.
+export async function findWorkerById(id: number): Promise<BotWorker | null> {
+  const { data } = await supabase.from('workers').select(WORKER_COLUMNS).eq('id', id).maybeSingle();
+  return (data as BotWorker) || null;
 }
 
-// Xodimni tanidik VA u boshliq bo'lsagina qaytaradi — admin amallari (masalan
-// zapchast katalogini boshqarish) uchun. Aks holda null.
-export async function identifyBoss(
-  phone: string | undefined | null,
-  telegramId: string | number | undefined | null
-): Promise<BotWorker | null> {
-  const w = await identifyWorker(phone, telegramId);
-  return w && w.is_boss ? w : null;
-}
+// Ishdan ketgan xodimning tokeni va kodi ishlamaydi.
+export const isActiveWorker = (worker: BotWorker) => !worker.status || worker.status === 'aktiv';

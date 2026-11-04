@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 import { findClientNameByPhone } from '@/lib/findClient';
 import { normalizeBolim } from '@/lib/departments';
 
@@ -11,15 +11,11 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { brand, model, plateNumber, customerPhone, workerPhone, mechanicChatId, oilRecommendation } = body;
+    const { brand, model, plateNumber, customerPhone, oilRecommendation } = body;
 
-    const worker = await identifyWorker(workerPhone, mechanicChatId);
-    if (!worker) {
-      return NextResponse.json(
-        { ok: false, error: 'Siz tizimda xodim sifatida topilmadingiz.' },
-        { status: 403 }
-      );
-    }
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
 
     if (!brand || !model) {
       return NextResponse.json(

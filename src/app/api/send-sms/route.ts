@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +47,9 @@ async function doSend(token: string, phone: string, message: string) {
 }
 
 export async function POST(req: NextRequest) {
+  const guard = await requireSection(req, 'orders');
+  if (guard.denied) return guard.denied;
+
   try {
     const { phone, message } = await req.json();
 

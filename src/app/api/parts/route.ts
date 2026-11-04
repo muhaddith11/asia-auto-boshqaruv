@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { requireSection } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,13 +19,19 @@ function mapAppToDB(body: any) {
   return clean;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const guard = await requireSection(request, 'parts');
+  if (guard.denied) return guard.denied;
+
   const { data, error } = await supabase.from('parts').select('*').range(0, 10000).order('nom', { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data ?? []);
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireSection(request, 'parts');
+  if (guard.denied) return guard.denied;
+
   try {
     const body = await request.json();
     const dbBody = mapAppToDB(body);

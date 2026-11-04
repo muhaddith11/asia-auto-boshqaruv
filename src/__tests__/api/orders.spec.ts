@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { authedRequest } from '../helpers/authRequest';
 import type { MockResult, CapturedCalls } from '../helpers/mockSupabase';
 
 const mockState = vi.hoisted(() => ({
@@ -26,11 +26,11 @@ beforeEach(() => {
 });
 
 function getRequest(query = '') {
-  return new NextRequest(`http://localhost/api/orders${query}`);
+  return authedRequest(`http://localhost/api/orders${query}`);
 }
 
 function postRequest(body: unknown) {
-  return new NextRequest('http://localhost/api/orders', {
+  return authedRequest('http://localhost/api/orders', {
     method: 'POST',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
@@ -100,7 +100,7 @@ describe('/api/orders POST', () => {
   });
 
   it("yaroqsiz JSON bilan 500 qaytaradi (route shu holatni umumiy catch bilan ushlaydi)", async () => {
-    const req = new NextRequest('http://localhost/api/orders', {
+    const req = authedRequest('http://localhost/api/orders', {
       method: 'POST',
       body: '{ yaroqsiz',
       headers: { 'Content-Type': 'application/json' },

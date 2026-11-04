@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { fetchAllRows } from '@/lib/fetchAllRows';
+import { readCatalogCache, writeCatalogCache } from '@/lib/catalogCache';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-// ── In-memory cache (5 daqiqa TTL) ──────────────────────────────────────────
-// Har safar Supabase'dan yuklamaslik uchun serverda saqlanadi.
-// Vercel warm instance bo'lsa, repeat so'rovlar ~5ms da javob beradi.
-let _cache: { data: string; ts: number } | null = null;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 daqiqa
 
 // Known brand names with special casing (acronyms, hyphens, etc.)
 const BRAND_ALIASES: Record<string, string> = {
@@ -131,8 +126,9 @@ export async function GET() {
     const now = Date.now();
 
     // Cache hit — Supabase'ga so'rov yo'q, darhol javob
-    if (_cache && now - _cache.ts < CACHE_TTL_MS) {
-      return new NextResponse(_cache.data, {
+    const cached = readCatalogCache(now);
+    if (cached) {
+      return new NextResponse(cached, {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +140,7 @@ export async function GET() {
 
     // Cache miss — Supabase'dan yuklab cache ga yozamiz
     const json = await buildCatalog();
-    _cache = { data: json, ts: now };
+    writeCatalogCache(json, now);
 
     return new NextResponse(json, {
       status: 200,
@@ -159,9 +155,4 @@ export async function GET() {
     console.error('❌ Bot Catalog API Error:', error);
     return NextResponse.json({ error: error.message, catalog: {}, brands: [] }, { status: 500 });
   }
-}
-
-// ── Cache tozalash uchun (xizmat qo'shilganda chaqirish mumkin) ─────────────
-export function invalidateCatalogCache() {
-  _cache = null;
 }

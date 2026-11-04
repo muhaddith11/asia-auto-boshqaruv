@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 
 export const dynamic = 'force-dynamic';
@@ -12,17 +12,9 @@ const CAR_FIELDS =
 // Boshliq uchun — qo'shimcha: barcha xodimlarning barcha (faol) mashinalari.
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const phone = searchParams.get('phone');
-    const tg = searchParams.get('tg');
-
-    const worker = await identifyWorker(phone, tg);
-    if (!worker) {
-      return NextResponse.json(
-        { ok: false, error: 'Siz tizimda xodim sifatida topilmadingiz.' },
-        { status: 403 }
-      );
-    }
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
 
     // Xodim ilovani ochganda muddati o'tgan chek xabarlari tozalanadi (serverless'da setInterval ishonchsiz)
     after(() => cleanupExpiredMessagesThrottled());

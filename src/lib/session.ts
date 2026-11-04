@@ -4,7 +4,6 @@
 // ham ishlaydi. Faqat server kodida (proxy, /api/auth). Soxtalashtirib bo'lmaydi.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SECRET = process.env.AUTH_SECRET || 'asia-auto-service-default-secret-2026-change-me';
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 kun
 export const SESSION_MAX_AGE_SEC = 7 * 24 * 60 * 60;
 
@@ -31,10 +30,15 @@ function b64urlToBytes(s: string): Uint8Array {
   return out;
 }
 
-async function hmac(body: string): Promise<string> {
+// Kalit kodda saqlanmaydi: AUTH_SECRET bo'lmasa imzo yo'q, hech kim kira olmaydi.
+// `purpose` har maqsad uchun alohida kalit beradi — bot tokeni dashboard
+// sessiyasi sifatida o'tmaydi. Sessiya kaliti o'zgarmagan, eski sessiyalar ishlaydi.
+export async function hmac(body: string, purpose = ''): Promise<string | null> {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) return null;
   const key = await crypto.subtle.importKey(
     'raw',
-    encoder.encode(SECRET),
+    encoder.encode(purpose ? `${secret}:${purpose}` : secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],
@@ -44,36 +48,48 @@ async function hmac(body: string): Promise<string> {
 }
 
 // Doimiy-vaqtli solishtirish (timing leak oldini olish)
-function safeEqual(a: string, b: string): boolean {
+export function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let r = 0;
   for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
 }
 
-export async function createSessionToken(role: string, name: string): Promise<string> {
-  const payload: Session = { role, name, exp: Date.now() + MAX_AGE_MS };
+export async function signToken(payload: { exp: number }, purpose = ''): Promise<string> {
   const body = bytesToB64url(encoder.encode(JSON.stringify(payload)));
-  const sig = await hmac(body);
+  const sig = await hmac(body, purpose);
+  if (!sig) throw new Error('AUTH_SECRET sozlanmagan');
   return `${body}.${sig}`;
 }
 
-export async function verifySessionToken(token: string | undefined | null): Promise<Session | null> {
+export async function readToken<T extends { exp: number }>(
+  token: string | undefined | null,
+  purpose = '',
+): Promise<T | null> {
   if (!token) return null;
   const dot = token.lastIndexOf('.');
   if (dot <= 0) return null;
   const body = token.slice(0, dot);
   const sig = token.slice(dot + 1);
 
-  const expected = await hmac(body);
-  if (!safeEqual(sig, expected)) return null;
+  const expected = await hmac(body, purpose);
+  if (!expected || !safeEqual(sig, expected)) return null;
 
   try {
     const json = new TextDecoder().decode(b64urlToBytes(body));
-    const payload = JSON.parse(json) as Session;
+    const payload = JSON.parse(json) as T;
     if (!payload.exp || payload.exp < Date.now()) return null;
     return payload;
   } catch {
     return null;
   }
+}
+
+export function createSessionToken(role: string, name: string): Promise<string> {
+  const payload: Session = { role, name, exp: Date.now() + MAX_AGE_MS };
+  return signToken(payload);
+}
+
+export function verifySessionToken(token: string | undefined | null): Promise<Session | null> {
+  return readToken<Session>(token);
 }

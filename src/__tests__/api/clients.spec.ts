@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { authedRequest } from '../helpers/authRequest';
 import type { MockResult, CapturedCalls } from '../helpers/mockSupabase';
 
 const mockState = vi.hoisted(() => ({
@@ -26,7 +26,7 @@ beforeEach(() => {
 });
 
 function postRequest(body: unknown) {
-  return new NextRequest('http://localhost/api/clients', {
+  return authedRequest('http://localhost/api/clients', {
     method: 'POST',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
@@ -36,7 +36,7 @@ function postRequest(body: unknown) {
 describe('/api/clients', () => {
   it("GET mijozlar ro'yxatini qaytaradi", async () => {
     setTable('clients', { data: [{ id: 1, ism: 'Vali', tel: '901234567' }], error: null });
-    const res = await GET();
+    const res = await GET(authedRequest('http://localhost/api/clients'));
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toEqual([{ id: 1, ism: 'Vali', tel: '901234567' }]);
@@ -44,7 +44,7 @@ describe('/api/clients', () => {
 
   it('GET Supabase xatoligida 500 qaytaradi', async () => {
     setTable('clients', { data: null, error: { message: 'DB tushib qoldi' } });
-    const res = await GET();
+    const res = await GET(authedRequest('http://localhost/api/clients'));
     expect(res.status).toBe(500);
     const json = await res.json();
     expect(json.error).toBe('DB tushib qoldi');
@@ -71,7 +71,7 @@ describe('/api/clients', () => {
   });
 
   it("POST bo'sh/yaroqsiz JSON bilan 400 qaytaradi", async () => {
-    const req = new NextRequest('http://localhost/api/clients', {
+    const req = authedRequest('http://localhost/api/clients', {
       method: 'POST',
       body: '{ yaroqsiz',
       headers: { 'Content-Type': 'application/json' },

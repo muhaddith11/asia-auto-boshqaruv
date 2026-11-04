@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { findWorkerByPhone } from '@/lib/botWorker';
+import { safeEqual } from '@/lib/session';
+import { telegramWebhookSecret } from '@/lib/telegramAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +33,12 @@ async function setMenuButton(chatId: string, url: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Telegram har so'rovda /api/bot/set-webhook bergan kalitni yuboradi; kalitsiz so'rov soxta.
+  const secret = req.headers.get('x-telegram-bot-api-secret-token') || '';
+  if (!token || !safeEqual(secret, telegramWebhookSecret(token))) {
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     if (!body.message) return NextResponse.json({ ok: true });
@@ -63,16 +72,17 @@ export async function POST(req: NextRequest) {
     if (idError) console.error('Supabase ID Search Error:', idError);
 
     // Helper functions
-    const getPersistentKeyboard = (worker: any) => {
-      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
-      return {
-        keyboard: [[{ 
-          text: "🆕 Buyurtma To'ldirish", 
-          web_app: { url: webAppUrl } 
-        }]],
-        resize_keyboard: true,
-        persistent: true
-      };
+    const webAppUrl = `${baseUrl}/bot-ui`;
+
+    // Telegram pastki klaviatura tugmasiga imzoli initData bermaydi (xodim tanilmaydi),
+    // shu sabab faqat inline va Menu tugmalari ishlatiladi. Eski klaviatura shu yerda olinadi.
+    const sendOrderButton = async (message: string) => {
+      await sendTg('sendMessage', { chat_id: chatId, text: message, reply_markup: { remove_keyboard: true } });
+      await sendTg('sendMessage', {
+        chat_id: chatId,
+        text: "🆕 Buyurtma kiritish uchun tugmani bosing:",
+        reply_markup: { inline_keyboard: [[{ text: "🆕 Buyurtma To'ldirish", web_app: { url: webAppUrl } }]] },
+      });
     };
 
     const resetButtons = async () => {
@@ -82,8 +92,7 @@ export async function POST(req: NextRequest) {
       });
     };
 
-    const enableButtons = async (worker: any) => {
-      const webAppUrl = `${baseUrl}/bot-ui?phone=${worker.tel?.replace('+', '')}`;
+    const enableButtons = async () => {
       await setChatMenuButton(chatId, webAppUrl);
     };
 
@@ -101,36 +110,30 @@ export async function POST(req: NextRequest) {
     // --- CASE A: Already recognized worker ---
     if (workerById) {
       // NEVER ask for number, just show the goods
-      await enableButtons(workerById);
-      
+      await enableButtons();
+
       if (text === '/start') {
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: `Xush kelibsiz, ${workerById.ism}! Siz tizimda tanilgansiz. Pastdagi yoki Menyu tugmasini bosib ishni boshlashingiz mumkin.`,
-          reply_markup: getPersistentKeyboard(workerById)
-        });
+        await sendOrderButton(`Xush kelibsiz, ${workerById.ism}! Siz tizimda tanilgansiz.`);
       } else {
-        await sendTg('sendMessage', {
-          chat_id: chatId,
-          text: "Buyurtma kiritish uchun pastdagi tugmani bosing. Qayta raqam kiritish shart emas.",
-          reply_markup: getPersistentKeyboard(workerById)
-        });
+        await sendOrderButton("Qayta raqam kiritish shart emas.");
       }
       return NextResponse.json({ ok: true });
     }
 
     // --- CASE B: Registration flow (Contact shared) ---
     if (body.message.contact) {
-      const rawPhone = body.message.contact.phone_number;
-      const phone = rawPhone.replace(/\D/g, ''); // Faqat raqamlarni qoldirish (99890...)
-      
-      const { data: worker, error: dbError } = await supabase
-        .from('workers')
-        .select('*')
-        .or(`tel.eq.${phone},tel.eq.+${phone},tel.eq.${rawPhone}`)
-        .maybeSingle();
+      // Faqat o'z raqami: birovning kontaktini yuborib xodim bo'lib kirib bo'lmaydi.
+      const contact = body.message.contact;
+      const fromId = body.message.from?.id;
+      if (!fromId || contact.user_id !== fromId || body.message.chat.id !== fromId) {
+        await sendTg('sendMessage', {
+          chat_id: chatId,
+          text: "Iltimos, pastdagi tugma orqali o'zingizning raqamingizni yuboring.",
+        });
+        return NextResponse.json({ ok: true });
+      }
 
-      if (dbError) console.error('DB Error search worker:', dbError);
+      const worker = await findWorkerByPhone(contact.phone_number);
 
       if (!worker) {
         // RAD ETISH (Begona)
@@ -155,12 +158,8 @@ export async function POST(req: NextRequest) {
             text: "Xatolik: Tizim sizni doimiy eslab qola olmayapti. ⚙️\nIltimos, rahbaringizga SQL buyrug'ini bajarishni ayting (telegram ustuni yo'q)."
           });
         } else {
-          await enableButtons(worker);
-          await sendTg('sendMessage', {
-            chat_id: chatId,
-            text: `Rahmat, ${worker.ism}! ✅ Endi sizni tanib oldim. Qayta raqam yozish shart emas. Pastdagi tugmalar orqali ishni boshlashingiz mumkin.`,
-            reply_markup: getPersistentKeyboard(worker)
-          });
+          await enableButtons();
+          await sendOrderButton(`Rahmat, ${worker.ism}! ✅ Endi sizni tanib oldim. Qayta raqam yozish shart emas.`);
         }
       }
       return NextResponse.json({ ok: true });

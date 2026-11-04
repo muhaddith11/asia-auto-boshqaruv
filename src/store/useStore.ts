@@ -13,7 +13,7 @@ import {
   createPart, updatePart, deletePart,
   getCars,
   getServices, createService, updateService, deleteService,
-  getKassa, updateKassaState, getOperations, createOperation, deleteOperation, getSalaries, createSalary,
+  getKassa, resetKassaState, getOperations, createOperation, deleteOperation, getSalaries, createSalary,
   getPurchases, createPurchase, createCar,
   type CarRow, type ServiceRow, type SalaryRow, type OperationRow
 } from '@/lib/api';
@@ -125,7 +125,7 @@ interface AutoServisStore {
   updateBuyurtma: (id: number, data: Partial<Buyurtma>) => Promise<void>;
   deleteBuyurtma: (id: number) => void;
 
-  updateKassa: (method: keyof Kassa, amount: number, operation: 'add' | 'sub') => Promise<void>;
+  refreshKassa: () => Promise<void>;
   transferKassa: (from: keyof Kassa, to: keyof Kassa, amount: number) => void; // New
   addTashqariOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => void;
   addIshxonaOperatsiya: (op: Omit<TashqariOperatsiya, 'id' | 'createdAt'>) => Promise<void>;
@@ -297,14 +297,9 @@ export const useStore = create<AutoServisStore>()(
           const created = await createSalary(apiData);
           if (!created || created.error) throw new Error(created?.error || "Maoshni saqlashda xatolik");
 
-          // Sync Kassa with DB
-          const nextKassa = {
-            ...get().kassa,
-            [m.method]: get().kassa[m.method as 'naqd' | 'karta']
-          };
-          await updateKassaState(nextKassa);
-
+          // Kassani server o'zi ayirdi — javobdagi qoldiq haqiqiy.
           set((state) => ({
+            kassa: created.kassa ?? state.kassa,
             maoshTarixi: state.maoshTarixi.map(mm => mm.id === tempId ? {
               id: created.id,
               xodimId: created.worker_id,
@@ -592,20 +587,16 @@ export const useStore = create<AutoServisStore>()(
         });
       },
 
-      updateKassa: async (method, amount, operation) => {
-        const currentKassa = get().kassa;
-        const newValue = operation === 'add' ? currentKassa[method] + amount : currentKassa[method] - amount;
-        const nextKassa = { ...currentKassa, [method]: newValue };
-
-        set({ kassa: nextKassa });
+      refreshKassa: async () => {
         try {
-          await updateKassaState(nextKassa);
+          set({ kassa: await getKassa() });
         } catch (err) {
-          console.error("❌ Kassa yangilashda xatolik:", err);
+          console.error("❌ Kassani yangilashda xatolik:", err);
         }
       },
       transferKassa: async (from, to, amount) => {
         const currentKassa = get().kassa;
+        // Faqat ko'rinish uchun — haqiqiy qoldiqni server javobi beradi.
         const nextKassa = {
           ...currentKassa,
           [from]: currentKassa[from] - amount,
@@ -628,8 +619,7 @@ export const useStore = create<AutoServisStore>()(
         });
 
         try {
-          await updateKassaState(nextKassa);
-          await createOperation({
+          const created = await createOperation({
             date: new Date().toISOString().split('T')[0],
             type: 'transfer',
             method: from,
@@ -638,8 +628,11 @@ export const useStore = create<AutoServisStore>()(
             category: 'Puldagi o\'tkazma',
             source: 'system'
           });
+          if (created?.kassa) set({ kassa: created.kassa });
         } catch (err) {
           console.error("❌ Transfer saqlashda xatolik:", err);
+          toast.error("O'tkazma saqlanmadi. Ma'lumotlar yangilanmoqda.");
+          get().loadInitialData(true);
         }
       },
       addTashqariOperatsiya: async (op) => {
@@ -650,7 +643,8 @@ export const useStore = create<AutoServisStore>()(
         }));
 
         try {
-          await createOperation({ ...op });
+          const created = await createOperation({ ...op });
+          if (created?.kassa) set({ kassa: created.kassa });
         } catch (err) {
           console.error("❌ Tashqari operatsiya saqlashda xatolik:", err);
           // Rollback optimistic update
@@ -658,7 +652,7 @@ export const useStore = create<AutoServisStore>()(
             tashqariOperatsiyalar: state.tashqariOperatsiyalar.filter(o => o.id !== tempId),
             counters: { ...state.counters, cash: state.counters.cash - 1 }
           }));
-          throw err; // Caller handles kassa rollback
+          throw err;
         }
       },
       addIshxonaOperatsiya: async (op) => {
@@ -682,6 +676,7 @@ export const useStore = create<AutoServisStore>()(
           if (!created || created.error) throw new Error(created?.error || "Server xatosi");
 
           set((state) => ({
+            kassa: created.kassa ?? state.kassa,
             ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.map(o => o.id === tempId ? { ...o, id: created.id } : o)
           }));
         } catch (err) {
@@ -691,7 +686,7 @@ export const useStore = create<AutoServisStore>()(
             ishxonaOperatsiyalar: state.ishxonaOperatsiyalar.filter(o => o.id !== tempId),
             counters: { ...state.counters, cash: state.counters.cash - 1 }
           }));
-          throw err; // Caller handles kassa rollback
+          throw err;
         }
       },
       deleteIshxonaOperatsiya: async (id) => {
@@ -763,7 +758,7 @@ export const useStore = create<AutoServisStore>()(
           maoshTarixi: []
         });
         try {
-          await updateKassaState(nextKassa);
+          await resetKassaState();
         } catch (err) {
           console.error("❌ Kassa resetda xatolik:", err);
         }

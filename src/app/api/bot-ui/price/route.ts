@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 import { Telegraf } from 'telegraf';
-import { identifyWorker } from '@/lib/botWorker';
+import { requireBotWorker } from '@/lib/botAuth';
 import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 import { chekNusxaChatlari } from '@/lib/chekRecipients';
 
@@ -13,15 +13,15 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || '');
 // "tayyor" bo'ladi va print_status='pending' bilan printerga ketadi.
 export async function POST(req: NextRequest) {
   try {
-    const { orderId, prices, workerPhone, mechanicChatId } = (await req.json()) as {
+    const { orderId, prices } = (await req.json()) as {
       orderId: number;
       prices: { index: number; narx: number }[];
-      workerPhone?: string;
-      mechanicChatId?: string;
     };
 
-    const admin = await identifyWorker(workerPhone, mechanicChatId);
-    if (!admin || !(admin.is_admin || admin.is_boss)) {
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const admin = guard.worker;
+    if (!(admin.is_admin || admin.is_boss)) {
       return NextResponse.json({ ok: false, error: 'Faqat admin yoki boshliq narx qo\'ya oladi.' }, { status: 403 });
     }
     const kim = admin.is_admin ? 'Admin' : 'Boshliq';

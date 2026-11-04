@@ -6,6 +6,7 @@ import { cleanupExpiredMessagesThrottled } from '@/lib/messageCleanup';
 import { diffRemovedZaps } from '@/lib/zapArchive';
 import { archiveRemovedZaps } from '@/lib/zapArchiveRepo';
 import { chekNusxaChatlari } from '@/lib/chekRecipients';
+import { requireBotWorker } from '@/lib/botAuth';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = process.env.ADMIN_TELEGRAM_ID;
@@ -13,39 +14,14 @@ const bot = new Telegraf(token || '');
 
 export async function POST(req: NextRequest) {
   try {
+    const guard = await requireBotWorker(req);
+    if (guard.denied) return guard.denied;
+    const { worker } = guard;
+    const workerPhone = worker.tel;
+    const mechanicChatId = worker.telegram;
+
     const body = await req.json();
-    const { orderId, brand, model, probeg, plateNumber, services, parts, mechanicChatId, workerPhone } = body;
-
-    const WORKER_COLUMNS = 'id, ism, tel, mutax, foiz, status, role, is_boss, "shareType", "parentId", created_at';
-    let worker = null;
-
-    if (workerPhone) {
-      const cleanInputPhone = workerPhone.replace(/\D/g, '');
-      const searchTarget = cleanInputPhone.slice(-9); // last 9 digits
-      const { data: allWorkers } = await supabase.from('workers').select(WORKER_COLUMNS);
-      worker = allWorkers?.find((w: any) => {
-        if (!w.tel) return false;
-        const dbNormalized = String(w.tel).replace(/\D/g, '');
-        return dbNormalized.endsWith(searchTarget) || dbNormalized === cleanInputPhone;
-      });
-    }
-
-    if (!worker && mechanicChatId) {
-      const { data: workerByTg } = await supabase
-        .from('workers')
-        .select(WORKER_COLUMNS)
-        .eq('telegram', mechanicChatId.toString())
-        .maybeSingle();
-      worker = workerByTg;
-    }
-
-    if (!worker) {
-      console.warn(`Tizimda yo'q xodim urinishi: Phone=${workerPhone}, TgID=${mechanicChatId}`);
-      return NextResponse.json({
-        ok: false,
-        error: 'Siz tizimda xodim sifatida topilmadingiz. Iltimos, raqamingizni botda tasdiqlang yoki rahbaringizga murojaat qiling.'
-      }, { status: 403 });
-    }
+    const { orderId, brand, model, probeg, plateNumber, services, parts } = body;
 
     const worker_id = worker.id;
     const workerName = worker.ism;

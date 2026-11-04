@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { requireSection, requireRole, FULL_ACCESS } from '@/lib/routeGuard';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireSection(request, 'services');
+  if (guard.denied) return guard.denied;
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -36,6 +40,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 }
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const guard = await requireRole(request, FULL_ACCESS);
+  if (guard.denied) return guard.denied;
+
   try {
     const { id } = await context.params;
     const { error } = await supabase

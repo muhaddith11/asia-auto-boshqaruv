@@ -228,10 +228,12 @@ export async function getKassa(): Promise<Kassa> {
   return handleJson(res);
 }
 
-export async function updateKassaState(data: { naqd: number; karta: number }): Promise<Maybe<Kassa>> {
+// Qoldiq faqat shu yerda nolga tushiriladi. Qolgan hamma o'zgarishni server
+// operatsiya/maosh/to'lov paytida o'zi qiladi va javobda yangi `kassa`ni qaytaradi.
+export async function resetKassaState(): Promise<Maybe<Kassa>> {
   const res = await fetch(`${API_BASE}/kassa`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ reset: true }),
     headers: { 'Content-Type': 'application/json' }
   });
   return handleJson(res);
@@ -242,7 +244,7 @@ export async function getOperations(): Promise<OperationRow[]> {
   return handleJson(res);
 }
 
-export async function createOperation(data: Partial<OperationRow> & { toMethod?: string }): Promise<Maybe<OperationRow>> {
+export async function createOperation(data: Partial<OperationRow> & { toMethod?: string }): Promise<Maybe<OperationRow> & { kassa?: Kassa | null }> {
   const res = await fetch(`${API_BASE}/operations`, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -261,7 +263,7 @@ export async function getSalaries(): Promise<SalaryRow[]> {
   return handleJson(res);
 }
 
-export async function createSalary(data: { worker_id: number; amount: number; method: string; date: string; comment?: string }): Promise<Maybe<SalaryRow>> {
+export async function createSalary(data: { worker_id: number; amount: number; method: string; date: string; comment?: string }): Promise<Maybe<SalaryRow> & { kassa?: Kassa | null }> {
   const res = await fetch(`${API_BASE}/salaries`, {
     method: 'POST',
     body: JSON.stringify(data),

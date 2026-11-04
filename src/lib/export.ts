@@ -12,7 +12,7 @@ export type Column<T> = {
   format?: (row: T) => string | number;
 };
 
-function escapeHtml(value: unknown): string {
+export function escapeHtml(value: unknown): string {
   if (value === null || value === undefined) return '';
   return String(value)
     .replace(/&/g, '&amp;')
