@@ -4,7 +4,6 @@ import { X, Printer, Download, Share2, Loader2 } from 'lucide-react';
 import { Buyurtma } from '@/types';
 import { useStore } from '@/store/useStore';
 import { triggerDownload } from '@/lib/export';
-import { PRINT_STATIONS, getPrintStation, setPrintStation, pendingStatusFor } from '@/lib/printStation';
 import toast from 'react-hot-toast';
 
 interface InvoiceModalProps {
@@ -17,18 +16,11 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   const updateBuyurtma = useStore((state) => state.updateBuyurtma);
   const [isPrinting, setIsPrinting] = React.useState(false);
   const [busy, setBusy] = React.useState<'save' | 'share' | null>(null);
-  // Chek qaysi kompyuter printeridan chiqadi — shu brauzer eslab qoladi
-  const [station, setStation] = React.useState(getPrintStation);
-
-  const handleStationChange = (id: string) => {
-    setStation(id);
-    setPrintStation(id);
-  };
 
   const handleAgentPrint = async () => {
     setIsPrinting(true);
     try {
-      updateBuyurtma(order.id, { print_status: pendingStatusFor(station) });
+      updateBuyurtma(order.id, { print_status: 'pending' });
       toast.success('Printerga yuborildi!');
     } catch {
       toast.error('Xatolik yuz berdi');
@@ -293,25 +285,8 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           </div>
         </div>
 
-        {/* Printer tanlovi — har bir kompyuterda bir marta tanlanadi */}
-        <div className="px-8 pt-5 bg-white border-t border-slate-100 flex items-center gap-3">
-          <label htmlFor="chek-printer" className="text-[11px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
-            Printer
-          </label>
-          <select
-            id="chek-printer"
-            value={station}
-            onChange={(e) => handleStationChange(e.target.value)}
-            className="flex-1 min-w-0 bg-slate-100 border border-slate-200 text-slate-800 font-bold text-sm rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {PRINT_STATIONS.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-        </div>
-
         {/* Action Buttons */}
-        <div className="p-8 pt-5 bg-white flex gap-4">
+        <div className="p-8 bg-white border-t border-slate-100 flex gap-4">
           <button
             onClick={handleAgentPrint}
             disabled={isPrinting}
