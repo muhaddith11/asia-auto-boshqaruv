@@ -31,8 +31,14 @@ WORKERS_MAP    = {}
 # department:
 #   "ustaxona" → faqat ustaxona (va eski/null bo'lim) cheklari chiqadi — YOG' emas
 #   "yog"      → faqat yog' quyish cheklari chiqadi
+# station (PRINT_AGENT_STATION / "station"):
+#   bo'sh       → asosiy agent: print_status='pending' cheklarini chiqaradi (bot, yangi buyurtma, dashboard)
+#   "kompyuter2" → faqat dashboardda shu kompyuter tanlab bosilgan cheklar
+#                  (print_status='pending:kompyuter2'). Bo'lim filtri qo'llanmaydi —
+#                  chekni foydalanuvchi aynan shu printerga yuborgan.
 PRINTER_NAME = "XP-80"
 DEPARTMENT   = "ustaxona"
+STATION      = ""
 try:
     _cfg_path = os.path.join(BASE_DIR, "printer_config.json")
     if os.path.exists(_cfg_path):
@@ -40,11 +46,14 @@ try:
             _cfg = json.load(_f)
         PRINTER_NAME = str(_cfg.get("printer_name") or PRINTER_NAME)
         DEPARTMENT   = str(_cfg.get("department") or DEPARTMENT).lower()
+        STATION      = str(_cfg.get("station") or STATION).lower()
 except Exception as _cfg_err:
     print(f"printer_config.json o'qishda xato: {_cfg_err}")
 # Muhit o'zgaruvchilari — eng ustun (OneDrive bilan bo'lingan papkada ham har PC o'ziniki)
 PRINTER_NAME = os.environ.get("PRINT_AGENT_PRINTER") or PRINTER_NAME
 DEPARTMENT   = (os.environ.get("PRINT_AGENT_DEPARTMENT") or DEPARTMENT).lower()
+STATION      = (os.environ.get("PRINT_AGENT_STATION") or STATION).strip().lower()
+PENDING      = f"pending:{STATION}" if STATION else "pending"
 
 def log_message(msg):
     ts   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -353,7 +362,8 @@ def print_receipt(order):
 def get_pending():
     try:
         r = requests.get(
-            f"{SUPABASE_URL}/rest/v1/orders?print_status=eq.pending&order=id.asc",
+            f"{SUPABASE_URL}/rest/v1/orders",
+            params={"print_status": f"eq.{PENDING}", "order": "id.asc"},
             headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
             timeout=10
         )
@@ -381,7 +391,7 @@ def main():
     lock = acquire_lock()
     log_message("=" * 48)
     log_message("Print Agent ishga tushdi (GDI+Emoji v9)")
-    log_message(f"Printer: {PRINTER_NAME}  |  Bo'lim: {DEPARTMENT}")
+    log_message(f"Printer: {PRINTER_NAME}  |  Bo'lim: {DEPARTMENT}  |  Kompyuter: {STATION or 'asosiy'}")
     log_message("=" * 48)
     fetch_workers()
 
@@ -391,11 +401,11 @@ def main():
             if counter % 60 == 0:
                 fetch_workers()
             for order in get_pending():
-                if order.get("print_status") == "printed":
+                if order.get("print_status") != PENDING:
                     continue
                 # Bo'lim filtri: bu agent faqat o'z bo'limi cheklarini chiqaradi.
                 # null/bo'sh bo'lim → ustaxona deb qaraladi (eski cheklar ustaxonada chiqadi).
-                if (order.get("bolim") or "ustaxona").lower() != DEPARTMENT:
+                if not STATION and (order.get("bolim") or "ustaxona").lower() != DEPARTMENT:
                     continue
                 log_message(f"Chop etilmoqda... ID: {order['id']}")
                 if print_receipt(order):

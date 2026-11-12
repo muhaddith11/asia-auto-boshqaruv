@@ -108,7 +108,7 @@ export interface Buyurtma {
   final: number; // After discount (To'lov)
   zarplata: number; // Total workers' commission
   pribil: number; // Net profit (Final - Zarplata - Part Costs)
-  print_status?: 'pending' | 'printed';
+  print_status?: 'pending' | `pending:${string}` | 'printed'; // pending:<kompyuter> — src/lib/printStation.ts
   createdAt: string;
   paid?: number;
   // Bot orqali qabul qilingan buyurtma — kim qabul qilgan / kiritgan (lifecycle)
