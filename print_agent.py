@@ -126,8 +126,36 @@ def logo_to_escpos(path, print_width=400):
         log_message(f"Logo xatosi: {e}")
         return b""
 
-def send_raw(data: bytes):
-    hp = win32print.OpenPrinter(PRINTER_NAME)
+# ── Printerni nomi bo'yicha topish ───────────────────
+# Drayver printerni har xil nomlaydi: "XP-80", "XP-80C", "XP-80 (копия 1)".
+# Sozlangan nom aynan topilmasa, harf/raqamlari shu nom bilan boshlanadigan printer olinadi.
+_last_printer_note = None
+
+def _norm(s):
+    return "".join(ch for ch in str(s).upper() if ch.isalnum())
+
+def find_printer():
+    global _last_printer_note
+    try:
+        names = [p["pPrinterName"] for p in win32print.EnumPrinters(
+            win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS, None, 4)]
+    except Exception as e:
+        log_message(f"Printerlar ro'yxatini olib bo'lmadi: {e}")
+        return PRINTER_NAME
+    want  = _norm(PRINTER_NAME)
+    found = next((n for n in names if _norm(n) == want), None) \
+         or next((n for n in names if want and _norm(n).startswith(want)), None)
+    if found:
+        note = None if found == PRINTER_NAME else f"Printer '{PRINTER_NAME}' o'rniga '{found}' ishlatiladi"
+    else:
+        note = f"Printer topilmadi: '{PRINTER_NAME}'. Shu kompyuterdagi printerlar: {', '.join(names) or 'yoq'}"
+    if note and note != _last_printer_note:
+        log_message(note)
+    _last_printer_note = note
+    return found or PRINTER_NAME
+
+def send_raw(data: bytes, printer_name=None):
+    hp = win32print.OpenPrinter(printer_name or PRINTER_NAME)
     try:
         win32print.StartDocPrinter(hp, 1, ("Cut", None, "RAW"))
         win32print.StartPagePrinter(hp)
@@ -142,9 +170,9 @@ def pt_to_px(pt, dpi):
     return -int(dpi * pt / 72)
 
 class Printer:
-    def __init__(self):
+    def __init__(self, printer_name=None):
         self.hdc = win32ui.CreateDC()
-        self.hdc.CreatePrinterDC(PRINTER_NAME)
+        self.hdc.CreatePrinterDC(printer_name or PRINTER_NAME)
         self.dpi   = self.hdc.GetDeviceCaps(win32con.LOGPIXELSY)
         self.width = self.hdc.GetDeviceCaps(win32con.HORZRES)
         self.hdc.SetBkMode(win32con.TRANSPARENT)
@@ -274,7 +302,8 @@ def print_receipt(order):
         debt  = final - paid
 
         # ══ Hammasi bitta GDI job: logo + matn ══
-        p = Printer()
+        prn = find_printer()
+        p = Printer(prn)
         p.start("Chek")
         y = 0
 
@@ -339,7 +368,7 @@ def print_receipt(order):
 
         # ══ Faqat CUT — ESC/POS ══
         time.sleep(0.3)
-        send_raw(b"\x1d\x56\x41\x05")
+        send_raw(b"\x1d\x56\x41\x05", prn)
 
         log_message(f"Chek chiqarildi! ID: {order['id']}")
         return True
@@ -383,6 +412,7 @@ def main():
     log_message("Print Agent ishga tushdi (GDI+Emoji v9)")
     log_message(f"Printer: {PRINTER_NAME}  |  Bo'lim: {DEPARTMENT}")
     log_message("=" * 48)
+    find_printer()
     fetch_workers()
 
     counter = 0
