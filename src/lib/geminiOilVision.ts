@@ -1,5 +1,6 @@
-// Yog' bo'limi: texpasport/birka rasmidan mashina ma'lumotini o'qish (Gemini
-// vision) va motor/korobka/reduktor yog'i tavsiyasini olish. Server-only —
+// Rasmdan (texpasport, birka yoki mashinaning o'zi) mashina ma'lumotini o'qish
+// (Gemini vision) — barcha bo'limlar qabulda ishlatadi. Yog' bo'limi uchun
+// qo'shimcha: motor/korobka/reduktor yog'i tavsiyasi. Server-only —
 // GEMINI_API_KEY brauzerga chiqmaydi.
 
 const MODEL = 'gemini-3.6-flash';
@@ -135,18 +136,25 @@ const RECOGNIZE_SCHEMA = {
         "BUNDA HAM benzin dvigateli bor, faqat elektr motor bilan birga ishlaydi. " +
         "ELECTRIC = FAQAT to'liq elektromobil, ichki yonuv dvigateli UMUMAN yo'q (masalan 'EV', 'Electric', '전기차' — 'hybrid' so'zisiz).",
     },
-    found: { type: 'BOOLEAN', description: "Rasmda mashina texpasporti/birkasi aniq o'qildimi (marka va model ishonchli aniqlandimi)." },
+    found: { type: 'BOOLEAN', description: "Marka va model ishonchli aniqlandimi (texpasportdan, birkadan yoki mashinaning o'zidan)." },
   },
   required: ['brand', 'model', 'plateNumber', 'vin', 'vehicleType', 'found'],
 };
 
+// Rasm uch xil bo'lishi mumkin: texpasport, VIN/zavod birkasi YOKI mashinaning
+// o'zi (old/orqa tomondan, raqami ko'rinib turgan holda). Xodim qaysi birini
+// olsa ham ishlashi kerak.
 export async function recognizeCarPhoto(base64Data: string, mimeType: string): Promise<RecognizedCar> {
   const prompt =
-    "Bu avtomobil texnik pasporti yoki VIN/ishlab chiqaruvchi birkasi rasmi (o'zbekcha, ruscha, koreyscha yoki " +
-    "boshqa tildagi bo'lishi mumkin — kerak bo'lsa tarjima qilib o'qi). Undagi mashina ma'lumotlarini aniq o'qib, " +
-    'so\'ralgan JSON formatda qaytar. Agar biror maydon aniq o\'qilmasa — bo\'sh qator ("") qo\'y, o\'ylab topma. ' +
+    "Bu rasmda quyidagilardan biri bor: (1) avtomobil texnik pasporti, (2) VIN/ishlab chiqaruvchi birkasi yoki " +
+    "(3) mashinaning o'zi (oldi, orqasi yoki yon tomoni). Hujjat o'zbekcha, ruscha, koreyscha yoki boshqa tilda " +
+    "bo'lishi mumkin — kerak bo'lsa tarjima qilib o'qi. Mashinaning o'zi tushgan bo'lsa: davlat raqamini " +
+    "raqam taxtachasidan o'qi, marka va modelni emblema, yozuvlar va kuzov shaklidan aniqla. " +
+    "Mashina ma'lumotlarini so'ralgan JSON formatda qaytar. Agar biror maydon aniq o'qilmasa yoki ishonching " +
+    'komil bo\'lmasa — bo\'sh qator ("") qo\'y, o\'ylab topma. ' +
     "Marka va modelni standart lotin harflarida yoz. vehicleType'ni AYNIQSA ehtiyotkorlik bilan aniqla — " +
-    "'gibrid'/'hybrid' so'zi bo'lsa ELECTRIC emas, HYBRID deb belgila (chunki gibridda ham benzin dvigateli bor).";
+    "'gibrid'/'hybrid' so'zi bo'lsa ELECTRIC emas, HYBRID deb belgila (chunki gibridda ham benzin dvigateli bor). " +
+    "Mashinaning o'zidan aniqlansa va gibrid/elektr belgisi ko'rinmasa — ICE.";
   const out = await callGemini(
     [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }],
     RECOGNIZE_SCHEMA
