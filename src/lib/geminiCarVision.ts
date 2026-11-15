@@ -84,11 +84,15 @@ function buildPrompt(catalog: CarCatalog) {
     "PHEV, 하이브리드) yoki elektromobil belgisi (EV, BEV) ko'rinsa, buni hisobga ol.\n" +
     "2) Shu mashinaga eng mos keladigan qatorni quyidagi KATALOGdan tanla. Katalogdagi nomlar xato yozilgan " +
     "bo'lishi mumkin (masalan \"Lasseti\" = Lacetti, \"Tuscon\" = Tucson, \"Arizo\" = Arrizo, \"Chempion\" = Champion, " +
-    "\"K 5\" = K5) — bu normal, ma'nosi bo'yicha tanla. Ba'zi mashinalar \"Boshqa\" markasi ichida to'liq nom bilan " +
-    "turadi (masalan Boshqa → \"Skoda Kodiaq\", \"Mazda 6\", \"Porsche Panamera\") — haqiqiy marka katalogda alohida " +
-    "bo'lmasa, Boshqa ichidan qidir. Avlod/versiya (\"Nexia 2\"/\"Nexia 3\", \"Malibu 1\"/\"Malibu 2\", " +
-    "\"Tracker 1\"/\"Tracker 2\", gibrid/oddiy) bo'yicha ko'rinishiga qarab eng to'g'risini tanla. catalogBrand va " +
-    "catalogModel'ni AYNAN katalogdagidek ko'chir. Mos keladigani yo'q bo'lsa — ikkalasini bo'sh qoldir, o'ylab topma.\n" +
+    "\"K 5\" = K5) — bu normal, ma'nosi bo'yicha tanla. Markalar O'zbekistondagi nomi bilan turishi mumkin: " +
+    "VAZ / ВАЗ / Jiguli (Жигули, 2101–2107) / Niva → Lada; UAZ → Lada \"UAZ\"; GAZ Gazelle → Lada \"gazel\"; " +
+    "Daewoo (Nexia, Matiz, Damas, Tico, Lacetti, Gentra) va Ravon (R2 = Spark, R3 = Nexia 3, R4 = Cobalt) → Chevrolet. " +
+    "Ba'zi mashinalar \"Boshqa\" markasi ichida to'liq nom bilan turadi (masalan Boshqa → \"Skoda Kodiaq\", " +
+    "\"Mazda 6\", \"Porsche Panamera\") — haqiqiy marka katalogda alohida bo'lmasa, Boshqa ichidan qidir. " +
+    "Avlod/versiya (\"Nexia 2\"/\"Nexia 3\", \"Malibu 1\"/\"Malibu 2\", \"Tracker 1\"/\"Tracker 2\", gibrid/oddiy) " +
+    "bo'yicha ko'rinishiga qarab eng to'g'risini tanla. catalogBrand va catalogModel'ni AYNAN katalogdagidek ko'chir.\n" +
+    "MUHIM: marka katalogda bor-u, aynan shu model yo'q bo'lsa (masalan VAZ 2106 — Lada ichida yo'q) — catalogBrand'ni " +
+    "baribir yoz, faqat catalogModel'ni bo'sh qoldir; boshqa modelni o'ylab topma. Marka ham yo'q bo'lsa — ikkalasi bo'sh.\n" +
     "3) Davlat raqamini o'qi (O'zbekiston formati: 01 A 123 AA yoki 01 123 AAA). Raqam ko'rinmasa yoki aniq " +
     "o'qilmasa — bo'sh qoldir.\n\n" +
     `KATALOG (marka: modellar):\n${catalogText || "(bo'sh)"}`
@@ -107,6 +111,36 @@ function normalizePlate(s: any): string {
     .replace(/[^A-Z0-9]/g, '');
 }
 
+// AI tanlagan marka/model haqiqatan katalogda bormi — AYNAN tekshiramiz
+// (dropdown'da yo'q qiymat formada "ko'rinmas tanlov" bo'lib qolmasin) va
+// katalogdagi yozuvni qaytaramiz. Katalogda bitta marka turli registrda
+// takrorlanadi ("Lada"/"LADA", "Kia"/"KIA", "Chevrolet"/"CHEVROLET") — model
+// shu markalarning qaysi birida bo'lsa, o'shani olamiz. Model topilmasa ham
+// marka qaytariladi (masalan VAZ 2106 → Lada, model qo'lda tanlanadi).
+export function resolveInCatalog(catalog: CarCatalog, rawBrand: any, rawModel: any): { brand: string; model: string } {
+  const wantBrand = String(rawBrand || '').trim();
+  const wantModel = String(rawModel || '').trim().toLowerCase();
+  const findModel = (b: string) => (wantModel ? catalog[b].find((m) => m.toLowerCase() === wantModel) || '' : '');
+
+  const sameBrand = Object.keys(catalog)
+    .filter((b) => b.toLowerCase() === wantBrand.toLowerCase())
+    .sort((a, b) => Number(b === wantBrand) - Number(a === wantBrand)); // aynan yozuv birinchi
+
+  for (const b of sameBrand) {
+    const model = findModel(b);
+    if (model) return { brand: b, model };
+  }
+  if (sameBrand.length) return { brand: sameBrand[0], model: '' };
+
+  // Marka mos kelmadi, lekin model nomi katalogda yagona bo'lsa — o'shani olamiz
+  // (AI markani boshqacha yozgan holat, masalan "Skoda" o'rniga "Boshqa").
+  if (wantModel) {
+    const hits = Object.keys(catalog).filter((b) => findModel(b));
+    if (hits.length === 1) return { brand: hits[0], model: findModel(hits[0]) };
+  }
+  return { brand: '', model: '' };
+}
+
 export async function recognizeCarForCatalog(
   base64Data: string,
   mimeType: string,
@@ -119,13 +153,7 @@ export async function recognizeCarForCatalog(
     { totalTimeoutMs: 60_000 }
   );
 
-  // AI tanlagan marka/model haqiqatan katalogda bormi — AYNAN tekshiramiz
-  // (dropdown'da yo'q qiymat formada "ko'rinmas tanlov" bo'lib qolmasin).
-  // Katta-kichik harf farqiga yo'l qo'yamiz, lekin katalogdagi yozuvni qaytaramiz.
-  const wantBrand = String(out.catalogBrand || '').trim().toLowerCase();
-  const brand = Object.keys(catalog).find((b) => b.toLowerCase() === wantBrand) || '';
-  const wantModel = String(out.catalogModel || '').trim().toLowerCase();
-  const model = brand ? catalog[brand].find((m) => m.toLowerCase() === wantModel) || '' : '';
+  const { brand, model } = resolveInCatalog(catalog, out.catalogBrand, out.catalogModel);
 
   return {
     found: !!out.found,
