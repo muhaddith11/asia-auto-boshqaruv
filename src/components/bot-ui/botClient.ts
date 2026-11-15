@@ -293,8 +293,9 @@ export interface CarScanResponse {
   ok: boolean;
   error?: string;
   found?: boolean;
-  brand?: string; // katalogdagi aynan nom yoki ''
-  model?: string; // katalogdagi aynan nom yoki ''
+  brand?: string; // katalogdagi aynan nom; katalogda yo'q bo'lsa — AI yozgan yangi nom
+  model?: string;
+  fromCatalog?: boolean; // false → marka/model katalogda yo'q edi, yangi nom yozildi
   seenBrand?: string;
   seenModel?: string;
   plateNumber?: string;

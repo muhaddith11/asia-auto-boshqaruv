@@ -13,8 +13,11 @@ export type CarCatalog = Record<string, string[]>;
 
 export interface CarScanResult {
   found: boolean; // rasmda mashina (yoki texpasport) aniqlandimi
-  brand: string; // katalogdagi AYNAN marka nomi, mos kelmasa ''
-  model: string; // katalogdagi AYNAN model nomi, mos kelmasa ''
+  // Formaga yoziladigan marka/model. Katalogda bo'lsa — AYNAN katalog yozuvi;
+  // bo'lmasa — katalog tartibida AI ko'rgan nom (qarang: fillOutsideCatalog).
+  brand: string;
+  model: string;
+  fromCatalog: boolean; // marka VA model katalogdan topildimi (false → yangi nom yozildi)
   seenBrand: string; // AI rasmda ko'rgan haqiqiy marka (katalogdan qat'iy nazar)
   seenModel: string; // AI rasmda ko'rgan haqiqiy model
   plateNumber: string; // bo'shliqsiz, katta harf, topilmasa ''
@@ -54,7 +57,7 @@ const SCHEMA = {
     },
     seenModel: {
       type: 'STRING',
-      description: "Rasmdagi mashinaning haqiqiy modeli (masalan: Lacetti, Cobalt, K5, Song Plus DM-i). Aniqlanmasa bo'sh qator.",
+      description: "Rasmdagi mashinaning haqiqiy modeli, MARKASIZ (masalan: Lacetti, Cobalt, K5, Duster, 2106, Song Plus DM-i). Aniqlanmasa bo'sh qator.",
     },
     catalogBrand: {
       type: 'STRING',
@@ -141,6 +144,58 @@ export function resolveInCatalog(catalog: CarCatalog, rawBrand: any, rawModel: a
   return { brand: '', model: '' };
 }
 
+// AI qaytargan nomni formaga yaroqli qiladi: ortiqcha bo'shliq, g'alati
+// belgilar va haddan uzunlik olib tashlanadi.
+function cleanName(s: any): string {
+  return String(s || '')
+    .replace(/[^\p{L}\p{N} .+\-/]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_NAME_LEN);
+}
+
+const squash = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+
+// Katalogda yo'q mashinani ham formaga yozish — katalogning o'z tartibida:
+//  • marka bor, model yo'q (VAZ 2106) → o'sha marka + AI ko'rgan model ("2106");
+//  • marka ham yo'q (Renault Duster) → "Boshqa" + to'liq nom ("Renault Duster"),
+//    katalogdagi Boshqa → "Skoda Kodiaq", "Volvo" kabi.
+// Buyurtma marka/modelni matn sifatida saqlaydi, xodim kiritgan xizmatlar
+// shu nom bilan services_list'ga yoziladi — keyingi safar mashina katalogda bo'ladi.
+export function fillOutsideCatalog(
+  catalog: CarCatalog,
+  inCat: { brand: string; model: string },
+  seenBrand: string,
+  seenModel: string
+): { brand: string; model: string } {
+  if (inCat.brand && inCat.model) return inCat;
+
+  if (inCat.brand) {
+    // Model nomidan marka takrorini olib tashlaymiz ("Lada 2106" → "2106").
+    let m = seenModel;
+    for (const b of [seenBrand, inCat.brand]) {
+      if (b && m.toLowerCase().startsWith(b.toLowerCase() + ' ')) m = m.slice(b.length).trim();
+    }
+    if (!m) return inCat;
+    // Avlod noaniq bo'lsa ("Nexia" → Nexia 1/2/3) yangi nom yaratmaymiz:
+    // bitta mos keladigani bo'lsa o'shani olamiz, bir nechta bo'lsa — xodim tanlaydi.
+    const prefixHits = catalog[inCat.brand].filter((x) => squash(x).startsWith(squash(m)));
+    if (prefixHits.length === 1) return { brand: inCat.brand, model: prefixHits[0] };
+    if (prefixHits.length > 1) return inCat;
+    return { brand: inCat.brand, model: m };
+  }
+
+  if (!seenBrand) return { brand: '', model: '' };
+  // AI catalogBrand'ni bo'sh qoldirgan, lekin ko'rgan markasi katalogda bor bo'lsa — o'sha marka.
+  const byName = resolveInCatalog(catalog, seenBrand, seenModel);
+  if (byName.brand) return fillOutsideCatalog(catalog, byName, seenBrand, seenModel);
+  const other = Object.keys(catalog).find((b) => b.toLowerCase() === 'boshqa');
+  const full = cleanName(
+    seenModel.toLowerCase().startsWith(seenBrand.toLowerCase()) ? seenModel : `${seenBrand} ${seenModel}`
+  );
+  return other ? { brand: other, model: full } : { brand: seenBrand, model: seenModel };
+}
+
 export async function recognizeCarForCatalog(
   base64Data: string,
   mimeType: string,
@@ -153,14 +208,23 @@ export async function recognizeCarForCatalog(
     { totalTimeoutMs: 60_000 }
   );
 
-  const { brand, model } = resolveInCatalog(catalog, out.catalogBrand, out.catalogModel);
+  const seenBrand = cleanName(out.seenBrand);
+  const seenModel = cleanName(out.seenModel);
+  const inCat = resolveInCatalog(catalog, out.catalogBrand, out.catalogModel);
+  const filled = fillOutsideCatalog(catalog, inCat, seenBrand, seenModel);
+  // Yangi yozilgan nom aslida katalogda bo'lib chiqsa (Boshqa → "Skoda Kodiaq") —
+  // katalogdagi yozuvni olamiz.
+  const canon = filled.model ? resolveInCatalog(catalog, filled.brand, filled.model) : { brand: '', model: '' };
+  const fromCatalog = !!(canon.brand && canon.model);
+  const { brand, model } = fromCatalog ? canon : filled;
 
   return {
     found: !!out.found,
     brand,
     model,
-    seenBrand: String(out.seenBrand || '').trim(),
-    seenModel: String(out.seenModel || '').trim(),
+    fromCatalog,
+    seenBrand,
+    seenModel,
     plateNumber: normalizePlate(out.plateNumber),
   };
 }

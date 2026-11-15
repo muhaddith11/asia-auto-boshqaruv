@@ -37,9 +37,12 @@ export default function CarScanCard({ identity, catalog, onApply, onPlateMissing
 
       const seen = [res.seenBrand, res.seenModel].filter(Boolean).join(' ');
       if (!res.brand) {
-        toast(`Katalogda topilmadi${seen ? `: ${seen}` : ''} — marka/modelni qo'lda tanlang`, { icon: '⚠️' });
+        toast(`Markani aniqlab bo'lmadi${seen ? `: ${seen}` : ''} — qo'lda tanlang`, { icon: '⚠️' });
       } else if (!res.model) {
-        toast(`Model katalogda topilmadi${seen ? ` (${seen})` : ''} — qo'lda tanlang`, { icon: '⚠️' });
+        toast(`Modelni aniqlab bo'lmadi${seen ? ` (${seen})` : ''} — qo'lda tanlang`, { icon: '⚠️' });
+      } else if (res.fromCatalog === false) {
+        // Katalogda yo'q mashina — AI yangi nom bilan yozdi (xizmatlar shu nomga saqlanadi).
+        toast(`Katalogda yo'q edi — yangi yozildi: ${res.brand} ${res.model}`, { icon: '🆕' });
       }
       if (!res.plateNumber) {
         toast("Mashina raqami o'qilmadi — qo'lda kiriting", { icon: '⌨️' });

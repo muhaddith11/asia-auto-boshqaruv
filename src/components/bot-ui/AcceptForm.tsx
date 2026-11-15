@@ -27,6 +27,10 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
     store.brand && catalog?.catalog?.[store.brand]
       ? Object.keys(catalog.catalog[store.brand]).sort((a: string, b: string) => a.localeCompare(b))
       : [];
+  // AI katalogda yo'q mashinani yozgan bo'lsa (masalan Boshqa → "Renault Duster"),
+  // u ro'yxatda ham ko'rinsin — aks holda <select> tanlovni ko'rsatmaydi.
+  if (store.brand && !brands.includes(store.brand)) brands.unshift(store.brand);
+  if (store.model && !models.includes(store.model)) models.unshift(store.model);
 
   // Mashina raqami HAR DOIM shart — AI orqali bo'lsin, qo'lda kiritilsin,
   // raqamsiz "Qabul qildim" bosib bo'lmaydi.
