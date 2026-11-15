@@ -107,11 +107,18 @@ const CYR_TO_LAT: Record<string, string> = {
   А: 'A', В: 'B', Е: 'E', К: 'K', М: 'M', Н: 'H', О: 'O', Р: 'P', С: 'C', Т: 'T', У: 'Y', Х: 'X',
 };
 
+// O'zbekiston raqamlari: 01A123AA (jismoniy) va 01123AAA (yuridik).
+const UZ_PLATE = /^(\d{2}[A-Z]\d{3}[A-Z]{2}|\d{5}[A-Z]{3})$/;
+
 function normalizePlate(s: any): string {
-  return String(s || '')
+  const p = String(s || '')
     .toUpperCase()
     .replace(/[АВЕКМНОРСТУХ]/g, (c) => CYR_TO_LAT[c] || c)
     .replace(/[^A-Z0-9]/g, '');
+  // Chala o'qilgan raqam ("01VSC") formaga tushmasin — xodim o'zi yozgani
+  // yaxshiroq. Boshqa formatdagi (chet el, eski) to'liq raqamlar qoladi.
+  if (UZ_PLATE.test(p)) return p;
+  return p.length >= 7 && /\d/.test(p) && /[A-Z]/.test(p) ? p : '';
 }
 
 // AI tanlagan marka/model haqiqatan katalogda bormi — AYNAN tekshiramiz
@@ -201,11 +208,19 @@ export async function recognizeCarForCatalog(
   mimeType: string,
   catalog: CarCatalog
 ): Promise<CarScanResult> {
-  // Xodim telefonda kutadi — 60s dan ortiq osilib qolmasin.
+  // Tezlik (2026-11-15 o'lchov): "o'ylash" bosqichi (~500 token) javobni 3–5 s
+  // ga cho'zardi, minimal rejimda 1–2,5 s va natija bir xil (marka/model/raqam).
+  // Google ba'zan sababsiz 45–60 s osilib qoladi — 6 s ichida javob bo'lmasa
+  // keyingi kalit bilan parallel so'rov ketadi (birinchi javob olinadi).
   const out = await callGemini(
     [{ text: buildPrompt(catalog) }, { inline_data: { mime_type: mimeType, data: base64Data } }],
     SCHEMA,
-    { totalTimeoutMs: 60_000 }
+    {
+      totalTimeoutMs: 45_000,
+      attemptTimeoutMs: 25_000,
+      hedgeAfterMs: 6_000,
+      generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } },
+    }
   );
 
   const seenBrand = cleanName(out.seenBrand);

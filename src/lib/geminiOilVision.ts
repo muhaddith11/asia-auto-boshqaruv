@@ -57,9 +57,21 @@ function getApiKeys(): string[] {
 // kvota bir kalitga to'planib qolmay, hammasi bo'ylab tekis taqsimlanadi.
 let rrIndex = 0;
 
-async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any, timeoutMs = TIMEOUT_MS) {
+async function callGeminiOnce(
+  apiKey: string,
+  parts: any[],
+  responseSchema: any,
+  timeoutMs = TIMEOUT_MS,
+  extraConfig?: Record<string, any>,
+  outerSignal?: AbortSignal
+) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  // Tashqi signal (parallel urinishlardan biri yutganda qolganlarini to'xtatish uchun).
+  if (outerSignal) {
+    if (outerSignal.aborted) controller.abort();
+    else outerSignal.addEventListener('abort', () => controller.abort(), { once: true });
+  }
   try {
     const res = await fetch(`${API_BASE}/${MODEL}:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -71,6 +83,7 @@ async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any,
           temperature: 0.1,
           responseMimeType: 'application/json',
           responseSchema,
+          ...extraConfig,
         },
       }),
     });
@@ -100,19 +113,35 @@ async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any,
 // `totalTimeoutMs` — barcha urinishlar uchun UMUMIY vaqt chegarasi. Google
 // serverlari yuklangan paytda har bir kalit 45s gacha osilib qolishi mumkin
 // (7 kalit × 45s = 5 daqiqa!) — xodim telefonda shuncha kutmasligi uchun.
-export async function callGemini(parts: any[], responseSchema: any, opts?: { totalTimeoutMs?: number }) {
+//
+// `generationConfig` — qo'shimcha sozlamalar (masalan thinkingConfig).
+// `hedgeAfterMs` — berilsa, javob shu vaqt ichida kelmasa KEYINGI kalit bilan
+// parallel ikkinchi so'rov yuboriladi va qaysi biri oldin javob bersa o'sha
+// olinadi (Google ba'zan sababsiz 45–60 s osilib qoladi, odatiy javob 1–2 s).
+export interface CallGeminiOptions {
+  totalTimeoutMs?: number;
+  generationConfig?: Record<string, any>;
+  hedgeAfterMs?: number;
+  attemptTimeoutMs?: number; // bitta urinish uchun chegara (standart 45 s)
+}
+
+export async function callGemini(parts: any[], responseSchema: any, opts?: CallGeminiOptions) {
   const keys = getApiKeys();
   if (!keys.length) throw new Error("GEMINI_API_KEY sozlanmagan (.env.local'ga qo'shing)");
 
   const deadline = opts?.totalTimeoutMs ? Date.now() + opts.totalTimeoutMs : Infinity;
   const start = rrIndex++ % keys.length;
+  const attemptMax = opts?.attemptTimeoutMs ?? TIMEOUT_MS;
+  if (opts?.hedgeAfterMs) {
+    return callGeminiHedged(keys, start, parts, responseSchema, deadline, opts.hedgeAfterMs, attemptMax, opts.generationConfig);
+  }
   let lastErr: any;
   for (let i = 0; i < keys.length; i++) {
     const remaining = deadline - Date.now();
     if (remaining < 3000) break; // vaqt tugadi — qolgan kalitlarni sinamaymiz
     const key = keys[(start + i) % keys.length];
     try {
-      return await callGeminiOnce(key, parts, responseSchema, Math.min(TIMEOUT_MS, remaining));
+      return await callGeminiOnce(key, parts, responseSchema, Math.min(attemptMax, remaining), opts?.generationConfig);
     } catch (e: any) {
       lastErr = e;
     }
@@ -126,9 +155,71 @@ export async function callGemini(parts: any[], responseSchema: any, opts?: { tot
   // foyda bermaydi, shuning uchun darrov xatoni qaytaramiz).
   if (RETRY_STATUSES.has(lastErr?.status)) {
     await new Promise((r) => setTimeout(r, 1500));
-    return await callGeminiOnce(keys[start], parts, responseSchema);
+    return await callGeminiOnce(keys[start], parts, responseSchema, TIMEOUT_MS, opts?.generationConfig);
   }
   throw lastErr;
+}
+
+const MAX_PARALLEL = 3;
+
+// Pog'onali parallel urinishlar: birinchi kalit bilan boshlaymiz; `hedgeAfterMs`
+// ichida javob bo'lmasa yoki urinish xato bersa (429 kvota va h.k.) — darhol
+// keyingi kalit. Birinchi muvaffaqiyatli javob olinadi, qolganlari to'xtatiladi.
+function callGeminiHedged(
+  keys: string[],
+  start: number,
+  parts: any[],
+  responseSchema: any,
+  deadline: number,
+  hedgeAfterMs: number,
+  attemptMax: number,
+  generationConfig?: Record<string, any>
+): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const stopAll = new AbortController();
+    let next = 0;
+    let inFlight = 0;
+    let done = false;
+    let lastErr: any;
+    let hedgeTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (fn: () => void) => {
+      if (done) return;
+      done = true;
+      clearTimeout(hedgeTimer);
+      stopAll.abort();
+      fn();
+    };
+
+    const launch = (fromTimer = false) => {
+      if (done) return;
+      clearTimeout(hedgeTimer);
+      // Bepul kvotani asrash: bir vaqtda ko'pi bilan 3 ta so'rov.
+      if (fromTimer && inFlight >= MAX_PARALLEL) {
+        hedgeTimer = setTimeout(() => launch(true), hedgeAfterMs);
+        return;
+      }
+      const remaining = deadline - Date.now();
+      if (next >= keys.length || remaining < 3000) {
+        // Yangi urinish yo'q — ishlayotganlari tugashini kutamiz.
+        if (inFlight === 0) finish(() => reject(lastErr || new Error('AI javob bermadi (vaqt tugadi)')));
+        return;
+      }
+      const key = keys[(start + next++) % keys.length];
+      inFlight++;
+      callGeminiOnce(key, parts, responseSchema, Math.min(attemptMax, remaining), generationConfig, stopAll.signal)
+        .then((out) => finish(() => resolve(out)))
+        .catch((e) => {
+          inFlight--;
+          if (done) return;
+          lastErr = e;
+          launch(); // xato bo'ldi — kutmasdan keyingi kalit
+        });
+      hedgeTimer = setTimeout(() => launch(true), hedgeAfterMs); // sekin — parallel yana bitta
+    };
+
+    launch();
+  });
 }
 
 const RECOGNIZE_SCHEMA = {
