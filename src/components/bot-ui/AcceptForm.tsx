@@ -5,12 +5,13 @@ import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import PhoneInput from '@/components/PhoneInput';
 import { acceptCar, Identity, OilRecommendationSnapshot } from './botClient';
 import OilScanCard from './OilScanCard';
+import CarScanCard from './CarScanCard';
 import toast from 'react-hot-toast';
 
 interface Props {
   catalog: any;
   identity: Identity;
-  bolim?: string; // 'ustaxona' | 'yog' — faqat yog'chiga AI skanerlash ko'rinadi
+  bolim?: string; // 'yog' → texpasport + yog' tavsiyasi skaneri; boshqalar → mashina rasmidan marka/model/raqam
   onDone: () => void; // muvaffaqiyatli qabuldan keyin (bosh ekranga)
   onCancel?: () => void; // bo'lsa "Orqaga" tugmasi ko'rsatiladi (alohida ekranда)
 }
@@ -91,6 +92,15 @@ export default function AcceptForm({ catalog, identity, bolim, onDone, onCancel 
         </div>
         <h2 className="text-xl font-bold">Mashina qabul qilish</h2>
       </div>
+
+      {bolim !== 'yog' && (
+        <CarScanCard
+          identity={identity}
+          catalog={catalog}
+          onApply={(patch) => store.setCarInfo(patch)}
+          onPlateMissing={() => plateRef.current?.focus()}
+        />
+      )}
 
       {bolim === 'yog' && (
         <OilScanCard

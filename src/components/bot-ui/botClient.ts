@@ -288,6 +288,37 @@ export async function scanOilCar(identity: Identity, dataUrl: string) {
   }>;
 }
 
+// ── Barcha xodimlar: mashina rasmidan AI bilan marka/model/raqam ────────────
+export interface CarScanResponse {
+  ok: boolean;
+  error?: string;
+  found?: boolean;
+  brand?: string; // katalogdagi aynan nom yoki ''
+  model?: string; // katalogdagi aynan nom yoki ''
+  seenBrand?: string;
+  seenModel?: string;
+  plateNumber?: string;
+}
+
+// `catalog` — botdagi { brand: { model: [...] } } obyekti; serverga faqat
+// marka → modellar nomlari yuboriladi (AI aynan shu ro'yxatdan tanlaydi).
+export async function scanCarPhoto(identity: Identity, dataUrl: string, catalog: any): Promise<CarScanResponse> {
+  const list: Record<string, string[]> = {};
+  for (const [brand, models] of Object.entries(catalog?.catalog || {})) {
+    list[brand] = Object.keys((models as any) || {});
+  }
+  const res = await fetch('/api/bot-ui/car-scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl, catalog: list, ...idBody(identity) }),
+  });
+  try {
+    return await res.json();
+  } catch {
+    return { ok: false, error: `Server xatosi (${res.status})` };
+  }
+}
+
 // Rasmni brauzerda siqib JPEG data URL qaytaradi (yuklashni tez qiladi).
 export function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Promise<string> {
   return new Promise((resolve, reject) => {

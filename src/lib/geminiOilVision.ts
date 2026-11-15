@@ -57,9 +57,9 @@ function getApiKeys(): string[] {
 // kvota bir kalitga to'planib qolmay, hammasi bo'ylab tekis taqsimlanadi.
 let rrIndex = 0;
 
-async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any) {
+async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any, timeoutMs = TIMEOUT_MS) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(`${API_BASE}/${MODEL}:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -95,19 +95,31 @@ async function callGeminiOnce(apiKey: string, parts: any[], responseSchema: any)
 // limit (429/503), balki noto'g'ri/yaroqsiz kalit (401/403, masalan xato
 // nusxalangan) bo'lsa ham. Shunday qilib, ro'yxatda BITTA yaroqli kalit
 // bo'lsa ham funksiya ishlayveradi — bitta xato kalit hammasini buzmaydi.
-async function callGemini(parts: any[], responseSchema: any) {
+// Boshqa AI funksiyalar (masalan geminiCarVision) ham shu kalit aylantirishdan foydalanadi.
+//
+// `totalTimeoutMs` — barcha urinishlar uchun UMUMIY vaqt chegarasi. Google
+// serverlari yuklangan paytda har bir kalit 45s gacha osilib qolishi mumkin
+// (7 kalit × 45s = 5 daqiqa!) — xodim telefonda shuncha kutmasligi uchun.
+export async function callGemini(parts: any[], responseSchema: any, opts?: { totalTimeoutMs?: number }) {
   const keys = getApiKeys();
   if (!keys.length) throw new Error("GEMINI_API_KEY sozlanmagan (.env.local'ga qo'shing)");
 
+  const deadline = opts?.totalTimeoutMs ? Date.now() + opts.totalTimeoutMs : Infinity;
   const start = rrIndex++ % keys.length;
   let lastErr: any;
   for (let i = 0; i < keys.length; i++) {
+    const remaining = deadline - Date.now();
+    if (remaining < 3000) break; // vaqt tugadi — qolgan kalitlarni sinamaymiz
     const key = keys[(start + i) % keys.length];
     try {
-      return await callGeminiOnce(key, parts, responseSchema);
+      return await callGeminiOnce(key, parts, responseSchema, Math.min(TIMEOUT_MS, remaining));
     } catch (e: any) {
       lastErr = e;
     }
+  }
+  if (deadline !== Infinity) {
+    // Umumiy chegara bor — qo'shimcha kutish/urinish yo'q, darrov xato.
+    throw lastErr || new Error('AI javob bermadi (vaqt tugadi)');
   }
   // Hammasi ishlamadi. Agar sabab vaqtinchalik limit (429/503) bo'lsa —
   // bitta so'nggi urinish, qisqa kutib (401 kabi doimiy xatoda kutish
