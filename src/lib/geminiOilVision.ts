@@ -63,7 +63,8 @@ async function callGeminiOnce(
   responseSchema: any,
   timeoutMs = TIMEOUT_MS,
   extraConfig?: Record<string, any>,
-  outerSignal?: AbortSignal
+  outerSignal?: AbortSignal,
+  model = MODEL
 ) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -73,7 +74,7 @@ async function callGeminiOnce(
     else outerSignal.addEventListener('abort', () => controller.abort(), { once: true });
   }
   try {
-    const res = await fetch(`${API_BASE}/${MODEL}:generateContent?key=${apiKey}`, {
+    const res = await fetch(`${API_BASE}/${model}:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -118,11 +119,29 @@ async function callGeminiOnce(
 // `hedgeAfterMs` — berilsa, javob shu vaqt ichida kelmasa KEYINGI kalit bilan
 // parallel ikkinchi so'rov yuboriladi va qaysi biri oldin javob bersa o'sha
 // olinadi (Google ba'zan sababsiz 45–60 s osilib qoladi, odatiy javob 1–2 s).
+//
+// `models` (faqat hedgeAfterMs bilan) — tartiblangan modellar ro'yxati. Har bir
+// kalitda avval birinchi model, keyin zaxiralar sinaladi. Google bitta modelni
+// "high demand" (503) yoki osilib qolish bilan to'xtatib qo'ysa (2026-11-16: 3.6
+// flash 7 kalitning hammasida 503/timeout, 2.5 flash esa 1 s da javob berdi) —
+// keyingi urinish BOSHQA model bilan ketadi. Kvota ham har model uchun alohida.
+export interface GeminiModelChoice {
+  model: string;
+  generationConfig?: Record<string, any>;
+}
+
 export interface CallGeminiOptions {
   totalTimeoutMs?: number;
   generationConfig?: Record<string, any>;
   hedgeAfterMs?: number;
   attemptTimeoutMs?: number; // bitta urinish uchun chegara (standart 45 s)
+  models?: GeminiModelChoice[];
+}
+
+interface GeminiAttempt {
+  key: string;
+  model: string;
+  generationConfig?: Record<string, any>;
 }
 
 export async function callGemini(parts: any[], responseSchema: any, opts?: CallGeminiOptions) {
@@ -133,7 +152,15 @@ export async function callGemini(parts: any[], responseSchema: any, opts?: CallG
   const start = rrIndex++ % keys.length;
   const attemptMax = opts?.attemptTimeoutMs ?? TIMEOUT_MS;
   if (opts?.hedgeAfterMs) {
-    return callGeminiHedged(keys, start, parts, responseSchema, deadline, opts.hedgeAfterMs, attemptMax, opts.generationConfig);
+    const models: GeminiModelChoice[] = opts.models?.length
+      ? opts.models
+      : [{ model: MODEL, generationConfig: opts.generationConfig }];
+    const attempts: GeminiAttempt[] = [];
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[(start + i) % keys.length];
+      for (const m of models) attempts.push({ key, model: m.model, generationConfig: m.generationConfig });
+    }
+    return callGeminiHedged(attempts, parts, responseSchema, deadline, opts.hedgeAfterMs, attemptMax);
   }
   let lastErr: any;
   for (let i = 0; i < keys.length; i++) {
@@ -162,18 +189,17 @@ export async function callGemini(parts: any[], responseSchema: any, opts?: CallG
 
 const MAX_PARALLEL = 3;
 
-// Pog'onali parallel urinishlar: birinchi kalit bilan boshlaymiz; `hedgeAfterMs`
-// ichida javob bo'lmasa yoki urinish xato bersa (429 kvota va h.k.) — darhol
-// keyingi kalit. Birinchi muvaffaqiyatli javob olinadi, qolganlari to'xtatiladi.
+// Pog'onali parallel urinishlar: birinchi (kalit, model) bilan boshlaymiz;
+// `hedgeAfterMs` ichida javob bo'lmasa yoki urinish xato bersa (429 kvota, 503
+// band va h.k.) — darhol keyingisi. Birinchi muvaffaqiyatli javob olinadi,
+// qolganlari to'xtatiladi.
 function callGeminiHedged(
-  keys: string[],
-  start: number,
+  attempts: GeminiAttempt[],
   parts: any[],
   responseSchema: any,
   deadline: number,
   hedgeAfterMs: number,
-  attemptMax: number,
-  generationConfig?: Record<string, any>
+  attemptMax: number
 ): Promise<any> {
   return new Promise((resolve, reject) => {
     const stopAll = new AbortController();
@@ -200,14 +226,14 @@ function callGeminiHedged(
         return;
       }
       const remaining = deadline - Date.now();
-      if (next >= keys.length || remaining < 3000) {
+      if (next >= attempts.length || remaining < 3000) {
         // Yangi urinish yo'q — ishlayotganlari tugashini kutamiz.
         if (inFlight === 0) finish(() => reject(lastErr || new Error('AI javob bermadi (vaqt tugadi)')));
         return;
       }
-      const key = keys[(start + next++) % keys.length];
+      const a = attempts[next++];
       inFlight++;
-      callGeminiOnce(key, parts, responseSchema, Math.min(attemptMax, remaining), generationConfig, stopAll.signal)
+      callGeminiOnce(a.key, parts, responseSchema, Math.min(attemptMax, remaining), a.generationConfig, stopAll.signal, a.model)
         .then((out) => finish(() => resolve(out)))
         .catch((e) => {
           inFlight--;

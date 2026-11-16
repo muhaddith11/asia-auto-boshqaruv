@@ -7,7 +7,7 @@
 // "Skoda Kodiaq"...), shuning uchun oddiy matn moslashtirish ishonchsiz —
 // AI'dan to'g'ridan-to'g'ri katalogdagi qatorni tanlashni so'raymiz.
 
-import { callGemini } from './geminiOilVision';
+import { callGemini, type GeminiModelChoice } from './geminiOilVision';
 
 export type CarCatalog = Record<string, string[]>;
 
@@ -203,15 +203,25 @@ export function fillOutsideCatalog(
   return other ? { brand: other, model: full } : { brand: seenBrand, model: seenModel };
 }
 
+// Asosiy model + zaxiralar (har biri o'z kvotasi va quvvatiga ega). Asosiy
+// model band (503) yoki osilib qolsa, 6 s dan keyin zaxira model bilan so'rov
+// ketadi; kvota tugasa (429) — darhol. "O'ylash" har birida o'chirilgan (tezlik).
+export const CAR_SCAN_MODELS: GeminiModelChoice[] = [
+  { model: 'gemini-3.6-flash', generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } } },
+  { model: 'gemini-2.5-flash', generationConfig: { thinkingConfig: { thinkingBudget: 0 } } },
+  { model: 'gemini-3.5-flash-lite', generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } } },
+];
+
 export async function recognizeCarForCatalog(
   base64Data: string,
   mimeType: string,
-  catalog: CarCatalog
+  catalog: CarCatalog,
+  models: GeminiModelChoice[] = CAR_SCAN_MODELS
 ): Promise<CarScanResult> {
   // Tezlik (2026-11-15 o'lchov): "o'ylash" bosqichi (~500 token) javobni 3–5 s
   // ga cho'zardi, minimal rejimda 1–2,5 s va natija bir xil (marka/model/raqam).
   // Google ba'zan sababsiz 45–60 s osilib qoladi — 6 s ichida javob bo'lmasa
-  // keyingi kalit bilan parallel so'rov ketadi (birinchi javob olinadi).
+  // parallel so'rov ketadi (birinchi javob olinadi).
   const out = await callGemini(
     [{ text: buildPrompt(catalog) }, { inline_data: { mime_type: mimeType, data: base64Data } }],
     SCHEMA,
@@ -219,7 +229,7 @@ export async function recognizeCarForCatalog(
       totalTimeoutMs: 45_000,
       attemptTimeoutMs: 25_000,
       hedgeAfterMs: 6_000,
-      generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } },
+      models,
     }
   );
 
