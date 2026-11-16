@@ -46,6 +46,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, recognized, recommendation, fromCache });
   } catch (e: any) {
+    // Google serverlari yuklangan (503 / 429 / vaqt tugadi / tarmoq) — xodimga
+    // texnik matn (Gemini JSON xatosi) o'rniga tushunarli xabar.
+    const busy =
+      e?.name === 'AbortError' ||
+      e?.status === 503 ||
+      e?.status === 429 ||
+      /fetch failed|aborted|vaqt tugadi/i.test(String(e?.message || ''));
+    if (busy) {
+      return NextResponse.json(
+        { ok: false, error: "AI hozir band (Google serverlari yuklangan). Birozdan keyin qayta urining yoki qo'lda kiriting." },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ ok: false, error: e?.message || 'Server xatosi' }, { status: 500 });
   }
 }

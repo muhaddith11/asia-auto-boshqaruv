@@ -269,6 +269,21 @@ const RECOGNIZE_SCHEMA = {
   required: ['brand', 'model', 'plateNumber', 'vin', 'vehicleType', 'found'],
 };
 
+// Yog' skaneri ham mashina skaneri kabi zaxira modellarga o'tadi (2026-11-16:
+// 3.6 flash hamma kalitda 503/osilib qolgan). Asosiy model avvalgidek "o'ylash"
+// bilan ishlaydi (texpasport o'qish/tavsiya sifati o'zgarmasin); 8 s ichida
+// javob bo'lmasa yoki 429/503 bo'lsa — zaxira. Umumiy chegara: xodim yog'
+// skanerida (o'qish + tavsiya) ko'pi bilan ~80 s kutadi, 7×45 s emas.
+const OIL_CALL_OPTS = { totalTimeoutMs: 40_000, attemptTimeoutMs: 30_000, hedgeAfterMs: 8_000 };
+const OIL_READ_MODELS: GeminiModelChoice[] = [
+  { model: MODEL },
+  { model: 'gemini-2.5-flash', generationConfig: { thinkingConfig: { thinkingBudget: 0 } } },
+  { model: 'gemini-3.5-flash-lite', generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } } },
+];
+// Tavsiya bazaga marka/model bo'yicha DOIMIY keshlanadi — shuning uchun eng
+// kuchsiz lite model bu yerda ishlatilmaydi.
+const OIL_RECOMMEND_MODELS: GeminiModelChoice[] = [{ model: MODEL }, { model: 'gemini-2.5-flash' }];
+
 export async function recognizeCarPhoto(base64Data: string, mimeType: string): Promise<RecognizedCar> {
   const prompt =
     "Bu avtomobil texnik pasporti yoki VIN/ishlab chiqaruvchi birkasi rasmi (o'zbekcha, ruscha, koreyscha yoki " +
@@ -278,7 +293,8 @@ export async function recognizeCarPhoto(base64Data: string, mimeType: string): P
     "'gibrid'/'hybrid' so'zi bo'lsa ELECTRIC emas, HYBRID deb belgila (chunki gibridda ham benzin dvigateli bor).";
   const out = await callGemini(
     [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }],
-    RECOGNIZE_SCHEMA
+    RECOGNIZE_SCHEMA,
+    { ...OIL_CALL_OPTS, models: OIL_READ_MODELS }
   );
   return {
     brand: String(out.brand || '').trim(),
@@ -319,7 +335,7 @@ export async function recommendOil(brand: string, model: string, vehicleType: Ve
     `Tajribali avtomexanik sifatida "${brand} ${model}" avtomobili uchun tavsiya ber. ${situationPrompt} ` +
     'Eng ko\'p tarqalgan/standart komplektatsiya bo\'yicha taxminiy hajmlarni ber (litr, o\'nlik kasr bilan). ' +
     "JSON formatda, so'ralgan sxema bo'yicha javob ber.";
-  const out = await callGemini([{ text: prompt }], RECOMMEND_SCHEMA);
+  const out = await callGemini([{ text: prompt }], RECOMMEND_SCHEMA, { ...OIL_CALL_OPTS, models: OIL_RECOMMEND_MODELS });
   const isElectric = vehicleType === 'ELECTRIC';
   return {
     motorYogTuri: isElectric ? null : String(out.motorYogTuri || '').trim() || null,
