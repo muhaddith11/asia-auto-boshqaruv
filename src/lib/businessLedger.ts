@@ -117,7 +117,7 @@ export function buildLedgerRows(
       const isRasxod = hasOrder && izoh.startsWith('Rasxod: ');
       // Buyurtma to'langach, uning rasxod qatorlari hisobotdan tushib ketadi
       // (rasxod pul buyurtma yakuniy summasi ichida kassaga qaytgan).
-      if (isRasxod && orderById.get(orderId)?.holat === 'tulangan') continue;
+      if (isRasxod && isTolanganHisobda(orderById.get(orderId))) continue;
       rows.push({
         _id: String(op.id),
         _date: date,

@@ -1,5 +1,6 @@
 import supabase from '@/lib/supabaseClient';
 import { isCancelledHolat } from '@/lib/stock';
+import { isTolanganHisobda } from '@/lib/hisobsizTolangan';
 import { removedRasxodTotal, type ZapLike as ArchiveZapLike } from '@/lib/zapArchive';
 
 interface ZapLike {
@@ -77,7 +78,7 @@ export async function refundRasxodOnDelete(
   zaps: ZapLike[] | null | undefined,
   holat: string | null | undefined,
 ): Promise<void> {
-  if (isCancelledHolat(holat) || holat === 'tulangan') return;
+  if (isCancelledHolat(holat) || isTolanganHisobda({ id: orderId, holat })) return;
 
   const rasxodTotal = (zaps || [])
     .filter((z) => z?.rasxod === true || z?.kat === 'Rasxod')

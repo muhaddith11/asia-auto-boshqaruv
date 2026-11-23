@@ -3,6 +3,7 @@ import { isHisobsizTolangan, isTolanganHisobda } from '@/lib/hisobsizTolangan';
 import { realizedProfit } from '@/lib/realizedProfit';
 import { buildLedgerRows } from '@/lib/businessLedger';
 import { computePeriodFoyda } from '@/lib/dailyReport';
+import { buildRasxodRows } from '@/lib/rasxodRecovery';
 
 // Egasi qarori (2026-11-23): puli ilgari olingan, lekin yozilmay qolgan eski
 // buyurtmalar "To'langan" bo'ladi, ammo kassa, hisobot va sherik ulushida
@@ -68,5 +69,46 @@ describe('davr foydasi (computePeriodFoyda) o\'zgarmaydi', () => {
 
   it('oddiy to\'langan buyurtma foydasi sanasiga tushadi', () => {
     expect(computePeriodFoyda([order(ODDIY, 'tulangan')], [], '', '')).toBe(4_060_000);
+  });
+});
+
+// Ikkinchi ro'yxatdagi #2456 da kassadan chiqqan rasxod bor. Buyurtma "To'langan"
+// bo'lsa ham rasxod qatori hisobotda qoladi va "qaytmagan" deb turadi —
+// holat o'zgarmagandagidek.
+describe('rasxod: ro\'yxatdagi buyurtma to\'langan bo\'lsa ham o\'zgarmaydi', () => {
+  const RASXOD_LISTED = 2456;
+  const rasxodOp = (orderId: number) => ({
+    id: 77, type: 'expense', method: 'naqd', amount: 1_800_000, category: "Buyurtma bo'yicha to'lov",
+    comment: `Rasxod: Detal (Buyurtma #${orderId})`, date: '2026-10-15', source: 'Ustaxona',
+  });
+  const rasxodOrder = (id: number, holat: string) => ({
+    ...order(id, holat),
+    zaps: [{ nom: 'Detal', narx: 1_800_000, rasxod: true, kat: 'Rasxod', vaqt: '2026-10-15T08:00:00Z' }],
+  });
+
+  it('ishxona hisobotida rasxod chiqimi qoladi', () => {
+    expect(isHisobsizTolangan(RASXOD_LISTED)).toBe(true);
+    const oldin = buildLedgerRows([rasxodOrder(RASXOD_LISTED, 'tulanmagan')], [rasxodOp(RASXOD_LISTED)] as any, [], []);
+    const keyin = buildLedgerRows([rasxodOrder(RASXOD_LISTED, 'tulangan')], [rasxodOp(RASXOD_LISTED)] as any, [], []);
+    expect(keyin).toEqual(oldin);
+    expect(keyin).toHaveLength(1);
+  });
+
+  it('oddiy to\'langan buyurtmaning rasxod qatori avvalgidek tushib ketadi', () => {
+    const rows = buildLedgerRows([rasxodOrder(ODDIY, 'tulangan')], [rasxodOp(ODDIY)] as any, [], []);
+    expect(rows).toHaveLength(0);
+  });
+
+  it('rasxod daftarida "qaytmagan" holati saqlanadi', () => {
+    const now = new Date('2026-11-23T00:00:00Z');
+    const oldin = buildRasxodRows([rasxodOrder(RASXOD_LISTED, 'tulanmagan')], [], now);
+    const keyin = buildRasxodRows([rasxodOrder(RASXOD_LISTED, 'tulangan')], [], now);
+    expect(keyin).toEqual(oldin);
+    expect(keyin[0].status).toBe('kutilmoqda');
+    expect(buildRasxodRows([rasxodOrder(ODDIY, 'tulangan')], [], now)[0].status).toBe('qaytdi');
+  });
+
+  it('beshta qo\'shimcha buyurtma ham ro\'yxatda', () => {
+    for (const id of [2460, 2496, 2502, 2551, 2593, 706]) expect(isHisobsizTolangan(id)).toBe(true);
   });
 });

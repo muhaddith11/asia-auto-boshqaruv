@@ -15,6 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { isCancelledHolat } from './stock';
+import { isTolanganHisobda } from './hisobsizTolangan';
 import { buildPaymentDayMap, type DailyOpLike } from './dailyReport';
 
 export interface RasxodZapLike {
@@ -88,7 +89,7 @@ export function buildRasxodRows(
 
       if (isCancelledHolat(b.holat)) {
         status = 'bekor';
-      } else if (b.holat === 'tulangan') {
+      } else if (isTolanganHisobda(b)) {
         status = 'qaytdi';
         const payDay = paymentDayByOrder.get(String(b.id));
         if (payDay && vaqt) qaytishKuni = daysBetween(vaqt, new Date(payDay).getTime());
