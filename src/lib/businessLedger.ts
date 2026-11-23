@@ -16,6 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { orderKassaTotal, type BossZapLike } from './bossProfit';
+import { isTolanganHisobda } from './hisobsizTolangan';
 
 export interface LedgerOpLike {
   id: number | string;
@@ -140,7 +141,8 @@ export function buildLedgerRows(
     // Alohida zapchast puli kassaga tushmagan, shu sababli kirimga yozilmaydi:
     // faqat alohida zapchastdan iborat buyurtma ro'yxatda 0 summa bilan turadi.
     for (const b of buyurtmalar) {
-      if (b.holat !== 'tulangan' || opOrderIds.has(Number(b.id))) continue;
+      // Puli yozilmay qolgan eski buyurtmalar kirimga tushmaydi (@/lib/hisobsizTolangan).
+      if (!isTolanganHisobda(b) || opOrderIds.has(Number(b.id))) continue;
       const raw = b.createdAt || b.created_at || b.sana || '';
       const { date, display } = dateParts(raw, b.sana || '');
       const kassaSumma = orderKassaTotal(b);

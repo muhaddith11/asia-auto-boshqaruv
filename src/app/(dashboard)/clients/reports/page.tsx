@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
 import { kassaFoyda } from '@/lib/realizedProfit';
 import { isCancelledHolat } from '@/lib/stock';
+import { isTolanganHisobda } from '@/lib/hisobsizTolangan';
 import {
   Users,
   Search,
@@ -84,7 +85,9 @@ export default function ClientReportsPage() {
     // qilingan' (dashboard) VA 'bekor' (bot-ui) ikkalasini ham bekor deb
     // hisoblaydi (@/lib/stock), aks holda botdan bekor qilingan buyurtma
     // to'lanmagan deb sanalib, mijozning qarzdorligiga noto'g'ri qo'shiladi.
-    const paidOrders   = orders.filter(b => b.holat === 'tulangan');
+    // Puli yozilmay qolgan eski buyurtmalar (@/lib/hisobsizTolangan) foydaga ham,
+    // qarzga ham kirmaydi.
+    const paidOrders   = orders.filter(b => isTolanganHisobda(b));
     const unpaidOrders = orders.filter(b => b.holat !== 'tulangan' && !isCancelledHolat(b.holat));
 
     const totalSpent    = paidOrders.reduce((sum, b) => sum + (b.final || 0), 0);

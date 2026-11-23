@@ -33,6 +33,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { zapNarx, type BossZapLike } from './bossProfit';
+import { isTolanganHisobda } from './hisobsizTolangan';
 import { isCancelledHolat } from './stock';
 
 // Qisman to'lovlar shu kundan (va keyin) hisobga olinadi — YYYY-MM-DD.
@@ -129,6 +130,7 @@ export function realizedProfit(
   if (!order || isCancelledHolat(order.holat)) return 0;
   const foyda = kassaFoyda(order);
   if (foyda === 0) return 0;
-  if (order.holat === 'tulangan') return foyda;
+  // Puli yozilmay qolgan eski buyurtmalar to'lanmagan deb olinadi (@/lib/hisobsizTolangan).
+  if (isTolanganHisobda(order)) return foyda;
   return Math.min(Math.max(0, Number(qismanTolov) || 0), foyda);
 }

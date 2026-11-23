@@ -4,6 +4,7 @@ import { X, TrendingUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { bolimMeta, normalizeBolim } from '@/lib/departments';
 import { kassaFoyda } from '@/lib/realizedProfit';
+import { isTolanganHisobda } from '@/lib/hisobsizTolangan';
 
 interface Props {
   onClose: () => void;
@@ -46,7 +47,7 @@ export default function MonthlyProfitModal({ onClose }: Props) {
     };
 
     buyurtmalar.forEach((b: any) => {
-      if (b.holat !== 'tulangan') return;
+      if (!isTolanganHisobda(b)) return;
       if (!b.sana || !b.sana.startsWith(month)) return;
 
       const services = b.services || [];

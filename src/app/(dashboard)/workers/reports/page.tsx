@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Award, Search, ChevronDown } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
+import { isTolanganHisobda } from '@/lib/hisobsizTolangan';
 
 const S = {
   input: {
@@ -61,7 +62,7 @@ export default function WorkerReportsPage() {
     const orderIds = new Set<string>();
 
     buyurtmalar.forEach(b => {
-      if (b.holat !== 'tulangan') return;
+      if (!isTolanganHisobda(b)) return;
       if (!matchesPeriod(b.sana)) return;
 
       let participated = false;

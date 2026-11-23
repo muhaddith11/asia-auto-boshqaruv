@@ -26,6 +26,7 @@
 // o'zgartirsangiz testlar buziladi — avval biznes qoidasini tasdiqlang.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { isTolanganHisobda } from './hisobsizTolangan';
 import { kassaFoyda, type RealizedZapLike } from './realizedProfit';
 import { isCancelledHolat } from './stock';
 
@@ -229,7 +230,7 @@ function orderFoydaByDay(b: DailyOrderLike, payments: OrderPayment[]): Map<strin
     }
   }
 
-  if (b.holat === 'tulangan' && yozilgan < foyda) {
+  if (isTolanganHisobda(b) && yozilgan < foyda) {
     const day = payments.length > 0 ? payments[payments.length - 1].day : b.sana;
     byDay.set(day, (byDay.get(day) || 0) + foyda - yozilgan);
   }
@@ -275,7 +276,7 @@ export function computeDailyReport(
   // Shu kuni TO'LIQ yopilgan buyurtmalar soni uchun
   // (kassaga pul tushgan kuni bo'yicha, yaratilgan kuni bo'yicha emas).
   const dayOrders = uniqueOrders
-    .filter((b) => b.holat === 'tulangan' && orderDay(b) === selectedDate);
+    .filter((b) => isTolanganHisobda(b) && orderDay(b) === selectedDate);
 
   // USTALAR ish haqi uchun — shu kuni YARATILGAN (ish qilingan) buyurtmalar,
   // to'langan yoki to'lanmaganidan qat'i nazar. Faqat bekor qilinganlar chiqadi
